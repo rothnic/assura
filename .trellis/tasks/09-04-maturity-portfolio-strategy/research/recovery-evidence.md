@@ -1,43 +1,12 @@
 # Recovery process verification
 
-Date: 2026-09-10. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
+Date: 2026-09-11. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
 Older tail note: [recovery history 01](recovery-history-01.md) and
 [recovery history 02](recovery-history-02.md).
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 132 (origin/master=af005a7 post-merge reconciliation after PR #275; merged tree, exact-head applicable hosted checks, post-merge workflows and owned closure verified; process-only and no product/acceptance change; 129a249 candidate freeze/canaries/six-handle binding/manifest/protocol PASS are historical no-credit metadata; no af005a7 candidate freeze exists; all allocation/credit false; next action refresh source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the current candidate, run a fresh no-credit canary, verify/rebind the current six-handle holdout and exactly-two-condition manifest, and obtain isolated protocol PASS before the separately authorized screening gate; iterations 131 and 130 preserved in progress-history-17.md; iteration 128 preserved in progress-history-16.md; iteration 127 recorded post-merge source reconciliation;
-iteration 123 was the corrected continuation goal and current-source rebind;
-iteration 122 was the merged A07 process route and current-candidate canary;
-iteration 121 was the accepted stale-route finding delta; iteration 120 was the
-A07 protocol review PASS at current master; iteration 119
-was the A07 private manifest review at current master; iteration 118
-was the A07 private-readiness audit at current master; iteration 117
-was the post-merge reconciliation for PR #264; iteration 116
-was the current-master pointer reconciliation after PR #263, iteration 115
-was the PR #262 post-merge reconciliation, iteration 114 was the preserved
-A07 route-history correction, and iteration 113 was the PR #259
-post-merge reconciliation; iteration 112
-was the PR #258 post-merge reconciliation and iteration 111 was the candidate identity freeze after the goal-contract
-correction; iteration 110 was the goal-contract correction after the R01
-raw-log recovery; iteration 109 is the current-master R01 recovery evidence;
-iteration 106 was the post-merge checkpoint for PR #251; the R01
-diagnostic preparation is candidate-base evidence;
-iteration 104 was the continuation-control route on current master;
-iteration 103 was the current source-pointer reconciliation;
-iteration 102 was the post-merge source-pointer lifecycle checkpoint;
-iteration 101 was the current-master/private-manifest readiness re-audit;
-iteration 100 was the post-merge closure for PR #245; iteration 99 was the
-post-merge continuation reconciliation; iteration 98 was the current-master
-continuation-control refresh; iteration 97 was the post-merge ledger-routing
-reconciliation; iteration 96 was the ledger-routing helper pin/path correction;
-iteration 95 was the
-deterministic ledger-routing helper; iteration 94 was the A07
-private-manifest readiness audit; iteration 93 was the topology-audit
-helper correction; after the highest recorded historical iteration, 88; PR
-#236 closure was iteration 89, the pointer candidate review was iteration 90,
-the proof-record delta was iteration 91, and post-merge reconciliation was
-iteration 92).
+Process iteration: 133 (origin/master=71adc2e current candidate-bound canary; the pinned Rust/Cargo 1.94.1 candidate was identity-frozen, two initial omitted-contract fixture attempts were retained as unfavorable no-credit evidence, and two corrected sibling-free fixtures passed candidate identity, composed initialization and the full seven-dimension evaluator with expected negative-policy and collected-native-test controls; no product/acceptance or allocation state changed; next action is current six-handle and exactly-two-condition rebind followed by isolated protocol PASS before separately authorized screening; iteration 132 is preserved in progress-history-18.md).
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
 ## Historical 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `af005a7`; previously `b7043ab`)
