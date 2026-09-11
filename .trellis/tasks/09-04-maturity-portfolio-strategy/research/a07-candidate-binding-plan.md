@@ -11,6 +11,28 @@ passed, and the post-merge Documentation/Security/Rust CI workflows passed.
 This process-only checkpoint changes no A07 product or acceptance state and
 does not authorize screening.
 
+## Current candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=ac3eb13`)
+
+PR #285 reconciled the c4f process checkpoint into current master at
+`ac3eb13be83f1551b8084a59c9868ff870fa8bf2`. The revision-pinned ledger remains
+`items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified and
+R01/W02/F01 held. One exact-toolchain candidate was built from an explicit
+clean worktree. Two corrected sibling-free source-only canaries completed
+composed initialization and full seven-dimension evaluator runs with exit `0`;
+the initial wrapper exit-sentinel defect remains retained as unfavorable
+no-credit evidence.
+
+Fresh login-shell controls prove the intended candidate target, reject a
+deliberately wrong target and reject a different root checkout. The private
+six-handle binding, two supplied-input conditions, blinded mapping, fixture
+freshness and 30 reserved matrix cells are bound to ac3. The independent
+protocol reviewer returned `PASS` after correcting freeze chronology and the
+missing negative identity controls. This is still no-credit preparation:
+screening, holdout, follow-up-feature, acceptance, release, deployment,
+publication and invitation authority remain false. Refresh source, release/tag,
+PR/CI, topology and the ledger again, prove packet identity, then seek the
+separately authorized screening gate.
+
 The prior refresh resolved `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
 after PR #276. That candidate and packet are historical after the later
 c5b2822 source advance. A clean owned worktree built and privately froze a candidate

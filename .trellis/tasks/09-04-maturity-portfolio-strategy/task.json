@@ -105,16 +105,16 @@
       "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup; never convert process, evaluator or skipped-check evidence into product success.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
       "current_checkpoint": {
-        "origin_master": "c4f57d701d2ec37301f4677eae27b7275f89d2fb",
+        "origin_master": "ac3eb13be83f1551b8084a59c9868ff870fa8bf2",
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
         "held": ["R01", "W02", "F01"],
         "current_evidence": {
-          "candidate": "The 30b4c663 candidate, two no-credit canaries and protocol-passed packet are historical metadata after PR #284 advanced master; no candidate is current at c4f57d7",
-          "holdout_binding": "The 30b4c663 six-handle binding and second-readonly PASS are historical no-credit metadata and must not be reused without a fresh c4f candidate",
-          "manifest": "The 30b4c663 exactly-two-condition and 30-cell manifest is historical no-credit; no current manifest or screening allocation exists at c4f57d7",
-          "protocol_review": "The 30b4c663 isolated metadata PASS remains historical no-credit after PR #284; the next candidate requires a fresh scoped protocol review"
+          "candidate": "The ac3eb13 current-master candidate was built from an explicit clean worktree with exact Rust/Cargo 1.94.1 identity; two fresh source-only canaries and full seven-dimension evaluators pass as no-credit preparation. A fresh login-shell control proves exact target resolution and rejects wrong-target and wrong-root controls.",
+          "holdout_binding": "The six-handle binding and second-readonly comparison are rebound to ac3eb13 with immutable creation evidence and exact candidate identity; no allocation or credit is granted.",
+          "manifest": "The current private manifest has exactly two supplied-input conditions, equivalent invariants, six holdouts and 30 reserved cells bound to ac3eb13; screening remains unauthorized and no-credit.",
+          "protocol_review": "The ac3eb13 packet passed scoped isolated protocol rereview after two concrete metadata findings were repaired; it remains no-credit and does not authorize screening."
         },
         "corrections": [
           "A02 is complete; the old plain-init handoff finding is historical.",
@@ -138,10 +138,11 @@
           "PR #280 merged the reviewed process-only route at 961dced. Its applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and not counted. The 5b03c7f candidate packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.",
           "A provenance audit caught a candidate build launched from the dirty root instead of the claimed 961dced worktree; its c7815c5 binary and the resulting permissive wrapper output are retained as failed no-credit evidence. Rebuilding with an explicit workdir produced the be33c501 binary, and the corrected current packet now requires source-path/compiler-output verification before identity or canary credit.",
           "Independent protocol review found stale 5b03c7f manifest/fixture references and contradictory pending/pass prose in the current 961dced packet. The coordinator rebound every manifest reference and matrix fixture to current artifacts, removed premature pass wording and cleared pending review timestamps; the cross-artifact correction assertion passes and the scoped rereview returned metadata PASS. No screening, allocation, acceptance, release, deployment, publication or invitation authority changed.",
-          "PR #282 merged the reviewed layered-context and continuation corrections at 55a38ff; PR #283 reconciled the 30b route; PR #284 then merged the reviewed current-route correction at c4f57d7. The revision-pinned ledger remains items=32, ready_pending=0, unfinished=5 and held=3; the 30b candidate, canaries and protocol PASS are historical no-credit after this source advance. No product, threshold, allocation or authority state changed."
+          "PR #282 merged the reviewed layered-context and continuation corrections at 55a38ff; PR #283 reconciled the 30b route; PR #284 merged the reviewed current-route correction at c4f57d7; PR #285 reconciled the c4f post-merge checkpoint at ac3eb13. The revision-pinned ledger remains items=32, ready_pending=0, unfinished=5 and held=3; earlier candidates and protocol PASS records are historical no-credit after each source advance. No product, threshold, allocation or authority state changed.",
+          "At ac3eb13 the coordinator rebuilt one exact-toolchain candidate in a clean owned worktree, retained an initial wrapper-sentinel failure as unfavorable no-credit evidence, and completed two corrected source-only canaries with full seven-dimension evaluator PASS. A fresh login-shell identity record proves the exact candidate and rejects wrong-target and wrong-root controls. The six-handle/two-condition/30-cell packet is rebound to ac3eb13 and remains no-credit after isolated protocol rereview PASS; two reviewer findings about freeze chronology and skipped negative controls were corrected without changing product, threshold, allocation or authority state."
         ]
       },
-      "next_action": "After each refresh of origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, create a fresh c4f57d7 explicit-workdir candidate and identity freeze, run the bounded no-credit canary, rebind the six-handle/two-condition packet and obtain isolated protocol PASS before any separately authorized screening. If the source advances or any mismatch appears, retain the prior packet as metadata-only and repeat the complete sequence; never allocate or credit cells without every later gate.",
+      "next_action": "After each refresh of origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, verify the ac3eb13 packet still matches. Then seek separately authorized screening only after its own gates are explicitly granted; no-credit protocol PASS is not screening approval. If the source advances or any mismatch appears, retain the prior packet as metadata-only and repeat the complete candidate, identity, canary, rebind and protocol sequence; never allocate or credit cells without every later gate.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",

@@ -14,16 +14,20 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current correction checkpoint (2026-09-11, refresh before use):
-`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`; the revision-pinned
+`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`; the revision-pinned
 ledger is 32 items, zero ready-pending, five unfinished and three held, with
 A07 active, W03 verified and R01/W02/F01 held. PR #284 merged the reviewed
-process route; its applicable Documentation Scope, CI Scope, Security Scope,
-Evidence Gates and GitGuardian checks passed, while product/Rust/performance/
-release jobs were scope-skipped and are not acceptance proof. The 30b candidate,
-canaries and protocol-passed packet are historical no-credit after this source
-advance. Create a clean owned explicit-workdir c4f candidate, prove identity,
-run a fresh bounded no-credit canary, rebind/review packet metadata and only
-then seek separately authorized screening. See
+process route and PR #285 reconciled its post-merge checkpoint; applicable
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed, while product/Rust/performance/release jobs were scope-skipped
+and are not acceptance proof. The 30b and c4f candidate packets are historical
+no-credit after their source advances. The ac3 candidate was built in an
+explicit clean worktree; two corrected source-only canaries pass the full
+seven-dimension evaluator, fresh identity controls reject wrong target/root
+controls, and isolated protocol review returned `PASS`. All are no-credit
+preparation. Refresh source, release/tag, PR/CI, topology and ledger again,
+prove the packet still matches ac3, and only then seek separately authorized
+screening. See
 [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for the
 measured VPS decision and layered context route.
 

@@ -8,10 +8,41 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 142 (`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb` after PR #284 merged the reviewed process route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The 30b candidate canaries and protocol PASS are historical no-credit after this source advance; no candidate is current at c4f and no product, threshold, allocation or authority state changed.)
+Process iteration: 143 (`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2` after PR #285 reconciled the reviewed c4f checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 candidate canaries, packet and protocol PASS are current no-credit preparation; no screening, product, threshold, allocation or authority state changed.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`)
+## Current candidate preparation and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`)
+
+- PR #285 reconciled the reviewed c4f post-merge checkpoint at
+  `ac3eb13be83f1551b8084a59c9868ff870fa8bf2`. Applicable Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed;
+  product/Rust/performance/release jobs were scope-skipped and are not
+  acceptance proof. The ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified and R01/W02/F01 held.
+- One candidate was built from a clean explicit worktree with the exact
+  Rust/Cargo `1.94.1` toolchain. Two corrected source-only canaries completed
+  composed initialization and full seven-dimension evaluator runs with exit
+  `0`; both passed their declared dimensions and expected negative policy
+  control. An initial wrapper exit-sentinel defect is retained as unfavorable
+  no-credit evidence rather than hidden or retried into a green result.
+- A fresh login-shell identity check recorded the exact candidate as `pass`, a
+  deliberately wrong target as `reject`, and a different root checkout as
+  `reject`. The six-handle holdout binding, two-condition manifest, blinded
+  mapping, fixture-freshness record and 30 reserved matrix cells all match the
+  candidate. The isolated protocol reviewer returned `PASS` after correcting
+  freeze chronology and the missing negative controls. All packet and canary
+  evidence remains no-credit; screening, holdout, follow-up-feature,
+  acceptance, release, deployment, publication and invitation authority remain
+  false.
+- The exact toolchain was available locally; the reachable VPS had more memory
+  but lacked the exact toolchain and had critically low free disk, so no remote
+  build was used. This is a measured efficiency decision, not a replacement
+  for hosted or platform-specific proof.
+- Owner/phase: `/root` / post-protocol refresh. Refresh source, release/tag,
+  PR/CI, topology and the revision-pinned ledger again, prove the packet still
+  matches, and only then seek the separately authorized screening gate.
+
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`, superseded by `ac3eb13`)
 
 - PR #284 merged the reviewed process-only route at `c4f57d7`; applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, while product/Rust/performance/release jobs were scope-skipped. The ledger remains `items=32; ready_pending=0; unfinished=5; held=3`; A07 is active, W03 verified and R01/W02/F01 held.
 - The 30b candidate, two no-credit canaries, current packet and isolated protocol `PASS` are historical metadata after this source advance. No current candidate, screening allocation or product acceptance exists at c4f. Owner/phase: `/root` / fresh candidate preparation.

@@ -97,7 +97,32 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — c4f57d7
+## Current post-merge route — ac3eb13
+
+The latest reset fetched `origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`
+after PR #285 reconciled the reviewed c4f checkpoint. Its applicable
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed; product/Rust/performance/release jobs were scope-skipped and are
+not acceptance proof. The latest tag is `v0.3.0-448-gac3eb13`; no release
+branch exists.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
+A07 active, W03 verified, R01/W02/F01 held. A fresh ac3 candidate was built
+from an explicit clean worktree with exact Rust/Cargo `1.94.1` identity. Two
+corrected source-only canaries and full seven-dimension evaluators pass as
+no-credit preparation; an initial wrapper-sentinel failure is retained as
+unfavorable evidence. Fresh login-shell controls prove the candidate target and
+reject wrong-target and wrong-root controls.
+
+The six-handle/two-condition packet and 30 reserved matrix cells are rebound to
+ac3. Its isolated protocol rereview returned `PASS` after two concrete metadata
+findings were repaired, so no screening allocation or acceptance credit exists.
+Refresh source, release/tag, PR/CI, topology and the ledger again before seeking
+separately authorized screening. Preserve the
+root unknown path, foreign dirty worktree, stale registrations and historical
+goal branches.
+
+## Historical post-merge route — c4f57d7 (superseded by `ac3eb13`)
 
 The latest reset fetched `origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`
 after PR #284 merged the reviewed process/evidence route. Its applicable
