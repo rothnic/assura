@@ -8,8 +8,26 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 139 (`origin/master=961dced162c8fe67ad87d64e0be750249edd5681` after PR #280 merged the reviewed process-only route; applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Rust CI run `34564937464` completed successfully for its applicable jobs. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The 5b03c7f packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.)
+Process iteration: 140 (`origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9` after PR #282 merged the reviewed process-correction route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The f4368883 packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
+
+## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
+
+- Owner/phase: `/root` / current-source candidate preparation in the clean
+  owned reconciliation worktree. PR #282 is merged at
+  `55a38ff68e39aae9ede78bb51c01a9c2e1392de9`; its applicable documentation,
+  CI, security, evidence and GitGuardian checks passed. Scope-skipped product,
+  Rust, performance and release jobs remain non-applicable.
+- The fresh ledger is `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified, R01/W02/F01 held. The root unknown note, foreign
+  dirty worktree, stale registrations and historical goal branches are
+  preserved. No ready-pending card exists.
+- The f4368883 candidate-bound canary and private metadata protocol `PASS` are
+  historical no-credit evidence after this source advance. No current
+  candidate, screening allocation or product acceptance is claimed.
+- Next action: build and identity-freeze one fresh `55a38ff` candidate in an
+  explicit clean worktree, run the bounded no-credit canary, then rebuild and
+  independently review packet metadata before separately authorized screening.
 
 ## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=961dced`)
 

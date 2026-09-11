@@ -42,21 +42,19 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue the owned A07 candidate packet at that revision. PR #280 now makes
-`origin/master=961dced162c8fe67ad87d64e0be750249edd5681` the current source;
-the 5b03c7f candidate packet is historical no-credit preparation after that
-advance. The 961dced candidate was rebuilt with an explicit workdir after a
-root-checkout provenance failure, then identity-checked and exercised through
-two fresh full-contract canaries; its six-handle/two-condition packet is
-rebound and isolated protocol review returned `PASS` after stale-reference
-and pending/pass-metadata corrections. Refresh source/ledger before separately
-authorized screening. Never allocate from a historical or unreviewed packet. The prior
-8be6103, af005a7, 71adc2e and c5b2822 packets are also historical; keep R01,
-W02, W03 and F01's named holds separate.
+continue one owned A07 preparation phase at that revision. PR #282 now makes
+`origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9` the current source;
+the `f4368883` candidate packet is historical no-credit preparation after that
+advance. No candidate packet is current at `55a`; the next owned phase is an
+explicit-workdir candidate build and identity freeze, followed by a bounded
+no-credit canary and fresh holdout/manifest metadata review. Refresh
+source/release/tag/PR/CI/topology and the ledger before each phase. Never
+allocate from a historical or unreviewed packet. Keep R01, W02, W03 and F01's
+named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current continuation correction — 2026-09-11 UTC (`f4368883`)
+## Historical continuation correction — 2026-09-11 UTC (`f4368883`, superseded by `55a38ff`)
 
 Refresh and route from [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md)
 before acting. The current source is `origin/master=f4368883`; the ledger is

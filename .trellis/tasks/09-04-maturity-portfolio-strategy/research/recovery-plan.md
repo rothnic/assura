@@ -2,7 +2,7 @@
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=961dced162c8fe67ad87d64e0be750249edd5681`; this pointer is an
+`origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`; this pointer is an
 as-of checkpoint and must be refreshed before use. PR #280 merged the reviewed
 process-only route; its applicable Documentation, CI Scope, Security Scope,
 Evidence Gates and GitGuardian checks passed, while product/Rust/performance/
@@ -21,14 +21,14 @@ supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
 
-The current A07 preparation owns the next action: finish the 961dced packet
-already frozen in the clean owned worktrees. Its corrected explicit-workdir
-build, login-shell identity control, two source-only full-contract canaries,
-six-handle rebind and two-condition manifest are recorded privately with
-isolated protocol review `PASS` after two concrete metadata corrections; only
-a packet proven consistent with a later refresh may be presented for separately
-authorized screening. No cell allocation, acceptance, release, deployment,
-publication, invitation or protection change is implied.
+The current A07 preparation owns the next action: create a fresh `55a38ff`
+candidate in a clean owned worktree, prove explicit-workdir/toolchain identity,
+run the bounded no-credit canary, and rebuild/review packet metadata. The
+961dced and f4368883 packets are historical no-credit preparation after later
+process merges; only a packet proven consistent with the refreshed source may
+be presented for separately authorized screening. No cell allocation,
+acceptance, release, deployment, publication, invitation or protection change
+is implied.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
@@ -50,7 +50,24 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate-bound continuation — 2026-09-11 UTC (`origin/master=f4368883`)
+## Current post-merge continuation — 2026-09-11 UTC (`origin/master=55a38ff`)
+
+- PR #282 merged the reviewed process-only route at
+  `55a38ff68e39aae9ede78bb51c01a9c2e1392de9`; applicable Documentation Scope,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed.
+  Product/Rust/performance/release jobs were scope-skipped and are not
+  acceptance proof. The latest tag is `v0.3.0`; no release branch exists.
+- The ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified, R01/W02/F01 held. The f4368883 candidate and
+  private protocol `PASS` are historical no-credit metadata after this source
+  advance; no current candidate, allocation or product acceptance exists.
+- Owner/phase: `/root` / current-source candidate rebuild. The exact next
+  action is one clean owned explicit-workdir build and identity freeze at
+  `55a38ff`, followed by the bounded no-credit canary and fresh packet
+  rebind/review. Do not reuse an older binary or packet, and preserve the root
+  unknown path plus foreign/stale topology.
+
+## Historical candidate-bound continuation — 2026-09-11 UTC (`origin/master=f4368883`, superseded by `55a38ff`)
 
 - PR #281's reviewed process-only route is now reachable at
   `f4368883ac776cd5a9cb337b68c80165fc228a46`; its applicable documentation,
