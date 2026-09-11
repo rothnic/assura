@@ -1,11 +1,12 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-11 UTC. The latest post-merge
-reconciliation is `origin/master=af005a7dc5c367bc9388e08203fbf351bc0c88f2`
-after PR #275; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #275 reconciled the current resume-proof route; its merged tree matches
-the reviewed candidate, applicable hosted checks and post-merge workflows
-passed, and no product or acceptance state changed. Earlier pointer and
+Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
+the current source to `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`;
+this pointer is an as-of checkpoint and must be refreshed before use. The
+candidate-bound canary at this revision passed its full evaluator and expected
+negative policy probe, with two earlier omitted-contract setup attempts
+retained as unfavorable no-credit evidence. No product or acceptance state
+changed. Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
 diagnostic is the bounded R01 raw-log recovery recorded at candidate base
@@ -35,27 +36,31 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate checkpoint — 2026-09-11 UTC (`origin/master=af005a7`; refresh required)
+## Current candidate checkpoint — 2026-09-11 UTC (`origin/master=71adc2e`)
 
-- PR #275 is merged and the current source is `af005a7`; this process-only
-  reconciliation changes no product, evaluator, threshold, allocation or
-  authority state. The reviewed branch/worktree closed cleanly, and the
-  applicable hosted checks plus post-merge workflows passed.
-- The 129a249 candidate freeze, exact login-shell identity controls, two
-  source-only canaries, six-handle packet and manifest passed no-credit
-  protocol checks but are historical after this source advance. No af005a7
-  candidate freeze exists yet; allocation and credit remain false.
+- The current candidate-bound build used Rust/Cargo `1.94.1`; fresh
+  login-shell identity checks and two corrected source-only canaries passed the
+  full evaluator with the expected negative policy probe. Two earlier
+  omitted-contract fixture attempts remain unfavorable no-credit evidence.
+- This canary is preparation only and changes no product, evaluator, threshold,
+  allocation or authority state. Allocation and credit remain false; the
+  earlier af005a7 checkpoint and all older packets are historical.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
-  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: refresh
-  source, release/tag, PR/CI and topology state, rerun the ledger and topology
-  audit, re-freeze the current candidate, run a fresh no-credit canary,
-  verify/rebind the current six-handle holdout and exactly-two-condition
-  manifest, and obtain isolated protocol `PASS` before seeking separately
-  authorized screening preparation. No current protocol rereview exists yet;
-  prior `PASS` metadata grants no screening, allocation or product-acceptance
-  authority.
+  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: verify
+  and rebind the immutable six-handle holdout and exactly-two-condition
+  manifest to `71adc2e`, obtain isolated protocol `PASS`, then seek separately
+  authorized screening preparation. Prior `PASS` metadata grants no
+  screening, allocation or product-acceptance authority.
   Preserve all private values, fixtures, evaluator output and prior packets as
   historical; do not allocate or credit cells from this checkpoint.
+
+## Historical pre-71adc2 candidate checkpoint (superseded by current `71adc2e`) — `af005a7`
+
+- PR #275's process-only reconciliation pointed at `af005a7`; no candidate was
+  frozen at that revision and the 129a249 packet was already historical.
+- Its preserved next action was to refresh and re-freeze the candidate before
+  new proof. That action is superseded by the current canary and rebind route
+  above; retain this section only as historical context.
 
 ## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `af005a7`; previously `b7043ab`)
 

@@ -41,33 +41,49 @@ historical metadata `PASS`, not current candidate proof; and passing CI,
 evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
-Current route: refresh the current source and revision-pinned ledger, then own
-the A07 candidate identity at that revision, its canary, immutable holdout
-binding and private manifest rereview. The prior 8be6103 packet is historical
-after the process merge; never reuse it for current allocation. Keep R01, W02,
-W03 and F01's named holds separate.
+Current route: refresh the current source and revision-pinned ledger, then
+continue the owned A07 candidate packet at that revision. The current
+candidate-bound no-credit canary is complete; the next gates are immutable
+holdout rebinding and private manifest rereview, followed by isolated protocol
+review. The prior 8be6103 and af005a7 packets are historical after later
+process merges; never reuse them for current allocation. Keep R01, W02, W03 and
+F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current candidate checkpoint (refresh required) — 2026-09-11 UTC (`af005a7`)
+## Current candidate checkpoint — 2026-09-11 UTC (`71adc2e`)
 
-PR #275 reconciled the current resume-proof route and is merged at
-`af005a7dc5c367bc9388e08203fbf351bc0c88f2`; its tree and owned closure are
+The current source is `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`.
+The owned candidate-bound build used the pinned Rust/Cargo `1.94.1` toolchain;
+fresh login-shell identity checks and two corrected source-only fixtures passed
+the full evaluator with the expected negative policy probe. Two earlier
+omitted-contract fixture attempts remain unfavorable no-credit evidence. This
+canary changes no product, evaluator, threshold, allocation or authority
+state. The ledger remains 32 items, `ready_pending=0`, five unfinished and
+three held: A07 active, W03 verified, and R01/W02/F01 held.
+
+The canary is preparation only and has no screening or acceptance credit. The
+next owner/action is to verify and rebind the immutable six-handle holdout and
+exactly-two-condition manifest to `71adc2e`, obtain isolated protocol `PASS`,
+then seek the separately authorized screening gate. Preserve private identity,
+fixture and evaluator records outside this task; never allocate or credit
+cells from a canary or process metadata alone.
+
+## Historical pre-71adc2 checkpoint (superseded by current `71adc2e`) — 2026-09-11 UTC (`af005a7`)
+
+PR #275 reconciled the prior resume-proof route and is merged at
+`af005a7dc5c367bc9388e08203fbf351bc0c88f2`; its tree and owned closure were
 verified, and its applicable hosted checks plus post-merge workflows passed.
-The merge changes no product, evaluator, threshold, allocation or authority
+The merge changed no product, evaluator, threshold, allocation or authority
 state. The ebed, 9df, 692, 9ad and 129a249 candidate freezes, canaries,
-bindings and isolated protocol `PASS` records are historical no-credit metadata
-after this source advance. The ledger remains 32 items, `ready_pending=0`, five
-unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
+bindings and isolated protocol `PASS` records were historical no-credit
+metadata after that source advance. The ledger was 32 items, `ready_pending=0`,
+five unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
 
-No af005a7 A07 candidate has been frozen yet. The prior 129a249 candidate,
-login-shell controls, two source-only canaries, six-handle binding and
-exactly-two-condition manifest passed no-credit protocol checks but are now
-historical after this source advance. On resume, fetch again, rerun the ledger
-and topology audit, refresh release/tag and PR/CI facts, re-freeze the current
-candidate, run a fresh no-credit canary, verify/rebind the current six-handle
-holdout and exactly-two-condition manifest, and obtain isolated protocol `PASS`
-before seeking the separately authorized screening gate.
+At that checkpoint no af005a7 A07 candidate had been frozen. The prior 129a249
+candidate controls and protocol records were historical after the source
+advance. This preserved record routed the subsequent refresh, re-freeze and
+fresh no-credit canary now recorded above; it must not route current work.
 Never allocate or credit cells from a process merge, canary or protocol
 metadata alone.
 

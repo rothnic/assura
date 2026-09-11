@@ -105,16 +105,14 @@ but never replaces required macOS/Windows/hosted proof.
 ## Current next action
 
 On each resume, the A07 coordinator must first refresh `origin/master`, rerun
-the revision-pinned ledger, and freeze the candidate identity. The 9b, 8be, 9df
-and 692 manifests, canaries and protocol `PASS` records are historical
-no-credit evidence after the later process merges and must not route current
-work. The current as-of af005a7 source has no candidate freeze yet. The 129a249
-candidate controls, canaries, six-handle binding and exactly-two-condition
-manifest passed no-credit protocol checks but are historical after PR #275 and
-must not route current work. On each next resume, refresh source/ledger,
-release/tag, PR/CI and topology state, rerun the ledger, re-freeze the current
-candidate, run a fresh no-credit canary, verify/rebind the current six-handle
-holdout and exactly-two-condition manifest, and obtain isolated protocol `PASS`
-before the separately authorized screening gate. Prior
+the revision-pinned ledger, and bind all evidence to that revision. The current
+source is `71adc2e`; its candidate-bound no-credit canary passed the full
+evaluator with the expected negative policy probe, while two omitted-contract
+fixture attempts remain unfavorable no-credit evidence. The next action is to
+verify and rebind the immutable six-handle holdout and exactly-two-condition
+manifest to `71adc2e`, then obtain isolated protocol `PASS` before the
+separately authorized screening gate. The prior af005a7 checkpoint and the 9b,
+8be, 9df, 692, 9ad and 129a249 manifests, canaries and protocol `PASS` records
+are historical no-credit evidence and must not route current work. Prior
 canaries, process PRs and metadata-only evidence never satisfy screening or
 acceptance gates.
