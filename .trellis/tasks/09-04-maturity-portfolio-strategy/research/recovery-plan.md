@@ -50,7 +50,38 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=961dced`)
+## Current candidate-bound continuation — 2026-09-11 UTC (`origin/master=f4368883`)
+
+- PR #281's reviewed process-only route is now reachable at
+  `f4368883ac776cd5a9cb337b68c80165fc228a46`; its applicable documentation,
+  scope, security, evidence and GitGuardian checks passed. Product/Rust/
+  performance/release jobs were scope-skipped and are not acceptance proof.
+  The refreshed ledger remains 32 items, zero ready-pending, five unfinished
+  and three held: A07 active, W03 verified, R01/W02/F01 held.
+- The explicit-workdir release build used Rust/Cargo `1.94.1` and took 239.02
+  seconds. Candidate identity is recorded privately by source/tree SHA,
+  regular executable, fixed target, version, shim and login-shell observation.
+  The reachable `vps` host was not selected because its exact toolchain is
+  unavailable and its root disk is about 95% full; `vps-dev` remains unresolved.
+- Two fresh dedicated source-only Codex children completed the current
+  initializer for the two private values. Both full evaluators exited zero,
+  passed all seven declared dimensions and exercised the expected negative
+  policy control. These are fresh no-credit canaries. Ambient user-level skill
+  metadata appeared in the child streams despite `--ignore-user-config`; no
+  evaluator contract, private mapping or hidden oracle was exposed. Retain the
+  streams and treat this as a reviewed isolation limitation, not activation or
+  screening proof.
+- A current private r2 rebind overlay now points receipts, candidate identity,
+  six immutable holdout creation records, the excluded raw-hook draft and the
+  materialized reserved 30-cell matrix at `f4368883`. The isolated protocol
+  metadata review returned `PASS`; screening remains unauthorized and zero
+  cells are allocated. Refresh source/ledger and prove packet identity before
+  seeking the separate screening gate.
+
+See [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for
+the concrete correction matrix, efficient gate placement and live checkpoint.
+
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=961dced`)
 
 - PR #280 is merged as `961dced162c8fe67ad87d64e0be750249edd5681` from
   reviewed head `6a12ffa5337cb411d6726336c5cccc8d30b7d72a` on base

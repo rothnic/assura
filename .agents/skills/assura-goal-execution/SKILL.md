@@ -39,7 +39,9 @@ only improves its process. Do not substitute a process PR for product acceptance
 5. For candidate-bound initializer evaluation, read
    [runner isolation](references/runner-isolation.md) before launching the
    child agent. A parent shell's `PATH` prefix or a passing evaluator command
-   is not identity proof.
+   is not identity proof. Scan child events for private/evaluator/foreign paths;
+   generic ambient skill metadata is a retained no-credit limitation until the
+   isolated protocol reviewer explicitly dispositions it.
 6. For A07 screening, read the task's
    [screening manifest contract](../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
    before naming conditions or allocating runs. Require its immutable

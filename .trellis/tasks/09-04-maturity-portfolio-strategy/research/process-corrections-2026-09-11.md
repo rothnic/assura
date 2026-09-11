@@ -1,0 +1,147 @@
+# Process corrections and continuation plan
+
+Status: active, current source `origin/master=f4368883ac776cd5a9cb337b68c80165fc228a46`.
+This record is a process and evidence route; it does not close A07, grant
+screening credit, or authorize release, deployment, publication, invitation,
+protection changes or a CI-infrastructure change.
+
+## Findings from the current reset
+
+- The root checkout retains one unknown/user-owned path,
+  `.trellis/tasks/09-04-maturity-portfolio-strategy/research/a04-host-status-doctor-permission-gap.md`.
+  It is outside this work and was not touched. All owned work ran from clean
+  detached or branch worktrees.
+- Workflow/context routing is healthy: the workflow gate was reattached to the
+  canonical task and `audit-context-routing.py` returned `checks=43
+  failures=0 PASS`; `AGENTS.md` is 96 lines and remains a universal router.
+- The refreshed ledger has 32 items, zero ready-pending rows, five unfinished
+  rows and three narrow holds. A07 is the sole active lane; W03 is verified;
+  R01, W02 and F01 retain their separate evidence/authority holds. No pending
+  card can supersede A07 without new dependency evidence.
+- The exact local Rust/Cargo `1.94.1` build from the current source succeeded in
+  239.02 seconds. The `vps-dev` alias is unresolved. The reachable `vps` host
+  has useful CPU/RAM but about 95% root-disk use, only about 20 GiB free, a
+  nightly Rust toolchain rather than the exact pinned toolchain, and no Bun.
+  It was correctly not selected for this candidate; Linux remains a supplement
+  rather than macOS/Windows/browser/host-permission proof.
+- Two early child launches failed before product work because the minimal PATH
+  omitted `codex`/`node`; an authenticated retry with the original private
+  home then completed. These event streams remain unfavorable no-credit
+  runner evidence and the unchanged method is not retried.
+- Two fresh, sibling-free source-only Codex children ran against the explicit
+  current candidate. The login-shell identity matched the regular candidate
+  shim, fixed release target, version `assura 0.4.0`, source/tree and the
+  exact Rust/Cargo toolchain. Both initializer and full evaluator exits were
+  zero; all seven declared dimensions passed and the trusted negative policy
+  control rejected as expected. This is a candidate-bound no-credit canary,
+  not screening or acceptance evidence.
+- The child event streams show ambient user-level skill metadata being read
+  despite `--ignore-user-config`. No evaluator contract, private mapping,
+  hidden oracle or foreign worktree was supplied or read. This is a runner
+  isolation limitation that must be retained and explicitly reviewed; it is
+  not silently treated as product credit or as proof that host activation was
+  approved.
+
+## Protocol-review corrections — current packet
+
+The first isolated metadata review returned six concrete blockers rather than
+silently allowing the canary to advance: the current public-contract digest
+was stale; condition rows lacked complete contract/prompt/candidate identity;
+the identity record lacked fresh wrong-target and wrong-root controls; the
+six holdouts were not individually bound to the current candidate; the
+second-readonly record did not repeat the six creation records; and the
+reserved matrix was only a pointer to a superseded 30-cell matrix.
+
+The private r2 packet corrected each finding without changing product code,
+thresholds, allocation, screening authority or privacy boundaries. It now
+contains the authoritative current contract reference, complete per-condition
+and per-cell identity, fresh identity controls, a current six-layout overlay,
+six explicit second-readonly creation comparisons and a materialized current
+30-cell reservation. Private JSON/schema checks pass; the isolated protocol
+rereview returned `PASS` within its metadata scope. The packet remains
+no-credit preparation and cannot authorize screening.
+
+That rereview found two additional contract-shape omissions: each condition
+row lacked its required redacted `public_summary`, and the `invariants` object
+did not repeat the complete candidate/contract/prompt/fixture/toolchain bundle.
+Those fields are now present in both private condition rows, the manifest
+assertions pass again, and the same isolated reviewer recorded the second
+scoped rereview as `PASS`. This correction also remains metadata-only and
+cannot grant credit.
+
+## Corrected execution route
+
+1. **Freeze identity once per source.** Record the full source/tree SHA, regular
+   executable and fixed target SHA, version, exact compiler/Cargo identity and
+   login-shell `command -v` result before any child. A target directory or
+   parent-shell PATH is not identity proof.
+2. **Use a clean-room fixture per condition.** Give each child a dedicated
+   disposable parent containing one source-only fixture and no sibling
+   worktrees, harnesses, contracts or previous results. Keep the prompt fixed,
+   conditions private and event/evaluator records separate.
+3. **Preflight and classify context.** Scan the retained child stream for
+   evaluator/private paths, hidden labels, foreign worktrees and global Assura
+   fallback. Any such read invalidates the run and earns no credit. Generic
+   ambient skill metadata is recorded as a limitation and must be dispositioned
+   by the isolated protocol reviewer; it never upgrades a run by itself.
+4. **Evaluate only after the child exits.** Read the evaluator's declared
+   dimensions and pass exactly that set; keep the negative policy probe under
+   `policy`. Preserve zero/nonzero exits, elapsed time, test count and every
+   failed or invalid attempt. Do not weaken the contract to accommodate a
+   runner failure.
+5. **Rebind before screening.** The current private rebind points the two
+   supplied-input receipts, candidate identity, six immutable holdout handles,
+   creation records, exact toolchain, excluded draft and reserved 30-cell
+   matrix to the current candidate. An independent protocol review must return
+   `PASS`; its scope is metadata only and it cannot grant screening authority.
+6. **Gate the product screen separately.** After protocol `PASS`, request or
+   verify the separately authorized screening gate. Allocate zero cells until
+   that authority exists. Preserve the existing 30-run screen, untouched
+   holdout, follow-up feature and final ten-per-stack (at least 9/10) thresholds.
+7. **Merge process or product work only at the merge fence.** A candidate must
+   be committed, independently reviewed, current-base, fully locally and
+   hosted-gated for its changed surface, and have no unresolved performance,
+   zero-test, skipped-required or authority findings. After merge, fetch again,
+   prove reachability/tree equality, rerun the ledger and strict topology audit,
+   and close only the exact clean owned branch/worktree.
+
+## Efficient validation placement
+
+- Run workflow/context/structure/scope/target identity checks before any heavy
+  command. Use one serialized Cargo heavy sequence per checkout; `cargo xtask
+  pr` already nests `fast`, so do not pay for an unchanged duplicate.
+- Build one candidate per source SHA and reuse only when source, dependencies,
+  configuration, toolchain, environment and invocation are unchanged. A source
+  advance or metadata change invalidates dependent proof.
+- Use the VPS only after a fresh alias, load, memory, disk-margin, existing-job
+  and exact-toolchain probe. The current probe failed the exact-toolchain/disk
+  selection test, so local execution was the safer measured choice. Remote
+  Linux results never replace platform-specific or hosted gates.
+- Propose CI cache/parallelism changes only after three comparable prepared
+  candidate runs record queue time, execution time, first-pass success, retries
+  and coverage. Keep thresholds and suite coverage identical while measuring.
+
+## Layered context contract
+
+Keep `AGENTS.md` as the short universal router. At reset or compaction load the
+workflow gate, current source/ledger and this plan; load only the selected card
+packet and the phase reference needed for the next decision. Load runner
+isolation for A07, CI triage for slow/failed hosted checks, validation routing
+for gate placement, and continuation control before yielding or handing off.
+Do not copy historical snapshots, private values, raw child events or evaluator
+oracle details into prompts or public evidence. The context audit is the cheap
+proof that these links remain reachable; a passing audit is not product
+acceptance.
+
+## Live checkpoint
+
+Owner: `/root`; phase: A07 candidate-bound canary and corrected private rebind.
+Current candidate: f4368883 with identity recorded in the private freeze and
+receipts. The two evaluator results are private and no-credit. The initial
+provenance findings and the two follow-up manifest-shape findings have been
+corrected in the private r2 packet; the isolated reviewer recorded `PASS`.
+Raw child transcripts and evaluator output remain excluded. Exact next action:
+refresh source/release/tag/PR/CI/topology and the ledger, prove candidate and
+packet identity at that revision, then seek the separately authorized
+screening gate. Even a protocol `PASS` leaves the packet no-credit until that
+authority is verified.
