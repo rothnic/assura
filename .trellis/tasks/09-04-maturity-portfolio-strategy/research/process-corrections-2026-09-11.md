@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16`.
+`origin/master=329bce02396d1378bc4306c446294c3f5ebbfd41`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,15 +10,15 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Post-merge reconciliation — PR #297 — 2026-09-11 UTC (`origin/master=6d57b86`)
+## Post-merge reconciliation — PR #298 — 2026-09-11 UTC (`origin/master=329bce0`)
 
-- PR #297 merged the reviewed current-checkpoint reconciliation as
-  `6d57b8660d4db72734d11141e61eeaddce2fbb16` from reviewed head
-  `004aee7cd67a045d0fc5e040759d670961036870`. Its exact-head applicable
+- PR #298 merged the reviewed current-checkpoint reconciliation as
+  `329bce02396d1378bc4306c446294c3f5ebbfd41` from reviewed head
+  `ba4c980c13001e97bdd6aa06e68bd5d7a115fd53`. Its exact-head applicable
   Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
   checks passed, and the reviewed head tree equals the fetched merge tree.
-  The configured push-triggered Rust CI (`34632545493`), Documentation
-  (`34632545635`) and Security Audit (`34632545507`) workflows completed at
+  The configured push-triggered Rust CI (`34633883919`), Documentation
+  (`34633883756`) and Security Audit (`34633883854`) workflows completed at
   the merge SHA. Product/Rust/performance/release rows were explicitly
   skipped by scope and are not product proof.
 - Correction: this reconciliation advances the current source pointers only;
@@ -31,6 +31,18 @@ protection changes or a CI-infrastructure change.
   inspect active/implemented/verified/held records, and keep one explicitly
   owned recovery or preparation action live. Close only the exact clean owned
   process branch after current-head review and post-merge proof.
+
+## Historical post-merge reconciliation — PR #297 — 2026-09-11 UTC (`origin/master=6d57b86`, superseded by `329bce0`)
+
+- PR #297 merged the reviewed current-checkpoint reconciliation as
+  `6d57b8660d4db72734d11141e61eeaddce2fbb16` from reviewed head
+  `004aee7cd67a045d0fc5e040759d670961036870`. Its exact-head applicable
+  checks and merge-SHA workflows passed; product/Rust/performance/release
+  rows were scope-skipped and were not product proof. This is historical
+  process evidence only; PR #298 is the current source reconciliation.
+- The ledger, retained R01 diagnostic and 4560c710 candidate-base/no-credit
+  packet were unchanged. Refresh source and rerun the ledger before any
+  candidate or authority action.
 
 ## Historical post-merge reconciliation — PR #296 — 2026-09-11 UTC (`origin/master=83c382a`, superseded by `6d57b86`)
 
@@ -94,7 +106,7 @@ protection changes or a CI-infrastructure change.
   continue the smallest authorized local or hosted route while retaining the
   R01 macOS SIGINT diagnostic.
 
-## Current post-merge workflow correction — 2026-09-11 UTC (`origin/master=c9ac2a8`)
+## Historical post-merge workflow correction — 2026-09-11 UTC (`origin/master=c9ac2a8`, superseded by `329bce0`)
 
 - PR #294 merged the reviewed execution-control-plane correction at
   `c9ac2a84a93dce752ec7b5216ad87639ba04dee8`. Exact-head Documentation, CI
@@ -171,7 +183,7 @@ protection changes or a CI-infrastructure change.
   contract, location, failure scenario and smallest verification; never weaken
   performance/cancellation gates or merge unresolved current-base work.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`, superseded by `329bce0`)
 
 - PR #289 merged the reviewed durable goal, layered-routing skill metadata and
   current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770`;
