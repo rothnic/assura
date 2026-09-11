@@ -3,16 +3,30 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` after PR #303 merged
-the reviewed post-merge reconciliation from base `453a32a`. The 453a32a
-process checkpoint and 0dff804 candidate identity are now historical or
-candidate-base/no-credit after that source advance. A fresh d228472 candidate
-is identity-bound and its two canaries/evaluators pass; rebuild again whenever
-source advances. No screening, allocation or acceptance authority exists.
+`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` after PR #304 merged
+the reviewed post-merge reconciliation from base `d228472`. The d228472
+process checkpoint and candidate identity are now historical or candidate-
+base/no-credit after that source advance. Its two canaries/evaluators passed,
+but rebuild again whenever source advances. No screening, allocation or
+acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=d228472`, no-credit)
+## Current post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base)
+
+PR #304 merged reviewed head `17fa9197ed79083be4b8ba0714851aeaae9bdbf3` as
+`284e781` from base `d228472`; its exact-head and merge-SHA applicable checks
+passed after independent review `PASS`. The revision-pinned ledger remains
+`items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified
+and R01/W02/F01 held. The d228472 candidate, freeze and two no-credit
+canaries/evaluators are now candidate-base/no-credit; no packet rebind,
+protocol, screening, allocation or acceptance state carries forward. The
+owned process branch/worktree was clean, merged and removed. Refresh source,
+release/tag, PR/CI, topology and the ledger before the next phase; if A07
+preparation is authorized, build a fresh candidate from `284e781` and repeat
+identity, canary, packet rebind and isolated protocol `PASS` in order.
+
+## Historical candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=d228472`, superseded by `284e781`)
 
 PR #303 merged reviewed head `bec17c3aa872ee00ec43cf25a291423b1a96667f` as
 `d228472`; its applicable exact-head checks and merge-SHA Documentation, Rust

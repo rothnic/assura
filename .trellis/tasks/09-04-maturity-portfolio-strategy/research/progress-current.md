@@ -1,6 +1,40 @@
 # Current maturity train checkpoint
 
-## Iteration 163 — 2026-09-11 — current candidate canary closure (no-credit)
+## Iteration 164 — 2026-09-11 — PR #304 post-merge reconciliation
+
+- Owner/phase: `/root` / current-source reconciliation after the reviewed
+  process slice. A fresh fetch resolved `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`;
+  refresh again before the next phase. PR #304 merged reviewed head
+  `17fa9197ed79083be4b8ba0714851aeaae9bdbf3` from base `d228472` after
+  independent exact-diff review `PASS`.
+- Exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed. Merge-SHA Documentation `34651068660`, Rust CI
+  `34651068675` (CI Scope `103433100783`, Evidence Gates `103433136825`) and
+  Security Audit `34651068699` completed successfully for applicable scope.
+  Product/Rust/performance/release rows were explicitly skipped and are not
+  product proof. The reviewed tree equals the merge tree.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified, and R01/W02/F01 held. The d228472
+  candidate and two-condition canary/evaluator results are candidate-base/
+  no-credit after this source advance; no packet rebind, protocol, screening,
+  allocation or product acceptance state changed. The ambient-context
+  limitation and initial structure-gate failure remain retained.
+- The owned `docs/a07-canary-d228` branch/worktree was verified clean after
+  merge and removed. Root unknown dirt, the foreign dirty worktree,
+  stale/prunable registrations and unfavorable R01 evidence remain outside
+  ownership. The topology report before cleanup was
+  `worktrees=53, dirty=3, prunable=3, unreadable=1`; preserved root and
+  foreign dirt were not touched.
+- Next owner/action: refresh source/release/tag/PR/CI/topology and the
+  revision-pinned ledger, inspect active/verified/held rows before pending
+  rows, and keep one authorized action live. If A07 preparation is authorized,
+  build a fresh exact-toolchain candidate from `284e781`, then repeat the
+  identity/no-credit canary, six-holdout/two-condition rebind and isolated
+  protocol `PASS` gates. Otherwise continue an independently authorized held
+  recovery slice; never let this process merge, a skipped check or an empty
+  pending queue end the goal.
+
+## Iteration 163 — 2026-09-11 — current candidate canary closure (no-credit, superseded by 284e781)
 
 - Owner/phase: `/root` / A07 candidate-bound canary preparation. A fresh
   source check is at `origin/master=d2284724192dbca848bbd135afacc33d2533e06f`

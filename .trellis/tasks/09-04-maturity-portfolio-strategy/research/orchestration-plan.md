@@ -22,27 +22,26 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=d228472` (2026-09-11 checkpoint)
+## Current route — `origin/master=284e781` (2026-09-11 checkpoint)
 
 The latest reset fetched
-`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` with tree
-`dc30855addffae4e3b19c0589bfcbd08aa4ebb45`; fetch again before the next
-phase. PR #303 merged reviewed head
-`bec17c3aa872ee00ec43cf25a291423b1a96667f` from base `453a32a` after
+`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` with the merge tree;
+fetch again before the next phase. PR #304 merged reviewed head
+`17fa9197ed79083be4b8ba0714851aeaae9bdbf3` from base `d228472` after
 independent `PASS`. Its applicable exact-head checks passed, and merge-SHA
-Documentation `34646077514`, Rust CI `34646077520` and Security Audit
-`34646077494` completed successfully for applicable scope. Rust CI's CI Scope
-`103416530759` and Evidence Gates `103416572077` passed; product/Rust/
+Documentation `34651068660`, Rust CI `34651068675` and Security Audit
+`34651068699` completed successfully for applicable scope. Rust CI's CI Scope
+`103433100783` and Evidence Gates `103433136825` passed; product/Rust/
 performance/release and other scope-skipped rows remain non-proof.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a
-reconciliation and 0dff804 candidate are historical or candidate-base/
-no-credit; no product, screening, allocation, acceptance, release,
-deployment, publication or invitation authority changed. The merged 453a
-process checkout is clean and removed; root/foreign/stale topology
-exceptions remain preserved. The current report is
-`base=origin/master, worktrees=52, dirty=2, prunable=3, unreadable=1,
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The d228472
+candidate and canary/evaluator results are now candidate-base/no-credit after
+this process merge; no product, screening, allocation, acceptance, release,
+deployment, publication or invitation authority changed. The merged d228
+process checkout is clean and removed; root/foreign/stale topology exceptions
+remain preserved. The pre-cleanup report was
+`base=origin/master, worktrees=53, dirty=3, prunable=3, unreadable=1,
 goal_branches=13, unmerged_goal=9`.
 
 The measured VPS lane remains held: `vps-dev` is not a configured alias;
@@ -51,17 +50,26 @@ used), and Rust/Cargo `1.95.0-nightly`. Do not launch a heavy remote job until
 an exact-toolchain, free-disk and owned-job probe passes; remote Linux output
 never replaces platform or hosted proof.
 
-Next action: the fresh d228472 candidate is identity-bound and its two
-sibling-free source-only no-credit canaries/full evaluators pass. Rebind the
-six holdouts and two-condition manifest, then obtain isolated protocol `PASS`
-before any separately authorized screening. The child streams exposed generic
-ambient skill metadata; preserve that limitation for protocol review. If a
-process merge advances source, mark d228472 candidate-base/no-credit and
-repeat the fresh-source sequence. Continue held R01/W02/F01 routes
-independently and observe the post-merge workflow fence for every future
-merge; an empty pending queue is not a stop condition.
+Next action: refresh source/release/tag/PR/CI/topology and the ledger before
+the next phase. If A07 preparation is separately authorized, build a fresh
+exact-toolchain candidate from `284e781`, run identity and sibling-free
+no-credit canary gates, rebind the six holdouts and exactly-two-condition
+manifest, and obtain isolated protocol `PASS` before screening. Otherwise
+continue an independently authorized held R01/W02/F01 recovery slice. Observe
+the post-merge workflow fence for every future merge; an empty pending queue
+is not a stop condition.
 
-## Historical route — `origin/master=453a32a` (superseded by `d228472`)
+## Historical route — `origin/master=d228472` (superseded by `284e781`)
+
+PR #303 merged the reviewed process reconciliation at `d228472`. Its
+applicable exact-head and merge-SHA checks passed. The fresh d228472 candidate
+passed identity, two sibling-free canaries and full evaluator checks with no
+credit, while ambient skill metadata and the initial structure-placement
+failure were retained. The source advance to `284e781` makes that candidate
+candidate-base/no-credit; no packet, screening, allocation or authority state
+carried forward.
+
+## Historical route — `origin/master=24a1966` (superseded by `453a32a`)
 
 The latest reset fetched `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`
 with tree `57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00`; fetch again before the
