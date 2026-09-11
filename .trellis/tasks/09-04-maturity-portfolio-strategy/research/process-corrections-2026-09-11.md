@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`.
+`origin/master=0dff804421c7563b08773eb75d9327fd0194db56`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,38 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Post-merge reconciliation — PR #299 — 2026-09-11 UTC (`origin/master=651ef31`)
+## Current A07 preparation checkpoint — 2026-09-11 UTC (`origin/master=0dff804`)
+
+- `/root` refreshed the source and ledger before claiming this preparation
+  slice. `origin/master=0dff804421c7563b08773eb75d9327fd0194db56` has tree
+  `4dcb61add201e72e6b61f3bd8392f508d008160c`; the ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+  verified and R01/W02/F01 held. Root/user-owned dirt and foreign or stale
+  topology entries remain preserved.
+- In clean owned checkout `/private/tmp/assura-a07-current-0dff`, pinned
+  `cargo +1.94.1 build --release` exited `0` in approximately 297 seconds.
+  Candidate version is `assura 0.4.0`; binary SHA-256 is
+  `7fed6686a82e6e4a792884c1604518e21818e6494cad1aa09963f84c28cc300b`.
+  The regular login-shell shim SHA-256 is
+  `bdcce0e34c64d0745fa671613b1992726f4b1326366f0aa5dd0502934e5b4ff1`.
+  `/bin/zsh -lic` resolves the shim and the deliberate wrong-target control
+  resolves `/usr/local/bin/assura`; the dirty-root head is rejected by source
+  SHA mismatch.
+- The source-bound freeze and identity records are byte-identical after the
+  scoped review finding `A07-0DFF-FREEZE-001` and its path-normalization
+  follow-up were corrected. `cmp`, JSON, source/tree, binary/shim, version,
+  login-shell and negative-control assertions all pass. The independent
+  reviewer returned `PASS`.
+- This remains no-credit preparation: `canary_status=not-run`,
+  `protocol_review_status=not-run`, screening/allocation/credit are false, and
+  no product, holdout, acceptance, release, deployment, publication,
+  invitation or protection authority changed. The old 4560c710 packet remains
+  candidate-base/no-credit and was not reused.
+- Next action: `/root` runs a fresh sibling-free source-only canary against
+  this candidate, then rebinds the six holdouts and two-condition manifest and
+  obtains isolated protocol `PASS` before any separately authorized screening.
+
+## Historical post-merge reconciliation — PR #299 — 2026-09-11 UTC (`origin/master=651ef31`, superseded by `0dff804`)
 
 - PR #299 merged the reviewed current-checkpoint reconciliation as
   `651ef31ea4d609a83c59af2a458f4313db91c9c3` from reviewed head

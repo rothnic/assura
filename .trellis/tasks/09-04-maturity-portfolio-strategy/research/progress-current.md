@@ -1,5 +1,74 @@
 # Current maturity train checkpoint
 
+## Iteration 159 — 2026-09-11 — A07 current-source identity preparation
+
+- Owner/phase: `/root` / A07 candidate-freeze identity preparation. The reset
+  fetched `origin/master=0dff804421c7563b08773eb75d9327fd0194db56` with tree
+  `4dcb61add201e72e6b61f3bd8392f508d008160c`; the revision-pinned ledger is
+  still `items=32; ready_pending=0; unfinished=5; held=3`, with A07 active,
+  W03 verified and R01/W02/F01 held. The root unknown path and foreign,
+  prunable and unreadable topology exceptions remain outside ownership.
+- Owned checkout: `/private/tmp/assura-a07-current-0dff` at the recorded SHA.
+  `cargo +1.94.1 build --release` exited `0` in approximately 297 seconds.
+  The release binary is `assura 0.4.0` with SHA-256
+  `7fed6686a82e6e4a792884c1604518e21818e6494cad1aa09963f84c28cc300b`.
+  The login-shell-safe regular shim has SHA-256
+  `bdcce0e34c64d0745fa671613b1992726f4b1326366f0aa5dd0502934e5b4ff1` and
+  resolves from the actual `/bin/zsh -lic` environment; the deliberate
+  wrong-target control resolves `/usr/local/bin/assura`, and the dirty-root
+  head differs from the candidate SHA.
+- Freeze evidence: the source-bound records at
+  `/private/tmp/assura-a07-private-0dff/candidate-freeze-2026-09-11-current-0dff.json`
+  and the candidate checkout copy are byte-identical. Cross-artifact source,
+  tree, binary, shim, version, login-shell and negative-control assertions
+  pass. Independent scoped review resolved `A07-0DFF-FREEZE-001` and its
+  byte-identity follow-up with `PASS`.
+- Supporting validation: the candidate `assura check --format json .` exited
+  `0` with `success=true`, `1849` files, `396` directories, six low
+  non-blocking advisories and zero blocking violations. This is preparation
+  evidence only; no initializer, evaluator, screening, holdout, protocol,
+  product or acceptance credit is claimed.
+- Limitations and next action: `canary_status=not-run`,
+  `protocol_review_status=not-run`, `screening_authorized=false` and
+  `credit_eligible=false`. `/root` must next run the fresh source-only,
+  sibling-free no-credit canary, then rebind the six-handle/two-condition
+  packet and obtain isolated protocol `PASS` before any separately authorized
+  screening. Preserve the prior 4560c710 packet as candidate-base/no-credit;
+  do not allocate a cell or infer product success from this identity slice.
+
+## Iteration 160 — 2026-09-11 — Layered-route correction and gate verification
+
+- Owner/phase: `/root` / process-artifact reconciliation on branch
+  `docs/a07-current-0dff`, based on current `origin/master=0dff804`. The root
+  unknown path, foreign dirty worktree and stale/unreadable topology entries
+  remain outside ownership. The active runtime goal remains the existing goal;
+  no replacement goal was created.
+- The canonical recovery, A07 binding, E2E and executor routes now expose the
+  current 0dff804 checkpoint first and label 651ef31 and older pointers
+  historical. They explicitly keep the fresh candidate no-credit until
+  canary, six-handle/two-condition rebind and isolated protocol `PASS`, and
+  preserve R01, W02, W03 publication and F01 authority boundaries.
+- The reusable `assura-goal-execution` skill now documents byte-identical
+  candidate/harness freeze records, relative shared references, identity and
+  negative-control assertions, and concrete review-finding/rereview handling.
+  The context-routing audit passes `55` checks with `0` failures and confirms
+  `AGENTS.md` remains a `97`-line universal router.
+- Validation from the owned checkout: workflow gate classified the ten owned
+  edits as expected dirty state; `jq empty`, `git diff --check` and Python
+  syntax checks pass; `cargo run --quiet -- check --format json .` exits `0`
+  with `success=true`, `1849` files, `396` directories, six low non-blocking
+  advisories and zero blocking violations; `cargo xtask evidence` exits `0`.
+  `cargo xtask docs` first reported missing isolated website dependencies,
+  then passed after `pnpm --dir website install --frozen` and a rerun; the
+  generated website build completed 48 pages. The dependency absence was an
+  environment observation, not a suppressed gate.
+- Next action: commit this coherent owned process slice, obtain independent
+  review of the exact commit and its routing/validation evidence, resolve any
+  concrete finding with scoped rereview, then merge only after applicable
+  hosted checks pass. After post-merge reconciliation, continue the named
+  0dff804 A07 no-credit canary route rather than treating this process merge
+  as product-card or screening success.
+
 ## Iteration 158 — 2026-09-11 — PR #299 post-merge reconciliation
 
 - Owner/phase: `/root` / current-source reconciliation after the reviewed

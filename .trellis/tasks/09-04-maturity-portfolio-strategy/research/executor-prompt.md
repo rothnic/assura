@@ -17,21 +17,25 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, current at this reset; refresh
-before use): `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`; PR #299
+before use): `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; PR #300
 merged the reviewed current-checkpoint reconciliation from head
-`c6a47ae4e486d4d226a747a3f49653c235f251d1`. Its applicable Documentation, CI
+`f37c20e21ec94116c18dd591638fabf86163f947`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
 reviewed head tree equals the merge tree, and the configured push-triggered
-Rust CI (`34635475363`), Documentation (`34635475400`) and Security Audit
-(`34635475378`) workflows completed at merge SHA `651ef31`. Product/Rust/
-performance/release rows were explicitly skipped by scope and are not product
-proof. This is an as-of checkpoint, not a permanent baseline. The
-revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The 4560c710 candidate
-and packet are candidate-base/no-credit after this source advance. Preserve
-the earlier macOS watch-SIGINT hosted failure as unfavorable diagnostic
-evidence: run `34615572565`, job `103316578631`, failed at
-`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
+Rust CI (`34638264948`), Documentation (`34638264944`) and Security Audit
+(`34638264978`) workflows completed at merge SHA `0dff804` for applicable
+scope. Product/Rust/performance/release rows were explicitly skipped by scope
+and are not product proof. This is an as-of checkpoint, not a permanent
+baseline. The revision-pinned ledger remains `items=32; ready_pending=0;
+unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). A fresh
+0dff804 A07 identity freeze in `/private/tmp/assura-a07-current-0dff` passed
+exact-toolchain, login-shell, wrong-target and wrong-root controls with
+byte-identical freeze records and independent scoped review `PASS`. It is
+no-credit preparation; canary, packet rebind and protocol review are not run.
+The 4560c710 candidate and packet are candidate-base/no-credit after this
+source advance. Preserve the earlier macOS watch-SIGINT hosted failure as
+unfavorable diagnostic evidence: run `34615572565`, job `103316578631`, failed
+at `tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
 
 The post-merge push workflow is a separate reconciliation gate: a PR pass or
 local rerun cannot close a slice when the merge-SHA workflow is failed,

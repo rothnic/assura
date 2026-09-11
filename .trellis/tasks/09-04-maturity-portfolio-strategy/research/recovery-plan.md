@@ -5,7 +5,38 @@ The durable active goal is
 This recovery plan records task evidence and the next bounded action; it is
 not a replacement goal or a product-card acceptance record.
 
-Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`)
+
+The latest reset fetched
+`origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; refresh it before
+the next phase. PR #300 merged the reviewed current-checkpoint reconciliation
+from head `f37c20e21ec94116c18dd591638fabf86163f947`; its applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed, and merge-SHA Rust CI (`34638264948`), Documentation (`34638264944`)
+and Security Audit (`34638264978`) completed for their applicable scope.
+Product/Rust/performance/release rows were scope-skipped and are not product
+proof.
+
+The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. `/root` owns the fresh
+A07 identity preparation in `/private/tmp/assura-a07-current-0dff`; exact
+Rust/Cargo 1.94.1, source/tree/binary/shim, login-shell and deliberate
+wrong-target/wrong-root controls agree, and the freeze records received
+independent scoped `PASS` after byte-identity correction. Canary,
+holdout/manifest rebind and protocol review are not run; screening, allocation
+and credit remain false. The root unknown path, foreign dirty worktree, stale
+registrations and unfavorable R01 evidence remain preserved.
+
+Next action: run the fresh sibling-free source-only no-credit canary, then
+rebind the six holdouts and two-condition manifest and obtain isolated protocol
+`PASS` before any separately authorized screening. If that route is not
+authorized, continue the held R01 recovery or another explicitly authorized
+slice. Observe configured push-triggered workflows at every merge SHA and
+close only the exact clean owned branch/worktree.
+
+## Historical status snapshot — `origin/master=651ef31` (superseded by `0dff804`)
+
+Status: active continuation route, 2026-09-11 UTC. The latest refresh resolved
 the current source to
 `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`; this pointer is an
 as-of checkpoint and must be refreshed before use. PR #298 merged the prior
@@ -17,22 +48,19 @@ push-triggered Rust CI (`34635475363`), Documentation (`34635475400`) and
 Security Audit (`34635475378`) workflows completed at the merge SHA.
 Product/Rust/performance/release jobs were scope-skipped and are not product
 proof. PR #298's `329bce0`, PR #297's `6d57b86` and PR #296's `83c382a`
-reconciliations are now historical process evidence.
-The earlier push-triggered macOS watch-SIGINT failure remains retained
-unfavorable hosted evidence: run `34615572565`, job `103316578631`, failed at
+reconciliations are now historical process evidence. The earlier
+push-triggered macOS watch-SIGINT failure remains retained unfavorable hosted
+evidence: run `34615572565`, job `103316578631`, failed at
 `tests/watch_cli.rs:196` with `watch did not stop after SIGINT`. R01's missing
 raw watch/callback trace remains unresolved, so R01 is still held. The
 4560c710 candidate, canaries and packet are candidate-base/no-credit after
 this source advance; all earlier packets are historical no-credit evidence.
-Earlier pointer and
-reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
-candidate packets, are historical no-credit evidence. The latest
-diagnostic is the bounded R01 raw-log recovery recorded at candidate base
-`c1202af` and merged as process evidence; it does not close R01 or authorize a
-retry. This is a plan and audit, not evidence that product cards passed. The
-supported runtime goal remains the coordinator; process corrections are merged
-separately from product card slices. Product changes stay in their separately
-owned card slices.
+The latest diagnostic is the bounded R01 raw-log recovery recorded at
+candidate base `c1202af` and merged as process evidence; it does not close R01
+or authorize a retry. This is a plan and audit, not evidence that product cards
+passed. The supported runtime goal remains the coordinator; process corrections
+are merged separately from product card slices. Product changes stay in their
+separately owned card slices.
 
 The coordinator owns the next action: refresh source, release/tag, PR/CI,
 topology and the revision-pinned ledger before any further phase. Inspect

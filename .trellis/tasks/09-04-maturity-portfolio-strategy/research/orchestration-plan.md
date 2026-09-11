@@ -22,7 +22,34 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=651ef31` (2026-09-11 checkpoint)
+## Current route — `origin/master=0dff804` (2026-09-11 checkpoint)
+
+The latest reset fetched `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`
+with tree `4dcb61add201e72e6b61f3bd8392f508d008160c`; fetch again before the
+next phase. PR #300's reviewed head `f37c20e21ec94116c18dd591638fabf86163f947`
+passed its applicable Documentation, CI Scope, Security Scope, Evidence Gates
+and GitGuardian checks, and merge-SHA Rust CI `34638264948`, Documentation
+`34638264944` and Security Audit `34638264978` completed for their applicable
+scope. Product/Rust/performance/release rows were explicitly skipped and are
+not product proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. `/root` owns the
+current A07 no-credit identity preparation in
+`/private/tmp/assura-a07-current-0dff`; exact Rust/Cargo `1.94.1`, source/tree,
+binary/shim and login-shell identity agree, wrong-target/wrong-root controls
+reject, and independent scoped review returned `PASS` after freeze-record
+byte identity was corrected. Canary, holdout/manifest rebind and protocol
+review are not run; screening, allocation and credit remain false.
+
+Next action: run the fresh sibling-free source-only no-credit canary, then
+rebind the six holdouts and two-condition manifest and obtain isolated protocol
+`PASS` before any separately authorized screening. Preserve the 4560c710
+packet as candidate-base/no-credit and keep R01, W02, W03 publication and F01
+authority boundaries separate. Close only the exact clean owned preparation
+branch/worktree after current-source review and post-merge proof.
+
+## Historical post-merge route — `origin/master=651ef31` (superseded by `0dff804`)
 
 The latest reset fetched `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`
 after PR #299 merged the reviewed current-checkpoint reconciliation. This

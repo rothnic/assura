@@ -42,6 +42,12 @@ only improves its process. Do not substitute a process PR for product acceptance
    is not identity proof. Scan child events for private/evaluator/foreign paths;
    generic ambient skill metadata is a retained no-credit limitation until the
    isolated protocol reviewer explicitly dispositions it.
+   When a phase freezes a candidate, keep the public freeze record in the
+   candidate checkout and a private harness copy byte-identical; use relative
+   shared evidence references and assert JSON, source/tree, binary/shim,
+   toolchain, login-shell and negative-control identity before review. A
+   freeze or supporting `assura check` is preparation evidence only and does
+   not advance canary, screening or credit state.
 6. For A07 screening, read the task's
    [screening manifest contract](../../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/screening-manifest-contract.md)
    before naming conditions or allocating runs. Require its immutable
@@ -65,6 +71,17 @@ only improves its process. Do not substitute a process PR for product acceptance
    resets, compaction, failed gates, review results and empty ready-pending
    queries. Keep one owned next action live; an empty pending set is not a
    stopping condition.
+
+## Review and continuation corrections
+
+An independent review is a live phase, not a reason to stop. If feedback is
+vague, restate it as a concrete contract, file/location, failure scenario and
+smallest verification; ask the reviewer for a scoped rereview after the delta
+is fixed. Preserve the original finding and its disposition in the evidence.
+While a review, CI observation or authority decision is pending, continue only
+independent authorized preparation with a separate owner/worktree. Before any
+handoff, look for a live handle, repair, integration or cleanup action and
+execute or record that exact next action.
 
 ## Context routing
 

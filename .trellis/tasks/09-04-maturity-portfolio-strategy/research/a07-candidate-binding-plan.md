@@ -2,15 +2,29 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
-the revision-pinned ledger before every canary. The latest 2026-09-11
- refresh resolved `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`
- after PR #299 merged the reviewed current-checkpoint reconciliation. The 4560c710
-candidate and packet below are candidate-base/no-credit metadata after this
-source advance; no current candidate, screening, allocation or acceptance
-authority exists. Preserve the retained macOS watch-SIGINT diagnostic and all
-unfavorable evidence.
+the revision-pinned ledger before every canary. The latest reset resolved
+`origin/master=0dff804421c7563b08773eb75d9327fd0194db56` after PR #300 merged
+the reviewed current-checkpoint reconciliation. A fresh 0dff804 candidate
+identity is prepared below; its canary, packet rebind and protocol review are
+not run. No screening, allocation or acceptance authority exists. Preserve the
+retained macOS watch-SIGINT diagnostic and all unfavorable evidence.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=651ef31`)
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`)
+
+PR #300 merged reviewed head `f37c20e21ec94116c18dd591638fabf86163f947` as
+`0dff804`; its applicable exact-head and merge-SHA checks passed, and the
+reviewed tree equals the merge tree. The revision-pinned ledger remains
+`items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified
+and R01/W02/F01 held. A07 identity preparation in
+`/private/tmp/assura-a07-current-0dff` uses Rust/Cargo `1.94.1`; source/tree,
+binary/shim, login-shell and wrong-target/wrong-root controls agree. The
+candidate and private freeze records are byte-identical after independent
+scoped review `PASS`. This is no-credit preparation only. Run the fresh
+sibling-free source-only canary, then rebind all six holdouts and the
+two-condition manifest and obtain isolated protocol `PASS` before any
+separately authorized screening. Keep screening/allocation/credit false.
+
+## Historical source reconciliation — 2026-09-11 UTC (`origin/master=651ef31`, superseded by `0dff804`)
 
 PR #299 merged reviewed head `c6a47ae4e486d4d226a747a3f49653c235f251d1` as
 `651ef31`. Its applicable exact-head checks passed, the reviewed tree equals
