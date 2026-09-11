@@ -7,17 +7,18 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #293 merged the reviewed
-process/goal reconciliation; its applicable Documentation, CI Scope, Security
-Scope, Evidence Gates and GitGuardian checks passed, as did the applicable
-post-merge Rust CI, Documentation and Security workflows. Product/Rust/
-performance/release jobs were scope-skipped and are not product proof. The
-earlier push-triggered macOS watch-SIGINT failure remains retained unfavorable
-hosted evidence. R01's missing raw watch/callback trace remains unresolved, so
-R01 is still held. The 4560c710 candidate, canaries and packet are
-candidate-base/no-credit after this source advance; all earlier packets are
-historical no-credit evidence.
+`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #294 merged the reviewed
+execution-control-plane correction; its exact-head Documentation, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed, as did the
+configured post-merge Rust CI, Documentation and Security workflows.
+Product/Rust/performance/release jobs were scope-skipped and are not product
+proof. The earlier push-triggered macOS watch-SIGINT failure remains retained
+unfavorable hosted evidence: run `34615572565`, job `103316578631`, failed at
+`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`. R01's missing
+raw watch/callback trace remains unresolved, so R01 is still held. The 4560c710
+candidate, canaries and packet are candidate-base/no-credit after this source
+advance; all earlier packets are historical no-credit evidence.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -34,7 +35,9 @@ active, implemented, verified and held records before pending rows, then keep
 one explicitly owned recovery or preparation action live. If separate A07
 screening authority exists, rebuild and rebind a candidate at the refreshed
 source before allocation; otherwise continue an independent hosted watch-SIGINT
-diagnostic or another explicitly authorized recovery slice. No cell
+diagnostic or another explicitly authorized recovery slice. Observe configured
+push-triggered workflows at every merge SHA before closing a slice; a missing
+or failed post-merge result keeps the specific recovery route open. No cell
 allocation, acceptance, release, deployment, publication, invitation or
 protection change is implied.
 

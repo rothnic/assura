@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`.
+`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,27 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge and candidate reconciliation — 2026-09-11 UTC (`origin/master=122fa0b3`)
+## Current post-merge workflow correction — 2026-09-11 UTC (`origin/master=c9ac2a8`)
+
+- PR #294 merged the reviewed execution-control-plane correction at
+  `c9ac2a84a93dce752ec7b5216ad87639ba04dee8`. Exact-head Documentation, CI
+  Scope, Security Scope, Evidence Gates and GitGuardian checks passed, and the
+  configured post-merge Rust CI, Documentation and Security workflows passed.
+  Product/Rust/performance/release jobs were scope-skipped and remain
+  non-applicable.
+- The retained R01 failure is now bound to its first actionable hosted
+  evidence: run `34615572565`, macOS job `103316578631`, failed at
+  `tests/watch_cli.rs:196` because `watch_stops_cleanly_without_runtime_artifacts`
+  did not stop after SIGINT; 15 `watch_cli` tests passed and one failed in
+  11.08s. A focused local Darwin rerun passed once and is not hosted proof.
+- Correction: pull-request checks and local passes are pre-merge evidence;
+  configured push-triggered workflows at the merge SHA are a separate
+  reconciliation gate. Failed, cancelled, unavailable, zero-test,
+  scope-uncertain or absent post-merge results retain the exact handle and
+  route the smallest recovery. No unchanged retry, threshold weakening,
+  product credit or authority is implied.
+
+## Historical post-merge and candidate reconciliation — 2026-09-11 UTC (`origin/master=122fa0b3`, superseded by `c9ac2a8`)
 
 - PR #293 merged the reviewed process/goal reconciliation at
   `122fa0b3d976bb5196359aee48ad67bf272fb541`. Its exact-head Documentation,

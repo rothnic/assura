@@ -22,17 +22,17 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=122fa0b3` (as-of checkpoint)
+## Current route — `origin/master=c9ac2a8` (2026-09-11 checkpoint)
 
-The latest reset fetched `origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`
-after PR #293 merged the reviewed process/goal reconciliation. This pointer is
-dated evidence, not a permanent baseline: fetch again before the next phase.
-The exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
-GitGuardian checks passed; product/Rust/performance/release jobs were
-scope-skipped and are not product proof. Post-merge Rust CI, Documentation and
-Security workflows passed their applicable scope jobs. The prior
-push-triggered macOS watch-SIGINT failure remains retained unfavorable
-evidence and was not converted into a green result.
+The latest reset fetched `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`
+after PR #294 merged the reviewed execution-control-plane correction. This
+pointer is dated evidence, not a permanent baseline: fetch again before the
+next phase. The exact-head Documentation, CI Scope, Security Scope, Evidence
+Gates and GitGuardian checks passed, as did the configured post-merge Rust CI,
+Documentation and Security workflows; product/Rust/performance/release jobs
+were scope-skipped and are not product proof. The earlier push-triggered
+macOS watch-SIGINT failure remains retained unfavorable evidence and was not
+converted into a green result.
 
 At this source the revision-pinned ledger is still
 `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified,
@@ -40,6 +40,14 @@ and R01/W02/F01 held. The 4560c710 candidate and protocol packet are
 candidate-base/no-credit metadata after this source advance. No screening,
 allocation, credit, release, deployment, publication or invitation authority
 exists.
+
+The merge fence is now two-stage: exact-head pull-request checks prove the
+reviewed candidate before merge, and configured push-triggered workflows at
+the merge SHA must be observed during reconciliation. A failed, cancelled,
+unavailable, zero-test, scope-uncertain or absent post-merge job is an
+unresolved recovery route, not a green result or a reason to close the owned
+branch. PR #294's successful post-merge run is evidence that this process
+fence itself passed; it does not repair R01.
 
 The coordinator owns the process route: refresh source/release/tag/PR/CI,
 topology and ledger; inspect active/implemented/verified candidates; then

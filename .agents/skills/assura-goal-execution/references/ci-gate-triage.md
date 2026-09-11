@@ -37,6 +37,17 @@ Do not launch parallel Cargo commands in one checkout. `cargo xtask pr`
 already includes `fast`; do not spend another unchanged `fast` run merely to
 repeat a command name. `cargo xtask changed` is triage, not merge proof.
 
+## Post-merge workflow observation
+
+When the repository configures push-triggered workflows, treat their result at
+the exact merge SHA as a separate reconciliation observation. The pull-request
+rollup proves the reviewed candidate before merge; it does not prove that the
+same tree passed the post-merge event path. A failed, cancelled, unavailable,
+zero-test or scope-uncertain post-merge job remains unresolved evidence. Keep
+the merge SHA and log handle, route the smallest diagnosis or repair, and do
+not close the owned branch or retry an unchanged invocation. An expected job
+that has not appeared is `unknown`, never an implicit pass.
+
 ## Remote capacity decision
 
 SSH is an optional execution venue, not a source of authority. Before using
@@ -58,8 +69,10 @@ data before proposing CI infrastructure changes.
 ## Merge fence
 
 The coordinator may merge only when the exact reviewed head has resolved
-review findings, all applicable local and hosted checks, required performance
-rows and acceptance evidence. A queued job is not green, a skipped job is not
-green, and a passing process slice is not a passing product card. After merge,
-fetch again, prove the merge/tree relationship, rerun the ledger and topology,
-and close only the exact clean owned branch/worktree.
+review findings, all applicable pre-merge local and hosted checks, required
+performance rows and acceptance evidence. A queued job is not green, a skipped
+job is not green, and a passing process slice is not a passing product card.
+After merge, observe configured push-triggered workflows at the merge SHA,
+then fetch again, prove the merge/tree relationship, rerun the ledger and
+topology, and close only the exact clean owned branch/worktree. A post-merge
+failure or missing result keeps the specific recovery route open.
