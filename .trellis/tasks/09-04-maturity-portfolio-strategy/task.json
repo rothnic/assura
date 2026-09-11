@@ -17,7 +17,7 @@
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
-  "next_action": "Reconcile PR #304's merge at 284e781 in the canonical evidence, then refresh source/release/tag/PR/CI/topology and the revision-pinned ledger before the next phase. The d228472 process checkpoint and candidate are historical or candidate-base/no-credit after the merge and must not be reused. If A07 preparation is separately authorized, build a fresh exact-toolchain candidate from 284e781, rerun identity and the sibling-free no-credit canary, rebind the six-holdout/two-condition packet and obtain isolated protocol PASS before any separately authorized screening; otherwise continue an independently authorized held recovery slice. Observe configured push-triggered workflows at every merge SHA before closing a slice. Keep screening/allocation/credit false.",
+  "next_action": "Refresh origin/master, release/tag, PR/CI, topology and the revision-pinned ledger before the next phase; the 284e781 post-merge reconciliation is complete and the d228472 candidate is historical candidate-base/no-credit. If A07 preparation is separately authorized, build a fresh exact-toolchain candidate from 284e781, rerun identity and the sibling-free no-credit canary, rebind the six-holdout/two-condition packet and obtain isolated protocol PASS before any separately authorized screening; otherwise continue an independently authorized held recovery slice. Observe configured push-triggered workflows at every merge SHA before closing a slice. Keep screening/allocation/credit false.",
   "subtasks": [],
   "children": [],
   "parent": null,
