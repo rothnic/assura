@@ -1,6 +1,55 @@
 # Current maturity train checkpoint
 
-## Iteration 164 — 2026-09-11 — PR #304 post-merge reconciliation
+## Iteration 165 — 2026-09-11 — current candidate canary and packet rebind (no-credit)
+
+- Owner/phase: `/root` / A07 candidate-bound preparation from the refreshed
+  current source. PR #305 merged reviewed head
+  `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c` from base `284e781` as
+  `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Its exact-head Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; the
+  merge-SHA Documentation `34653158838`, Rust CI `34653159004` (CI Scope
+  `103439684733`, Evidence Gates `103439731188`) and Security Audit
+  `34653158857` also completed successfully for applicable scope. Product,
+  Rust, performance and release rows were scope-skipped and remain non-proof.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified, and R01/W02/F01 held. The prior `284e781`
+  process checkpoint and d228472 candidate are historical or candidate-base/
+  no-credit; no product, threshold, screening, allocation, acceptance,
+  release, deployment, publication or invitation authority changed.
+- In clean owned checkout `/private/tmp/assura-a07-current-reconcile-dc031`,
+  the exact Rust/Cargo `1.94.1` release build exited `0` in about 425 seconds.
+  Assura `0.4.0` binary and the fixed login-shell shim both hash to
+  `3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`; source
+  tree is `b68b66cc47f7e4081afd2dc21c1387de34b30c32`. The candidate identity
+  control passes, while deliberate wrong-target and wrong-root controls reject.
+- Two fresh sibling-free source-only children completed the fixed initializer
+  with child exit `0`; evaluator runs followed child completion and exited `0`
+  with `verification_scope=full`, `acceptance_pass=true`, all seven declared
+  dimensions passing and zero critical failures for both conditions. Negative
+  naming controls and native Cargo tests were collected. Event scans found no
+  private contract/run, foreign fixture, root checkout or candidate checkout
+  references; ambient skill metadata and the generated-hook verifier
+  discrepancy remain explicit limitations. This is no-credit preparation.
+- The private packet at `/private/tmp/assura-a07-private-dc031` is rebound to
+  the current source with six unique holdouts, two conditions, 30 reserved
+  cells, current receipts/evaluations, explicit current construction and
+  second-readonly references, and all screening/allocation/credit flags false.
+  A metadata-only packet validator reports `valid=true` with zero errors. The
+  rebind correction preserves historical construction records and replaces
+  blind stale `r2` receipt/identity aliases with deliberate current aliases.
+  Independent protocol review returned `PASS_NO_CREDIT` after correcting the
+  stale contract digest and construction hash; the private review artifact
+  records both findings and the scoped rereview. No screening or product
+  acceptance is claimed.
+- Next owner/action: reconcile the protocol-pass/no-credit evidence in a
+  reviewed current-source process slice, then refresh source/ledger again
+  before any further A07 phase. If source advances, classify this packet
+  candidate-base/no-credit and rebuild; otherwise continue the next
+  independently authorized phase. Continue R01/W02/F01 only within their
+  named authority holds; do not let a successful canary, protocol metadata or
+  empty pending queue end the goal.
+
+## Iteration 164 — 2026-09-11 — PR #304 post-merge reconciliation (superseded by dc031527)
 
 - Owner/phase: `/root` / current-source reconciliation after the reviewed
   process slice. A fresh fetch resolved `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`;

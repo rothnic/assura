@@ -22,7 +22,46 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=284e781` (2026-09-11 checkpoint)
+## Current route — `origin/master=dc031527` (2026-09-11 checkpoint)
+
+PR #305 merged the reviewed process reconciliation from `284e781` as
+`dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Exact-head applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed. Merge-SHA Documentation `34653158838`, Rust CI `34653159004` (CI Scope
+`103439684733`, Evidence Gates `103439731188`) and Security Audit
+`34653158857` completed successfully for applicable scope; product, Rust,
+performance and release rows were scope-skipped and remain non-proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The `284e781` process
+checkpoint and d228472 candidate are historical or candidate-base/no-credit;
+no product, threshold, screening, allocation, acceptance, release, deployment,
+publication or invitation authority changed.
+
+`/root` owns a clean exact-toolchain candidate checkout at
+`/private/tmp/assura-a07-current-reconcile-dc031`. Its source/tree/binary/shim
+identity is bound to `dc031527`/`b68b66cc47f7e4081afd2dc21c1387de34b30c32`/
+`3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf` with
+Rust/Cargo `1.94.1`; identity controls pass, and wrong-target/wrong-root
+controls reject. Two sibling-free source-only canaries and full seven-
+dimension evaluators pass with zero critical failures, but remain no-credit.
+
+The private A07 packet at `/private/tmp/assura-a07-private-dc031` now has
+corrected current receipt, construction and second-readonly aliases, six
+unique holdouts and 30 reserved cells. The metadata-only validator reports
+`valid=true` with zero errors. Independent protocol review returned
+`PASS_NO_CREDIT` after correcting the stale contract digest and construction
+hash; all screening, allocation and credit flags remain false. The observed
+stale-alias correction is retained as process evidence: do not rebind a
+current packet by blind string replacement.
+
+Next action: reconcile the protocol-pass/no-credit evidence in a reviewed
+current-base process slice. Refresh source, release/tag, PR/CI, topology and
+the ledger after every merge; if source advances, classify this packet
+candidate-base/no-credit and rebuild. Continue R01/W02/F01 only within their
+named holds and never stop at an empty pending queue.
+
+## Historical route — `origin/master=284e781` (superseded by dc031527)
 
 The latest reset fetched
 `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` with the merge tree;

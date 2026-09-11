@@ -1,11 +1,18 @@
 # Execution recovery plan
 
-The durable active goal is
-[`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md).
-This recovery plan records task evidence and the next bounded action; it is
-not a replacement goal or a product-card acceptance record.
+The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
 
-## Current post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base)
+## Current candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit)
+
+PR #305 merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c` from base `284e781` as `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Exact-head applicable checks and merge-SHA Documentation `34653158838`, Rust CI `34653159004` (CI Scope `103439684733`, Evidence Gates `103439731188`) and Security Audit `34653158857` passed; scope-skipped product/performance/release rows remain non-proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified and R01/W02/F01 held. Fresh candidate `/private/tmp/assura-a07-current-reconcile-dc031` uses exact Rust/Cargo `1.94.1` and source/tree/binary/shim identity (`dc031527`, `b68b66cc47f7e4081afd2dc21c1387de34b30c32`, `3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`). Two sibling-free canaries and full post-exit evaluators pass with zero critical failures; ambient metadata and hook-verifier limitations remain, so this is no-credit preparation.
+
+Private packet `/private/tmp/assura-a07-private-dc031` binds six current holdouts, exactly two conditions and 30 reserved cells. Its metadata-only validator returns `valid=true` with zero errors after deliberate current aliases replaced stale `r2` references while preserving historical construction records. Independent protocol review returned `PASS_NO_CREDIT` after correcting the stale contract digest and construction hash; screening, allocation and credit remain false.
+
+Next action: reconcile this protocol-pass/no-credit evidence in a current-base reviewed slice; refresh source and ledger after any merge. If source advances, classify the packet candidate-base/no-credit and rebuild. Keep the goal active and preserve all R01/W02/F01 authority holds.
+
+## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 
 The latest reset fetched
 `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`; refresh it before the

@@ -3,16 +3,37 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` after PR #304 merged
-the reviewed post-merge reconciliation from base `d228472`. The d228472
-process checkpoint and candidate identity are now historical or candidate-
-base/no-credit after that source advance. Its two canaries/evaluators passed,
-but rebuild again whenever source advances. No screening, allocation or
-acceptance authority exists.
+`origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685` after PR #305 merged
+the reviewed post-merge reconciliation from base `284e781`. The `284e781`
+checkpoint and all earlier candidates are now historical or candidate-base/
+no-credit after that source advance. No screening, allocation or acceptance
+authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base)
+## Current candidate-bound checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`)
+
+- `/root` owns the clean candidate checkout
+  `/private/tmp/assura-a07-current-reconcile-dc031`. Exact Rust/Cargo `1.94.1`
+  source/tree/binary/shim identity, login-shell binding and wrong-target/
+  wrong-root controls pass as intended. The source tree is
+  `b68b66cc47f7e4081afd2dc21c1387de34b30c32` and binary/shim SHA is
+  `3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`.
+- Two sibling-free source-only canaries and post-exit full evaluators pass
+  both conditions, all seven dimensions and zero critical failures. Ambient
+  skill metadata and the generated-hook verifier discrepancy remain explicit
+  limitations; this is no-credit preparation.
+- The private packet `/private/tmp/assura-a07-private-dc031` has six current
+  holdouts, exactly two conditions, 30 reserved cells and corrected current
+  receipt/construction/second-readonly aliases. The metadata-only validator is
+  `valid=true` with zero errors. Independent protocol review returned
+  `PASS_NO_CREDIT` after correcting the stale contract digest and construction
+  hash; screening/allocation/credit remain false.
+- Next action: reconcile this protocol-pass/no-credit evidence in a reviewed
+  current-base process slice. Any source advance invalidates this packet and
+  requires a fresh freeze/canary/rebind sequence.
+
+## Historical post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 
 PR #304 merged reviewed head `17fa9197ed79083be4b8ba0714851aeaae9bdbf3` as
 `284e781` from base `d228472`; its exact-head and merge-SHA applicable checks
