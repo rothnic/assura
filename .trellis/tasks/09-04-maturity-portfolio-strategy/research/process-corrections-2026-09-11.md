@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`.
+`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,47 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge checkpoint — PR #301 — 2026-09-11 UTC (`origin/master=24a1966`)
+## Current post-merge checkpoint — PR #302 — 2026-09-11 UTC (`origin/master=453a32a`)
+
+- PR #302 merged reviewed head `74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef`
+  from base `24a1966` as `453a32afb7367f93b943ba70c68f4af82bc0e688`; its exact-head
+  Documentation Scope, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed after independent exact-diff review `PASS`. The
+  reviewed tree equals the merge tree.
+- Configured push-triggered Documentation run `34644511575` (scope job
+  `103411957000`), Rust CI run `34644511679` (CI Scope `103411957349`, Evidence
+  Gates `103411992718`) and Security Audit run `34644511551` (Security Scope
+  `103411956405`) completed successfully at the merge SHA. Product/Rust/
+  performance/release, documentation build/marketing and security-audit jobs
+  were scope-skipped and remain non-proof. This is a post-merge process
+  observation, not product acceptance.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3` with A07 active, W03 verified and R01/W02/F01 held. The 24a1966
+  reconciliation is historical and the 0dff804 candidate is candidate-base/
+  no-credit after this source advance. No screening, allocation, acceptance,
+  release, deployment, publication, invitation or protection authority
+  changed.
+- The owned `docs/a07-postmerge-24a1966` branch/worktree was clean after merge;
+  remove only that exact owned branch/worktree. The new current reconciliation
+  checkout is `/private/tmp/assura-a07-postmerge-453a`. The root unknown path,
+  foreign dirty worktree and stale/prunable topology registrations remain
+  preserved. The report at this checkpoint is
+  `base=origin/master, worktrees=52, dirty=2, prunable=3, unreadable=1,
+  goal_branches=13, unmerged_goal=9`.
+- A read-only VPS probe confirms the efficiency lane remains held: `vps-dev`
+  is not configured or resolvable; configured `vps` has 16 CPUs, 61 GiB RAM,
+  20 GiB free of a 339 GiB root volume (95% used), and Rust/Cargo
+  `1.95.0-nightly`. No remote heavy job, cache deletion or infrastructure
+  change was performed. Remote Linux output cannot replace platform or hosted
+  proof.
+- Next action: close the merged 24a process checkout/branch, then rebuild and
+  identity-freeze a fresh exact-toolchain candidate from 453a in a clean owned
+  checkout. Run the sibling-free source-only no-credit canary, rebind all six
+  holdouts and the two-condition manifest, and obtain isolated protocol `PASS`
+  before any separately authorized screening. Continue held R01/W02/F01 routes
+  independently and keep the goal active.
+
+## Historical post-merge checkpoint — PR #301 — 2026-09-11 UTC (`origin/master=24a1966`, superseded by `453a32a`)
 
 - PR #301 merged reviewed head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc` as
   `24a1966`; exact-head Documentation, CI Scope, Security Scope, Evidence
