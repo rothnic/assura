@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`.
+`origin/master=d2284724192dbca848bbd135afacc33d2533e06f`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,44 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge checkpoint — PR #302 — 2026-09-11 UTC (`origin/master=453a32a`)
+## Current candidate-bound checkpoint — PR #303 — 2026-09-11 UTC (`origin/master=d228472`, no-credit)
+
+- PR #303 merged reviewed head `bec17c3aa872ee00ec43cf25a291423b1a96667f`
+  from base `453a32a` as `d2284724192dbca848bbd135afacc33d2533e06f`. Its
+  exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed after independent exact-diff review `PASS`.
+  Merge-SHA Documentation `34646077514`, Rust CI `34646077520` and Security
+  Audit `34646077494` completed successfully for applicable scope; skipped
+  rows remain non-proof. No product or authority state changed.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a process
+  checkpoint and 0dff804 candidate are historical or candidate-base/no-credit.
+  The root unknown path, foreign dirty worktree, stale/prunable registrations
+  and unfavorable R01 evidence remain preserved.
+- A fresh exact-toolchain candidate in clean owned checkout
+  `/private/tmp/assura-a07-current-d228` built with Rust/Cargo `1.94.1` and
+  passed source/tree/binary/shim identity, login-shell, wrong-target and
+  wrong-root controls. The public/private freeze copies are byte-identical.
+  A first root-level freeze placement failed the structure gate and was moved
+  under ignored `target/a07-evidence/`; that unfavorable setup result remains
+  recorded and was not hidden.
+- Two fresh sibling-free source-only children completed the fixed public
+  initializer with exit `0`. Scans found no private evaluator contract/output,
+  foreign checkout, repository checkout or sibling-condition references.
+  Generic ambient user-level skill metadata appeared in both streams despite
+  `--ignore-user-config`; this is an explicit isolation limitation and does
+  not earn credit. Full evaluators ran only after child exit with exactly the
+  seven declared dimensions; both passed with zero critical failures, the
+  expected negative naming probe and a collected native test.
+- No current holdout/manifest rebind or isolated protocol review exists yet.
+  Screening, allocation, credit and authority flags remain false. Next owner/
+  action: rebind the six immutable holdouts and exactly-two-condition manifest
+  to d228472, obtain isolated protocol `PASS`, and preserve the ambient
+  context limitation in that review before separately authorized screening.
+  If a process merge advances source, classify this candidate as candidate-base/
+  no-credit and repeat the fresh-source sequence.
+
+## Historical post-merge checkpoint — PR #302 — 2026-09-11 UTC (`origin/master=453a32a`, superseded by `d228472`)
 
 - PR #302 merged reviewed head `74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef`
   from base `24a1966` as `453a32afb7367f93b943ba70c68f4af82bc0e688`; its exact-head

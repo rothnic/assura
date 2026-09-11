@@ -30,41 +30,51 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current gap
+## Current checkpoint — d228472 (no-credit candidate preparation)
 
-The latest reset fetched `origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`
-with tree `4a5a466ec4922c7cce48bbb5906786e3b50f84ac` after PR #302 merged the
-reviewed post-merge process reconciliation from base `24a1966`. This is the
+The latest reset fetched `origin/master=d2284724192dbca848bbd135afacc33d2533e06f`
+with tree `dc30855addffae4e3b19c0589bfcbd08aa4ebb45` after PR #303 merged the
+reviewed post-merge process reconciliation from base `453a32a`. This is the
 current checkpoint for this continuation; every later phase must fetch again
-before using it. PR #302's reviewed head was
-`74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef`; its applicable Documentation, CI
+before using it. PR #303's reviewed head was
+`bec17c3aa872ee00ec43cf25a291423b1a96667f`; its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed after
 independent review `PASS`, and the configured push-triggered Documentation
-(`34644511575`), Rust CI (`34644511679`) and Security Audit (`34644511551`)
+(`34646077514`), Rust CI (`34646077520`) and Security Audit (`34646077494`)
 workflows completed at the merge SHA for their applicable scope. Rust CI's CI
-Scope (`103411957349`) and Evidence Gates (`103411992718`) passed; product/
+Scope (`103416530759`) and Evidence Gates (`103416572077`) passed; product/
 Rust/performance/release and other scope-skipped rows are not product proof.
 The revision-pinned ledger remains 32 items, zero ready-pending rows, five
 unfinished rows, and three held rows: A07 is active, W03 is verified, and R01,
-W02, and F01 retain their separate evidence or authority holds. The 24a1966
-process checkpoint is historical and the 0dff804 A07 candidate identity
-freeze is candidate-base/no-credit after this source advance; its canary,
-holdout/manifest rebind and protocol review were not run and must not be
-reused. The root unknown path, foreign dirty worktree, stale registrations,
-historical branches and unfavorable evidence remain preserved as ownership
-boundaries.
+W02, and F01 retain their separate evidence or authority holds. The 453a32a
+process checkpoint and 0dff804 A07 candidate identity freeze are historical or
+candidate-base/no-credit after this source advance and must not be reused. The
+root unknown path, foreign dirty worktree, stale registrations, historical
+branches and unfavorable evidence remain preserved as ownership boundaries.
+
+The fresh d228472 candidate in `/private/tmp/assura-a07-current-d228` is bound
+to Rust/Cargo `1.94.1`, with matching source/tree/binary/shim identity,
+login-shell resolution and wrong-target/wrong-root negative controls. Two fresh
+sibling-free source-only children completed the fixed public initializer, and
+the full evaluator passed all seven declared dimensions for both conditions
+with zero critical failures, the expected negative naming probe and collected
+native tests. Child streams exposed generic ambient user-level skill metadata;
+that is an explicit isolation limitation and not a credit upgrade. An initial
+root-level freeze placement failed the structure gate and was corrected under
+ignored `target/a07-evidence/`; the unfavorable setup result remains retained.
+No holdout/manifest rebind or protocol review exists at this checkpoint.
 
 The reusable execution-control-plane reference defines the state machine,
 checkpoint fields, layered disclosure, validation budget, measured VPS test,
 review contract, post-merge push-workflow fence and terminal topology fence.
-It is a phase reference, not a second goal or a substitute for the task
-ledger. The coordinator's next action is to refresh source/release/tag/PR/CI/
-topology and the ledger, inspect active and held work, then keep one explicitly
-owned recovery or preparation action live. The first cleanup action is removal
-of the exact clean merged 24a process checkout; then, if A07 screening is
-separately authorized, rebuild and rebind at the refreshed source before
-allocation; otherwise continue an authorized recovery slice. Never stop at an
-empty pending queue.
+It is a phase reference, not a second goal or a substitute for the task ledger.
+The coordinator's next action is to refresh source/release/tag/PR/CI/topology
+and the ledger, inspect active and held work, then rebind the six immutable
+holdouts and exactly-two-condition manifest to d228472 and obtain isolated
+protocol `PASS` before any separately authorized screening. If a process merge
+advances source, classify d228472 as candidate-base/no-credit and repeat the
+fresh-source sequence. Otherwise continue an authorized recovery slice. Never
+stop at an empty pending queue.
 
 PR #292's exact-head applicable checks passed, but its separate push-triggered
 Rust CI run reported a macOS `watch_stops_cleanly_without_runtime_artifacts`
@@ -77,8 +87,9 @@ exact-head and merge-SHA push-triggered Documentation, Security and Rust CI
 workflows at `9047a3d`; PR #296 reconciled those results at `83c382a`; PR #297
 reconciled that checkpoint at `6d57b86`; PR #298 reconciled that checkpoint at
 `329bce0`; PR #299 reconciled that checkpoint at `651ef31`; PR #300
-reconciled that checkpoint at `0dff804`; PR #301 reconciled the current
-checkpoint at `24a1966`. This
+reconciled that checkpoint at `0dff804`; PR #301 reconciled that checkpoint at
+`24a1966`; PR #302 reconciled that checkpoint at `453a32a`; PR #303
+reconciled the current checkpoint at `d228472`. This
 confirms the reconciliation fence is executable, but it does not repair the
 older R01 failure. A configured post-merge failure, cancellation or missing
 result keeps the specific recovery route open.
@@ -215,6 +226,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #303 reconciled the reviewed process route at `d228472`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did merge-SHA Documentation (`34646077514`), Rust CI (`34646077520`) and Security Audit (`34646077494`) for applicable scope. A fresh exact-toolchain d228472 candidate then passed identity controls, two sibling-free source-only initializer canaries, and full seven-dimension evaluators with zero critical failures. Generic ambient skill metadata remained visible and is recorded as an isolation limitation; an initial root-level freeze placement failed the structure gate and was corrected under ignored `target/a07-evidence/`. This is no-credit preparation only; packet rebind, isolated protocol review, screening, allocation and product acceptance remain false. | PR #303; `research/evidence/A07.md`; `research/progress-current.md` Iteration 163; private identity/freeze and redacted canary/evaluator receipts. |
 | 2026-09-11 | PR #301 merged the reviewed current-source routing/skill reconciliation as `24a1966`; exact-head applicable checks and merge-SHA Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit (`34642991344`) workflows passed for their applicable scope. The 0dff804 A07 candidate is now candidate-base/no-credit; no product, threshold, screening, allocation, acceptance, authority or release state changed. | PR #301; `research/progress-current.md` Iteration 161; post-merge workflow records. |
 | 2026-09-11 | The current-source recovery, A07 binding, E2E and executor routes were reconciled to `0dff804`; older pointers are historical, the layered execution skill now requires byte-identical freeze records and concrete review rereview, and scoped gates pass. This process slice remains separate from A07 product/screening success. | `research/progress-current.md` Iteration 160; `research/recovery-plan.md`; `research/a07-candidate-binding-plan.md`; context-routing audit (`55/0`); `cargo xtask evidence`; `cargo xtask docs`. |
 | 2026-09-11 | `/root` refreshed `origin/master=0dff804` and froze a fresh A07 candidate in a clean owned checkout with pinned Rust/Cargo `1.94.1`. The release binary and login-shell shim identities match the source/tree; deliberate wrong-target and wrong-root controls reject, `assura check --format json .` exits `0` with zero blocking violations, and independent review passes after the freeze records are made byte-identical. This is no-credit preparation only; canary, holdout/manifest rebind, protocol, screening and allocation remain false. | `research/progress-current.md` Iteration 159; `research/process-corrections-2026-09-11.md`; private freeze and identity records under `/private/tmp/assura-a07-private-0dff`; scoped review PASS. |

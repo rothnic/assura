@@ -19,28 +19,31 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=453a32a`, as-of)
+## Current candidate route — 2026-09-11 UTC (`origin/master=d228472`, as-of, no-credit)
 
 The latest reset fetched
-`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688` with tree
-`4a5a466ec4922c7cce48bbb5906786e3b50f84ac` after PR #302 merged the reviewed
-post-merge process reconciliation from base `24a1966`. Its exact-head
+`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` with tree
+`dc30855addffae4e3b19c0589bfcbd08aa4ebb45` after PR #303 merged the reviewed
+post-merge process reconciliation from base `453a32a`. Its exact-head
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
 checks passed after independent review `PASS`; the configured push-triggered
-Documentation (`34644511575`), Rust CI (`34644511679`) and Security Audit
-(`34644511551`) workflows completed successfully at the merge SHA for
+Documentation (`34646077514`), Rust CI (`34646077520`) and Security Audit
+(`34646077494`) workflows completed successfully at the merge SHA for
 applicable scope. Product/Rust/performance/release and other scope-skipped
 rows are not product proof. Fetch again before every phase because this is an
 as-of checkpoint.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 24a1966 process
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a process
 checkpoint is historical and the 0dff804 candidate is candidate-base/no-credit;
-do not reuse either. No screening, allocation, credit, release, deployment,
-publication or invitation authority exists. The next route is a fresh
-exact-toolchain identity freeze at 453a, then a sibling-free source-only
-no-credit canary, packet rebind and isolated protocol review. An empty pending
-queue is not a stop condition.
+do not reuse either. The fresh d228472 candidate is identity-bound; its two
+sibling-free source-only children and full seven-dimension evaluators pass with
+zero critical failures. Child streams expose generic ambient skill metadata,
+which remains an isolation limitation. No screening, allocation, credit,
+release, deployment, publication or invitation authority exists. Rebind the
+current six-holdout/two-condition packet and obtain isolated protocol review
+before any separately authorized screening. An empty pending queue is not a
+stop condition.
 
 The configured push-triggered workflow at a merge SHA remains a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,

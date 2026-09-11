@@ -81,6 +81,18 @@ results separate; the evaluator is invoked only after the initializer exits.
   failure to its owning behavior card. Explicit-route controls are calibration
   only and never substitute for a blinded fresh-agent run.
 
+## Canary closure record
+
+Before rebinding a packet, close both independent conditions with a compact
+public receipt containing only: candidate source/tree and binary identity,
+child exit, forbidden-path scan result, evaluator exit, the declared
+dimension states and critical-failure count, plus the explicit
+`no-credit`/`screening_authorized=false` disposition. Keep raw child events,
+private contract values and evaluator paths in the private lane. A child exit
+of zero or an all-pass evaluator is not enough when the event scan, source
+identity, declared dimensions or authority flags are absent; leave the packet
+unbound and route the missing observation as the next owned action.
+
 ## Ambient user-context observation
 
 `--ignore-user-config` suppresses the user's `config.toml`; it does not promise

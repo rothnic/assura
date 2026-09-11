@@ -22,26 +22,25 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=453a32a` (2026-09-11 checkpoint)
+## Current route — `origin/master=d228472` (2026-09-11 checkpoint)
 
 The latest reset fetched
-`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688` with tree
-`4a5a466ec4922c7cce48bbb5906786e3b50f84ac`; fetch again before the next
-phase. PR #302 merged reviewed head
-`74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef` from base `24a1966` after
+`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` with tree
+`dc30855addffae4e3b19c0589bfcbd08aa4ebb45`; fetch again before the next
+phase. PR #303 merged reviewed head
+`bec17c3aa872ee00ec43cf25a291423b1a96667f` from base `453a32a` after
 independent `PASS`. Its applicable exact-head checks passed, and merge-SHA
-Documentation `34644511575`, Rust CI `34644511679` and Security Audit
-`34644511551` completed successfully for applicable scope. Rust CI's CI Scope
-`103411957349` and Evidence Gates `103411992718` passed; documentation build,
-marketing verification, product/Rust/performance/release and security-audit
-rows were scope-skipped and remain non-proof.
+Documentation `34646077514`, Rust CI `34646077520` and Security Audit
+`34646077494` completed successfully for applicable scope. Rust CI's CI Scope
+`103416530759` and Evidence Gates `103416572077` passed; product/Rust/
+performance/release and other scope-skipped rows remain non-proof.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 24a1966
-reconciliation is now historical and the 0dff804 candidate is candidate-base/
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a
+reconciliation and 0dff804 candidate are historical or candidate-base/
 no-credit; no product, screening, allocation, acceptance, release,
-deployment, publication or invitation authority changed. The merged 24a
-process checkout is clean and can be removed; root/foreign/stale topology
+deployment, publication or invitation authority changed. The merged 453a
+process checkout is clean and removed; root/foreign/stale topology
 exceptions remain preserved. The current report is
 `base=origin/master, worktrees=52, dirty=2, prunable=3, unreadable=1,
 goal_branches=13, unmerged_goal=9`.
@@ -52,15 +51,17 @@ used), and Rust/Cargo `1.95.0-nightly`. Do not launch a heavy remote job until
 an exact-toolchain, free-disk and owned-job probe passes; remote Linux output
 never replaces platform or hosted proof.
 
-Next action: close the exact clean 24a process branch/worktree, then `/root`
-owns a fresh exact-toolchain candidate freeze at 453a in a clean checkout.
-Run the sibling-free source-only no-credit canary, rebind the six holdouts and
-two-condition manifest, and obtain isolated protocol `PASS` before any
-separately authorized screening. Continue held R01/W02/F01 routes
+Next action: the fresh d228472 candidate is identity-bound and its two
+sibling-free source-only no-credit canaries/full evaluators pass. Rebind the
+six holdouts and two-condition manifest, then obtain isolated protocol `PASS`
+before any separately authorized screening. The child streams exposed generic
+ambient skill metadata; preserve that limitation for protocol review. If a
+process merge advances source, mark d228472 candidate-base/no-credit and
+repeat the fresh-source sequence. Continue held R01/W02/F01 routes
 independently and observe the post-merge workflow fence for every future
 merge; an empty pending queue is not a stop condition.
 
-## Historical route — `origin/master=24a1966` (superseded by `453a32a`)
+## Historical route — `origin/master=453a32a` (superseded by `d228472`)
 
 The latest reset fetched `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`
 with tree `57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00`; fetch again before the

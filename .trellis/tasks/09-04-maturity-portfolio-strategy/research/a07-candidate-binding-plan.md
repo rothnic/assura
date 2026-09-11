@@ -3,26 +3,30 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688` after PR #302 merged
-the reviewed post-merge reconciliation from base `24a1966`. The 24a1966
+`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` after PR #303 merged
+the reviewed post-merge reconciliation from base `453a32a`. The 453a32a
 process checkpoint and 0dff804 candidate identity are now historical or
-candidate-base/no-credit after that source advance; rebuild before any canary
-or packet action. No screening, allocation or acceptance authority exists.
+candidate-base/no-credit after that source advance. A fresh d228472 candidate
+is identity-bound and its two canaries/evaluators pass; rebuild again whenever
+source advances. No screening, allocation or acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=453a32a`)
+## Current candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=d228472`, no-credit)
 
-PR #302 merged reviewed head `74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef` as
-`453a32a`; its applicable exact-head checks and merge-SHA Documentation, Rust
+PR #303 merged reviewed head `bec17c3aa872ee00ec43cf25a291423b1a96667f` as
+`d228472`; its applicable exact-head checks and merge-SHA Documentation, Rust
 CI and Security Audit workflows passed for their applicable scope. The
 revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. Build a fresh
-candidate from 453a with the pinned toolchain and login-shell/wrong-target/
-wrong-root controls before a fresh sibling-free no-credit canary. Rebind all
-six holdouts and the two-condition manifest and obtain isolated protocol
-`PASS` before separately authorized screening. Keep screening/allocation/credit
-false.
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The fresh candidate
+from d228472 uses the pinned Rust/Cargo `1.94.1` toolchain, matching
+source/tree/binary/shim identity, login-shell controls and wrong-target/
+wrong-root negatives. Two sibling-free source-only canaries and full
+seven-dimension evaluator runs pass with zero critical failures. Child streams
+show only generic ambient skill metadata outside the fixture; retain that
+isolation limitation for protocol review. Rebind all six holdouts and the
+two-condition manifest and obtain isolated protocol `PASS` before separately
+authorized screening. Keep screening/allocation/credit false.
 
 ## Historical source reconciliation — 2026-09-11 UTC (`origin/master=24a1966`, superseded by `453a32a`)
 
