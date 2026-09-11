@@ -43,11 +43,11 @@ deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
 continue the owned A07 candidate packet at that revision. The current
-candidate-bound no-credit canary is complete; the next gates are immutable
-holdout rebinding and private manifest rereview, followed by isolated protocol
-review. The prior 8be6103 and af005a7 packets are historical after later
-process merges; never reuse them for current allocation. Keep R01, W02, W03 and
-F01's named holds separate.
+candidate-bound no-credit canary, immutable six-handle holdout rebind and
+private manifest review are complete, with isolated protocol `PASS`; the next
+gate is separately authorized screening preparation. The prior 8be6103 and
+af005a7 packets are historical after later process merges; never reuse them for
+current allocation. Keep R01, W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
@@ -62,12 +62,13 @@ canary changes no product, evaluator, threshold, allocation or authority
 state. The ledger remains 32 items, `ready_pending=0`, five unfinished and
 three held: A07 active, W03 verified, and R01/W02/F01 held.
 
-The canary is preparation only and has no screening or acceptance credit. The
-next owner/action is to verify and rebind the immutable six-handle holdout and
-exactly-two-condition manifest to `71adc2e`, obtain isolated protocol `PASS`,
-then seek the separately authorized screening gate. Preserve private identity,
-fixture and evaluator records outside this task; never allocate or credit
-cells from a canary or process metadata alone.
+The canary and protocol packet are preparation only and have no screening or
+acceptance credit. The immutable six-handle holdout and exactly-two-condition
+manifest are rebound to `71adc2e`, and an independent isolated metadata review
+returned `PASS`. The next owner/action is to seek the separately authorized
+screening gate; refresh source and ledger again before any later phase.
+Preserve private identity, fixture and evaluator records outside this task;
+never allocate or credit cells from a canary or process metadata alone.
 
 ## Historical pre-71adc2 checkpoint (superseded by current `71adc2e`) — 2026-09-11 UTC (`af005a7`)
 

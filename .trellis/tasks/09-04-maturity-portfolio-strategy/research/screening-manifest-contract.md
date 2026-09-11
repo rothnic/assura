@@ -108,10 +108,11 @@ On each resume, the A07 coordinator must first refresh `origin/master`, rerun
 the revision-pinned ledger, and bind all evidence to that revision. The current
 source is `71adc2e`; its candidate-bound no-credit canary passed the full
 evaluator with the expected negative policy probe, while two omitted-contract
-fixture attempts remain unfavorable no-credit evidence. The next action is to
-verify and rebind the immutable six-handle holdout and exactly-two-condition
-manifest to `71adc2e`, then obtain isolated protocol `PASS` before the
-separately authorized screening gate. The prior af005a7 checkpoint and the 9b,
+fixture attempts remain unfavorable no-credit evidence. The immutable
+six-handle holdout and exactly-two-condition manifest are now rebound to
+`71adc2e`, and an isolated metadata protocol review returned `PASS` with no
+credit. The next action is to seek the separately authorized screening gate
+after refreshing source and ledger again. The prior af005a7 checkpoint and the 9b,
 8be, 9df, 692, 9ad and 129a249 manifests, canaries and protocol `PASS` records
 are historical no-credit evidence and must not route current work. Prior
 canaries, process PRs and metadata-only evidence never satisfy screening or

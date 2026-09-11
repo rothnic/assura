@@ -1,9 +1,9 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md))
 
-## Iteration 133 — 2026-09-11 — current candidate-bound canary
+## Iteration 133 — 2026-09-11 — current candidate packet protocol PASS
 
 - `origin/master=71adc2e`: the pinned Rust/Cargo `1.94.1` Assura `0.4.0` candidate was identity-frozen; two omitted-contract attempts remain unfavorable no-credit evidence, while two corrected sibling-free canaries passed the full evaluator with expected controls.
-- No screening, holdout, follow-up, final, product, release, deployment, publication or invitation credit changed. Next: rebind the six-handle/two-condition packet, obtain isolated protocol `PASS`, then seek the separately authorized screening gate; context not exposed.
+- The six-handle/two-condition packet was rebound and independently reviewed with isolated protocol `PASS`; no screening, holdout, follow-up, final, product, release, deployment, publication or invitation credit changed. Next: seek the separately authorized screening gate after refreshing source/ledger; context not exposed.
 ## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by current `af005a7`; previously `b7043ab`)
 
 - The primary isolated protocol rereview returned `PASS` against the corrected

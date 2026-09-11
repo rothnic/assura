@@ -22,13 +22,14 @@ unfavorable no-credit evidence. The candidate canary is preparation only, not
 screening or acceptance proof. A02 is complete; its old plain-init finding is
 historical. The ledger at 71adc2e has 32 items, zero ready pending, five
 unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
-The exact next action is to verify/rebind the current six-handle holdout and
-exactly-two-condition manifest to `71adc2e`, obtain isolated protocol `PASS`,
-then seek separately authorized screening. The prior af005a7 checkpoint and
-all ebed/9df/692/9ad/129a249 candidate packets and protocol records are
-historical no-credit metadata and must not route current work. R01's merged
-raw-log recovery remains bounded negative evidence. Preserve residual fixture,
-launcher, child-isolation and evaluator limitations. Route from
+The current six-handle holdout and exactly-two-condition manifest are rebound
+to `71adc2e`, and an independent isolated metadata protocol review returned
+`PASS`; this remains no-credit preparation. The exact next action is to seek
+separately authorized screening after refreshing source and ledger. The prior
+af005a7 checkpoint and all ebed/9df/692/9ad/129a249 candidate packets and
+protocol records are historical no-credit metadata and must not route current
+work. R01's merged raw-log recovery remains bounded negative evidence. Preserve
+residual fixture, launcher, child-isolation and evaluator limitations. Route from
 `recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean

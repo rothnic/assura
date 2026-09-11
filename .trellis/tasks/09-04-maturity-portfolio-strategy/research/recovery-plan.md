@@ -42,15 +42,16 @@ authority and observed-outcome requirements.
   login-shell identity checks and two corrected source-only canaries passed the
   full evaluator with the expected negative policy probe. Two earlier
   omitted-contract fixture attempts remain unfavorable no-credit evidence.
-- This canary is preparation only and changes no product, evaluator, threshold,
-  allocation or authority state. Allocation and credit remain false; the
-  earlier af005a7 checkpoint and all older packets are historical.
+- This canary and the rebound packet are preparation only and change no
+  product, evaluator, threshold, allocation or authority state. An independent
+  isolated metadata protocol review returned `PASS`; allocation and credit
+  remain false, and the earlier af005a7 checkpoint and all older packets are
+  historical.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
-  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: verify
-  and rebind the immutable six-handle holdout and exactly-two-condition
-  manifest to `71adc2e`, obtain isolated protocol `PASS`, then seek separately
-  authorized screening preparation. Prior `PASS` metadata grants no
-  screening, allocation or product-acceptance authority.
+  held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: seek
+  separately authorized screening preparation after refreshing source and
+  ledger again. Prior `PASS` metadata grants no screening, allocation or
+  product-acceptance authority.
   Preserve all private values, fixtures, evaluator output and prior packets as
   historical; do not allocate or credit cells from this checkpoint.
 

@@ -22,6 +22,12 @@ expected negative policy control and a collected native test. No product,
 threshold, allocation, release, deployment, publication, invitation or
 acceptance state changed.
 
+The current private six-handle construction and exactly-two-condition manifest
+were rebound to the frozen candidate, and an independent isolated metadata
+protocol review returned `PASS`. This remains no-credit preparation; screening,
+holdout credit, product acceptance and every external authority boundary stay
+unresolved.
+
 The two `9b410e9` candidate-bound composed-init canaries and their corrected
 private protocol `PASS` are historical, zero-credit metadata for that older
 candidate. The protocol rereview accepted `A07-CONTRACT-HASH-001` after the
@@ -42,11 +48,10 @@ A fresh detached checkout at 129a249 was the prior candidate build, and its
 source/tree, version, fixed target and login-shell command identity were frozen
 privately. Two source-only canaries and the six-handle/two-condition packet
 passed their no-credit protocol checks, but all of that evidence is historical
-after the later source advances. The current 71adc2e candidate canary is now
-the newest preparation evidence; the next ordered action is to verify/rebind
-the current six-handle holdout and exactly-two-condition manifest to that
-candidate and obtain isolated protocol `PASS` before any separately
-authorized screening preparation.
+after the later source advances. The current 71adc2e candidate canary,
+six-handle/two-condition rebind and isolated protocol `PASS` are now the
+newest preparation evidence. The next step is separately authorized screening
+preparation after another source/ledger refresh.
 This plan does not change the A07 contract, scoring thresholds, fixture
 allocation, or product acceptance.
 

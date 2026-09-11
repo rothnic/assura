@@ -103,12 +103,12 @@ unfavorable no-credit evidence. The ledger remains 32 items, no ready-pending
 card, five unfinished cards and three narrow holds. A02 is complete and its
 plain-init handoff incident is historical.
 
-A07 is the active lane. The current canary is preparation only and grants no
-allocation or acceptance credit. The exact next action is to verify and rebind
-the immutable six-handle holdout and exactly-two-condition manifest to
-`71adc2e`, obtain isolated protocol `PASS`, and only then seek the separately
-authorized screening preparation. Do not reuse an older packet or allocate or
-credit cells from this process checkpoint.
+A07 is the active lane. The current canary, immutable holdout/manifest rebind
+and isolated metadata protocol review are preparation only and grant no
+allocation or acceptance credit; the protocol review returned `PASS`. The
+exact next action is to seek the separately authorized screening preparation,
+after refreshing source and ledger again. Do not reuse an older packet or
+allocate or credit cells from this process checkpoint.
 
 ## Historical pre-71adc2 train route (superseded by current `71adc2e`) — `af005a7`
 
