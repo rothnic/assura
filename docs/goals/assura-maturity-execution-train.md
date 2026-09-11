@@ -31,13 +31,25 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-At the 2026-09-11 reset, `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`.
-The revision-pinned ledger has 32 items, zero ready-pending rows, five
-unfinished rows, and three held rows: A07 is active, W03 is verified, and R01,
-W02, and F01 retain their separate evidence or authority holds. Earlier A07
-candidate and protocol packets are dated no-credit metadata whenever their
-source is superseded. The root unknown path, foreign dirty worktree, stale
-registrations, and historical branches are preserved as ownership boundaries.
+The latest refresh is `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
+(PR #292, `fix(agent): preserve modeled markdown records`). The revision-pinned
+ledger remains 32 items, zero ready-pending rows, five unfinished rows, and
+three held rows: A07 is active, W03 is verified, and R01, W02, and F01 retain
+their separate evidence or authority holds. The current A07 candidate is
+identity-frozen at this source with exact Rust/Cargo 1.94.1, two fresh
+source-only full-evaluator canaries, a six-handle holdout rebind, fixture
+freshness/invariant/evaluation bindings, and a 30-cell reserved manifest. All
+of that evidence is explicitly no-credit while independent protocol review is
+pending; no screening allocation or product acceptance exists. Earlier packets
+are dated candidate-base/no-credit metadata whenever their source is superseded.
+The root unknown path, foreign dirty worktree, stale registrations, historical
+branches, and unfavorable evidence remain preserved as ownership boundaries.
+
+PR #292's exact-head applicable checks passed, but its separate push-triggered
+Rust CI run reported a macOS `watch_stops_cleanly_without_runtime_artifacts`
+SIGINT failure and cancelled the Ubuntu/Windows matrix siblings. A focused
+local rerun passed once; the hosted failure remains an unresolved diagnostic,
+not a green signal and not a reason to weaken or blindly retry the gate.
 
 ## User certainty bar
 
@@ -163,5 +175,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #292 merged the reviewed agent-content-preservation recovery slice as `4560c710`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform tests, performance, release/adoption smoke and GitGuardian checks passed (Security Audit was scope-skipped). The subsequent push-triggered Rust CI run failed in the macOS watch SIGINT test and cancelled Ubuntu/Windows siblings; this remains retained unfavorable hosted evidence. | PR #292; hosted check rollup and push run `34615572565`; focused local `watch_stops_cleanly_without_runtime_artifacts` rerun passed once. |
+| 2026-09-11 | Rebuilt the A07 candidate and no-credit protocol packet at current `origin/master=4560c710`: exact login-shell identity with wrong-target/wrong-root rejects, two fresh sibling-free source-only canaries with all seven evaluator dimensions passing, six immutable holdouts, second-readonly pass, current fixture/invariant/evaluation bindings, exactly two conditions and 30 reserved cells. Independent protocol review is pending; screening and credit remain false. | Private packet under `/private/tmp/assura-a07-private-4560c71`; candidate freeze, identity, canary receipts/evaluations, holdout binding, fixture freshness, invariants, evaluation binding, mapping and manifest. |
 | 2026-09-11 | PR #289 merged the reviewed durable goal, layered-routing skill metadata and current-route corrections as `40f1155c`; the 851a6 candidate packet is now candidate-base/no-credit and must be rebuilt after the next source refresh. | PR #289; `research/progress-current.md` Iteration 147; post-merge ledger/context/structure/evidence/docs gates. |
 | 2026-09-11 | Created the durable active execution goal from the corrected Trellis recovery contract. The current source is `851a6b8`; A07 is the only active lane while the ledger has no ready-pending card. | `.trellis/tasks/09-04-maturity-portfolio-strategy/task.json`; `research/orchestration-plan.md`; `research/process-corrections-2026-09-11.md`; `research/recovery-plan.md`; workflow gate, ledger and topology reset evidence. |

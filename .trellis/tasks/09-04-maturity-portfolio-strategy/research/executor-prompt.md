@@ -14,12 +14,24 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, refresh before use):
-`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`; PR #289 merged the
-reviewed durable goal, layered-routing skill metadata and current-route
-corrections. The 851a6 candidate, canaries and packet are candidate-base/no-
-credit metadata after that merge. Rebuild A07 from the freshly fetched source
-with a new identity freeze, no-credit canary, packet rebind and isolated
-protocol review before any separately authorized screening.
+`origin/master=4560c710967d59993b9ea4f9b86613d446443f79`; PR #292 merged the
+reviewed agent-content-preservation recovery slice. Its exact-head applicable
+checks passed. The separate push-triggered Rust CI run `34615572565` failed in
+the macOS `watch_stops_cleanly_without_runtime_artifacts` SIGINT test and
+cancelled the Ubuntu/Windows matrix siblings; a focused local rerun passed
+once. Preserve this hosted failure as unresolved diagnostic evidence; do not
+rerun the unchanged method or treat it as green.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The current candidate
+uses exact Rust/Cargo `1.94.1` and passes login-shell identity plus deliberate
+wrong-target/wrong-root controls. Two fresh sibling-free source-only canaries
+pass all seven evaluator dimensions with zero critical failures. The private
+six-handle/two-condition/30-cell packet is rebound to this source with current
+fixture, invariant and evaluation references; protocol review is pending and
+all screening/allocation/credit flags remain false. Complete the independent
+metadata review, repair only concrete accepted findings with scoped rereview,
+and seek separately authorized screening only after protocol `PASS`.
 
 As-of correction checkpoint (2026-09-11, superseded by `40f1155c`; refresh before use):
 `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; the revision-pinned

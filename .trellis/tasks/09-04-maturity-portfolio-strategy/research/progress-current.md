@@ -1,5 +1,36 @@
 # Current maturity train checkpoint
 
+## Iteration 148 — 2026-09-11 — current candidate and protocol packet
+
+- Owner/phase: `/root` / current-source A07 candidate preparation and pending
+  independent protocol review. PR #292 merged the reviewed recovery slice at
+  `4560c710967d59993b9ea4f9b86613d446443f79`; its exact-head applicable checks
+  passed. The separate push-triggered Rust CI run on that merge SHA failed in
+  the macOS `watch_stops_cleanly_without_runtime_artifacts` SIGINT test and
+  cancelled the Ubuntu/Windows matrix siblings. A focused local rerun passed
+  once; the hosted failure is retained as unresolved diagnostic evidence.
+- The revision-pinned ledger at `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
+  remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+  verified and R01/W02/F01 held. A clean explicit-workdir candidate uses the
+  exact Rust/Cargo `1.94.1` toolchain. Login-shell identity and deliberate
+  wrong-target/wrong-root controls pass; two fresh sibling-free source-only
+  canaries complete composed initialization and full seven-dimension evaluator
+  summaries pass with zero critical failures. This is no-credit evidence.
+- The private packet is rebound to this candidate: six immutable holdouts with
+  current creation references and second-readonly pass, source-only fixture
+  freshness, shared invariants, evaluation bindings, a blinded mapping, exactly
+  two conditions differing in one recorded product input, and 30 unique reserved
+  cells. The packet's independent protocol review is pending; screening,
+  allocation and credit remain false. No product, threshold or authority state
+  changed.
+- Next owner/action: complete the metadata-only protocol review. If it finds a
+  concrete gap, repair only that delta, rerun affected checks and obtain scoped
+  rereview; if it passes, seek a separately authorized screening decision. Do
+  not allocate or credit cells from canaries, protocol metadata, skipped jobs,
+  or the unresolved push-triggered CI run. Preserve the root unknown path,
+  foreign dirty worktree, stale registrations, historical branches and all
+  unfavorable evidence.
+
 ## Iteration 147 — 2026-09-11 — post-merge source reconciliation
 
 - Owner/phase: `/root` / post-merge reconciliation. PR #289 merged the

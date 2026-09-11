@@ -16,6 +16,32 @@ in [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md).
 Refresh its source pointer before use; it is a compact checkpoint, not a
 replacement for the ledger or private A07 packet.
 
+## Current route — `origin/master=4560c710`
+
+PR #292 merged the reviewed recovery slice at
+`4560c710967d59993b9ea4f9b86613d446443f79`. Its exact-head applicable checks
+passed, while the distinct push-triggered Rust CI run `34615572565` exposed a
+macOS watch SIGINT failure and cancelled the Ubuntu/Windows matrix siblings.
+The focused local test passed once; the hosted failure remains an explicit
+diagnostic and cannot be hidden, downgraded or blindly retried.
+
+The ledger is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active,
+W03 verified, R01/W02/F01 held), so A07 remains the active lane despite the
+empty pending queue. The current owned candidate is frozen with exact
+Rust/Cargo `1.94.1` identity. Its two fresh source-only canaries pass the full
+seven-dimension evaluator with zero critical failures, and the private packet
+now has current six-handle/second-readonly provenance, fixture freshness,
+shared invariants, evaluation bindings, two conditions, and 30 reserved cells.
+Everything is no-credit while protocol review is pending.
+
+Next action is the independent metadata-only protocol review. A finding must
+name the contract, location, failure scenario and smallest verification; repair
+only accepted deltas and obtain scoped rereview. After protocol `PASS`, seek a
+separately authorized screening decision. Never allocate or credit cells from
+canaries, protocol metadata, skipped/zero-test jobs, or the unresolved hosted
+run. Preserve root/foreign/historical topology state and all unfavorable
+evidence.
+
 ## Outcome invariant
 
 The train advances one explicitly owned slice at a time from its current

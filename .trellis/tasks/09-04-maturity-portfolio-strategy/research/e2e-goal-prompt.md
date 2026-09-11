@@ -15,7 +15,34 @@ goal at each card boundary.
 
 ## Direction review
 
-## Current-source reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
+## Current source route — 2026-09-11 UTC (`origin/master=4560c710`)
+
+The latest refresh is
+`origin/master=4560c710967d59993b9ea4f9b86613d446443f79` after PR #292 merged
+the reviewed agent-content-preservation recovery slice. Its exact-head
+applicable checks passed. The separate push-triggered Rust CI run
+`34615572565` failed in the macOS `watch_stops_cleanly_without_runtime_artifacts`
+SIGINT test and cancelled the Ubuntu/Windows matrix siblings; a focused local
+rerun passed once. Preserve that hosted failure as an unresolved diagnostic,
+do not rerun the unchanged method, and do not count it as green.
+
+The revision-pinned ledger is still `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The current A07
+candidate is exact-toolchain identity-frozen. Two fresh source-only canaries
+pass the full seven-dimension evaluator with zero critical failures. Its
+private six-handle/two-condition/30-cell packet has current provenance,
+fixture freshness, invariant and evaluation bindings, but independent protocol
+review is pending; screening, allocation and credit remain false.
+
+The only valid next route is: complete metadata-only protocol review; turn any
+finding into a concrete contract/location/failure/smallest verification; repair
+accepted metadata deltas and obtain scoped rereview; then seek separately
+authorized screening. Refresh source, release/tag, PR/CI, topology and ledger
+before every phase. Never use canary/protocol/skipped/zero-test evidence as
+product acceptance, and do not finish while a review, repair, integration or
+cleanup action remains live.
+
+## Historical current-source reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`, superseded)
 
 PR #289 merged the reviewed durable goal, layered-routing skill metadata and
 current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770`.
@@ -37,7 +64,7 @@ reject candidates that fail the prescribed comparison, and stop invalid
 diagnostics instead of repeating runs until green. Root owns review judgment
 and merge approval; method changes never imply relaxed acceptance thresholds.
 
-## Corrected active-goal contract — 2026-09-10
+## Historical corrected active-goal contract — 2026-09-10 (superseded by the current source route above)
 
 Status: active. This is the canonical continuation goal for the task and the
 existing supported runtime goal; do not create a replacement at compaction,

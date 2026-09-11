@@ -1,10 +1,42 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770`.
+`origin/master=4560c710967d59993b9ea4f9b86613d446443f79`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
+
+## Current post-merge and candidate reconciliation — 2026-09-11 UTC (`origin/master=4560c710`)
+
+- PR #292 merged the reviewed agent-content-preservation recovery slice as
+  `4560c710967d59993b9ea4f9b86613d446443f79`. Its exact-head applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform,
+  performance, release/adoption smoke and GitGuardian checks passed; Security
+  Audit was scope-skipped. The separate push-triggered Rust CI run
+  `34615572565` failed in the macOS `watch_stops_cleanly_without_runtime_artifacts`
+  SIGINT test and cancelled the Ubuntu/Windows matrix siblings. A focused
+  local rerun passed once. This hosted result is retained as an unresolved
+  diagnostic and is not silently retried or counted as green.
+- The ledger is still `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified and R01/W02/F01 held. The clean current candidate
+  is frozen with exact Rust/Cargo `1.94.1`, absolute release target and
+  login-shell identity controls that reject wrong target and wrong root.
+  Two fresh source-only conditions pass composed initialization and the full
+  seven-dimension evaluator with zero critical failures; they remain no-credit
+  canaries.
+- The private packet is rebound to the current candidate with six immutable
+  holdouts, current creation and second-readonly references, source-only fixture
+  freshness, shared invariants, evaluation bindings, blinded mapping, exactly
+  two conditions differing in one product input and 30 unique reserved cells.
+  Its independent metadata protocol review is pending. Screening, allocation,
+  credit and product acceptance remain false.
+- Next owner/action: finish the independent protocol review. Convert any vague
+  concern into a concrete contract, location, failure scenario and smallest
+  verification; repair only accepted metadata deltas, rerun affected checks and
+  obtain scoped rereview. On protocol `PASS`, seek the separately authorized
+  screening gate. In parallel, track the hosted watch-SIGINT failure as a
+  distinct diagnostic; do not weaken performance or cancellation gates and do
+  not merge work whose applicable checks or current-base proof are unresolved.
 
 ## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
 
