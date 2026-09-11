@@ -3,19 +3,19 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-11
- refresh resolved `origin/master=329bce02396d1378bc4306c446294c3f5ebbfd41`
- after PR #298 merged the reviewed current-checkpoint reconciliation. The 4560c710
+ refresh resolved `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`
+ after PR #299 merged the reviewed current-checkpoint reconciliation. The 4560c710
 candidate and packet below are candidate-base/no-credit metadata after this
 source advance; no current candidate, screening, allocation or acceptance
 authority exists. Preserve the retained macOS watch-SIGINT diagnostic and all
 unfavorable evidence.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=329bce0`)
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=651ef31`)
 
-PR #298 merged reviewed head `ba4c980c13001e97bdd6aa06e68bd5d7a115fd53` as
-`329bce0`. Its applicable exact-head checks passed, the reviewed tree equals
-the merge tree, and the configured push-triggered Rust CI (`34633883919`),
-Documentation (`34633883756`) and Security Audit (`34633883854`) workflows
+PR #299 merged reviewed head `c6a47ae4e486d4d226a747a3f49653c235f251d1` as
+`651ef31`. Its applicable exact-head checks passed, the reviewed tree equals
+the merge tree, and the configured push-triggered Rust CI (`34635475363`),
+Documentation (`34635475400`) and Security Audit (`34635475378`) workflows
 completed successfully at the merge SHA. Product/Rust/performance/release
 rows were explicitly skipped by scope and are not product proof. Refresh
 source, release/tag, PR/CI, topology and the revision-pinned ledger before
@@ -24,7 +24,7 @@ source, rerun the no-credit canary, rebind all six holdouts and the two-
 condition manifest, and obtain isolated protocol `PASS`; otherwise keep
 screening/allocation/credit false and continue an authorized recovery slice.
 
-## Historical candidate-binding checkpoint — 2026-09-11 UTC (`origin/master=4560c710`, superseded by `329bce0`)
+## Historical candidate-binding checkpoint — 2026-09-11 UTC (`origin/master=4560c710`, superseded by `651ef31`)
 
 The private candidate freeze records source `4560c710967d59993b9ea4f9b86613d446443f79`,
 Git tree `f7150a5fd0ef192a70573b948953f17bcef9456d`, Assura `0.4.0`, the
@@ -50,14 +50,20 @@ post-verdict hashes. After a fresh source reset, seek separately authorized
 screening only if authority exists; preserve every unfavorable run and keep
 all allocation/credit/authority flags false.
 
+## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=329bce0`, superseded by `651ef31`)
+
+PR #298 merged the reviewed current-checkpoint reconciliation at `329bce0`.
+Its exact-head and merge-SHA checks passed; this is historical process
+evidence only. Refresh to `651ef31` before any candidate or authority action.
+
 ## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=6d57b86`, superseded by `329bce0`)
 
 PR #297 merged the reviewed current-checkpoint reconciliation at `6d57b86`.
 Its exact-head applicable checks and merge-SHA workflows passed; this is
-historical process evidence only. Refresh to `329bce0` before any candidate or
+historical process evidence only. Refresh to `651ef31` before any candidate or
 authority action.
 
-## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`, superseded by `329bce0`)
+## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`, superseded by `651ef31`)
 
 PR #289 merged the reviewed durable goal, layered-routing skill metadata and
 current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770` after

@@ -32,14 +32,14 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-The latest reset fetched `origin/master=329bce02396d1378bc4306c446294c3f5ebbfd41`
-after PR #298 merged the reviewed current-checkpoint reconciliation. This is
+The latest reset fetched `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`
+after PR #299 merged the reviewed current-checkpoint reconciliation. This is
 the current checkpoint for this continuation; every later phase must fetch
-again before using it. PR #298's reviewed head was
-`ba4c980c13001e97bdd6aa06e68bd5d7a115fd53`; its applicable Documentation,
+again before using it. PR #299's reviewed head was
+`c6a47ae4e486d4d226a747a3f49653c235f251d1`; its applicable Documentation,
 CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, and
-the configured push-triggered Rust CI (`34633883919`), Documentation
-(`34633883756`) and Security Audit (`34633883854`) workflows completed at the
+the configured push-triggered Rust CI (`34635475363`), Documentation
+(`34635475400`) and Security Audit (`34635475378`) workflows completed at the
 merge SHA. Product/Rust/performance/release rows were explicitly skipped by
 scope and are not product proof. The revision-pinned ledger remains 32 items,
 zero ready-pending rows, five unfinished rows, and three held rows: A07 is
@@ -71,7 +71,7 @@ post-merge push-triggered checks at `c9ac2a84`; PR #295 subsequently passed its
 exact-head and merge-SHA push-triggered Documentation, Security and Rust CI
 workflows at `9047a3d`; PR #296 reconciled those results at `83c382a`; PR #297
 reconciled that checkpoint at `6d57b86`; PR #298 reconciled that checkpoint at
-`329bce0`. This
+`329bce0`; PR #299 reconciled that checkpoint at `651ef31`. This
 confirms the reconciliation fence is executable, but it does not repair the
 older R01 failure. A configured post-merge failure, cancellation or missing
 result keeps the specific recovery route open.
@@ -207,6 +207,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #299 merged the reviewed current-checkpoint reconciliation as `651ef31`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34635475363`), Documentation (`34635475400`) and Security Audit (`34635475378`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #299; `research/progress-current.md` Iteration 158; post-merge run records. |
 | 2026-09-11 | PR #298 merged the reviewed current-checkpoint reconciliation as `329bce0`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34633883919`), Documentation (`34633883756`) and Security Audit (`34633883854`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #298; `research/progress-current.md` Iteration 157; post-merge run records. |
 | 2026-09-11 | PR #297 merged the reviewed current-checkpoint reconciliation as `6d57b86`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34632545493`), Documentation (`34632545635`) and Security Audit (`34632545507`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #297; `research/progress-current.md` Iteration 156; post-merge run records. |
 | 2026-09-11 | PR #296 merged the reviewed post-merge reconciliation as `83c382a`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34630104586`), Documentation (`34630104663`) and Security Audit (`34630104624`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #296; `research/progress-current.md` Iteration 155; post-merge run records. |
