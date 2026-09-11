@@ -93,7 +93,8 @@
       "docs/a07-postmerge-reconcile-b7043ab",
       "docs/a07-current-129a-rebind",
       "docs/postmerge-reconcile-275",
-      "docs/a07-refresh-71adc2"
+      "docs/a07-refresh-71adc2",
+      "docs/r01-artifact-inventory-aa2444b"
     ],
     "continuation_goal": {
       "status": "active",
