@@ -56,6 +56,26 @@ W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
+## Current continuation correction — 2026-09-11 UTC (`f4368883`)
+
+Refresh and route from [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md)
+before acting. The current source is `origin/master=f4368883`; the ledger is
+still 32 items with zero ready-pending, A07 active, W03 verified and R01/W02/
+F01 held. The exact current candidate was built from a clean explicit worktree
+with Rust/Cargo `1.94.1`. Two fresh sibling-free one-shot Codex children and
+full seven-dimension evaluators passed their required positive and negative
+controls. Their results are no-credit canary evidence only.
+
+The child streams revealed ambient user-level skill metadata despite
+`--ignore-user-config`; no evaluator contract, private mapping or hidden oracle
+was exposed. Retain that limitation and do not treat generated hooks,
+evaluator success or this process plan as host trust, screening, holdout or
+product acceptance. The private r2 rebind now points the receipts, current
+identity, six immutable holdout records, excluded draft and materialized
+30-cell matrix to `f4368883`; its isolated protocol metadata review is `PASS`.
+Refresh source/ledger and verify packet identity before any separately
+authorized screening request. Never allocate or claim A07 from this canary.
+
 ## Current post-merge checkpoint — 2026-09-11 UTC (`961dced`)
 
 PR #280 merged the reviewed process-only route as `961dced` after applicable

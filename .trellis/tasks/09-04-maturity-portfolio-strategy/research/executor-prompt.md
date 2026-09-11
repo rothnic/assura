@@ -13,6 +13,23 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
+Current correction checkpoint (2026-09-11, refresh before use):
+`origin/master=f4368883ac776cd5a9cb337b68c80165fc228a46`; the revision-pinned
+ledger remains 32 items, zero ready-pending, five unfinished and three held,
+with A07 active, W03 verified and R01/W02/F01 held. The exact current candidate
+was built from a clean explicit worktree with Rust/Cargo `1.94.1`; two fresh
+source-only Codex children and full seven-dimension evaluators passed their
+positive and negative controls. These are no-credit canaries. Their streams
+show ambient user-level skill metadata despite `--ignore-user-config`, so scan
+for evaluator/private/foreign paths and retain the limitation; do not claim
+context isolation or screening from evaluator success. A private r2 candidate
+rebind and second-readonly record point the six immutable holdouts and
+materialized 30-cell matrix at this SHA; isolated protocol metadata review is
+`PASS`, but this remains no-credit. Refresh source/ledger before any
+separately authorized screening request. See
+[process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for the
+measured VPS decision and layered context route.
+
 As-of routing checkpoint (2026-09-11, refresh before use): the latest reset
 resolved `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`; the ledger is
 32 items, zero ready pending, five unfinished and three held: A07 active, W03

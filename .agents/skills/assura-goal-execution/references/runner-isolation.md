@@ -81,6 +81,19 @@ results separate; the evaluator is invoked only after the initializer exits.
   failure to its owning behavior card. Explicit-route controls are calibration
   only and never substitute for a blinded fresh-agent run.
 
+## Ambient user-context observation
+
+`--ignore-user-config` suppresses the user's `config.toml`; it does not promise
+that the Codex runtime cannot report or resolve generic user-level skill
+metadata. Record every non-fixture path seen in the child event stream. A read
+of evaluator contracts, private mappings/results, hidden oracle data, foreign
+worktrees or a global Assura binary invalidates the run immediately. A generic
+skill-cache read with none of those inputs is a retained isolation limitation,
+not a passing-context claim: keep the canary no-credit and require the
+isolated protocol reviewer to disposition it. Do not copy credentials or
+private evaluator files to manufacture a cleaner `CODEX_HOME`; use a brokered
+auth mechanism if one already exists, otherwise preserve the limitation.
+
 ## Efficient recovery
 
 Identity checks are cheap and precede native suites, evaluator batches and CI.

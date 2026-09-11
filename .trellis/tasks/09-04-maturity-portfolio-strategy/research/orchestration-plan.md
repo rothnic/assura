@@ -6,6 +6,11 @@ or create screening, holdout, publication, release, deployment, or invitation
 credit. The task ledger and each card packet remain the acceptance source of
 truth.
 
+The current evidence-backed corrections and the live next action are recorded
+in [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md).
+Refresh its source pointer before use; it is a compact checkpoint, not a
+replacement for the ledger or private A07 packet.
+
 ## Outcome invariant
 
 The train advances one explicitly owned slice at a time from its current
@@ -92,7 +97,36 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — 961dced
+## Current candidate-bound route — f4368883
+
+The current source is `origin/master=f4368883ac776cd5a9cb337b68c80165fc228a46`.
+The process-only PR #281 merge is current; its applicable documentation,
+scope, security, evidence and GitGuardian checks passed, while scope-skipped
+product/Rust/performance/release jobs remain non-applicable. The revision-
+pinned ledger is unchanged at 32 items, zero ready-pending, five unfinished and
+three held: A07 active, W03 verified, R01/W02/F01 held.
+
+The clean candidate build used the explicit current worktree and exact
+Rust/Cargo `1.94.1` toolchain. Its release binary and fixed regular shim are
+bound privately to the source/tree SHA and version. Two fresh source-only
+one-shot Codex children completed the initializer; the full evaluator passed
+all seven declared dimensions and its negative policy control rejected as
+expected for both private condition values. The child streams also revealed
+ambient user-level skill metadata despite `--ignore-user-config`; no evaluator
+contract, mapping, hidden oracle or foreign worktree was exposed. This is a
+recorded isolation limitation and all results remain no-credit canary evidence.
+
+The current private r2 rebind records the candidate identity, two
+supplied-input receipts, six immutable holdout references, an explicit
+excluded draft and a materialized reserved 30-cell matrix. Its isolated
+protocol metadata review returned `PASS`; that only makes the packet
+internally executable and cannot grant screening, acceptance, release,
+deployment, publication, invitation or protection authority. Refresh
+source/ledger and prove packet identity again before seeking the separately
+authorized screening gate. Do not allocate a screening cell from this
+no-credit checkpoint.
+
+## Historical post-merge route — 961dced
 
 The latest reset fetched `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`
 after PR #280 merged the reviewed process-only route from `6a12ffa`. Its
