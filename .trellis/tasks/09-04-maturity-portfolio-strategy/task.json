@@ -94,7 +94,8 @@
       "docs/a07-current-129a-rebind",
       "docs/postmerge-reconcile-275",
       "docs/a07-refresh-71adc2",
-      "docs/r01-artifact-inventory-aa2444b"
+      "docs/r01-artifact-inventory-aa2444b",
+      "docs/postmerge-r01-artifact-reconcile-c5b2822"
     ],
     "continuation_goal": {
       "status": "active",
@@ -102,16 +103,16 @@
       "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup; never convert process, evaluator or skipped-check evidence into product success.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
       "current_checkpoint": {
-        "origin_master": "71adc2e695f4696e6a1fef7d5075aa836f4102b1",
+        "origin_master": "c5b2822a664e3f04924cd0096fc000a5d132777b",
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
         "held": ["R01", "W02", "F01"],
         "current_evidence": {
-          "candidate": "The 71adc2e candidate freeze and two corrected source-only no-credit canaries passed candidate identity and the full public contract; two earlier fixture setup attempts remain unfavorable no-credit evidence",
-          "holdout_binding": "The private six-handle binding is rebound to the 71adc2e candidate with immutable creation records and a passing second-readonly confirmation; it remains no-credit",
-          "manifest": "The private two-condition manifest, supplied-input receipts, mapping and 30 reserved cells are rebound to 71adc2e; all cells remain reserved and no-credit",
-          "protocol_review": "An independent isolated metadata protocol review passed the 71adc2e packet; screening, acceptance and every external authority remain false"
+          "candidate": "The 71adc2e candidate freeze and two corrected source-only no-credit canaries are historical metadata after the c5b2822 source advance; no current-c5b2822 candidate was frozen in this process reconciliation",
+          "holdout_binding": "The private six-handle binding and second-readonly confirmation are historical metadata for 71adc2e after c5b2822; they must be rebound to a newly frozen current candidate before allocation",
+          "manifest": "The private two-condition manifest, supplied-input receipts, mapping and 30 reserved cells are historical metadata for 71adc2e after c5b2822; all cells remain reserved and no-credit",
+          "protocol_review": "The isolated metadata protocol PASS covers the 71adc2e packet only; screening, acceptance and every external authority remain false"
         },
         "corrections": [
           "A02 is complete; the old plain-init handoff finding is historical.",
@@ -128,10 +129,11 @@
           "PR #275 merged the reviewed process-only route at af005a7; its exact-head applicable hosted checks and post-merge workflows passed, the reviewed tree is reachable, and the 129a249 candidate packet is now historical. No product, threshold, allocation or authority state changed.",
           "Independent process review found A07-GATE-ORDER-001: active A07 passages could run manifest/protocol before the fresh current-source canary or refresh source after protocol. The passages were normalized to refresh/release/tag/PR/CI/topology, ledger, candidate freeze, canary, holdout/manifest rebind, isolated protocol PASS, then separately authorized screening; no product, threshold, allocation or authority state changed.",
           "The refreshed 71adc2e candidate was identity-frozen with the pinned Rust/Cargo 1.94.1 toolchain. Two initial source-only fixture attempts were retained as unfavorable no-credit setup evidence; two corrected sibling-free fixtures then passed candidate-bound composed initialization and the full seven-dimension evaluator with the expected negative policy control and collected native test. No product, threshold, allocation or authority state changed.",
-          "The current six-handle/two-condition packet was rebound to 71adc2e and independently passed isolated metadata protocol review. This remains no-credit preparation; no screening, holdout, acceptance, release, deployment, publication or invitation authority was granted."
+          "The current six-handle/two-condition packet was rebound to 71adc2e and independently passed isolated metadata protocol review. It is historical no-credit preparation after c5b2822; before allocation the coordinator must freeze a current candidate, rerun a canary, rebind the packet and obtain a scoped protocol PASS. No screening, holdout, acceptance, release, deployment, publication or invitation authority was granted.",
+          "PR #278 merged the reviewed R01 retained-artifact inventory as c5b2822. Its exact-head Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and not counted. The retained artifacts did not contain the missing watch/raw-callback trace, so R01 remains held."
         ]
       },
-      "next_action": "Seek the separately authorized screening gate only after refreshing origin/master, release/tag, PR/CI and topology and rerunning the revision-pinned ledger; retain earlier packets as metadata-only and do not allocate or credit cells without every later gate.",
+      "next_action": "After each refresh of origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, the A07 coordinator must freeze a current candidate, run a fresh no-credit identity/full-contract canary, rebind the six-handle/two-condition packet, obtain isolated protocol PASS, and only then seek separately authorized screening; retain earlier packets as metadata-only and do not allocate or credit cells without every later gate.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",

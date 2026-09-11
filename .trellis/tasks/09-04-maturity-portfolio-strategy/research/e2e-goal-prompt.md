@@ -42,16 +42,41 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue the owned A07 candidate packet at that revision. The current
-candidate-bound no-credit canary, immutable six-handle holdout rebind and
-private manifest review are complete, with isolated protocol `PASS`; the next
-gate is separately authorized screening preparation. The prior 8be6103 and
-af005a7 packets are historical after later process merges; never reuse them for
-current allocation. Keep R01, W02, W03 and F01's named holds separate.
+continue the owned A07 candidate packet at that revision. The last candidate-
+bound no-credit canary, immutable six-handle holdout rebind and private
+manifest review are complete only for the superseded 71adc2e source; after the
+c5b2822 merge they are historical metadata. The next gate is a fresh
+current-candidate freeze, identity/full-contract canary, holdout/manifest
+rebind and isolated protocol `PASS`, followed by separately authorized
+screening preparation. The prior 8be6103, af005a7 and 71adc2e packets are
+historical after later process merges; never reuse them for current allocation.
+Keep R01, W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current candidate checkpoint — 2026-09-11 UTC (`71adc2e`)
+## Current post-merge checkpoint — 2026-09-11 UTC (`c5b2822`)
+
+The refreshed source is `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`,
+the merge of reviewed PR #278. The PR's Documentation Scope, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed; product, Rust,
+performance and release jobs were scope-skipped for the documentation/evidence
+slice and are not counted as passes. Post-merge source, ledger and affected-
+tree checks passed. The revision-pinned ledger remains 32 items,
+`ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
+and R01/W02/F01 held.
+
+The retained R01 artifacts still lack the raw watch/callback trace, so R01 is
+not closed. The 71adc2e candidate freeze, two corrected canaries, six-handle
+binding, exactly-two-condition manifest and isolated protocol `PASS` are
+historical no-credit metadata after c5b2822. Before any screening allocation,
+the A07 coordinator must refresh source/release/tag/PR/CI/topology, rerun the
+ledger, freeze and identity-check a new candidate, run a fresh no-credit
+full-contract canary, rebind the private packet, obtain isolated protocol
+`PASS`, and only then seek the separately authorized screening gate. No
+screening, holdout, acceptance, release, deployment, publication or invitation
+authority is granted by this checkpoint.
+
+## Historical candidate checkpoint — 2026-09-11 UTC (`71adc2e`, superseded by `c5b2822`)
 
 The current source is `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`.
 The owned candidate-bound build used the pinned Rust/Cargo `1.94.1` toolchain;
