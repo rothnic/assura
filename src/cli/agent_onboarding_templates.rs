@@ -258,6 +258,8 @@ where that evidence is ambiguous or a rule would reject existing content.
 Use `assura check --format agent --warn .` for advisory feedback while working.
 Use gate-mode checks before push or CI by omitting `--warn`.
 
+Preserve YAML frontmatter and required record fields when editing modeled Markdown matched by an active content collection. Update the body without replacing the record, then run `assura check .` and resolve failures before finalizing.
+
 ## Process Docs vs Skills
 
 Use `docs/process/` for durable process documentation and use project-local
@@ -312,6 +314,9 @@ Use `assura check --format agent --warn .` for advisory feedback while working.
 
 - Do not treat every observed path as intended. Close stable scopes from
   converging evidence and ask before making ambiguous or destructive choices.
+- Preserve YAML frontmatter and required record fields when editing modeled
+  Markdown; update the body without replacing the record, then run
+  `assura check .` before finalizing.
 - Keep longer examples and runbooks in `references/` or `docs/process/`.
 "#
 }
@@ -337,6 +342,10 @@ related_requirements:
 
 Run Assura checks, read agent-next.md, specialize from project evidence, and
 ask only where the intended shape is ambiguous.
+
+When an active content collection matches a Markdown file, preserve its YAML
+frontmatter and required record fields. Update the body without replacing the
+record, then run `assura check .` and resolve failures before finalizing.
 "#
 }
 
