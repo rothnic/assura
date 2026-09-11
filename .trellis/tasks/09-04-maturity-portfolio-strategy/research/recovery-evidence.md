@@ -8,10 +8,16 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 141 (`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45` after PR #283 reconciled the reviewed process route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The current candidate canaries are no-credit and the packet awaits protocol review; no product, threshold, allocation or authority state changed.)
+Process iteration: 142 (`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb` after PR #284 merged the reviewed process route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The 30b candidate canaries and protocol PASS are historical no-credit after this source advance; no candidate is current at c4f and no product, threshold, allocation or authority state changed.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Current candidate canary and packet review — 2026-09-11 UTC (`origin/master=30b4c663`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`)
+
+- PR #284 merged the reviewed process-only route at `c4f57d7`; applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, while product/Rust/performance/release jobs were scope-skipped. The ledger remains `items=32; ready_pending=0; unfinished=5; held=3`; A07 is active, W03 verified and R01/W02/F01 held.
+- The 30b candidate, two no-credit canaries, current packet and isolated protocol `PASS` are historical metadata after this source advance. No current candidate, screening allocation or product acceptance exists at c4f. Owner/phase: `/root` / fresh candidate preparation.
+- Next action: explicit-workdir c4f build and identity freeze, bounded no-credit canary, current six-handle/two-condition rebind and isolated protocol review. Preserve the root unknown note, foreign dirty worktree, stale registrations and historical branches.
+
+## Historical candidate canary and packet review — 2026-09-11 UTC (`origin/master=30b4c663`, superseded by `c4f57d7`)
 
 - A clean explicit-workdir candidate from current master was identity-frozen with Rust/Cargo `1.94.1` and Assura `0.4.0`; two fresh source-only children completed the initializer and full seven-dimension evaluator with the expected negative policy control. This is bounded no-credit preparation, not screening or acceptance.
 - The corrected runner retains the initial missing-`node` PATH and exit-sentinel failures as unfavorable evidence and records ambient user-level skill metadata despite `--ignore-user-config`; no private evaluator input or hidden oracle was exposed. The first isolated review found three concrete provenance/invariant blockers and a follow-up found one stale top-level ref; private correction added current fixture-freshness, current second-readonly refs and shared evaluator/predicate/threshold identities, and scoped rereview returned `PASS`. Screening authorization remains false and zero cells are allocated.
@@ -943,53 +949,3 @@ route is recorded below and in `recovery-plan.md`.
   bootstrap, the identical docs gate passed with exit 0 and built 48 pages.
   The initial environment failure is retained as a setup observation, not
   treated as a skipped or passing check.
-
-## Current reconciliation — 2026-09-10
-
-- A fresh read-only reset fetched `origin/master=8cabc53658530a239c00a0c55cbae9b050ad74ca`.
-  This is the merge of PR #237 from reviewed head
-  `19c5941a8717f05f305032be56080f626fdd06b5`; the prior PR #236 merge
-  `35cce811` and its `5329abd` follow-on baseline are now historical.
-- The reconciled slice updates only live process pointers and the task's
-  execution-branch metadata. It does not alter product source, A07 scoring,
-  private conditions, holdout allocation, performance thresholds, or authority
-  boundaries. A07 remains active with no screening, holdout, or acceptance
-  credit.
-- The current owned checkout is `/private/tmp/assura-current-master-pointer-refresh`
-  on `docs/current-master-pointer-refresh`, based on `8cabc536`; its owner is
-  this process coordinator. The root checkout's untracked
-  `research/a04-host-status-doctor-permission-gap.md` remains unknown/user-owned
-  and untouched. Existing detached archives and stale registrations remain
-  outside this slice's ownership.
-- Live routing now points the recovery plan, A07 candidate plan/evidence, and
-  continuation prompt at `8cabc536`. Older hashes remain explicitly labeled
-  historical. The next authorized A07 action is still private manifest and
-  isolated protocol review before a fresh candidate-bound canary; no canary or
-  screening allocation is claimed here.
-- The committed pointer diff passed the local process tier: workflow gate
-  `Ready: yes`; `git diff --check`, JSON parsing, `cargo xtask evidence`,
-  `cargo xtask target-state`, `cargo fmt --all -- --check`, and
-  `assura check --format agent --agent codex` all exited `0`. The source check
-  returned `success: true` with six unchanged low-severity max-line advisories;
-  none is in the changed process paths. `scripts/ci-scope.sh --base origin/master
-  --head HEAD` reported `evidence=true` and Rust/release/performance/rustdoc/
-  website/security false, so no product or performance gate was silently
-  skipped.
-- The required docs gate first exited `1` because the disposable checkout had
-  no `website/node_modules` (`astro: command not found`). The exact frozen
-  bootstrap `pnpm --dir website install --frozen-lockfile` exited `0`, and the
-  identical `cargo xtask docs` rerun exited `0` after building 48 pages. The
-  failed environment precondition is retained; it is not counted as a pass.
-- Independent process review of the frozen pointer-reconciliation candidate
-  returned `ready within reviewed scope — PASS` with no findings. It verified
-  current-base ancestry, consistent `8cabc536` routing, historical/no-credit
-  labeling for `35cce81`/`5329abd`/`77b41fe`, unchanged thresholds and authority
-  boundaries, and no product/evaluator/private-fixture changes. The review did
-  not establish hosted results, post-merge reachability, private manifest
-  validity, canary success, or A07 acceptance; scoped rereview is required for
-  this proof-record delta before submission.
-- Required completion remains: scoped rereview, applicable hosted
-  scope/evidence checks on the exact final head, merge, post-merge reachability,
-  and clean owned-worktree closure. A strict topology failure caused by
-  preserved unknown dirt or stale missing-gitdir registrations is retained as a
-  limitation, never represented as green.

@@ -107,15 +107,16 @@ but never replaces required macOS/Windows/hosted proof.
 On each resume, the A07 coordinator must first refresh `origin/master`,
 release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
 evidence to that revision. The latest recorded source is
-`961dced162c8fe67ad87d64e0be750249edd5681`; PR #280's process-only route is
-merged and Rust CI run `34564937464` completed for its applicable jobs. The
-5b03c7f candidate packet is historical no-credit. A corrected explicit-workdir
-961dced candidate now has matching identity, two full-contract canaries and a
-six-handle/two-condition rebind; its isolated protocol review returned `PASS`
-after two concrete metadata corrections. Before seeking the separately
-authorized screening gate, refresh and prove candidate/packet identity. If any later audit finds a mismatch, record
-contract/location/failure/smallest verification and repeat the new-candidate
-sequence before allocation.
+`c4f57d701d2ec37301f4677eae27b7275f89d2fb`; PR #284's process-only route is
+merged and its applicable Documentation, CI Scope, Security Scope, Evidence
+Gates and GitGuardian checks passed. The 30b4c663 candidate packet, canaries and
+protocol `PASS` are historical no-credit after that source advance. No current
+candidate or allocation exists at c4f. Create a fresh explicit-workdir c4f
+candidate, run the bounded no-credit canary, rebind the six-handle/two-condition
+packet and obtain a current isolated protocol `PASS` before seeking the
+separately authorized screening gate. If any later audit finds a mismatch,
+record contract/location/failure/smallest verification and repeat the new-
+candidate sequence before allocation.
 All prior canaries, process PRs and metadata-only evidence remain no-credit and
 never satisfy screening or acceptance gates. The retained R01 artifacts still
 lack the raw watch/callback trace, so R01's hold is unchanged.

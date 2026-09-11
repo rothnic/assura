@@ -65,3 +65,26 @@ do not route live work from this file.
   If it returns `PASS`, refresh current source/ledger once more before asking
   for the separately authorized screening decision. Do not allocate, publish,
   release, deploy, invite, or close A07 from this preparation evidence.
+
+## Historical reconciliation — 2026-09-10 (`origin/master=8cabc536`)
+
+- A fresh read-only reset fetched `origin/master=8cabc53658530a239c00a0c55cbae9b050ad74ca`.
+  This is the merge of PR #237 from reviewed head
+  `19c5941a8717f05f305032be56080f626fdd06b5`; the prior PR #236 merge
+  `35cce811` and its `5329abd` follow-on baseline are historical.
+- The reconciled slice changed only live process pointers and task execution-
+  branch metadata. It did not alter product source, A07 scoring, private
+  conditions, holdout allocation, performance thresholds or authority
+  boundaries. A07 remained active with no screening, holdout or acceptance
+  credit.
+- The owned checkout was `/private/tmp/assura-current-master-pointer-refresh`
+  on `docs/current-master-pointer-refresh`, based on `8cabc536`; the root
+  unknown path and existing detached/stale registrations were preserved.
+- Local process gates, the evidence-only CI classifier and independent review
+  passed for the reviewed pointer slice; the first docs gate failed only because
+  the disposable checkout lacked `website/node_modules`, then passed after the
+  locked install. Hosted/product/private-manifest/canary proof was not claimed.
+- Required completion was scoped rereview, applicable hosted checks on the
+  exact final head, merge, post-merge reachability and clean owned closure;
+  strict topology exceptions from preserved unknown dirt or stale registrations
+  were retained as limitations rather than represented as green.

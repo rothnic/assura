@@ -2,15 +2,14 @@
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #283 reconciled the
-reviewed process-only route; its applicable Documentation, CI Scope, Security
-Scope, Evidence Gates and GitGuardian checks passed, while product/Rust/
-performance/release jobs were scope-skipped and not counted. R01's missing raw
-watch/callback trace remains unresolved, so R01 is still held. The current
-candidate's two no-credit canaries pass the seven-dimension evaluator, and the
-rebound packet's isolated protocol rereview returned `PASS`; no product or
-acceptance state changed.
+`origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #284 merged the reviewed
+process-only route; its applicable Documentation, CI Scope, Security Scope,
+Evidence Gates and GitGuardian checks passed, while product/Rust/performance/
+release jobs were scope-skipped and not counted. R01's missing raw watch/
+callback trace remains unresolved, so R01 is still held. The 30b candidate,
+canaries and protocol-passed packet are historical no-credit after this source
+advance; no candidate or product acceptance state is current at c4f.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -21,11 +20,13 @@ supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
 
-The current A07 preparation owns the next action: refresh source/ledger and
-verify that the current `30b4c663` candidate and protocol-passed packet still
-match, then seek separately authorized screening. The candidate was built in a
-clean owned worktree with explicit-workdir/toolchain identity and two bounded
-no-credit canaries. The
+The current A07 preparation owns the next action: create a fresh `c4f57d7`
+candidate in a clean owned worktree, prove explicit-workdir/toolchain identity,
+run a bounded no-credit canary, rebind the six-handle/two-condition packet and
+obtain isolated protocol `PASS`; only then refresh source/ledger and seek
+separately authorized screening. The 30b candidate was built in a clean owned
+worktree with explicit-workdir/toolchain identity and two bounded no-credit
+canaries. The
 961dced and f4368883 packets are historical no-credit preparation after later
 process merges; only a packet proven consistent with the refreshed source may
 be presented for separately authorized screening. No cell allocation,

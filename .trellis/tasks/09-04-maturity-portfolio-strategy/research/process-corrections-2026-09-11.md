@@ -1,11 +1,18 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`.
+Status: active, current source `origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current-source candidate canary — 2026-09-11 UTC (`origin/master=30b4c663`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`)
+
+- PR #284 merged the reviewed process/evidence-route slice at `c4f57d7`; its applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. Product/Rust/performance/release jobs were scope-skipped and are not acceptance proof. The latest tag is `v0.3.0-447-gc4f57d7`; no release branch exists.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The topology report still contains only preserved unknown/foreign/stale exceptions; no pending card is executable.
+- The 30b candidate, two no-credit canaries, six-handle packet and protocol `PASS` are historical no-credit metadata after this source advance. No candidate, screening allocation, product acceptance or authority state is current at c4f.
+- Owner/phase: `/root` / fresh current-source candidate preparation. The next action is an explicit-workdir c4f candidate build and identity freeze, bounded no-credit canary, current packet rebind and isolated protocol review before any separately authorized screening. Preserve all unfavorable runner evidence and external holds.
+
+## Historical current-source candidate canary — 2026-09-11 UTC (`origin/master=30b4c663`, superseded by `c4f57d7`)
 
 - PR #283 reconciled the reviewed process route into `origin/master=30b4c663`; its applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. Product/Rust/performance/release jobs were scope-skipped and are not acceptance proof. The latest tag remains `v0.3.0`; no release branch exists.
 - The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The topology report still contains only preserved unknown/foreign/stale exceptions; no pending card is executable.
