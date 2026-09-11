@@ -16,27 +16,29 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current-source reconciliation (2026-09-11, current at this reset; refresh
-before use): `origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`; PR #302
-merged the reviewed post-merge reconciliation from head
-`74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef` on base `24a1966`. Its applicable
+Current-source candidate checkpoint (2026-09-11, current at this reset;
+refresh before use): `origin/master=d2284724192dbca848bbd135afacc33d2533e06f`;
+PR #303 merged the reviewed post-merge reconciliation from head
+`bec17c3aa872ee00ec43cf25a291423b1a96667f` on base `453a32a`. Its applicable
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
 checks passed after independent review `PASS`, the reviewed head tree equals
 the merge tree, and the configured push-triggered Documentation
-(`34644511575`), Rust CI (`34644511679`) and Security Audit (`34644511551`)
-workflows completed at merge SHA `453a32a` for applicable scope. Rust CI's CI
-Scope `103411957349` and Evidence Gates `103411992718` passed; product/Rust/
-performance/release, documentation build/marketing and security-audit rows
-were explicitly skipped by scope and are not product proof. This is an as-of
-checkpoint, not a permanent baseline. The revision-pinned ledger remains
-`items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
-R01/W02/F01 held). The 24a1966 process checkpoint and 0dff804 candidate are
-now historical or candidate-base/no-credit and must not be reused. The next
-action is a fresh exact-toolchain identity freeze at 453a, then a sibling-free
-no-credit canary, packet rebind and isolated protocol `PASS` before separately
-authorized screening. Preserve the earlier macOS watch-SIGINT hosted failure
-as unfavorable diagnostic evidence: run `34615572565`, job `103316578631`,
-failed at `tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
+(`34646077514`), Rust CI (`34646077520`) and Security Audit (`34646077494`)
+workflows completed at merge SHA `d228472` for applicable scope. Rust CI's CI
+Scope `103416530759` and Evidence Gates `103416572077` passed; product/Rust/
+performance/release and other scope-skipped rows were explicitly skipped by
+scope and are not product proof. This is an as-of checkpoint, not a permanent
+baseline. The revision-pinned ledger remains `items=32; ready_pending=0;
+unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The
+453a32a process checkpoint and 0dff804 candidate are now historical or
+candidate-base/no-credit and must not be reused. A fresh d228472 candidate has
+matching source/tree/binary/shim identity and two sibling-free source-only
+canary/evaluator PASS results across all seven declared dimensions, with
+generic ambient skill metadata retained as an isolation limitation. Rebind the
+packet and obtain isolated protocol `PASS` before separately authorized
+screening. Preserve the earlier macOS watch-SIGINT hosted failure as
+unfavorable diagnostic evidence: run `34615572565`, job `103316578631`, failed
+at `tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
 
 Read-only capacity evidence keeps remote execution held: `vps-dev` is not a
 configured alias; configured `vps` has 16 CPUs, 61 GiB RAM, 20 GiB free on a

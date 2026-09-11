@@ -1,6 +1,43 @@
 # Current maturity train checkpoint
 
-## Iteration 162 — 2026-09-11 — PR #302 post-merge reconciliation
+## Iteration 163 — 2026-09-11 — current candidate canary closure (no-credit)
+
+- Owner/phase: `/root` / A07 candidate-bound canary preparation. A fresh
+  source check is at `origin/master=d2284724192dbca848bbd135afacc33d2533e06f`
+  with tree `dc30855addffae4e3b19c0589bfcbd08aa4ebb45`; refresh it before the
+  next phase. The revision-pinned ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified,
+  and R01/W02/F01 held.
+- Clean owned candidate checkout `/private/tmp/assura-a07-current-d228` built
+  with the pinned Rust/Cargo `1.94.1` toolchain; release build exited `0` in
+  approximately 368 seconds. Assura `0.4.0` binary hash is
+  `0ec57fa90bcb53bee9bed7b042e89ab546f850a85251e3b2202aba02afa8aa1c` and the
+  regular login-shell shim hash is
+  `825af24be5cf438a795d9d0305d0667f1e041494b23e7c47d9a80e58cf3375e6`.
+  Login-shell identity, wrong-target and wrong-root controls pass. The public
+  and private freeze records are byte-identical; a first root-level freeze
+  placement failed the structure gate and was corrected into ignored
+  `target/a07-evidence/`, with the unfavorable setup result retained.
+- Two fresh sibling-free source-only children completed the fixed public
+  initializer with exit `0`. Event scans found no evaluator contract/output,
+  foreign checkout, repository checkout or sibling-condition reference.
+  Generic ambient user-level skill metadata appeared in both streams despite
+  `--ignore-user-config`; this remains a recorded isolation limitation and
+  earns no credit. The evaluator ran only after each child exited, with the
+  exact declared seven-dimension set; both full results exited `0`, passed all
+  seven dimensions, had zero critical failures, rejected the expected
+  negative naming probe and collected native tests. This is no-credit
+  preparation, not A07 acceptance.
+- No current holdout/manifest rebind or isolated protocol review has been
+  claimed. Screening, allocation, credit and authority flags remain false.
+  Next owner/action is to rebind the six immutable holdouts and
+  exactly-two-condition manifest to `d228472`, obtain isolated protocol
+  `PASS`, and preserve the ambient-context limitation in that review before
+  any separately authorized screening. Continue the held R01/W02/F01 routes
+  independently; do not let this canary or an empty pending queue end the
+  goal.
+
+## Iteration 162 — 2026-09-11 — PR #302 post-merge reconciliation (superseded by d228472)
 
 - Owner/phase: `/root` / current-source reconciliation after the reviewed
   process slice. A fresh fetch resolved `origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`

@@ -5,28 +5,27 @@ The durable active goal is
 This recovery plan records task evidence and the next bounded action; it is
 not a replacement goal or a product-card acceptance record.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=453a32a`)
+## Current candidate route — 2026-09-11 UTC (`origin/master=d228472`, no-credit)
 
 The latest reset fetched
-`origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688` with tree
-`4a5a466ec4922c7cce48bbb5906786e3b50f84ac`; refresh it before the next phase.
-PR #302 merged reviewed head `74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef`
-from base `24a1966`; its exact-head applicable Documentation, CI Scope,
+`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` with tree
+`dc30855addffae4e3b19c0589bfcbd08aa4ebb45`; refresh it before the next phase.
+PR #303 merged reviewed head `bec17c3aa872ee00ec43cf25a291423b1a96667f`
+from base `453a32a`; its exact-head applicable Documentation, CI Scope,
 Security Scope, Evidence Gates and GitGuardian checks passed after independent
 review `PASS`, and the reviewed head tree equals the merge tree. Configured
-push-triggered Documentation (`34644511575`), Rust CI (`34644511679`) and
-Security Audit (`34644511551`) completed successfully at the merge SHA for
+push-triggered Documentation (`34646077514`), Rust CI (`34646077520`) and
+Security Audit (`34646077494`) completed successfully at the merge SHA for
 applicable scope. Product/Rust/performance/release and other scope-skipped
 rows are not product proof.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 24a1966 process
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a process
 reconciliation and 0dff804 candidate are historical or candidate-base/no-
 credit after this source advance; their packet, canary and identity records
 must not be reused. Root unknown dirt, foreign dirty work, stale/prunable
 registrations and unfavorable R01 evidence remain preserved. The merged
-docs/a07-postmerge-24a1966 branch/worktree was verified clean and is ready for
-exact cleanup.
+docs/a07-postmerge-453a process checkout was verified clean and removed.
 
 Read-only capacity evidence keeps the optional VPS lane held: `vps-dev` is
 not configured or resolvable; `vps` has 16 CPUs, 61 GiB RAM, only 20 GiB free
@@ -34,14 +33,23 @@ of a 339 GiB root volume (95% used), and Rust/Cargo `1.95.0-nightly`. No
 remote heavy job or infrastructure change was performed, and remote Linux
 output cannot replace platform or hosted proof.
 
-Next action: remove the exact clean merged 24a process checkout/branch, then
-`/root` owns a fresh exact-toolchain candidate rebuild and identity freeze from
-453a in a clean checkout. Run the sibling-free source-only no-credit canary,
-six-holdout/two-condition rebind and isolated protocol `PASS` before any
-separately authorized screening. If that route is not authorized, continue
-the held R01 recovery or another independent authorized slice. Keep the goal
-active and close only exact clean owned branches/worktrees after post-merge
-proof.
+The fresh d228472 candidate in `/private/tmp/assura-a07-current-d228` is
+identity-bound with exact Rust/Cargo `1.94.1`. Two sibling-free source-only
+children and full seven-dimension evaluators pass with zero critical failures;
+event scans found no private evaluator, foreign checkout or sibling-condition
+path, while generic ambient skill metadata remains an explicit isolation
+limitation. A first root-level freeze placement failed the structure gate and
+was corrected under ignored `target/a07-evidence/`; retain that unfavorable
+setup evidence.
+
+Next action: rebind the six immutable holdouts and exactly-two-condition
+manifest to d228472, obtain isolated protocol `PASS`, and preserve the
+ambient-context limitation in that review before any separately authorized
+screening. If a process merge advances source, classify d228472 as
+candidate-base/no-credit and repeat the fresh-source sequence. If screening is
+not authorized, continue the held R01 recovery or another independent
+authorized slice. Keep the goal active and close only exact clean owned
+branches/worktrees after post-merge proof.
 
 ## Historical source reconciliation — 2026-09-11 UTC (`origin/master=24a1966`, superseded by `453a32a`)
 
