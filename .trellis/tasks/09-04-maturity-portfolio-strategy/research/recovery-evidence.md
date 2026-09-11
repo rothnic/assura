@@ -5,29 +5,28 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 [recovery history 02](recovery-history-02.md),
 [recovery history 03](recovery-history-03.md), and
 [recovery history 04](recovery-history-04.md).
-The historical proof below is retained; the current continuation route and
-post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
-and the newest progress entry before these historical notes.
-Process iteration: 145 (`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15` after PR #287 reconciled the reviewed cd629 checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; post-merge Documentation, Security Audit and Rust CI workflows passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 and cd629 candidate canaries, packets and protocol PASS records are historical no-credit metadata after this source advance; no candidate or screening allocation is current.)
+The historical proof below is retained; current continuation and post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md) and the newest progress entry before these historical notes.
+Process iteration: 146 (`origin/master=851a6b831ea841317b78d94fce658a6974ef401a` after PR #288 merged the reviewed durable-goal and continuation artifacts; PR #287 had reconciled the reviewed cd629 checkpoint as ca81689; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; post-merge Documentation, Security Audit and Rust CI workflows passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3, cd629 and ca816 candidate canaries, packets and protocol PASS records are historical no-credit metadata after these source advances; a fresh 851a6 identity freeze is private preparation with canary, packet rebind and protocol review pending, so no candidate or screening allocation is current.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
-## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=ca81689`)
+## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=851a6b8`)
 
-- PR #287 reconciled the reviewed cd629 process checkpoint at
-  `ca81689d47fac6876654a1a9cced4dce28135e15`. Its applicable Documentation,
-  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as
-  did the post-merge Documentation, Security Audit and Rust CI workflows.
-  Product/Rust/performance/release jobs were scope-skipped and are not
-  acceptance proof.
+- PR #288 merged the reviewed durable-goal and continuation artifacts at
+  `851a6b831ea841317b78d94fce658a6974ef401a` after PR #287 reconciled the
+  reviewed cd629 process checkpoint as ca81689. Applicable Documentation,
+  CI Scope, Security Scope, Evidence Gates, GitGuardian, post-merge
+  Documentation, Security Audit and Rust CI workflows passed; product/Rust/
+  performance/release jobs were scope-skipped and are not acceptance proof.
 - The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
-  A07 active, W03 verified and R01/W02/F01 held. The ac3 candidate, canaries,
-  identity controls, six-handle binding, manifest and isolated protocol `PASS`
-  are historical no-credit metadata after this source advance. No screening,
-  product, threshold, allocation or authority state changed.
+  A07 active, W03 verified and R01/W02/F01 held. The ac3 and ca816 candidate
+  packets and PASS metadata are historical no-credit after these source
+  advances. The fresh 851a6 identity freeze is private preparation with
+  canary, packet rebind and protocol review pending; no product, threshold,
+  screening, allocation or authority state changed.
 - Owner/phase: `/root` / fresh candidate preparation. Refresh source,
-  release/tag, PR/CI, topology and the ledger, then build a fresh explicit-
-  workdir ca81689 candidate, freeze identity, run the bounded no-credit canary,
-  rebind the packet and obtain isolated protocol `PASS` before any separately
-  authorized screening request. Preserve all unfavorable and topology evidence.
+  release/tag, PR/CI, topology and ledger, then complete the explicit-workdir
+  851a6 identity, bounded no-credit canary, packet rebind and isolated protocol
+  `PASS` before any separately authorized screening request. Preserve all
+  unfavorable and topology evidence.
 
 ## Historical candidate preparation and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4`)
 

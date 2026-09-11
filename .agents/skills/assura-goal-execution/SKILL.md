@@ -1,6 +1,6 @@
 ---
 name: assura-goal-execution
-description: "Resume Assura goals and Trellis backlogs with evidence, review, validation and clean integration."
+description: "Resume Assura goals and Trellis backlogs with layered context routing, evidence, independent review, validation and clean integration."
 ---
 
 # Assura Goal Execution

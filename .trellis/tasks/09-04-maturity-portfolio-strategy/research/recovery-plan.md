@@ -1,16 +1,24 @@
 # Execution recovery plan
 
+The durable active goal is
+[`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md).
+This recovery plan records task evidence and the next bounded action; it is
+not a replacement goal or a product-card acceptance record.
+
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #287 reconciled the
-reviewed cd629 post-merge route; its applicable Documentation, CI Scope,
-Security Scope, Evidence Gates and GitGuardian checks passed, as did the
-post-merge Documentation, Security Audit and Rust CI workflows, while product/
+`origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #288 merged the reviewed
+durable-goal and continuation artifacts after PR #287 reconciled the reviewed
+cd629 post-merge route; the applicable Documentation, CI Scope, Security Scope,
+Evidence Gates and GitGuardian checks passed, as did the post-merge
+Documentation, Security Audit and Rust CI workflows, while product/
 Rust/performance/release jobs were scope-skipped and not counted. R01's
 missing raw watch/callback trace remains unresolved, so R01 is still held. The
-30b, c4f and ac3 candidate packets are historical no-credit after each source
-advance; no product acceptance state is current.
+30b, c4f, ac3 and ca816 candidate packets are historical no-credit after each
+source advance; the fresh 851a6 identity freeze is private preparation and its
+canary, packet rebind and protocol review remain pending. No product acceptance
+state is current.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -22,13 +30,13 @@ separately from product card slices. Product changes stay in their separately
 owned card slices.
 
 The current A07 preparation owns the next action: refresh source, release/tag,
-PR/CI, topology and the revision-pinned ledger, then build a fresh explicit-
-workdir candidate at `ca81689`, freeze identity, run the bounded no-credit
-canary, rebind the packet and obtain isolated protocol `PASS` before seeking
+PR/CI, topology and the revision-pinned ledger, then complete the fresh
+explicit-workdir `851a6` candidate identity, bounded no-credit canary, packet
+rebind and isolated protocol `PASS` before seeking
 separately authorized screening. The ac3 candidate was built in a clean owned
 worktree with explicit-workdir/toolchain identity and two bounded no-credit
 canaries, but is now historical metadata after PR #286. The
-961dced, f4368883, 30b and c4f packets are historical no-credit preparation
+961dced, f4368883, 30b, c4f and ca816 packets are historical no-credit preparation
 after later process merges; only a packet proven consistent with the refreshed
 source may be presented for separately authorized screening. No cell allocation,
 acceptance, release, deployment, publication, invitation or protection change
