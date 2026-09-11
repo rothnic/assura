@@ -10,6 +10,24 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
+## Measured remote-capacity hold — 2026-09-11 UTC (`origin/master=c9ac2a8`)
+
+- The requested `vps-dev` SSH alias is not configured or resolvable in this
+  shell. The configured `vps` alias was probed read-only: 16 CPUs, 61 GiB RAM,
+  20 GiB free of 339 GiB root (95% used), Rust/Cargo `1.95.0-nightly`, Node
+  `22.22.1`, pnpm `10.29.3`, and unrelated long-running cargo-watch/PM2 jobs.
+  No remote state was changed.
+- Correction: remote execution is an optional efficiency lane, not a proof or
+  authority source. Keep it held until exact toolchain, free-disk margin and
+  owned-job isolation are measured for the specific committed candidate. Do
+  not retry an unresolved alias, delete unrelated data, or use Linux output as
+  a substitute for macOS/Windows/browser/release/Cloudflare/hosted gates.
+- Next action: after the process-correction branch is integrated, re-probe only
+  an explicitly configured host if a heavy validation job is authorized and
+  record remote HEAD, lockfile, toolchain, elapsed time and exit. Otherwise
+  continue the smallest authorized local or hosted route while retaining the
+  R01 macOS SIGINT diagnostic.
+
 ## Current post-merge workflow correction — 2026-09-11 UTC (`origin/master=c9ac2a8`)
 
 - PR #294 merged the reviewed execution-control-plane correction at

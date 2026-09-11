@@ -35,6 +35,31 @@
   authorized process/preparation slice. Do not allocate or credit the 4560c710
   A07 candidate/packet, which remains candidate-base/no-credit.
 
+## Iteration 153 — 2026-09-11 — measured remote-capacity hold
+
+- Owner/phase: `/root` / read-only validation-placement and VPS-capacity
+  decision. The clean owned checkout remains
+  `/private/tmp/assura-current-c9ac` on `docs/post-merge-ci-fence` at
+  `97b7e613da14c2e23ad24871a5851d7c26392067`, based on
+  `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`. The configured
+  `vps-dev` alias is not resolvable; the configured `vps` alias reports 16
+  CPUs, 61 GiB RAM, 20 GiB free of a 339 GiB root volume (95% used), Rust and
+  Cargo `1.95.0-nightly`, Node `22.22.1`, pnpm `10.29.3`, and unrelated
+  long-running cargo-watch/PM2 jobs. No files, caches, jobs or worktrees were
+  changed.
+- Decision: the remote venue is held for heavy validation because disk
+  headroom, active-job isolation and the exact pinned Rust/Cargo toolchain are
+  not proven. A remote Linux result would supplement, never replace, local
+  platform, hosted, browser, release or Cloudflare proof. Do not retry the
+  unresolved `vps-dev` alias or delete unrelated data to manufacture capacity.
+- Next owner/action: submit the reviewed process-correction slice from the
+  clean current-base branch, then observe its merge-SHA push workflows. Keep
+  the R01 macOS SIGINT failure named and unresolved; if an implementation lane
+  is authorized, re-probe an explicitly configured host and use the isolated
+  clean-commit bundle only after exact-toolchain, free-disk and owned-job
+  checks pass. This capacity decision grants no card, product, screening,
+  release, deployment, publication or authority credit.
+
 ## Iteration 151 — 2026-09-11 — execution control plane and source reconciliation
 
 - Owner/phase: `/root` / process-only orchestration correction. The reset

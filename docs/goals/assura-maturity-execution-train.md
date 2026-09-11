@@ -66,6 +66,13 @@ reconciliation fence is executable, but it does not repair the older R01
 failure. A configured post-merge failure, cancellation or missing result keeps
 the specific recovery route open.
 
+The read-only remote-capacity probe also keeps the VPS efficiency lane held:
+`vps-dev` is not a configured alias, while `vps` has 20 GiB free on a 339 GiB
+root volume (95% used), runs unrelated long-lived jobs, and exposes nightly
+Rust/Cargo rather than the candidate's pinned toolchain. No remote heavy job
+is eligible until a named host passes an exact-toolchain, free-disk and
+owned-job probe; remote Linux output never replaces platform or hosted proof.
+
 ## User certainty bar
 
 Every continuation must make these answers auditable:
@@ -190,6 +197,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | A read-only capacity probe kept the optional VPS lane held: `vps-dev` is not resolvable; configured `vps` has 16 CPUs/61 GiB RAM but only 20 GiB free of 339 GiB root (95% used), unrelated long-running jobs, and Rust/Cargo `1.95.0-nightly` instead of the pinned candidate toolchain. No remote state changed and no remote result is counted as proof. | `research/progress-current.md` Iteration 153; `research/process-corrections-2026-09-11.md`; bounded SSH probe. |
 | 2026-09-11 | PR #294 merged the reviewed execution-control-plane correction as `c9ac2a8`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did the configured post-merge Rust CI, Documentation and Security workflows. The correction makes merge-SHA push workflows a separate reconciliation gate. A retained read-only diagnosis bound R01's macOS failure to job `103316578631`, `tests/watch_cli.rs:196`, where `watch_stops_cleanly_without_runtime_artifacts` did not stop after SIGINT; the focused local Darwin rerun passed once and remains non-substitutive. No product, threshold, allocation, screening or authority state changed. | PR #294; push run `34625737610`; retained failure `34615572565`; Iteration 152 in `research/progress-current.md`. |
 | 2026-09-11 | PR #292 merged the reviewed agent-content-preservation recovery slice as `4560c710`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform tests, performance, release/adoption smoke and GitGuardian checks passed (Security Audit was scope-skipped). The subsequent push-triggered Rust CI run failed in the macOS watch SIGINT test and cancelled Ubuntu/Windows siblings; this remains retained unfavorable hosted evidence. | PR #292; hosted check rollup and push run `34615572565`; focused local `watch_stops_cleanly_without_runtime_artifacts` rerun passed once. |
 | 2026-09-11 | Rebuilt the A07 candidate and no-credit protocol packet at current `origin/master=4560c710`: exact login-shell identity with wrong-target/wrong-root rejects, two fresh sibling-free source-only canaries with all seven evaluator dimensions passing, six immutable holdouts, second-readonly pass, current fixture/invariant/evaluation bindings, exactly two conditions and 30 reserved cells. The packet was initially pending protocol review; the subsequent scoped rereview PASS is recorded below. Screening and credit remain false. | Private packet under `/private/tmp/assura-a07-private-4560c71`; candidate freeze, identity, canary receipts/evaluations, holdout binding, fixture freshness, invariants, evaluation binding, mapping and manifest. |
