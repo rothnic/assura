@@ -32,14 +32,14 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-The latest reset fetched `origin/master=83c382a78a6b616c3c420fb117404333f78d4381`
-after PR #296 merged the reviewed post-merge reconciliation. This is the
-current checkpoint for this continuation; every later phase must fetch again
-before using it. PR #296's reviewed head was
-`a7045dbc9786add7aedb33d9859fbda703926025`; its applicable Documentation,
+The latest reset fetched `origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16`
+after PR #297 merged the reviewed current-checkpoint reconciliation. This is
+the current checkpoint for this continuation; every later phase must fetch
+again before using it. PR #297's reviewed head was
+`004aee7cd67a045d0fc5e040759d670961036870`; its applicable Documentation,
 CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, and
-the configured push-triggered Rust CI (`34630104586`), Documentation
-(`34630104663`) and Security Audit (`34630104624`) workflows completed at the
+the configured push-triggered Rust CI (`34632545493`), Documentation
+(`34632545635`) and Security Audit (`34632545507`) workflows completed at the
 merge SHA. Product/Rust/performance/release rows were explicitly skipped by
 scope and are not product proof. The revision-pinned ledger remains 32 items,
 zero ready-pending rows, five unfinished rows, and three held rows: A07 is
@@ -69,7 +69,8 @@ not a green signal and not a reason to weaken or blindly retry the gate.
 PR #294's reviewed process slice then passed both its exact-head and
 post-merge push-triggered checks at `c9ac2a84`; PR #295 subsequently passed its
 exact-head and merge-SHA push-triggered Documentation, Security and Rust CI
-workflows at `9047a3d`; PR #296 reconciled those results at `83c382a`. This
+workflows at `9047a3d`; PR #296 reconciled those results at `83c382a`; PR #297
+reconciled that checkpoint at `6d57b86`. This
 confirms the reconciliation fence is executable, but it does not repair the
 older R01 failure. A configured post-merge failure, cancellation or missing
 result keeps the specific recovery route open.
@@ -205,6 +206,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #297 merged the reviewed current-checkpoint reconciliation as `6d57b86`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34632545493`), Documentation (`34632545635`) and Security Audit (`34632545507`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #297; `research/progress-current.md` Iteration 156; post-merge run records. |
 | 2026-09-11 | PR #296 merged the reviewed post-merge reconciliation as `83c382a`; its exact-head applicable checks passed, the reviewed tree equals the merge tree, and merge-SHA push-triggered Rust CI (`34630104586`), Documentation (`34630104663`) and Security Audit (`34630104624`) completed successfully. Product/Rust/performance/release rows were explicitly skipped by scope and remain non-applicable. This process result updates current pointers only; no product, threshold, allocation, screening or authority state changed. | PR #296; `research/progress-current.md` Iteration 155; post-merge run records. |
 | 2026-09-11 | PR #295 merged the reviewed workflow-fence and measured-capacity correction as `9047a3d`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did the merge-SHA push-triggered Documentation (`34628874282`), Security Audit (`34628874295`) and Rust CI (`34628874311`) workflows. Product/Rust/performance/release jobs were explicitly skipped by scope and remain non-applicable. The merge tree equals the reviewed head tree; no product, threshold, allocation, screening or authority state changed. | PR #295; `research/progress-current.md` Iteration 154; post-merge run records. |
 | 2026-09-11 | A read-only capacity probe kept the optional VPS lane held: `vps-dev` is not resolvable; configured `vps` has 16 CPUs/61 GiB RAM but only 20 GiB free of 339 GiB root (95% used), unrelated long-running jobs, and Rust/Cargo `1.95.0-nightly` instead of the pinned candidate toolchain. No remote state changed and no remote result is counted as proof. | `research/progress-current.md` Iteration 153; `research/process-corrections-2026-09-11.md`; bounded SSH probe. |

@@ -7,22 +7,22 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=83c382a78a6b616c3c420fb117404333f78d4381`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #296 merged the reviewed
-post-merge reconciliation from head `a7045dbc9786add7aedb33d9859fbda703926025`;
-its exact-head applicable Documentation, CI Scope, Security Scope, Evidence
-Gates and GitGuardian checks passed, the reviewed tree equals the merge tree,
-and the configured push-triggered Rust CI (`34630104586`), Documentation
-(`34630104663`) and Security Audit (`34630104624`) workflows completed at the
-merge SHA. Product/Rust/performance/release jobs were scope-skipped and are
-not product proof. PR #295's `9047a3d` reconciliation is now historical
-process evidence. The earlier push-triggered macOS watch-SIGINT failure
-remains retained unfavorable hosted evidence: run `34615572565`, job
-`103316578631`, failed at `tests/watch_cli.rs:196` with `watch did not stop
-after SIGINT`. R01's missing raw watch/callback trace remains unresolved, so
-R01 is still held. The 4560c710 candidate, canaries and packet are
-candidate-base/no-credit after this source advance; all earlier packets are
-historical no-credit evidence.
+`origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #297 merged the reviewed
+current-checkpoint reconciliation from head
+`004aee7cd67a045d0fc5e040759d670961036870`; its exact-head applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed, the reviewed tree equals the merge tree, and the configured
+push-triggered Rust CI (`34632545493`), Documentation (`34632545635`) and
+Security Audit (`34632545507`) workflows completed at the merge SHA.
+Product/Rust/performance/release jobs were scope-skipped and are not product
+proof. PR #296's `83c382a` reconciliation is now historical process evidence.
+The earlier push-triggered macOS watch-SIGINT failure remains retained
+unfavorable hosted evidence: run `34615572565`, job `103316578631`, failed at
+`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`. R01's missing
+raw watch/callback trace remains unresolved, so R01 is still held. The
+4560c710 candidate, canaries and packet are candidate-base/no-credit after
+this source advance; all earlier packets are historical no-credit evidence.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
