@@ -59,7 +59,8 @@ below are historical unless that checkpoint explicitly supersedes them.
 
 Iterations 139 and 136 remain available in
 [progress-history-21.md](progress-history-21.md); iteration 143 remains above.
-All are historical evidence and do not route the current cd629d4 checkpoint.
+All are historical evidence and do not route current work; use
+[progress-current.md](progress-current.md) for the `851a6b8` checkpoint.
 
 ## Iteration 135 — 2026-09-11 — post-merge R01 artifact reconciliation
 

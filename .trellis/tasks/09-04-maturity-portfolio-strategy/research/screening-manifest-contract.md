@@ -106,18 +106,20 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, the A07 coordinator must first refresh `origin/master`,
 release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
-evidence to that revision. PR #286 made cd629d4 the prior checkpoint and PR
-#287 now places the current source at
-`ca81689d47fac6876654a1a9cced4dce28135e15`; its applicable Documentation, CI
+evidence to that revision. PR #286 made cd629d4 the prior checkpoint, PR #287
+reconciled it as ca81689, and PR #288 now places the current source at
+`851a6b831ea841317b78d94fce658a6974ef401a`; its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
-post-merge Documentation, Security Audit and Rust CI. The 30b, c4f and ac3
-candidate packets, canaries and protocol results are historical no-credit after
-their source advances. No current candidate or screening allocation exists.
-Refresh the source and ledger again, build a fresh explicit-workdir candidate,
-freeze identity, run the bounded no-credit canary, rebind the six-handle/two-
-condition packet and obtain isolated protocol `PASS` before seeking the
-separately authorized screening gate. If any later audit finds a mismatch,
-record contract/location/failure/smallest verification and repeat the complete
+post-merge Documentation, Security Audit and Rust CI. The 30b, c4f, ac3 and
+ca816 candidate packets, canaries and protocol results are historical no-credit
+after their source advances. The fresh 851a6 identity freeze is private
+preparation; its canary, packet rebind and protocol review remain pending. No
+current candidate or screening allocation exists. Refresh the source and
+ledger again, complete the fresh explicit-workdir candidate, freeze identity,
+run the bounded no-credit canary, rebind the six-handle/two-condition packet
+and obtain isolated protocol `PASS` before seeking the separately authorized
+screening gate. If any later audit finds a mismatch, record
+contract/location/failure/smallest verification and repeat the complete
 new-candidate sequence before allocation.
 All prior canaries, process PRs and metadata-only evidence remain no-credit and
 never satisfy screening or acceptance gates. The retained R01 artifacts still
