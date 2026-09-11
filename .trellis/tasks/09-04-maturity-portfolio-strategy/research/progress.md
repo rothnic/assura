@@ -1,29 +1,31 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md), [iteration 133](progress-history-19.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md), [iteration 133](progress-history-19.md), [iteration 138](progress-history-20.md))
 
-## Iteration 138 — 2026-09-11 — protocol PASS and resume-route correction
+## Iteration 139 — 2026-09-11 — post-merge current-source reconciliation
 
-- Owner/phase: `/root/a07_protocol_review` / `review`; the frozen packet is
-  the exact 5b03c7f candidate prepared in iteration 136. The independent
-  reviewer inspected only the 13 requested metadata artifacts and returned
-  `PASS` with no mandatory findings. Its reviewed hashes and residual limits
-  are recorded privately in the protocol-review artifact.
-- The review confirmed cross-artifact source/tree/binary/shim/prompt/public
-  contract/toolchain identity, exactly two conditions with one input variable,
-  two receipt exits `0`, six unique current-candidate holdouts with immutable
-  creation records and second-readonly `pass`, a complete `3 × 2 × 5 = 30`
-  reserved matrix, full evaluator aggregates and privacy/no-credit flags.
-- The manifest, holdout binding, construction record and second-readonly
-  confirmation now record protocol `PASS` while allocation, screening,
-  holdout, acceptance, release, deployment, publication, invitation and
-  protection flags remain false. This is preparation proof only; raw logs,
-  fixtures and child transcripts remain private and the reviewer did not
-  independently rehash public-contract bytes.
-- Context level: not exposed. A07-ROUTE-004 is accepted and fixed: after the
-  refresh, `/root` must prove the revision still matches this packet; on
-  mismatch record contract/location/failure/smallest verification, freeze a new
-  candidate, rerun the no-credit canary, rebind holdout/manifest and obtain an
-  isolated protocol `PASS`. Refresh source/release/tag/PR/CI/topology/ledger,
-  then seek screening only when the match proof holds; no allocation or A07 acceptance is claimed.
+- Owner/phase: process coordinator `/root` / `post-merge-reconcile`; clean
+  owned worktree `/private/tmp/assura-a07-postmerge-961dced` is based on
+  `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`. PR #280 merged the
+  reviewed process-only route; applicable Documentation, CI Scope, Security
+  Scope, Evidence Gates and GitGuardian checks passed. Product/Rust/
+  performance/release jobs were scope-skipped and are not acceptance proof.
+- The post-merge Rust CI run `34564937464` completed `success`: CI Scope and
+  Evidence Gates passed; the product, Rust, performance, release, MSRV,
+  Rustfmt and test jobs were skipped by scope and remain non-applicable. The
+  revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified, R01/W02/F01 held.
+- The first candidate build command accidentally compiled the dirty root
+  checkout; its `c7815c5` binary and permissive wrapper output are retained as
+  failed no-credit evidence. The explicit-workdir rebuild from 961dced
+  completed in `/private/tmp/assura-a07-current-961dced` with Rust/Cargo
+  `1.94.1`, Assura `0.4.0`, source tree
+  `749d51fdb33c9d46a6c45b7a84521274cb4f43b3` and binary SHA
+  `be33c5018feb55ea9b1ab6f8d4766bb3a50c71a5cba1773bcfbc6d0f3968f9e7`.
+- Fresh login identity and two source-only receipts agree on that candidate;
+  both full evaluators pass all seven dimensions. Isolated review found stale
+  5b03c7f refs and contradictory pending/pass prose; both are corrected, the
+  cross-artifact assertion passes and scoped protocol rereview returns `PASS`.
+  Context level: not exposed. Next: refresh source/ledger and prove packet
+  match before separately authorized screening; preserve topology exceptions.
 
 ## Iteration 136 — 2026-09-11 — current candidate canary and packet rebind
 
@@ -995,6 +997,3 @@ recoverable. This reconciliation adds records rather than rewriting outcomes.
   and unrelated workloads. No benchmark threshold or supported row changes.
 - Next: R01 final review/gates, R03 measured hypothesis decision, A04 final
   metadata/rebase/gates. A05 remains untouched; no card is newly done.
-
-Historical iterations 44–49 and their index are preserved in [`progress-history-20.md`](progress-history-20.md).
-Do not route live work from that file.

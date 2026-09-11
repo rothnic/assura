@@ -3,6 +3,32 @@
 This file retains historical progress entries moved from the active index to
 keep the configured line limit intact. Do not route live work from this file.
 
+## Iteration 138 — 2026-09-11 — protocol PASS and resume-route correction
+
+- Owner/phase: `/root/a07_protocol_review` / `review`; the frozen packet is
+  the exact 5b03c7f candidate prepared in iteration 136. The independent
+  reviewer inspected only the 13 requested metadata artifacts and returned
+  `PASS` with no mandatory findings. Its reviewed hashes and residual limits
+  are recorded privately in the protocol-review artifact.
+- The review confirmed cross-artifact source/tree/binary/shim/prompt/public
+  contract/toolchain identity, exactly two conditions with one input variable,
+  two receipt exits `0`, six unique current-candidate holdouts with immutable
+  creation records and second-readonly `pass`, a complete `3 × 2 × 5 = 30`
+  reserved matrix, full evaluator aggregates and privacy/no-credit flags.
+- The manifest, holdout binding, construction record and second-readonly
+  confirmation now record protocol `PASS` while allocation, screening,
+  holdout, acceptance, release, deployment, publication, invitation and
+  protection flags remain false. This is preparation proof only; raw logs,
+  fixtures and child transcripts remain private and the reviewer did not
+  independently rehash public-contract bytes.
+- Context level: not exposed. A07-ROUTE-004 is accepted and fixed: after the
+  refresh, `/root` must prove the revision still matches this packet; on
+  mismatch record contract/location/failure/smallest verification, freeze a new
+  candidate, rerun the no-credit canary, rebind holdout/manifest and obtain an
+  isolated protocol `PASS`. Refresh source/release/tag/PR/CI/topology/ledger,
+  then seek screening only when the match proof holds; no allocation or A07
+  acceptance is claimed.
+
 ## Iteration 49 — 2026-09-07 — Complete diagnostic-consumer correction
 
 - PR #185 head 1852b61 passed final local PR tier 82802 (exit 0), then failed
@@ -52,3 +78,8 @@ keep the configured line limit intact. Do not route live work from this file.
 Iterations 44–47 and the historical index are preserved in
 [`progress-history-14.md`](progress-history-14.md). Do not route live work
 from that file.
+
+## Preserved active-index tail
+
+Historical iterations 44–49 and their index are preserved in this file. Do not
+route live work from this file.

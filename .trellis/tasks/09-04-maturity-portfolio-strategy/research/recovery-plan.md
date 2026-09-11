@@ -2,12 +2,15 @@
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #278 merged the reviewed
-R01 retained-artifact inventory as a process/evidence-only slice. Its missing
-raw watch/callback trace remains unresolved, so R01 is still held. The prior
-71adc2e candidate-bound canaries and packet are now historical no-credit
-metadata after this source advance; no product or acceptance state changed.
+`origin/master=961dced162c8fe67ad87d64e0be750249edd5681`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #280 merged the reviewed
+process-only route; its applicable Documentation, CI Scope, Security Scope,
+Evidence Gates and GitGuardian checks passed, while product/Rust/performance/
+release jobs were scope-skipped and not counted. Rust CI run `34564937464`
+completed successfully for its applicable jobs. R01's missing raw watch/callback
+trace remains unresolved, so R01 is still held. The 5b03c7f candidate-bound
+canaries and packet are now historical no-credit metadata after this source
+advance; no product or acceptance state changed.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -18,14 +21,14 @@ supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
 
-The current A07 preparation owns the next action: refresh source/release/tag,
-PR/CI, topology and the revision-pinned ledger after the isolated protocol
-`PASS` for the private 5b03c7f candidate packet. If a fresh audit finds a
-concrete mismatch, it must name its contract, location, failure scenario and
-smallest verification before a private repair and scoped rereview. A protocol
-`PASS` only permits asking for the separately authorized screening decision;
-no cell allocation, acceptance, release, deployment, publication, invitation
-or protection change is implied.
+The current A07 preparation owns the next action: finish the 961dced packet
+already frozen in the clean owned worktrees. Its corrected explicit-workdir
+build, login-shell identity control, two source-only full-contract canaries,
+six-handle rebind and two-condition manifest are recorded privately with
+isolated protocol review `PASS` after two concrete metadata corrections; only
+a packet proven consistent with a later refresh may be presented for separately
+authorized screening. No cell allocation, acceptance, release, deployment,
+publication, invitation or protection change is implied.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
@@ -47,7 +50,36 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate-bound preparation — 2026-09-11 UTC (`origin/master=5b03c7f`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=961dced`)
+
+- PR #280 is merged as `961dced162c8fe67ad87d64e0be750249edd5681` from
+  reviewed head `6a12ffa5337cb411d6726336c5cccc8d30b7d72a` on base
+  `5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`. The exact-head applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
+  checks passed; scope-skipped product/Rust/performance/release jobs are not
+  acceptance proof.
+- The revision-pinned ledger at 961dced remains 32 items, `ready_pending=0`,
+  five unfinished and three held: A07 active, W03 verified, and R01/W02/F01
+  held. The 5b03c7f candidate freeze, canaries, six-handle binding, manifest
+  and protocol `PASS` are historical no-credit metadata after this source
+  advance.
+- Owner/phase: `/root` / `candidate-bound-canary`; clean owned worktree is
+  `/private/tmp/assura-a07-postmerge-961dced` on branch
+  `docs/a07-postmerge-961dced`. The corrected current-candidate build is owned
+  in `/private/tmp/assura-a07-current-961dced`; fresh canary and packet refs
+  are private, no screening is allocated.
+- The first attempted 961dced build accidentally used the dirty root checkout;
+  its `c7815c5` binary and permissive wrapper output are retained as failed
+  no-credit evidence. The explicit-workdir rebuild produced binary
+  `be33c5018feb55ea9b1ab6f8d4766bb3a50c71a5cba1773bcfbc6d0f3968f9e7`;
+  identity, receipts and both full seven-dimension evaluators agree on
+  source/tree/binary/shim/toolchain. Protocol review found stale 5b refs and
+  pending/pass prose; both are corrected, the assertion passes and the scoped
+  rereview returned metadata `PASS`.
+- Next action: refresh source/ledger again and prove packet identity before
+  seeking separately authorized screening. Preserve all authority holds.
+
+## Historical candidate-bound preparation — 2026-09-11 UTC (`origin/master=5b03c7f`)
 
 - The clean candidate worktree `/private/tmp/assura-a07-current-5b03c7f` was
   built once from the refreshed current master with the exact Rust/Cargo
