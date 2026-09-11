@@ -1,12 +1,35 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=4560c710967d59993b9ea4f9b86613d446443f79`.
+`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`.
+This is an as-of checkpoint; fetch again before every phase. The reusable
+state machine, checkpoint schema, layered disclosure and validation-budget
+rules are in
+[`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md).
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge and candidate reconciliation — 2026-09-11 UTC (`origin/master=4560c710`)
+## Current post-merge and candidate reconciliation — 2026-09-11 UTC (`origin/master=122fa0b3`)
+
+- PR #293 merged the reviewed process/goal reconciliation at
+  `122fa0b3d976bb5196359aee48ad67bf272fb541`. Its exact-head Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed;
+  product/Rust/performance/release jobs were scope-skipped and are not
+  product proof. The post-merge Rust CI, Documentation and Security workflows
+  passed their applicable scope jobs. The earlier macOS watch-SIGINT failure
+  remains retained unfavorable hosted evidence.
+- The ledger is still `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified and R01/W02/F01 held. The 4560c710 candidate,
+  canaries and protocol packet are candidate-base/no-credit after this source
+  advance; no screening, allocation, credit, release, deployment, publication
+  or invitation authority exists.
+- The coordinator owns a process-only continuation route: refresh
+  source/release/tag/PR/CI/topology and the ledger, inspect active/implemented/
+  verified/held records, and keep one named recovery or preparation action
+  live. A future A07 screening phase must rebuild and rebind at the refreshed
+  source before allocation; otherwise continue the authorized recovery slice.
+  Do not stop at the empty pending queue.
 
 - PR #292 merged the reviewed agent-content-preservation recovery slice as
   `4560c710967d59993b9ea4f9b86613d446443f79`. Its exact-head applicable

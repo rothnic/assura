@@ -12,10 +12,32 @@ dated direction snapshots below remain historical. Check the existing product
 goal's actual lifecycle before relying on automatic continuation. Keep one
 program objective with bounded card checkpoints; do not replace an unfinished
 goal at each card boundary.
+For state transitions, checkpoint fields, layered disclosure, validation
+budgets, measured VPS use and the merge/cleanup fence, load the detailed
+[`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md)
+reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=4560c710`)
+## Current source route — 2026-09-11 UTC (`origin/master=122fa0b3`, as-of)
+
+The latest reset fetched
+`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541` after PR #293 merged
+the reviewed process/goal reconciliation. Its applicable Documentation, CI
+Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
+the applicable post-merge Rust CI, Documentation and Security workflows;
+product/Rust/performance/release jobs were scope-skipped and are not product
+proof. Fetch again before every phase because this is an as-of checkpoint.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 4560c710 candidate
+and private packet are candidate-base/no-credit after this source advance. No
+screening, allocation, credit, release, deployment, publication or invitation
+authority exists. The next route is reset, active-first inspection and one
+explicitly owned recovery/preparation action; an empty pending queue is not a
+stop condition.
+
+## Historical candidate route — 2026-09-11 UTC (`origin/master=4560c710`)
 
 The latest refresh is
 `origin/master=4560c710967d59993b9ea4f9b86613d446443f79` after PR #292 merged
@@ -37,13 +59,9 @@ missing receipt-condition aliases and a stale construction hash; both are
   `PASS` for the metadata scope and is recorded with pre/post-verdict hashes.
   Screening, allocation and credit remain false.
 
-The only valid next route is: refresh source, release/tag, PR/CI, topology and
-ledger; then seek separately authorized screening if authority exists. The
-protocol `PASS` clears metadata review only. Any future finding must become a
-concrete contract/location/failure/smallest verification; repair accepted
-metadata deltas and obtain scoped rereview. Never use canary/protocol/skipped/
-zero-test evidence as product acceptance, and do not finish while a review,
-repair, integration or cleanup action remains live.
+That candidate's protocol `PASS` remains metadata-only/no-credit preparation;
+its source is superseded and cannot route a current screening decision. Preserve
+its failed hosted run and all historical evidence.
 
 ## Historical current-source reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`, superseded)
 

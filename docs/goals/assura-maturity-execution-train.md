@@ -12,6 +12,7 @@ related:
   - ../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/recovery-plan.md
   - ../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/orchestration-plan.md
   - ../../.agents/skills/assura-goal-execution/SKILL.md
+  - ../../.agents/skills/assura-goal-execution/references/execution-control-plane.md
 
 ---
 
@@ -31,22 +32,27 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-The latest refresh is `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
-(PR #292, `fix(agent): preserve modeled markdown records`). The revision-pinned
-ledger remains 32 items, zero ready-pending rows, five unfinished rows, and
-three held rows: A07 is active, W03 is verified, and R01, W02, and F01 retain
-their separate evidence or authority holds. The current A07 candidate is
-identity-frozen at this source with exact Rust/Cargo 1.94.1, two fresh
-source-only full-evaluator canaries, a six-handle holdout rebind, fixture
-freshness/invariant/evaluation bindings, and a 30-cell reserved manifest. The
-  independent review found receipt-ID alias and construction-hash metadata gaps;
-  both were repaired, cross-artifact assertions pass, and the scoped independent
-  rereview returned `PASS` for the metadata scope. All of that evidence is
-  explicitly no-credit; no screening allocation or product acceptance exists.
-  Earlier packets are dated candidate-base/no-credit metadata whenever their
-  source is superseded.
-The root unknown path, foreign dirty worktree, stale registrations, historical
-branches, and unfavorable evidence remain preserved as ownership boundaries.
+The latest reset fetched `origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`
+after PR #293 merged the reviewed process/goal reconciliation. This is an
+as-of checkpoint; every continuation must fetch again before using it. The
+revision-pinned ledger remains 32 items, zero ready-pending rows, five
+unfinished rows, and three held rows: A07 is active, W03 is verified, and R01,
+W02, and F01 retain their separate evidence or authority holds. The 4560c710
+candidate and packet are candidate-base/no-credit metadata after this source
+advance; no current candidate, screening allocation or product acceptance is
+claimed. The root unknown path, foreign dirty worktree, stale registrations,
+historical branches and unfavorable evidence remain preserved as ownership
+boundaries.
+
+The reusable execution-control-plane reference defines the state machine,
+checkpoint fields, layered disclosure, validation budget, measured VPS test,
+review contract and terminal topology fence. It is a phase reference, not a
+second goal or a substitute for the task ledger. The coordinator's next action
+is to refresh source/release/tag/PR/CI/topology and the ledger, inspect active
+and held work, then keep one explicitly owned recovery or preparation action
+live. If A07 screening is separately authorized, rebuild and rebind at the
+refreshed source before allocation; otherwise continue an authorized recovery
+slice. Never stop at an empty pending queue.
 
 PR #292's exact-head applicable checks passed, but its separate push-triggered
 Rust CI run reported a macOS `watch_stops_cleanly_without_runtime_artifacts`

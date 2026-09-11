@@ -4,6 +4,9 @@ Current recovery route: [recovery-plan.md](recovery-plan.md). Resolve this task
 at refreshed `origin/master`, then read the repository's `assura-goal-execution`
 skill for the execution contract and validation matrix. Absolute paths below
 identify the task, not the authoritative revision of an old checkout.
+Load [`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md)
+only when a state transition, compaction, expensive gate, review, integration
+or handoff requires its detailed checkpoint and decision rules.
 
 Resume the existing supported runtime goal; do not create a replacement goal
 for a card boundary or a compaction. Refresh the `release` ref and tags as
@@ -14,28 +17,24 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, refresh before use):
-`origin/master=4560c710967d59993b9ea4f9b86613d446443f79`; PR #292 merged the
-reviewed agent-content-preservation recovery slice. Its exact-head applicable
-checks passed. The separate push-triggered Rust CI run `34615572565` failed in
-the macOS `watch_stops_cleanly_without_runtime_artifacts` SIGINT test and
-cancelled the Ubuntu/Windows matrix siblings; a focused local rerun passed
-once. Preserve this hosted failure as unresolved diagnostic evidence; do not
-rerun the unchanged method or treat it as green.
+`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`; PR #293 merged the
+reviewed process/goal reconciliation. Its applicable Documentation, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed, as did the
+applicable post-merge Rust CI, Documentation and Security workflows.
+Product/Rust/performance/release jobs were scope-skipped and are not product
+proof. This is an as-of checkpoint, not a permanent baseline. The revision-
+pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3` (A07
+active, W03 verified, R01/W02/F01 held). The 4560c710 candidate and packet are
+candidate-base/no-credit after this source advance. Preserve the earlier
+macOS watch-SIGINT hosted failure as unfavorable diagnostic evidence.
 
-The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The current candidate
-uses exact Rust/Cargo `1.94.1` and passes login-shell identity plus deliberate
-wrong-target/wrong-root controls. Two fresh sibling-free source-only canaries
-pass all seven evaluator dimensions with zero critical failures. The private
-six-handle/two-condition/30-cell packet is rebound to this source with current
-fixture, invariant and evaluation references. Independent review found missing
-receipt-condition aliases and a stale construction hash; both are repaired,
-  cross-artifact assertions pass, and the scoped rereview returned `PASS` for
-  the metadata scope; pre- and post-verdict hashes are recorded. All
-  screening/allocation/credit flags remain false. Refresh source and the ledger
-  before any further phase, then seek separately authorized screening only if
-  authority exists. A future finding still requires concrete accepted scope,
-  affected-gate verification and scoped rereview.
+The next action is to refresh source/release/tag/PR/CI/topology and the ledger,
+inspect active/implemented/verified/held records before pending rows, and keep
+one explicitly owned recovery or preparation action live. If A07 screening is
+separately authorized, rebuild and rebind at the refreshed source before any
+allocation; otherwise continue the authorized recovery slice. Never stop at an
+empty pending queue, and never infer product credit from process, canary,
+protocol, skipped or zero-test evidence.
 
 As-of correction checkpoint (2026-09-11, superseded by `40f1155c`; refresh before use):
 `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; the revision-pinned
