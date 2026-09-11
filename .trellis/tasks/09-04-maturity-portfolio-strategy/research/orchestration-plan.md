@@ -97,7 +97,25 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — 55a38ff
+## Current candidate route — 30b4c663
+
+The latest reset fetched `origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`
+after PR #283 reconciled the reviewed process route. Its applicable
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed; product/Rust/performance/release jobs were scope-skipped and are
+not acceptance proof. The latest tag remains `v0.3.0`; no release branch exists.
+
+The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`:
+A07 active, W03 verified, R01/W02/F01 held. The explicit-workdir candidate was
+built with Rust/Cargo `1.94.1`; two fresh source-only canaries pass the full
+seven-dimension evaluator and its negative policy control. These are no-credit
+preparation. The current six-handle/two-condition packet is rebound and its
+isolated protocol rereview returned `PASS`; no screening cells are allocated
+and authority is false. `/root` must refresh source/ledger, prove the packet
+still matches, and seek separately authorized screening. Preserve the
+root unknown path and foreign, stale and historical topology exceptions.
+
+## Historical post-merge route — 55a38ff
 
 The latest reset fetched `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
 PR #282 merged the reviewed process-correction slice from `af5240d`; its
