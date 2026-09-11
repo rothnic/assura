@@ -50,7 +50,7 @@ post-verdict hashes. After a fresh source reset, seek separately authorized
 screening only if authority exists; preserve every unfavorable run and keep
 all allocation/credit/authority flags false.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`)
+## Historical post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`, superseded by `6d57b86`)
 
 PR #289 merged the reviewed durable goal, layered-routing skill metadata and
 current-route corrections at `40f1155c3d26dc40141d2464d7e2f027f7bb9770` after
