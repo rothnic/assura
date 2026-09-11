@@ -47,14 +47,31 @@ historical run names or labels.
 
 A fresh detached checkout at 129a249 was the prior candidate build, and its
 source/tree, version, fixed target and login-shell command identity were frozen
-privately. Two source-only canaries and the six-handle/two-condition packet
-passed their no-credit protocol checks, but all of that evidence is historical
-after the later source advances. The current 71adc2e candidate canary,
-six-handle/two-condition rebind and isolated protocol `PASS` are now the
-newest preparation evidence. The next step is separately authorized screening
-preparation after another source/ledger refresh.
+privately. The later 71adc2e and 5b03c7f canaries, rebinds and protocol `PASS`
+are also historical no-credit evidence after the 961dced source advance. The
+current 961dced candidate has passed the pre-review identity, receipt and
+full-contract canary assertions; its new packet remains pending isolated
+protocol review. The next step is scoped review and rereview, followed by a
+fresh source/ledger refresh before separately authorized screening.
 
-## Current source rebind completed — 5b03c7f (protocol PASS; no-credit)
+## Current post-merge source checkpoint — 961dced
+
+PR #280 merged the reviewed process-only route as `961dced` after applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed; scope-skipped product/Rust/performance/release jobs are not acceptance
+proof. The 5b03c7f candidate and packet below are historical no-credit after
+this source advance. Rust CI run `34564937464` completed successfully for its
+applicable jobs. The current 961dced candidate is now frozen privately after
+an explicit-workdir rebuild; its identity, two full-contract canaries and
+six-handle/two-condition rebind pass the pre-review assertion. The isolated
+review found stale 5b refs and pending/pass prose; both are corrected, the
+cross-artifact assertion passes, and scoped rereview returned protocol `PASS`.
+A build that accidentally used the dirty root is retained as failed no-credit
+provenance. Refresh
+source/release/tag/PR/CI/topology and the ledger before seeking separately
+authorized screening.
+
+## Historical source rebind — 5b03c7f (protocol PASS; no-credit; superseded by `961dced`)
 
 The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`
 and reran the revision-pinned ledger (`items=32`, `ready_pending=0`,

@@ -2,75 +2,46 @@
 
 Date: 2026-09-11. Scope: process artifacts, agent instructions and validation routing only. Product acceptance is unchanged; no card is promoted by this file.
 Older tail note: [recovery history 01](recovery-history-01.md),
-[recovery history 02](recovery-history-02.md), and
-[recovery history 03](recovery-history-03.md).
+[recovery history 02](recovery-history-02.md),
+[recovery history 03](recovery-history-03.md), and
+[recovery history 04](recovery-history-04.md).
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 138 (origin/master=5b03c7f current A07 candidate freeze, identity/full-contract canary, six-handle/two-condition packet rebind and independent protocol `PASS`; A07-ROUTE-004 is corrected in the task route; no product, threshold, allocation or authority state changed. The prior 71adc2e packet remains historical no-credit metadata).
+Process iteration: 139 (`origin/master=961dced162c8fe67ad87d64e0be750249edd5681` after PR #280 merged the reviewed process-only route; applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Rust CI run `34564937464` completed successfully for its applicable jobs. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The 5b03c7f packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Current A07 protocol review — 2026-09-11 UTC (`origin/master=5b03c7f`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=961dced`)
 
-- Owner/phase: `/root/a07_protocol_review` / `review`; the private review
-  artifact records `PASS` with no mandatory findings for the 5b03c7f packet.
-  The reviewer inspected exactly the requested metadata records and returned
-  the reviewed SHA-256 values for the identity control, canary, manifest,
-  mapping, receipts, public evaluator summaries, six-handle construction,
-  binding and second-readonly confirmation.
-- The review confirms current source/tree/binary/shim/prompt/public-contract/
-  toolchain agreement; exactly two conditions with one differing input value;
-  both receipts and full evaluator aggregates; six unique holdouts with
-  immutable creation times/evidence and second-readonly `pass`; a complete
-  `3 × 2 × 5 = 30` reserved matrix; and private/no-credit boundaries. Raw
-  evaluator output, fixtures and child transcripts were excluded as required.
-- The manifest, binding, construction and confirmation now carry protocol
-  `PASS`, but screening authority and all allocation/acceptance flags remain
-  false. Residual limits are explicit: this is metadata-only and the reviewer
-  did not independently rehash public-contract bytes. No screening, holdout,
-  follow-up-feature, release, deployment, publication or invitation action is
-  authorized by this review.
-- Exact next action: refresh `origin/master`, release/tag, PR/CI, topology and
-  the revision-pinned ledger, then prove the revision still matches this packet;
-  on mismatch record contract/location/failure/smallest verification, freeze a
-  new candidate, rerun the no-credit canary, rebind holdout/manifest and obtain
-  isolated protocol `PASS` before separately authorized screening. Preserve the private packet and do not allocate a cell from this protocol `PASS` alone.
+- Owner/phase: process coordinator `/root` / `post-merge-reconcile`; PR #280
+  merged reviewed head `6a12ffa5337cb411d6726336c5cccc8d30b7d72a` into
+  `961dced`. Applicable Documentation, CI Scope, Security Scope, Evidence
+  Gates and GitGuardian checks passed; scope-skipped product/Rust/performance/
+  release jobs remain non-applicable. Rust CI run `34564937464` completed
+  successfully for its applicable jobs.
+- Clean owned worktree `/private/tmp/assura-a07-postmerge-961dced` records the
+  current route. The ledger is `32/0/5/3` (A07 active, W03 verified,
+  R01/W02/F01 held). A fresh detached build from this exact revision completed
+  with Rust/Cargo `1.94.1`, Assura `0.4.0`, source tree
+  `749d51fdb33c9d46a6c45b7a84521274cb4f43b3` and binary SHA
+  `be33c5018feb55ea9b1ab6f8d4766bb3a50c71a5cba1773bcfbc6d0f3968f9e7`.
+- A first build command accidentally compiled the dirty root checkout; its
+  `c7815c5` binary and permissive wrapper output are retained as failed
+  no-credit evidence. The corrected explicit-workdir candidate, login-shell
+  identity, two receipts and both full seven-dimension evaluator runs agree on
+  961dced. Isolated review found stale 5b refs and pending/pass prose; both
+  were corrected, the cross-artifact assertion passed, and scoped rereview
+  returned metadata `PASS`.
+- The 5b03c7f identity/canary/holdout/manifest/protocol packet is historical
+  no-credit after the source advance. Refresh source/ledger and prove the
+  packet still matches before separately authorized screening. No allocation,
+  product acceptance, release, deployment,
+  publication, invitation or protection state changed.
 
-## Current A07 candidate-bound preparation — 2026-09-11 UTC (`origin/master=5b03c7f`)
+Historical 5b03c7f protocol and candidate-bound sections moved to
+[recovery history 04](recovery-history-04.md).
 
-- Owner/phase: process coordinator `/root` / `candidate-bound-canary`; clean
-  owned worktree `/private/tmp/assura-a07-current-5b03c7f` was built from the
-  refreshed `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`. The
-  root's unknown A04 note and all foreign or historical topology exceptions
-  were preserved. Local capacity and the exact Rust/Cargo `1.94.1` toolchain
-  were sufficient, so no VPS handoff was needed.
-- Candidate freeze and login-shell identity control match source SHA, Git tree
-  SHA, absolute binary, version and shim. The wrong-path identity control
-  intentionally returned exit `97`; the result is retained as a negative
-  protocol control. A malformed evaluator invocation using an unsupported
-  dimension token was retained as failed no-credit evidence and corrected by
-  consulting the evaluator's declared dimensions.
-- Two separate source-only fixtures beneath sibling-free parents completed the
-  composed initialization route. Both full evaluator results are
-  `verification_scope=full`, `acceptance_eligible=true`, `acceptance_pass=true`,
-  zero critical failures, all seven dimensions `pass`, expected negative
-  policy rejection and collected native test. These are candidate-bound
-  no-credit canaries only; no 30-cell screening or 18-run holdout credit is
-  implied.
-- The private manifest is exactly two conditions with one input variable,
-  separate mapping, 30 reserved cells and private receipts. Six opaque
-  holdouts are rebound with immutable creation records, exact toolchain,
-  current candidate identity, second read-only confirmation and raw-hook
-  exclusion. The manifest, binding and confirmation deliberately remain
-  `PENDING` for independent protocol review; screening authority is false.
-- Exact next action: independent isolated review of the current packet using
-  the review brief. If it returns concrete findings, record the contract,
-  location, failure scenario and smallest fix, repair privately and rereview.
-  If it returns `PASS`, refresh current source/ledger once more before asking
-  for the separately authorized screening decision. Do not allocate, publish,
-  release, deploy, invite, or close A07 from this preparation evidence.
-
-## Post-merge R01 artifact inventory reconciliation — 2026-09-11 UTC (`origin/master=c5b2822`)
+## Historical post-merge R01 artifact inventory reconciliation — 2026-09-11 UTC (`origin/master=c5b2822`)
 
 - Owner/phase: process coordinator `/root` / `reconcile`; clean owned checkout
   `/private/tmp/assura-train-c5b2822` on

@@ -7,8 +7,13 @@ conversation context.
 
 ## Before launch
 
-1. Build or select one immutable candidate from the current source SHA. Record
-   its absolute path, canonical target, source SHA, version and SHA-256.
+1. Build or select one immutable candidate from the current source SHA. Pass
+   the candidate checkout as the command's explicit working directory (a
+   target directory alone is not provenance), and capture `pwd`, compiler
+   source-path output, `git rev-parse HEAD` and `HEAD^{tree}`. If the compiler
+   names another checkout, invalidate the binary and retain it as no-credit
+   evidence. Record the absolute path, canonical target, source SHA, version
+   and SHA-256 only after those checks agree.
 2. Create a fresh source-only fixture containing only the public inputs needed
    for the initializer. Do not copy evaluator contracts, harness directories,
    prior results, coordinator notes or hidden expected-output files into it.
@@ -27,6 +32,11 @@ conversation context.
    ambient global Assura installations. Never mutate a global binary or startup
    file. A shim must be a regular executable that `exec`s one fixed absolute
    target; aliases, shell functions and opaque symlink chains are invalid.
+5. From that same absolute candidate, inspect the relevant command help before
+   launch (`assura init --help`, `assura agent onboard --help`, or the exact
+   route in the contract). A wrapper must propagate every initializer failure:
+   do not place commands in a permissive grouped block that overwrites a
+   nonzero exit. The receipt exit is nonzero whenever any required step fails.
 
 ## Identity canary
 

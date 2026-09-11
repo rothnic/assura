@@ -14,29 +14,27 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 As-of routing checkpoint (2026-09-11, refresh before use): the latest reset
-resolved `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`; the ledger is
+resolved `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`; the ledger is
 32 items, zero ready pending, five unfinished and three held: A07 active, W03
-verified, and R01/W02/F01 held. PR #278's process-only R01 inventory remains
-merged and R01 still lacks its raw watch/callback trace. The root checkout has
-unknown user-owned dirt; use the clean owned candidate/docs worktrees and
-preserve all foreign or stale topology exceptions.
+verified, and R01/W02/F01 held. PR #280's process-only route is merged; its
+applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed, while product/Rust/performance/release jobs were
+scope-skipped and are not acceptance proof. The root checkout has unknown
+user-owned dirt; use clean owned worktrees and preserve foreign or stale
+topology exceptions.
 
-The current A07 candidate is frozen from 5b03c7f with the exact Rust/Cargo
-1.94.1 toolchain and login-shell identity. Two fresh sibling-free source-only
-canaries completed the composed Codex route; both full evaluator runs passed
-all seven dimensions, the expected negative policy probe and a collected
-native test. The six-handle holdout and exactly-two-condition packet are
-rebound with 30 reserved no-credit cells. The isolated protocol review
-  returned `PASS` with no mandatory findings; its metadata-only scope and
-  residual limits remain explicit. Before any screening or acceptance
-  allocation, refresh source, release/tag, PR/CI, topology and the ledger, then
-  prove the refreshed revision still matches this packet. On mismatch, record
-  contract/location/failure/smallest verification, freeze a new candidate,
-  rerun the no-credit canary, rebind holdout/manifest and obtain an isolated
-  protocol `PASS` before separately authorized screening. The earlier 71adc2e/c5b2822 packets remain dated
-  historical metadata. A02 is complete; preserve residual fixture, launcher,
-child-isolation and evaluator limitations. Route from `recovery-plan.md`, not
-this snapshot, after a fresh fetch and ledger.
+The 5b03c7f A07 packet is historical no-credit after 961dced. The current
+961dced candidate was rebuilt with an explicit workdir after a provenance check
+invalidated an accidental root-checkout build; its source/tree/binary/shim and
+Rust/Cargo `1.94.1` identities are frozen privately. Two fresh source-only
+canaries pass the full evaluator, the six-handle/two-condition packet is
+rebound, and isolated protocol review returned `PASS` after concrete metadata
+corrections. Refresh source/release/tag/PR/CI/topology and the ledger again
+before separately authorized screening. A mismatch or later source
+advance requires a new candidate sequence; never reuse the 5b packet. A02 is
+complete; preserve residual fixture, launcher, child-isolation and evaluator
+limitations. Route from `recovery-plan.md`, not this snapshot, after a fresh
+fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

@@ -92,7 +92,33 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current candidate-bound route — 5b03c7f (protocol PASS; no-credit)
+## Current post-merge route — 961dced
+
+The latest reset fetched `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`
+after PR #280 merged the reviewed process-only route from `6a12ffa`. Its
+applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed; product/Rust/performance/release jobs were explicitly
+scope-skipped and are not acceptance proof. Rust CI run `34564937464` completed
+successfully for its applicable jobs.
+
+The revision-pinned ledger remains 32 items, `ready_pending=0`, five unfinished
+and three held: A07 active, W03 verified, R01/W02/F01 held. The 5b03c7f
+candidate freeze, two full-contract canaries, six-handle/two-condition rebind
+and isolated protocol `PASS` are historical no-credit metadata after this
+source advance. No screening, allocation or acceptance credit exists.
+
+The current owner is `/root` in `/private/tmp/assura-a07-postmerge-961dced`;
+the corrected candidate build is separately owned in
+`/private/tmp/assura-a07-current-961dced`. A first build accidentally used the
+dirty root and is retained as failed no-credit provenance; the explicit-workdir
+rebuild produced the current candidate, and the fresh identity, receipt and
+full-contract canary artifacts agree on source/tree/binary/shim/toolchain. The
+six-handle/two-condition packet is rebound; isolated review found two metadata
+defects, both were corrected, and scoped rereview returned `PASS`. Refresh
+source/ledger again and prove packet identity before separately authorized
+screening. Preserve all R01/W02/W03/F01 and external-authority holds.
+
+## Historical candidate-bound route — 5b03c7f (protocol PASS; no-credit)
 
 The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`
 and the revision-pinned ledger remains 32 items, `ready_pending=0`, five

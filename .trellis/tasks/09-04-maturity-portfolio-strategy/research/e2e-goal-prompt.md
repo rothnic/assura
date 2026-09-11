@@ -42,19 +42,41 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue the owned A07 candidate packet at that revision. The current
-5b03c7f candidate freeze, login-shell identity control, two full-contract
-source-only canaries and six-handle/two-condition rebind are complete as
-no-credit preparation; the isolated protocol review returned `PASS` with no
-mandatory findings. Refresh source/ledger before seeking separately authorized
-screening, and never allocate from this metadata alone. The prior
-8be6103, af005a7, 71adc2e and c5b2822 packets are historical after later
-process merges; never reuse them for current allocation. Keep R01, W02, W03 and
-F01's named holds separate.
+continue the owned A07 candidate packet at that revision. PR #280 now makes
+`origin/master=961dced162c8fe67ad87d64e0be750249edd5681` the current source;
+the 5b03c7f candidate packet is historical no-credit preparation after that
+advance. The 961dced candidate was rebuilt with an explicit workdir after a
+root-checkout provenance failure, then identity-checked and exercised through
+two fresh full-contract canaries; its six-handle/two-condition packet is
+rebound and isolated protocol review returned `PASS` after stale-reference
+and pending/pass-metadata corrections. Refresh source/ledger before separately
+authorized screening. Never allocate from a historical or unreviewed packet. The prior
+8be6103, af005a7, 71adc2e and c5b2822 packets are also historical; keep R01,
+W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current A07 preparation checkpoint — 2026-09-11 UTC (`5b03c7f`)
+## Current post-merge checkpoint — 2026-09-11 UTC (`961dced`)
+
+PR #280 merged the reviewed process-only route as `961dced` after applicable
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed. Product/Rust/performance/release jobs were scope-skipped and are not
+acceptance proof; Rust CI run `34564937464` completed successfully for its
+applicable jobs.
+The revision-pinned ledger remains 32 items, `ready_pending=0`, five unfinished
+and three held: A07 active, W03 verified, R01/W02/F01 held. The 5b03c7f packet is
+historical no-credit after this source advance.
+
+Next owner/action: `/root` owns the clean 961dced post-merge worktree and the
+fresh current candidate. The first build used the wrong root checkout and is
+retained as failed no-credit provenance; the explicit-workdir rebuild, login
+identity, two full-contract canaries and six-handle/two-condition rebind now
+agree on 961dced. Isolated protocol review returned `PASS` after concrete
+metadata corrections; refresh source/ledger before any separately authorized
+screening request.
+No allocation or acceptance is claimed.
+
+## Historical A07 preparation checkpoint — 2026-09-11 UTC (`5b03c7f`)
 
 The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`;
 the ledger remains 32 items, `ready_pending=0`, five unfinished and three held:
