@@ -57,7 +57,11 @@ only improves its process. Do not substitute a process PR for product acceptance
    action in the selected card's evidence before/after major phases. A task
    path is portable; an old checkout snapshot, automation prompt or conversation
    summary is not current state.
-8. Apply [continuation control](references/continuation-control.md) after
+8. Apply the detailed [execution control plane](references/execution-control-plane.md)
+   for the state transition, checkpoint fields, validation budget and VPS
+   decision. Keep this procedure out of `AGENTS.md`; it is loaded only for
+   execution, review, integration or handoff phases.
+9. Apply [continuation control](references/continuation-control.md) after
    resets, compaction, failed gates, review results and empty ready-pending
    queries. Keep one owned next action live; an empty pending set is not a
    stopping condition.
@@ -77,6 +81,9 @@ only improves its process. Do not substitute a process PR for product acceptance
   current-candidate protocol `PASS` exist.
 - Goal start, compaction or handoff: context-routing; load only the next
   phase/card layer and record a compact checkpoint.
+- Any state transition or expensive-gate decision:
+  `references/execution-control-plane.md`; keep its checkpoint and validation
+  budget fields in the selected card evidence rather than in `AGENTS.md`.
 - Source refresh, merge or SHA mismatch: source-pointer-lifecycle; reconcile
   current, candidate-base and historical labels before selecting work.
 - Maturity train recovery: the canonical task's `research/recovery-plan.md`.

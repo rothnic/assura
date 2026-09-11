@@ -16,7 +16,40 @@ in [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md).
 Refresh its source pointer before use; it is a compact checkpoint, not a
 replacement for the ledger or private A07 packet.
 
-## Current route — `origin/master=4560c710`
+The detailed state machine, checkpoint schema, layered-disclosure boundary,
+validation budget, VPS eligibility test and merge fence live in
+[`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md).
+Load that reference only for an execution, review, integration or handoff
+decision; keep this plan as the task-level route.
+
+## Current route — `origin/master=122fa0b3` (as-of checkpoint)
+
+The latest reset fetched `origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`
+after PR #293 merged the reviewed process/goal reconciliation. This pointer is
+dated evidence, not a permanent baseline: fetch again before the next phase.
+The exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed; product/Rust/performance/release jobs were
+scope-skipped and are not product proof. Post-merge Rust CI, Documentation and
+Security workflows passed their applicable scope jobs. The prior
+push-triggered macOS watch-SIGINT failure remains retained unfavorable
+evidence and was not converted into a green result.
+
+At this source the revision-pinned ledger is still
+`items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified,
+and R01/W02/F01 held. The 4560c710 candidate and protocol packet are
+candidate-base/no-credit metadata after this source advance. No screening,
+allocation, credit, release, deployment, publication or invitation authority
+exists.
+
+The coordinator owns the process route: refresh source/release/tag/PR/CI,
+topology and ledger; inspect active/implemented/verified candidates; then
+choose one explicitly owned recovery or preparation action. If a future A07
+phase is separately authorized, rebuild the candidate at the refreshed source,
+run the no-credit canary, rebind the packet and obtain isolated protocol PASS
+before screening. Otherwise continue the hosted watch-SIGINT diagnostic or
+another authorized recovery slice. Do not stop at the empty pending queue.
+
+## Historical candidate route — `origin/master=4560c710`
 
 PR #292 merged the reviewed recovery slice at
 `4560c710967d59993b9ea4f9b86613d446443f79`. Its exact-head applicable checks
@@ -37,14 +70,9 @@ stale construction hash); both are repaired, cross-artifact assertions pass,
 and the scoped rereview returned `PASS` for the metadata scope. Everything
 remains no-credit.
 
-Next action is a fresh source/ledger/topology reset followed by a separately
-authorized screening decision if authority exists. The protocol `PASS` only
-clears metadata review; it does not allocate or credit cells. A future finding
-must name the contract, location, failure scenario and smallest verification;
-repair only accepted deltas and rereview again. Never allocate or credit cells
-from canaries, protocol metadata, skipped/zero-test jobs, or the unresolved
-hosted run.
-Preserve root/foreign/historical topology state and all unfavorable evidence.
+That candidate's next action was a source refresh; it is now candidate-base
+metadata. Preserve its protocol hashes, unresolved hosted failure and all
+unfavorable evidence, but do not use it as current candidate proof.
 
 ## Outcome invariant
 

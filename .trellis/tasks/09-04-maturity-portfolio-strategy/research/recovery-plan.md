@@ -7,20 +7,17 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=4560c710967d59993b9ea4f9b86613d446443f79`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #292 merged the reviewed
-agent-content-preservation recovery slice; exact-head applicable
-Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform,
-performance, release/adoption smoke and GitGuardian checks passed, while
-Security Audit was scope-skipped. Its separate push-triggered Rust CI run
-`34615572565` failed in the macOS watch SIGINT test and cancelled the
-Ubuntu/Windows matrix siblings; a focused local rerun passed once. Preserve
-this hosted failure as an unresolved diagnostic rather than silently counting
-it as green or retrying unchanged. R01's missing raw watch/callback trace
-remains unresolved, so R01 is still held. The 30b, c4f, ac3, ca816 and 851a6
-candidate packets are candidate-base/no-credit after source advances; the
-current candidate and packet remain protocol-pass/no-credit after the scoped
-rereview.
+`origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #293 merged the reviewed
+process/goal reconciliation; its applicable Documentation, CI Scope, Security
+Scope, Evidence Gates and GitGuardian checks passed, as did the applicable
+post-merge Rust CI, Documentation and Security workflows. Product/Rust/
+performance/release jobs were scope-skipped and are not product proof. The
+earlier push-triggered macOS watch-SIGINT failure remains retained unfavorable
+hosted evidence. R01's missing raw watch/callback trace remains unresolved, so
+R01 is still held. The 4560c710 candidate, canaries and packet are
+candidate-base/no-credit after this source advance; all earlier packets are
+historical no-credit evidence.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -31,23 +28,24 @@ supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
 
-The current A07 preparation owns the next action: refresh source, release/tag,
-PR/CI, topology and the revision-pinned ledger before any further phase. The
-4560c710 packet's scoped independent metadata rereview returned `PASS`; its
-candidate identity, two bounded no-credit canaries, six-handle rebind,
-source-only fixture freshness, invariant/evaluation bindings and 30-cell
-reserved manifest remain current only at that source and grant no allocation or
-credit. If separate screening authority exists, execute only the screening
-contract and gates; otherwise continue an independent hosted watch-SIGINT
-diagnostic or another explicitly authorized recovery slice. The
-961dced, f4368883, 30b, c4f, ca816 and 851a6 packets are historical/candidate-
-base no-credit preparation. No cell allocation, acceptance, release,
-deployment, publication, invitation or protection change is implied.
+The coordinator owns the next action: refresh source, release/tag, PR/CI,
+topology and the revision-pinned ledger before any further phase. Inspect
+active, implemented, verified and held records before pending rows, then keep
+one explicitly owned recovery or preparation action live. If separate A07
+screening authority exists, rebuild and rebind a candidate at the refreshed
+source before allocation; otherwise continue an independent hosted watch-SIGINT
+diagnostic or another explicitly authorized recovery slice. No cell
+allocation, acceptance, release, deployment, publication, invitation or
+protection change is implied.
 
 Use the compact [maturity train orchestration plan](orchestration-plan.md) for
 the reset, layered-context, gate-placement, review, integration and closure
 sequence. It is an operator route, not a replacement queue; refresh all source
 and ledger pointers before acting.
+For the state machine, checkpoint schema, validation budget and measured VPS
+decision, load the detailed
+[`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md)
+reference only at the relevant phase.
 
 ## Outcome and success gates
 

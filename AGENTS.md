@@ -56,6 +56,7 @@ Read the selected `SKILL.md` before applying it. Paths below are repo-relative.
 | Performance evidence | [.agents/skills/assura-performance-reporting/SKILL.md](.agents/skills/assura-performance-reporting/SKILL.md) |
 | Host hooks/lifecycle | [.agents/skills/assura-agent-harness-hooks/SKILL.md](.agents/skills/assura-agent-harness-hooks/SKILL.md) |
 | Config notation / rejected structure | `.agents/skills/assura-{notation-review,structure-fit}/SKILL.md` |
+| Execution state, layered disclosure and gate budget | `.agents/skills/assura-goal-execution/references/execution-control-plane.md` |
 
 Specs start at [.trellis/spec/assura/index.md](.trellis/spec/assura/index.md).
 Rust/toolchain truth is `Cargo.toml`, toolchain files and current CI, not a

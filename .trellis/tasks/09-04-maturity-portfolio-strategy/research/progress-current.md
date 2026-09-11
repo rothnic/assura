@@ -1,5 +1,36 @@
 # Current maturity train checkpoint
 
+## Iteration 151 — 2026-09-11 — execution control plane and source reconciliation
+
+- Owner/phase: `/root` / process-only orchestration correction. The reset
+  fetched `origin/master=122fa0b3d976bb5196359aee48ad67bf272fb541` after PR
+  #293; this is an as-of pointer and must be refreshed before the next phase.
+  The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The 4560c710 A07
+  packet is candidate-base/no-credit after the source advance. No product,
+  screening, allocation, release, deployment, publication or invitation state
+  changed.
+- The reusable
+  [`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md)
+  now defines the RESET→ROUTE→OWN→PROVE→REVIEW→INTEGRATE→RECONCILE loop,
+  compact checkpoint fields, layered disclosure, cheap-to-expensive validation
+  budget, measured VPS eligibility, review disposition and terminal topology
+  fence. `AGENTS.md` remains a 97-line universal router; detailed procedure
+  stays in the skill reference. Context level: not exposed.
+- The goal, recovery, orchestration, executor and E2E routes now label the
+  122fa0b3 source as an as-of checkpoint, explicitly supersede 4560c710
+  candidate evidence, and retain the hosted macOS watch-SIGINT failure as
+  unfavorable diagnostic evidence. A status report, empty pending queue,
+  skipped/zero-test job, canary or protocol PASS cannot end the goal or grant
+  product credit.
+- Next owner/action: refresh source/release/tag/PR/CI/topology and the
+  revision-pinned ledger, inspect active/implemented/verified/held candidates,
+  and keep one named recovery or preparation action live. If A07 screening is
+  separately authorized, rebuild/rebind at that source before allocation;
+  otherwise continue the authorized recovery slice. Run the control-plane
+  phase reference only as needed; preserve unknown/user-owned and historical
+  topology state.
+
 ## Iteration 150 — 2026-09-11 — protocol PASS recorded and screening gate separated
 
 - The independent metadata reviewer completed the corrected 4560c710 delta
