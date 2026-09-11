@@ -92,32 +92,24 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — 129a249 (refresh required)
+## Current train route — af005a7 (refresh required)
 
-At the latest post-merge refresh, `origin/master=129a249fa49b72b835d999a812ef2bf9e6b3b7d9`
-is the only current source pointer. PR #274 reconciled the current candidate
-preparation route as a process-only documentation slice; its merged tree and
-owned closure are verified. The earlier ebed, 9df and 692 candidates,
-canaries, bindings and isolated protocol `PASS` records, plus the prior 9ad
-packet, are historical
-no-credit metadata because the source tree advanced. The ledger remains 32
-items, no ready-pending card, five unfinished cards and three narrow holds.
-A02 is complete and its plain-init handoff incident is historical.
+At the latest post-merge refresh, `origin/master=af005a7dc5c367bc9388e08203fbf351bc0c88f2`
+is the only current source pointer. PR #275 reconciled the current resume-proof
+route as a process-only documentation slice; its merged tree and owned closure
+are verified, and its applicable hosted checks plus post-merge workflows
+passed. The ebed, 9df, 692, 9ad and 129a249 candidates, canaries, bindings and
+isolated protocol `PASS` records are historical no-credit metadata because the
+source tree advanced. The ledger remains 32 items, no ready-pending card, five
+unfinished cards and three narrow holds. A02 is complete and its plain-init
+handoff incident is historical.
 
-A07 is the active lane. A fresh 129a249 candidate was built from a clean
-checkout; login-shell identity controls and two source-only canaries pass the
-full public contract, but they create no screening or acceptance credit. The
-scoped protocol rereview returned `PASS` for the no-credit canary identity gate
-after correcting one concrete evaluator/public-contract identity gap while
-retaining the separate private evaluator contract. The prior ebed six-handle
-binding, supplied-input receipts, two-condition manifest and 30 reserved cells
-are historical after this source advance. The current binding and manifest
-passed isolated protocol rereview after correcting
-`A07-129-HOLDOUT-PROVENANCE-001`: all six handles now resolve to current
-construction provenance, with immutable creation timestamps and historical
-source digests preserved. This remains no-credit preparation. The exact next
-action is to refresh source, release/tag, PR/CI and topology state, re-freeze
-the current candidate, run a fresh no-credit canary, verify/rebind the current
+A07 is the active lane. No af005a7 candidate has been frozen yet. The 129a249
+candidate, login-shell identity controls, two source-only canaries, six-handle
+binding and exactly-two-condition manifest passed no-credit protocol checks but
+are historical after this source advance. The exact next action is to refresh
+source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the
+current candidate, run a fresh no-credit canary, verify/rebind the current
 six-handle holdout and exactly-two-condition manifest, and obtain isolated
 protocol `PASS` before any separately authorized screening preparation. Do not
 reuse an older packet or allocate/credit cells from this process checkpoint.

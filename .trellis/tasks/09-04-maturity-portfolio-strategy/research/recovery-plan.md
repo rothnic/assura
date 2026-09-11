@@ -1,12 +1,13 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-10 UTC. The latest post-merge
-reconciliation is `origin/master=129a249fa49b72b835d999a812ef2bf9e6b3b7d9`
-after PR #274; this pointer is an as-of checkpoint and must be refreshed before
-use. PR #274 reconciled the current candidate-preparation route; its merged
-tree matches the reviewed candidate and changed no product or acceptance state.
-Earlier pointer and reconciliation checkpoints, including the ebed, 9df and
-692 candidate packets, are historical no-credit evidence. The latest
+Status: active continuation route, 2026-09-11 UTC. The latest post-merge
+reconciliation is `origin/master=af005a7dc5c367bc9388e08203fbf351bc0c88f2`
+after PR #275; this pointer is an as-of checkpoint and must be refreshed before
+use. PR #275 reconciled the current resume-proof route; its merged tree matches
+the reviewed candidate, applicable hosted checks and post-merge workflows
+passed, and no product or acceptance state changed. Earlier pointer and
+reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
+candidate packets, are historical no-credit evidence. The latest
 diagnostic is the bounded R01 raw-log recovery recorded at candidate base
 `c1202af` and merged as process evidence; it does not close R01 or authorize a
 retry. This is a plan and audit, not evidence that product cards passed. The
@@ -34,34 +35,29 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate checkpoint — 2026-09-10 UTC (`origin/master=129a249`; refresh required)
+## Current candidate checkpoint — 2026-09-11 UTC (`origin/master=af005a7`; refresh required)
 
-- PR #274 is merged and the current source is `129a249`; this process-only
+- PR #275 is merged and the current source is `af005a7`; this process-only
   reconciliation changes no product, evaluator, threshold, allocation or
-  authority state. The reviewed branch/worktree closed cleanly.
-- A fresh 129a249 candidate freeze, exact login-shell identity controls and two
-  source-only canaries passed the public contract with seven dimensions and a
-  meaningful negative control. They are no-credit preparation. The scoped
-  protocol rereview returned `PASS` for the no-credit canary identity gate
-  after correcting one concrete evaluator/public-contract identity gap while
-  preserving the separate private evaluator contract. The prior ebed
-  six-handle packet, manifest, receipts and 30 reserved cells are historical
-  after this source advance. The current binding and manifest passed isolated
-  protocol rereview after correcting `A07-129-HOLDOUT-PROVENANCE-001`; all six
-  handles now resolve to current-candidate construction metadata. Allocation
-  and credit remain false.
+  authority state. The reviewed branch/worktree closed cleanly, and the
+  applicable hosted checks plus post-merge workflows passed.
+- The 129a249 candidate freeze, exact login-shell identity controls, two
+  source-only canaries, six-handle packet and manifest passed no-credit
+  protocol checks but are historical after this source advance. No af005a7
+  candidate freeze exists yet; allocation and credit remain false.
 - The ledger remains 32 items, `ready_pending=0`, five unfinished and three
   held: A07 active, W03 verified, R01/W02/F01 held. Next owner/action: refresh
   source, release/tag, PR/CI and topology state, rerun the ledger and topology
   audit, re-freeze the current candidate, run a fresh no-credit canary,
   verify/rebind the current six-handle holdout and exactly-two-condition
   manifest, and obtain isolated protocol `PASS` before seeking separately
-  authorized screening preparation. The current private protocol rereview is
-  `PASS` but grants no screening, allocation or product-acceptance authority.
+  authorized screening preparation. No current protocol rereview exists yet;
+  prior `PASS` metadata grants no screening, allocation or product-acceptance
+  authority.
   Preserve all private values, fixtures, evaluator output and prior packets as
   historical; do not allocate or credit cells from this checkpoint.
 
-## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `129a249`; previously `b7043ab`)
+## Historical post-merge candidate rebind checkpoint — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `af005a7`; previously `b7043ab`)
 
 - PR #268 is a process-only documentation merge; it changes no product,
   evaluator, threshold, allocation or authority state. The prior `9b410e9`
@@ -635,7 +631,7 @@ classified historical or user-owned and must not be deleted by pattern.
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
 | 1 / process coordinator | Keep the current-master pointer and continuation route reconciled across the recovery plan, A07 routing evidence, continuation prompt, task metadata and goal-execution skill | PR #256 merged the bounded R01 raw-log recovery record at `a819c0c`; fetch and rerun the ledger before the next phase |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, rerun the ledger and freeze candidate identity; confirm holdouts; create/validate the private manifest and obtain protocol-review `PASS`; then run the canary against that frozen identity |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, release/tag, PR/CI and topology; rerun the ledger and freeze candidate identity; run a fresh no-credit canary against that frozen identity; confirm/rebind holdouts; create/validate the private manifest and obtain isolated protocol-review `PASS`; then seek separately authorized screening |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -692,15 +688,17 @@ build tool is absent, run `pnpm --dir website install --frozen-lockfile` in the
 disposable worktree and rerun the same gate; a missing tool is a failed
 environment precondition, never a skipped or passing docs result.
 
-For A07, after refreshing current source identity, freezing holdouts, and
-obtaining an isolated protocol-review `PASS` for the private manifest, perform
-the cheap identity/context canary before native tests or a screening batch. One
-candidate build may support multiple diagnostics only when its source, binary,
-fixture and invocation remain unchanged; a child that sees private evaluator
-material or a global Assura install is invalid and must not be repeated
-unchanged. A safety-guard rejection is an operational observation, not
-permission to weaken the guard; use a disposable fixture and preserve the
-rejection in evidence.
+For A07, after refreshing current source, release/tag, PR/CI and topology state
+and rerunning the ledger, freeze the candidate and perform the cheap
+identity/context canary against that frozen identity before binding current
+holdouts or validating the private manifest. Then obtain isolated protocol
+review `PASS` for the six-handle binding and exactly-two-condition manifest
+before native tests or a separately authorized screening batch. One candidate
+build may support multiple diagnostics only when its source, binary, fixture
+and invocation remain unchanged; a child that sees private evaluator material
+or a global Assura install is invalid and must not be repeated unchanged. A
+safety-guard rejection is an operational observation, not permission to weaken
+the guard; use a disposable fixture and preserve the rejection in evidence.
 
 ## Verification and continuation
 
@@ -711,10 +709,11 @@ while A07 acceptance fails. Expected decisions follow the execution contract.
 Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the refreshed
-checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary against the refreshed `origin/master` →
-screening sequence. R01's retained raw trace/maintainer decision, W02's
-approval, W03's publication and F01's participant authorization remain
-separate held actions.
+checkpoint's source/release/tag/PR/CI/topology refresh → revision-pinned ledger
+→ candidate freeze → fresh current-master canary → current six-handle holdout
+rebind and exactly-two-condition manifest validation → isolated protocol review
+`PASS` → separately authorized screening sequence. R01's retained raw
+trace/maintainer decision, W02's approval, W03's publication and F01's
+participant authorization remain separate held actions.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.
