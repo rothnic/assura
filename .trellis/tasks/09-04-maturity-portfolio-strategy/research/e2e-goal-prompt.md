@@ -19,34 +19,42 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=651ef31`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=0dff804`, as-of)
 
 The latest reset fetched
-`origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3` after PR #299 merged
+`origin/master=0dff804421c7563b08773eb75d9327fd0194db56` after PR #300 merged
 the reviewed current-checkpoint reconciliation from head
-`c6a47ae4e486d4d226a747a3f49653c235f251d1`. Its applicable Documentation, CI
+`f37c20e21ec94116c18dd591638fabf86163f947`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
 reviewed head tree equals the merge tree, and the configured push-triggered
-Rust CI (`34635475363`), Documentation (`34635475400`) and Security Audit
-(`34635475378`) workflows completed at the merge SHA. Product/Rust/
-performance/release rows were explicitly skipped by scope and are not product
-proof. Fetch again before every phase because this is an as-of checkpoint.
+Rust CI (`34638264948`), Documentation (`34638264944`) and Security Audit
+(`34638264978`) workflows completed at the merge SHA for their applicable
+scope. Product/Rust/performance/release rows were explicitly skipped by scope
+and are not product proof. Fetch again before every phase because this is an
+as-of checkpoint.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 4560c710 candidate
-and private packet are candidate-base/no-credit after this source advance. No
-screening, allocation, credit, release, deployment, publication or invitation
-authority exists. The next route is reset, active-first inspection and one
-explicitly owned recovery/preparation action; an empty pending queue is not a
-stop condition.
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The fresh 0dff804 A07
+candidate identity preparation in `/private/tmp/assura-a07-current-0dff` has
+matching source/tree/binary/shim and login-shell identity, deliberate
+wrong-target/wrong-root controls, byte-identical freeze records and scoped
+independent review `PASS`. Canary, holdout/manifest rebind and protocol review
+are not run; the candidate is no-credit. The 4560c710 candidate and private
+packet are candidate-base/no-credit after this source advance. No screening,
+allocation, credit, release, deployment, publication or invitation authority
+exists. The next route is a fresh sibling-free canary then packet rebind and
+isolated protocol review; an empty pending queue is not a stop condition.
 
 The configured push-triggered workflow at a merge SHA is a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,
 scope-uncertain or absent post-merge result remains unresolved; it is never
-overridden by the pull-request rollup or a local pass. PR #299's merge-SHA
-workflows passed (`34635475363`, `34635475400`, `34635475378`), while the
-retained R01 diagnostic from run `34615572565` still failed on macOS SIGINT and
-remains open.
+overridden by the pull-request rollup or a local pass. PR #300's merge-SHA
+workflows passed (`34638264948`, `34638264944`, `34638264978`) for applicable
+scope, while the retained R01 diagnostic from run `34615572565` still failed on
+macOS SIGINT and remains open.
+
+The prior 651ef31 route is retained below as historical process evidence; do
+not route a new phase from it without a fresh reset.
 
 ## Historical source route — 2026-09-11 UTC (`origin/master=329bce0`, superseded by `651ef31`)
 
