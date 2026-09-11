@@ -7,18 +7,19 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #294 merged the reviewed
-execution-control-plane correction; its exact-head Documentation, CI Scope,
-Security Scope, Evidence Gates and GitGuardian checks passed, as did the
-configured post-merge Rust CI, Documentation and Security workflows.
-Product/Rust/performance/release jobs were scope-skipped and are not product
-proof. The earlier push-triggered macOS watch-SIGINT failure remains retained
-unfavorable hosted evidence: run `34615572565`, job `103316578631`, failed at
-`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`. R01's missing
-raw watch/callback trace remains unresolved, so R01 is still held. The 4560c710
-candidate, canaries and packet are candidate-base/no-credit after this source
-advance; all earlier packets are historical no-credit evidence.
+`origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #295 merged the reviewed
+post-merge workflow and measured-capacity correction; its exact-head
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed, as did the configured push-triggered Rust CI, Documentation and
+Security workflows at merge SHA `9047a3d`. Product/Rust/performance/release
+jobs were scope-skipped and are not product proof. The earlier push-triggered
+macOS watch-SIGINT failure remains retained unfavorable hosted evidence: run
+`34615572565`, job `103316578631`, failed at `tests/watch_cli.rs:196` with
+`watch did not stop after SIGINT`. R01's missing raw watch/callback trace
+remains unresolved, so R01 is still held. The 4560c710 candidate, canaries and
+packet are candidate-base/no-credit after this source advance; all earlier
+packets are historical no-credit evidence.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest

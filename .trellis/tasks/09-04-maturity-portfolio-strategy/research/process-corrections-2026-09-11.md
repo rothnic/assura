@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`.
+`origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,29 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Measured remote-capacity hold — 2026-09-11 UTC (`origin/master=c9ac2a8`)
+## Post-merge reconciliation — PR #295 — 2026-09-11 UTC (`origin/master=9047a3d`)
+
+- PR #295 merged the reviewed workflow-fence and measured-capacity correction
+  as `9047a3d07e704cde0809a97cbe75f2cb1ce4af33`. Its exact-head applicable
+  Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
+  checks passed. The configured push-triggered Documentation run
+  `34628874282`, Security Audit run `34628874295` and Rust CI run
+  `34628874311` each completed successfully at the merge SHA; Rust CI's CI
+  Scope and Evidence Gates passed while product/Rust/performance/release jobs
+  were explicitly skipped by scope. The reviewed head tree equals the fetched
+  merge tree.
+- Correction: this is the required second-stage reconciliation observation,
+  not product acceptance. The retained R01 macOS SIGINT failure remains
+  unfavorable evidence; the ledger remains `items=32; ready_pending=0;
+  unfinished=5; held=3` with A07 active, W03 verified and R01/W02/F01 held.
+  The 4560c710 A07 candidate and packet remain candidate-base/no-credit.
+- Next action: refresh source/release/tag/PR/CI/topology and the ledger again,
+  keep one explicitly owned recovery or preparation action live, and close the
+  integrated process branch only after exact clean-worktree proof. Do not infer
+  card, screening, allocation, release, deployment, publication, invitation or
+  authority credit from this process merge.
+
+## Historical measured remote-capacity hold — 2026-09-11 UTC (`origin/master=c9ac2a8`, superseded by `9047a3d`)
 
 - The requested `vps-dev` SSH alias is not configured or resolvable in this
   shell. The configured `vps` alias was probed read-only: 16 CPUs, 61 GiB RAM,

@@ -17,18 +17,19 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, current at this reset; refresh
-before use): `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`; PR #294
-merged the reviewed execution-control-plane correction. Its applicable
-Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
-passed, as did the configured post-merge Rust CI, Documentation and Security
-workflows. Product/Rust/performance/release jobs were scope-skipped and are
-not product proof. This is an as-of checkpoint, not a permanent baseline. The
-revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The 4560c710 candidate
-and packet are candidate-base/no-credit after this source advance. Preserve
-the earlier macOS watch-SIGINT hosted failure as unfavorable diagnostic
-evidence: run `34615572565`, job `103316578631`, failed at
-`tests/watch_cli.rs:196` with `watch did not stop after SIGINT`.
+before use): `origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33`; PR #295
+merged the reviewed post-merge workflow and measured-capacity correction. Its
+applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed, as did the configured push-triggered Rust CI,
+Documentation and Security workflows at merge SHA `9047a3d`. Product/Rust/
+performance/release jobs were scope-skipped and are not product proof. This is
+an as-of checkpoint, not a permanent baseline. The revision-pinned ledger
+remains `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+verified, R01/W02/F01 held). The 4560c710 candidate and packet are
+candidate-base/no-credit after this source advance. Preserve the earlier
+macOS watch-SIGINT hosted failure as unfavorable diagnostic evidence: run
+`34615572565`, job `103316578631`, failed at `tests/watch_cli.rs:196` with
+`watch did not stop after SIGINT`.
 
 The post-merge push workflow is a separate reconciliation gate: a PR pass or
 local rerun cannot close a slice when the merge-SHA workflow is failed,
