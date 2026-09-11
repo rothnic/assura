@@ -32,17 +32,17 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-The latest reset fetched `origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8`
-after PR #294 merged the reviewed execution-control-plane documentation. This
-is the current checkpoint for this continuation; every later phase must fetch
-again before using it. The revision-pinned ledger remains 32 items, zero
-ready-pending rows, five unfinished rows, and three held rows: A07 is active,
-W03 is verified, and R01, W02, and F01 retain their separate evidence or
-authority holds. The 4560c710 candidate and packet are candidate-base/no-credit
-metadata after this source advance; no current candidate, screening allocation
-or product acceptance is claimed. The root unknown path, foreign dirty
-worktree, stale registrations, historical branches and unfavorable evidence
-remain preserved as ownership boundaries.
+The latest reset fetched `origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33`
+after PR #295 merged the reviewed post-merge workflow and measured-capacity
+correction. This is the current checkpoint for this continuation; every later
+phase must fetch again before using it. The revision-pinned ledger remains 32
+items, zero ready-pending rows, five unfinished rows, and three held rows: A07
+is active, W03 is verified, and R01, W02, and F01 retain their separate
+evidence or authority holds. The 4560c710 candidate and packet are
+candidate-base/no-credit metadata after this source advance; no current
+candidate, screening allocation or product acceptance is claimed. The root
+unknown path, foreign dirty worktree, stale registrations, historical branches
+and unfavorable evidence remain preserved as ownership boundaries.
 
 The reusable execution-control-plane reference defines the state machine,
 checkpoint fields, layered disclosure, validation budget, measured VPS test,
@@ -61,10 +61,11 @@ SIGINT failure and cancelled the Ubuntu/Windows matrix siblings. A focused
 local rerun passed once; the hosted failure remains an unresolved diagnostic,
 not a green signal and not a reason to weaken or blindly retry the gate.
 PR #294's reviewed process slice then passed both its exact-head and
-post-merge push-triggered checks at `c9ac2a84`; this confirms the new
-reconciliation fence is executable, but it does not repair the older R01
-failure. A configured post-merge failure, cancellation or missing result keeps
-the specific recovery route open.
+post-merge push-triggered checks at `c9ac2a84`; PR #295 subsequently passed its
+exact-head and merge-SHA push-triggered Documentation, Security and Rust CI
+workflows at `9047a3d`. This confirms the reconciliation fence is executable,
+but it does not repair the older R01 failure. A configured post-merge failure,
+cancellation or missing result keeps the specific recovery route open.
 
 The read-only remote-capacity probe also keeps the VPS efficiency lane held:
 `vps-dev` is not a configured alias, while `vps` has 20 GiB free on a 339 GiB
@@ -197,6 +198,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-11 | PR #295 merged the reviewed workflow-fence and measured-capacity correction as `9047a3d`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did the merge-SHA push-triggered Documentation (`34628874282`), Security Audit (`34628874295`) and Rust CI (`34628874311`) workflows. Product/Rust/performance/release jobs were explicitly skipped by scope and remain non-applicable. The merge tree equals the reviewed head tree; no product, threshold, allocation, screening or authority state changed. | PR #295; `research/progress-current.md` Iteration 154; post-merge run records. |
 | 2026-09-11 | A read-only capacity probe kept the optional VPS lane held: `vps-dev` is not resolvable; configured `vps` has 16 CPUs/61 GiB RAM but only 20 GiB free of 339 GiB root (95% used), unrelated long-running jobs, and Rust/Cargo `1.95.0-nightly` instead of the pinned candidate toolchain. No remote state changed and no remote result is counted as proof. | `research/progress-current.md` Iteration 153; `research/process-corrections-2026-09-11.md`; bounded SSH probe. |
 | 2026-09-11 | PR #294 merged the reviewed execution-control-plane correction as `c9ac2a8`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did the configured post-merge Rust CI, Documentation and Security workflows. The correction makes merge-SHA push workflows a separate reconciliation gate. A retained read-only diagnosis bound R01's macOS failure to job `103316578631`, `tests/watch_cli.rs:196`, where `watch_stops_cleanly_without_runtime_artifacts` did not stop after SIGINT; the focused local Darwin rerun passed once and remains non-substitutive. No product, threshold, allocation, screening or authority state changed. | PR #294; push run `34625737610`; retained failure `34615572565`; Iteration 152 in `research/progress-current.md`. |
 | 2026-09-11 | PR #292 merged the reviewed agent-content-preservation recovery slice as `4560c710`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform tests, performance, release/adoption smoke and GitGuardian checks passed (Security Audit was scope-skipped). The subsequent push-triggered Rust CI run failed in the macOS watch SIGINT test and cancelled Ubuntu/Windows siblings; this remains retained unfavorable hosted evidence. | PR #292; hosted check rollup and push run `34615572565`; focused local `watch_stops_cleanly_without_runtime_artifacts` rerun passed once. |

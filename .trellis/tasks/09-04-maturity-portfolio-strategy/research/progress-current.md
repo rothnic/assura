@@ -1,5 +1,28 @@
 # Current maturity train checkpoint
 
+## Iteration 154 — 2026-09-11 — PR #295 post-merge reconciliation
+
+- Owner/phase: `/root` / current-source reconciliation after the reviewed
+  process correction. PR #295 merged the two-commit process slice at
+  `9047a3d07e704cde0809a97cbe75f2cb1ce4af33`; the fetched merge tree equals
+  the reviewed head tree from `5aff78c8581ba59ea2aa8d838fec5b93bfba790f`.
+  Configured push-triggered Documentation run `34628874282`, Security Audit
+  run `34628874295` and Rust CI run `34628874311` completed successfully at
+  that merge SHA. Rust CI's CI Scope and Evidence Gates passed; product/Rust/
+  performance/release jobs were explicitly skipped by scope and are not
+  acceptance proof. The owned process branch is ready for exact cleanup.
+- Reconciliation result: the post-merge workflow fence itself passed, but this
+  remains process evidence. The ledger is still `items=32; ready_pending=0;
+  unfinished=5; held=3`: A07 active, W03 verified and R01/W02/F01 held. The
+  retained R01 macOS SIGINT failure (`34615572565`, job `103316578631`,
+  `tests/watch_cli.rs:196`) remains unresolved unfavorable evidence; the
+  4560c710 A07 candidate and packet remain candidate-base/no-credit.
+- Next owner/action: refresh source/release/tag/PR/CI/topology and the ledger
+  before the next phase, then continue one explicitly owned recovery or
+  preparation action. Close only the exact clean owned branch/worktree; do not
+  infer card, screening, allocation, release, deployment, publication,
+  invitation or authority credit from this process merge.
+
 ## Iteration 152 — 2026-09-11 — post-merge workflow fence and R01 diagnosis
 
 - Owner/phase: `/root` / current-source process correction and held-lane

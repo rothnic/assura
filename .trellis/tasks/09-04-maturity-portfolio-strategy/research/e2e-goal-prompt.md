@@ -19,15 +19,16 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=c9ac2a8`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=9047a3d`, as-of)
 
 The latest reset fetched
-`origin/master=c9ac2a84a93dce752ec7b5216ad87639ba04dee8` after PR #294 merged
-the reviewed execution-control-plane correction. Its applicable Documentation,
-CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did
-the configured post-merge Rust CI, Documentation and Security workflows;
-product/Rust/performance/release jobs were scope-skipped and are not product
-proof. Fetch again before every phase because this is an as-of checkpoint.
+`origin/master=9047a3d07e704cde0809a97cbe75f2cb1ce4af33` after PR #295 merged
+the reviewed post-merge workflow and measured-capacity correction. Its
+applicable Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed, as did the configured push-triggered Rust CI,
+Documentation and Security workflows at the merge SHA; product/Rust/
+performance/release jobs were scope-skipped and are not product proof. Fetch
+again before every phase because this is an as-of checkpoint.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
 held=3`: A07 active, W03 verified and R01/W02/F01 held. The 4560c710 candidate
@@ -40,9 +41,10 @@ stop condition.
 The configured push-triggered workflow at a merge SHA is a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,
 scope-uncertain or absent post-merge result remains unresolved; it is never
-overridden by the pull-request rollup or a local pass. PR #294's post-merge
-checks passed, while the retained R01 diagnostic from run `34615572565` still
-failed on macOS SIGINT and remains open.
+overridden by the pull-request rollup or a local pass. PR #295's merge-SHA
+workflows passed (`34628874311`, `34628874282`, `34628874295`), while the
+retained R01 diagnostic from run `34615572565` still failed on macOS SIGINT and
+remains open.
 
 ## Historical candidate route — 2026-09-11 UTC (`origin/master=4560c710`)
 
