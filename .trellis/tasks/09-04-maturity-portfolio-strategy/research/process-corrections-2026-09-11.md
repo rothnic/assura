@@ -1,11 +1,36 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=c4f57d701d2ec37301f4677eae27b7275f89d2fb`.
+Status: active, current source `origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`)
+## Current candidate and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`)
+
+- PR #285 reconciled the reviewed c4f post-merge route at `ac3eb13`; its
+  applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed. Product/Rust/performance/release jobs were
+  scope-skipped and are not acceptance proof. The latest tag is
+  `v0.3.0-448-gac3eb13`; no release branch exists.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified, R01/W02/F01 held. A fresh exact-toolchain
+  candidate was built from an explicit clean worktree; two corrected
+  source-only canaries completed full seven-dimension evaluator runs with exit
+  `0`. The initial wrapper exit-sentinel defect is retained as unfavorable
+  no-credit evidence. Fresh login-shell controls pass the exact target and
+  reject wrong-target and wrong-root controls.
+- The six-handle/two-condition/30-cell packet is rebound to ac3. The isolated
+  protocol reviewer returned `PASS` after correcting freeze chronology and
+  adding the missing negative identity controls. No screening allocation or
+  acceptance credit exists; screening, holdout, follow-up-feature, release,
+  deployment, publication and invitation authority remain false.
+- Owner/phase: `/root` / post-protocol refresh. Refresh source, release/tag,
+  PR/CI, topology and the revision-pinned ledger again, prove the packet still
+  matches, and only then seek separately authorized screening. Preserve the
+  root unknown note, foreign dirty worktree, stale registrations and historical
+  branches.
+
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=c4f57d7`, superseded by `ac3eb13`)
 
 - PR #284 merged the reviewed process/evidence-route slice at `c4f57d7`; its applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. Product/Rust/performance/release jobs were scope-skipped and are not acceptance proof. The latest tag is `v0.3.0-447-gc4f57d7`; no release branch exists.
 - The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The topology report still contains only preserved unknown/foreign/stale exceptions; no pending card is executable.
