@@ -1,5 +1,10 @@
 # Stable E2E goal: Assura maturity execution train
 
+The durable goal contract is
+[`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md).
+Use that file for objective, certainty bar, scope, definition of done, review
+criteria, and validation; this prompt supplies the Trellis task-specific route.
+
 Resume through [recovery-plan.md](recovery-plan.md), the compact
 [maturity train orchestration plan](orchestration-plan.md), and the repository's
 `assura-goal-execution` skill. Read this task at refreshed `origin/master`;
@@ -10,7 +15,8 @@ goal at each card boundary.
 
 ## Direction review
 
-Current-state routing: read `backlog.json`, the newest `progress.md` entry and
+Current-state routing: read `backlog.json`, `progress-current.md` and, when
+needed, the newest historical `progress.md` entry and
 the selected card's `evidence/<ID>.md` before using any status or SHA below.
 The app goal text and older checkouts can retain superseded snapshots. Refresh
 GitHub and reconcile newer goal-owned evidence in a dedicated documentation
@@ -43,16 +49,18 @@ deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
 continue one owned A07 preparation phase at that revision. PR #286 made cd629d4
-the prior checkpoint and PR #287 now makes
-`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15` the current source;
-the 30b, c4f, ac3 and cd629 candidate packets are historical no-credit after their
-source advances. The ac3 candidate, canaries, identity controls and isolated
-protocol `PASS` remain metadata-only and do not establish a current candidate.
+the prior checkpoint, PR #287 reconciled it as ca81689, and PR #288 merged the
+reviewed durable-goal and continuation artifacts; the current
+`origin/master=851a6b831ea841317b78d94fce658a6974ef401a`. The 30b, c4f, ac3,
+cd629 and ca816 candidate packets are historical or no-credit whenever their
+source advances. A fresh 851a6 candidate identity is privately prepared, but
+the no-credit canary, packet rebind and isolated protocol review remain pending.
 Refresh source/release/tag/PR/CI/topology and the ledger before each phase,
-then build a fresh explicit-workdir ca81689 candidate, run the no-credit canary, rebind
-the packet and obtain isolated protocol `PASS` before separately authorized
-screening. Never allocate from a historical or unreviewed packet. Keep R01,
-W02, W03 and F01's named holds separate.
+then complete that candidate sequence before separately authorized screening.
+Never allocate from a historical or unreviewed packet. Do not merge another
+process-pointer update while a candidate packet is in flight; if the source
+advances, retain the packet as historical and repeat the complete sequence.
+Keep R01, W02, W03 and F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 

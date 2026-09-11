@@ -1,6 +1,7 @@
 # Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md), [iteration 133](progress-history-19.md), [iteration 138](progress-history-20.md))
 
-Iteration 145 (`origin/master=ca81689`, PR #287 merged): the `32/0/5/3` ledger still has A07 active, W03 verified and R01/W02/F01 held. The ac3 and cd629 candidates, canaries, packets and isolated protocol `PASS` records are now historical no-credit preparation after the source advance; no candidate is current and screening remains unauthorized. See [recovery-evidence.md](recovery-evidence.md); the next owned phase is a fresh ca81689 candidate/identity/canary/packet sequence.
+Current checkpoint: [progress-current.md](progress-current.md). Older entries
+below are historical unless that checkpoint explicitly supersedes them.
 
 ## Iteration 145 — 2026-09-11 — post-merge source reconciliation
 

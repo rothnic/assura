@@ -1,32 +1,37 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=ca81689d47fac6876654a1a9cced4dce28135e15`.
+Status: active, current source `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=ca81689`)
+## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=851a6b8`)
 
-- PR #287 reconciled the reviewed cd629 process checkpoint at
-  `ca81689d47fac6876654a1a9cced4dce28135e15`. Its applicable Documentation,
+- PR #288 merged the reviewed durable-goal and continuation artifacts at
+  `851a6b831ea841317b78d94fce658a6974ef401a` after PR #287 reconciled the
+  reviewed cd629 process checkpoint as `ca81689`. Its applicable Documentation,
   CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as
   did post-merge Documentation, Security Audit and Rust CI workflows.
   Product/Rust/performance/release jobs were scope-skipped and are not
   acceptance proof. No release branch is available; tags remain a separate
   availability fact.
 - The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-  held=3`: A07 active, W03 verified and R01/W02/F01 held. The ac3 and cd629
-  candidate canaries, identity controls, six-handle/two-condition packets and
-  isolated protocol `PASS` records are historical no-credit metadata after
-  this source advance. No current candidate, screening allocation, product,
-  threshold or authority state exists.
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The ac3, cd629 and
+  ca816 candidate canaries, identity controls, six-handle/two-condition
+  packets and isolated protocol `PASS` records are historical no-credit
+  metadata after this source advance. A fresh 851a6 identity freeze is
+  privately prepared, but its canary, packet rebind and protocol review remain
+  pending. No current candidate, screening allocation, product, threshold or
+  authority state exists.
 - Owner/phase: `/root` / fresh current-source A07 candidate preparation.
   Refresh source, release/tag, PR/CI, topology and the revision-pinned ledger;
-  build and freeze a fresh explicit-workdir ca81689 candidate, run the bounded
+  complete the fresh explicit-workdir 851a6 candidate identity, run the bounded
   no-credit canary, rebind the packet and obtain isolated protocol `PASS` before
-  any separately authorized screening request. Preserve unfavorable evidence,
-  the root unknown path, foreign dirty worktree, stale registrations and
-  external holds.
+  any separately authorized screening request. Do not merge another
+  process-pointer update while the packet is in flight; if source advances,
+  retain it as historical and repeat the complete sequence. Preserve
+  unfavorable evidence, the root unknown path, foreign dirty worktree, stale
+  registrations and external holds.
 
 ## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=cd629d4`, superseded by `ca81689`)
 
