@@ -31,8 +31,11 @@ The six immutable holdouts retain creation timestamps and source digests while
 their current creation/evidence references, second-readonly comparison,
 fixture-freshness record, shared invariants, evaluation binding, blinded
 mapping and exactly-two-condition 30-cell reserved manifest all point at this
-candidate. The independent metadata protocol review is pending. If it finds a
-gap, repair only that metadata delta and obtain scoped rereview; after `PASS`,
+candidate. The independent review found two metadata defects: receipt IDs were
+not explicitly aliased to stable condition rows, and the protocol construction
+hash was stale after reference correction. An explicit alias map and refreshed
+hashes now pass cross-artifact assertions; scoped rereview is pending. If it
+finds another gap, repair only that metadata delta and rereview; after `PASS`,
 seek separately authorized screening. Preserve every unfavorable run and keep
 all allocation/credit/authority flags false.
 

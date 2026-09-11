@@ -28,9 +28,13 @@ protection changes or a CI-infrastructure change.
   holdouts, current creation and second-readonly references, source-only fixture
   freshness, shared invariants, evaluation bindings, blinded mapping, exactly
   two conditions differing in one product input and 30 unique reserved cells.
-  Its independent metadata protocol review is pending. Screening, allocation,
-  credit and product acceptance remain false.
-- Next owner/action: finish the independent protocol review. Convert any vague
+  Independent review found `A07-4560-RECEIPT-ID-001` (missing explicit aliases
+  between stable condition rows and receipt IDs) and
+  `A07-4560-PROTOCOL-HASH-001` (stale construction digest). An explicit alias
+  map was added without changing receipt bytes; the construction and affected
+  artifact hashes were recomputed and assertions pass. Scoped rereview is
+  pending. Screening, allocation, credit and product acceptance remain false.
+- Next owner/action: finish the scoped protocol rereview. Convert any vague
   concern into a concrete contract, location, failure scenario and smallest
   verification; repair only accepted metadata deltas, rerun affected checks and
   obtain scoped rereview. On protocol `PASS`, seek the separately authorized

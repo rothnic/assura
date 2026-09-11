@@ -32,15 +32,16 @@ Rust/Cargo `1.94.1` identity. Its two fresh source-only canaries pass the full
 seven-dimension evaluator with zero critical failures, and the private packet
 now has current six-handle/second-readonly provenance, fixture freshness,
 shared invariants, evaluation bindings, two conditions, and 30 reserved cells.
-Everything is no-credit while protocol review is pending.
+The independent reviewer found two metadata defects (receipt-ID aliases and a
+stale construction hash); both are repaired, cross-artifact assertions pass,
+and scoped rereview is pending. Everything remains no-credit.
 
-Next action is the independent metadata-only protocol review. A finding must
-name the contract, location, failure scenario and smallest verification; repair
-only accepted deltas and obtain scoped rereview. After protocol `PASS`, seek a
-separately authorized screening decision. Never allocate or credit cells from
-canaries, protocol metadata, skipped/zero-test jobs, or the unresolved hosted
-run. Preserve root/foreign/historical topology state and all unfavorable
-evidence.
+Next action is the scoped metadata-only protocol rereview. A finding must name
+the contract, location, failure scenario and smallest verification; repair only
+accepted deltas and rereview again. After protocol `PASS`, seek a separately
+authorized screening decision. Never allocate or credit cells from canaries,
+protocol metadata, skipped/zero-test jobs, or the unresolved hosted run.
+Preserve root/foreign/historical topology state and all unfavorable evidence.
 
 ## Outcome invariant
 

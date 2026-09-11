@@ -38,10 +38,12 @@ three held rows: A07 is active, W03 is verified, and R01, W02, and F01 retain
 their separate evidence or authority holds. The current A07 candidate is
 identity-frozen at this source with exact Rust/Cargo 1.94.1, two fresh
 source-only full-evaluator canaries, a six-handle holdout rebind, fixture
-freshness/invariant/evaluation bindings, and a 30-cell reserved manifest. All
-of that evidence is explicitly no-credit while independent protocol review is
-pending; no screening allocation or product acceptance exists. Earlier packets
-are dated candidate-base/no-credit metadata whenever their source is superseded.
+freshness/invariant/evaluation bindings, and a 30-cell reserved manifest. The
+independent review found receipt-ID alias and construction-hash metadata gaps;
+both are repaired, cross-artifact assertions pass, and scoped rereview is
+pending. All of that evidence is explicitly no-credit; no screening allocation
+or product acceptance exists. Earlier packets are dated candidate-base/no-credit
+metadata whenever their source is superseded.
 The root unknown path, foreign dirty worktree, stale registrations, historical
 branches, and unfavorable evidence remain preserved as ownership boundaries.
 

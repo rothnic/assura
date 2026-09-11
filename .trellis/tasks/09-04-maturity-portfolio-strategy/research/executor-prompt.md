@@ -28,10 +28,12 @@ uses exact Rust/Cargo `1.94.1` and passes login-shell identity plus deliberate
 wrong-target/wrong-root controls. Two fresh sibling-free source-only canaries
 pass all seven evaluator dimensions with zero critical failures. The private
 six-handle/two-condition/30-cell packet is rebound to this source with current
-fixture, invariant and evaluation references; protocol review is pending and
-all screening/allocation/credit flags remain false. Complete the independent
-metadata review, repair only concrete accepted findings with scoped rereview,
-and seek separately authorized screening only after protocol `PASS`.
+fixture, invariant and evaluation references. Independent review found missing
+receipt-condition aliases and a stale construction hash; both are repaired,
+cross-artifact assertions pass, and scoped rereview is pending. All
+screening/allocation/credit flags remain false. Complete rereview, repair only
+concrete accepted findings with scoped verification, and seek separately
+authorized screening only after protocol `PASS`.
 
 As-of correction checkpoint (2026-09-11, superseded by `40f1155c`; refresh before use):
 `origin/master=851a6b831ea841317b78d94fce658a6974ef401a`; the revision-pinned

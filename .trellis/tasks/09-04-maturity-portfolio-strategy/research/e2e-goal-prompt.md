@@ -31,10 +31,13 @@ held=3`: A07 active, W03 verified and R01/W02/F01 held. The current A07
 candidate is exact-toolchain identity-frozen. Two fresh source-only canaries
 pass the full seven-dimension evaluator with zero critical failures. Its
 private six-handle/two-condition/30-cell packet has current provenance,
-fixture freshness, invariant and evaluation bindings, but independent protocol
-review is pending; screening, allocation and credit remain false.
+fixture freshness, invariant and evaluation bindings. Independent review found
+missing receipt-condition aliases and a stale construction hash; both are
+repaired and cross-artifact assertions pass, with scoped rereview pending.
+Screening, allocation and credit remain false.
 
-The only valid next route is: complete metadata-only protocol review; turn any
+The only valid next route is: complete scoped metadata-only protocol rereview;
+turn any
 finding into a concrete contract/location/failure/smallest verification; repair
 accepted metadata deltas and obtain scoped rereview; then seek separately
 authorized screening. Refresh source, release/tag, PR/CI, topology and ledger

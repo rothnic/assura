@@ -1,5 +1,25 @@
 # Current maturity train checkpoint
 
+## Iteration 149 — 2026-09-11 — protocol correction and scoped rereview
+
+- The independent metadata reviewer found two concrete packet defects:
+  `A07-4560-RECEIPT-ID-001` (stable `condition-blinded-a/b` rows were not
+  explicitly aliased to receipt IDs `a/b`) and `A07-4560-PROTOCOL-HASH-001`
+  (the protocol record held a stale construction digest after reference
+  correction). The receipt bytes and product contract were not changed.
+- The private manifest, evaluation binding and mapping now carry an explicit
+  receipt-condition alias map and per-condition receipt IDs. The construction
+  digest and affected manifest/evaluation-binding/mapping hashes were
+  recomputed; cross-artifact hash and alias assertions pass. The protocol
+  artifact remains `PENDING`/no-credit while scoped rereview runs.
+- Next owner/action: complete the scoped protocol rereview. If another finding
+  appears, require the same concrete contract/location/failure/smallest-
+  verification format and repair only the accepted metadata delta. A protocol
+  `PASS` may permit a separately authorized screening decision; it never grants
+  allocation, product acceptance, release, deployment, publication, invitation
+  or protection authority. Preserve the hosted push-CI failure and all other
+  unfavorable evidence.
+
 ## Iteration 148 — 2026-09-11 — current candidate and protocol packet
 
 - Owner/phase: `/root` / current-source A07 candidate preparation and pending
