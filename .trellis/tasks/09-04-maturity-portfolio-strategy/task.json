@@ -17,7 +17,7 @@
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
-  "next_action": "Refresh origin/master, release/tag, PR/CI, topology and the revision-pinned ledger; continue the owned A07 preparation at that fetched source through candidate identity, no-credit canary, private packet rebind and isolated protocol review before any separately authorized screening. The 851a6 packet is candidate-base/no-credit after PR #289 advanced master; if source advances or any identity mismatch appears, retain it as metadata-only and repeat the complete sequence.",
+  "next_action": "Refresh origin/master, release/tag, PR/CI, topology and the revision-pinned ledger before any further A07 phase. The 4560c710 packet's scoped independent metadata rereview returned PASS after the receipt-condition alias and current construction-hash repairs; the private protocol record preserves pre-verdict and post-verdict hashes. Seek a separately authorized screening decision only if authority exists; otherwise continue the hosted watch-SIGINT diagnostic or another explicitly authorized recovery slice. Keep screening/allocation/credit false.",
   "subtasks": [],
   "children": [],
   "parent": null,
@@ -44,8 +44,8 @@
   "meta": {
     "goal_path": "docs/goals/assura-maturity-execution-train.md",
     "execution_branches": [
-    "goal/a05-current-audit",
-    "goal/a04-pre-commit-adapter",
+      "goal/a05-current-audit",
+      "goal/a04-pre-commit-adapter",
       "goal/a04-readiness-hold",
       "goal/w02-deployment-hold",
       "goal/q02-contribution-contract",
@@ -102,7 +102,8 @@
       "docs/r01-artifact-inventory-aa2444b",
       "docs/postmerge-r01-artifact-reconcile-c5b2822",
       "docs/a07-current-5b03c7f",
-      "docs/a07-postmerge-961dced"
+      "docs/a07-postmerge-961dced",
+      "docs/a07-current-4560c71"
     ],
     "continuation_goal": {
       "status": "active",
@@ -110,16 +111,21 @@
       "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup. At every continuation inspect active, implemented, verified and held work before pending rows; if no card is ready, advance an authorized recovery or preparation slice instead of stopping. Never convert process, evaluator, canary or skipped-check evidence into product success.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
       "current_checkpoint": {
-        "origin_master": "40f1155c3d26dc40141d2464d7e2f027f7bb9770",
+        "origin_master": "4560c710967d59993b9ea4f9b86613d446443f79",
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
-        "held": ["R01", "W02", "F01"],
+        "held": [
+          "R01",
+          "W02",
+          "F01"
+        ],
         "current_evidence": {
-          "candidate": "The ac3eb13 candidate and earlier canaries are historical no-credit evidence after PR #286 and later process merges. The 851a6 candidate identity, canaries and private packet were prepared against the pre-PR #289 candidate base; they are now candidate-base/no-credit evidence and no current candidate has screening credit.",
-          "holdout_binding": "The 851a6 six-handle binding and second-readonly comparison are retained as candidate-base/no-credit metadata after PR #289; they must be rebound to a fresh candidate at the fetched source before allocation.",
-          "manifest": "The 851a6 exactly-two-condition manifest and 30 reserved cells are retained as candidate-base/no-credit metadata after PR #289; no current screening allocation exists.",
-          "protocol_review": "The 851a6 packet's isolated protocol rereview returned PASS, but it is candidate-base/no-credit metadata after PR #289 and does not authorize screening; the refreshed source requires a new candidate sequence and isolated protocol review."
+          "candidate": "The 4560c710 candidate was built in a clean detached worktree with Rust/Cargo 1.94.1, an explicit release target and a dedicated login-shell shim. Identity and deliberate wrong-target/wrong-root controls pass. Two fresh source-only conditions completed composed initialization and full seven-dimension evaluator summaries pass with zero critical failures; this is no-credit canary evidence.",
+          "holdout_binding": "The six-layout construction record, current-candidate binding and second-readonly comparison are rebound to 4560c710 with current creation/evidence references, immutable creation timestamps/digests and the raw-hook exclusion retained. Scoped independent metadata protocol rereview returned PASS; the packet remains no-credit.",
+          "manifest": "The current private manifest has exactly two conditions differing in one recorded product-input value, explicit receipt-condition aliases, complete repeated identity/invariant fields and 30 unique reserved cells. Fixture freshness, mapping, evaluation-binding and shared-invariant records point at current artifacts; allocation and credit remain false.",
+          "protocol_review": "The independent metadata review found two concrete defects: stable manifest condition IDs were not explicitly aliased to receipt IDs a/b, and the protocol artifact recorded a stale construction hash. An explicit alias map was added without changing receipt bytes; the construction hash and affected artifact hashes were recomputed. Cross-artifact assertions pass and the scoped rereview returned PASS; pre-verdict and post-verdict hashes are recorded. Screening, allocation and credit remain false.",
+          "post_merge_ci": "PR #292 exact-head applicable checks passed, including Rust, documentation, security scope, evidence, platform tests, performance and GitGuardian; Security Audit was scope-skipped. The separate push-triggered Rust CI run on merge SHA 4560c710 reported a macOS watch SIGINT test failure and cancelled the Ubuntu/Windows matrix siblings. A focused local rerun passed once; this remains an unresolved hosted signal and is not silently counted as green."
         },
         "corrections": [
           "A02 is complete; the old plain-init handoff finding is historical.",
@@ -146,10 +152,16 @@
           "PR #282 merged the reviewed layered-context and continuation corrections at 55a38ff; PR #283 reconciled the 30b route; PR #284 merged the reviewed current-route correction at c4f57d7; PR #285 reconciled the c4f post-merge checkpoint at ac3eb13. The revision-pinned ledger remains items=32, ready_pending=0, unfinished=5 and held=3; earlier candidates and protocol PASS records are historical no-credit after each source advance. No product, threshold, allocation or authority state changed.",
           "At ac3eb13 the coordinator rebuilt one exact-toolchain candidate in a clean owned worktree, retained an initial wrapper-sentinel failure as unfavorable no-credit evidence, and completed two corrected source-only canaries with full seven-dimension evaluator PASS. A fresh login-shell identity record proves the exact candidate and rejects wrong-target and wrong-root controls. The six-handle/two-condition/30-cell packet was rebound to ac3eb13 and passed isolated protocol rereview; after PR #286 advanced master, all of this is historical no-credit metadata and must not be reused without a fresh current-source sequence.",
           "PR #286 merged the independently reviewed ac3 checkpoint as cd629d4 after applicable hosted gates and post-merge workflows passed. It changed process documentation only; the ac3 packet is historical no-credit. PR #287 then reconciled that checkpoint as ca81689; PR #288 merged the reviewed continuation-goal artifacts as 851a6b8. Its applicable documentation, CI scope, security, evidence and GitGuardian checks passed, as did the post-merge Documentation, Security Audit and Rust CI workflows; process-only source advances make earlier candidate packets historical no-credit.",
-          "PR #289 merged the reviewed durable goal, layered-routing skill metadata and current-route corrections as 40f1155. Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian passed; product, Rust, performance and release jobs were scope-skipped and are not acceptance proof. The 851a6 candidate packet is now candidate-base/no-credit; refresh and rebuild before any screening or acceptance action."
+          "PR #289 merged the reviewed durable goal, layered-routing skill metadata and current-route corrections as 40f1155. Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian passed; product, Rust, performance and release jobs were scope-skipped and are not acceptance proof. The 851a6 candidate packet is now candidate-base/no-credit; refresh and rebuild before any screening or acceptance action.",
+          "PR #292 merged the reviewed agent-content-preservation recovery slice as 4560c710967d59993b9ea4f9b86613d446443f79. Its exact-head applicable checks passed; the separate push-triggered Rust CI run later failed in macOS watch_stops_cleanly_without_runtime_artifacts after SIGINT and cancelled the Ubuntu/Windows matrix siblings. Preserve this failure for a separate diagnostic; do not rerun unchanged or treat a local pass as hosted proof.",
+          "At 4560c710 the coordinator refreshed the candidate with exact Rust/Cargo 1.94.1 identity, wrong-target and wrong-root controls, two fresh sibling-free source-only canaries and full seven-dimension evaluator PASS. The six-handle/two-condition/30-cell packet was rebound with current references and remains no-credit while independent protocol review is pending. No product, threshold, allocation or authority state changed.",
+          "Independent protocol review found A07-4560-RECEIPT-ID-001: stable condition-blinded-a/b rows were not explicitly bound to receipt IDs a/b. The private manifest, evaluation binding and mapping now carry an explicit alias map and per-condition receipt IDs; receipt bytes remain unchanged and alias assertions pass. Screening and credit remain false.",
+          "Independent protocol review found A07-4560-PROTOCOL-HASH-001: the protocol record construction digest was stale after current creation/evidence references were corrected. The construction hash and affected manifest/evaluation-binding/mapping hashes were recomputed; hash assertions pass and the scoped rereview returned PASS. No product, threshold, allocation or authority state changed.",
+          "The corrected 4560c710 packet received scoped independent protocol rereview PASS. Candidate, holdout, manifest, evaluation-binding and mapping records now say protocol-pass/no-credit; the protocol artifact preserves pre-verdict reviewed hashes and post-verdict hashes. Screening, allocation, credit and product acceptance remain false; refresh source and the ledger before a separately authorized screening decision or another recovery slice.",
+          "Independent process review of the committed goal/task reconciliation at 831dab5 returned PASS: current-source routing, historical supersession, hosted-failure honesty, layered context, one-owner continuation and the A07 line limit were verified. No product, threshold, allocation, screening or authority state changed."
         ]
       },
-      "next_action": "After each refresh of origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, continue the owned A07 preparation at the fetched source with a fresh explicit-workdir candidate and identity freeze, then run the bounded no-credit canary, rebind the holdout/manifest packet and obtain isolated protocol PASS. The 851a6 packet is candidate-base/no-credit after PR #289; do not reuse it. Only then may a separately authorized screening decision be sought; never allocate or credit cells without every later gate.",
+      "next_action": "At every continuation fetch origin/master and rerun release/tag, PR/CI, topology and the revision-pinned ledger before using checkpoint evidence. The current source is 4560c710967d59993b9ea4f9b86613d446443f79; the owned A07 candidate is identity-frozen and its two source-only no-credit canaries pass all seven evaluator dimensions. The six-handle holdout, fixture freshness, shared invariants, evaluation binding and 30-cell reserved manifest are rebound to this candidate. The independent reviewer found two metadata defects—receipt condition IDs lacked explicit aliases and the protocol construction hash was stale after a reference correction—both are repaired, cross-artifact assertions pass and the scoped rereview returned PASS; pre-verdict and post-verdict hashes are recorded. Refresh before any further phase, then seek separately authorized screening only if authority exists. Never allocate or credit cells from canary or protocol metadata.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",

@@ -1,5 +1,78 @@
 # Current maturity train checkpoint
 
+## Iteration 150 — 2026-09-11 — protocol PASS recorded and screening gate separated
+
+- The independent metadata reviewer completed the corrected 4560c710 delta
+  rereview with `PASS`. The explicit condition-blinded-to-receipt aliases,
+  unchanged receipt bytes, current construction digest and updated artifact
+  hashes were verified; the protocol artifact now records the verdict and
+  preserves both pre-verdict reviewed hashes and post-verdict hashes.
+- The private candidate freeze, six-handle binding, evaluation binding,
+  manifest and mapping now say `protocol-pass-no-credit`. Screening,
+  allocation, credit and product acceptance remain false; this metadata PASS
+  is not an allocation decision.
+- Next owner/action: refresh source, release/tag, PR/CI, topology and the
+  revision-pinned ledger before any further A07 phase. If separate screening
+  authority is granted, perform only the screening contract and its gates; if
+  it is not granted, continue the independent hosted watch-SIGINT diagnostic
+  or another explicitly authorized recovery slice. Do not treat a local rerun,
+  skipped job, zero-test job, canary, or protocol PASS as product acceptance.
+- Independent process review of the committed docs/goal reconciliation
+  (`831dab5`) returned `PASS`: current-source routing, historical supersession,
+  hosted-failure honesty, layered context, one-owner continuation and the A07
+  line limit were verified; no product or authority expansion was found.
+
+## Iteration 149 — 2026-09-11 — protocol correction and scoped rereview
+
+- The independent metadata reviewer found two concrete packet defects:
+  `A07-4560-RECEIPT-ID-001` (stable `condition-blinded-a/b` rows were not
+  explicitly aliased to receipt IDs `a/b`) and `A07-4560-PROTOCOL-HASH-001`
+  (the protocol record held a stale construction digest after reference
+  correction). The receipt bytes and product contract were not changed.
+- The private manifest, evaluation binding and mapping now carry an explicit
+  receipt-condition alias map and per-condition receipt IDs. The construction
+  digest and affected manifest/evaluation-binding/mapping hashes were
+  recomputed; cross-artifact hash and alias assertions pass. The protocol
+  artifact was then recorded as `PASS`/no-credit after the scoped rereview;
+  the preceding pending state is retained as the pre-verdict record.
+- Next owner/action at that checkpoint was the scoped protocol rereview. Its
+  `PASS` is now recorded above; it may permit a separately authorized
+  screening decision, but never grants allocation, product acceptance,
+  release, deployment, publication, invitation or protection authority.
+  Preserve the hosted push-CI failure and all other unfavorable evidence.
+
+## Iteration 148 — 2026-09-11 — current candidate and protocol packet
+
+- Owner/phase: `/root` / current-source A07 candidate preparation and pending
+  independent protocol review. PR #292 merged the reviewed recovery slice at
+  `4560c710967d59993b9ea4f9b86613d446443f79`; its exact-head applicable checks
+  passed. The separate push-triggered Rust CI run on that merge SHA failed in
+  the macOS `watch_stops_cleanly_without_runtime_artifacts` SIGINT test and
+  cancelled the Ubuntu/Windows matrix siblings. A focused local rerun passed
+  once; the hosted failure is retained as unresolved diagnostic evidence.
+- The revision-pinned ledger at `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
+  remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+  verified and R01/W02/F01 held. A clean explicit-workdir candidate uses the
+  exact Rust/Cargo `1.94.1` toolchain. Login-shell identity and deliberate
+  wrong-target/wrong-root controls pass; two fresh sibling-free source-only
+  canaries complete composed initialization and full seven-dimension evaluator
+  summaries pass with zero critical failures. This is no-credit evidence.
+- The private packet is rebound to this candidate: six immutable holdouts with
+  current creation references and second-readonly pass, source-only fixture
+  freshness, shared invariants, evaluation bindings, a blinded mapping, exactly
+  two conditions differing in one recorded product input, and 30 unique reserved
+  cells. The packet's independent protocol review was pending at this
+  checkpoint; the scoped rereview PASS is recorded in Iteration 150. Screening,
+  allocation and credit remain false. No product, threshold or authority state
+  changed.
+- Next owner/action at that checkpoint was to complete the metadata-only
+  protocol review. Its PASS now clears metadata review only; after a fresh
+  reset, seek a separately authorized screening decision if authority exists.
+  Do not allocate or credit cells from canaries, protocol metadata, skipped
+  jobs, or the unresolved push-triggered CI run. Preserve the root unknown
+  path, foreign dirty worktree, stale registrations, historical branches and
+  all unfavorable evidence.
+
 ## Iteration 147 — 2026-09-11 — post-merge source reconciliation
 
 - Owner/phase: `/root` / post-merge reconciliation. PR #289 merged the

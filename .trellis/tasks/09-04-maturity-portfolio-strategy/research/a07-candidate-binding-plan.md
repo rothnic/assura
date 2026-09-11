@@ -3,13 +3,42 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest 2026-09-11
-process-only refresh resolved
-`origin/master=40f1155c3d26dc40141d2464d7e2f027f7bb9770` after PR #289 merged
-the reviewed durable goal, layered-routing skill metadata and current-route
-corrections. Its applicable Documentation/CI/Security/Evidence/GitGuardian
-checks passed; product/Rust/performance/release jobs were scope-skipped. This
-process-only checkpoint changes no A07 product or acceptance state and does not
-authorize screening.
+refresh resolved `origin/master=4560c710967d59993b9ea4f9b86613d446443f79`
+after PR #292 merged the reviewed agent-content-preservation recovery slice.
+Its exact-head applicable checks passed, while the separate push-triggered
+Rust CI run failed in the macOS watch SIGINT test and cancelled the
+Ubuntu/Windows siblings; a focused local rerun passed once. This hosted
+failure remains retained diagnostic evidence and is not treated as green.
+The current candidate is exact-toolchain identity-frozen; two source-only
+full-evaluator canaries pass no-credit, and the six-handle/two-condition/
+30-cell packet is rebound with current provenance. Independent protocol review
+is pending; no screening, allocation or acceptance authority is granted.
+
+## Current candidate-binding checkpoint — 2026-09-11 UTC (`origin/master=4560c710`)
+
+The private candidate freeze records source `4560c710967d59993b9ea4f9b86613d446443f79`,
+Git tree `f7150a5fd0ef192a70573b948953f17bcef9456d`, Assura `0.4.0`, the
+explicit release binary and the pinned Rust/Cargo `1.94.1` toolchain. A fresh
+login-shell control resolves the dedicated candidate shim; deliberate
+wrong-target and wrong-root controls are rejected.
+
+Two fresh sibling-free source-only fixtures run the two values of the single
+private product-input flag. Both initializer receipts exit `0`; both full
+evaluators report all seven declared dimensions passing and zero critical
+failures. These are bounded no-credit canaries, not screening or acceptance.
+
+The six immutable holdouts retain creation timestamps and source digests while
+their current creation/evidence references, second-readonly comparison,
+fixture-freshness record, shared invariants, evaluation binding, blinded
+mapping and exactly-two-condition 30-cell reserved manifest all point at this
+candidate. The independent review found two metadata defects: receipt IDs were
+not explicitly aliased to stable condition rows, and the protocol construction
+hash was stale after reference correction. An explicit alias map and refreshed
+hashes now pass cross-artifact assertions; the scoped rereview returned `PASS`
+for this metadata scope. The protocol record preserves pre-verdict and
+post-verdict hashes. After a fresh source reset, seek separately authorized
+screening only if authority exists; preserve every unfavorable run and keep
+all allocation/credit/authority flags false.
 
 ## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`)
 
