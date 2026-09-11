@@ -2,7 +2,7 @@
 
 These dated entries moved from `progress.md` on 2026-09-11 to keep the active
 progress index below the configured 1000-line limit. They remain historical
-evidence and do not change the current ac3 route.
+evidence and do not change the current cd629d4 route.
 
 ## Iteration 139 — 2026-09-11 — post-merge current-source reconciliation
 

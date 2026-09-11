@@ -8,10 +8,28 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 143 (`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2` after PR #285 reconciled the reviewed c4f checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 candidate canaries, packet and protocol PASS are current no-credit preparation; no screening, product, threshold, allocation or authority state changed.)
+Process iteration: 144 (`origin/master=cd629d413491f0214fb16850bba629524a342be1` after PR #286 reconciled the reviewed ac3 checkpoint; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; post-merge Documentation, Security Audit and Rust CI workflows passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The ac3 candidate canaries, packet and protocol PASS are historical no-credit metadata after this source advance; no candidate or screening allocation is current.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
+## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=cd629d4`)
 
-## Current candidate preparation and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`)
+- PR #286 reconciled the reviewed ac3 process checkpoint at
+  `cd629d413491f0214fb16850bba629524a342be1`. Its applicable Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as
+  did the post-merge Documentation, Security Audit and Rust CI workflows.
+  Product/Rust/performance/release jobs were scope-skipped and are not
+  acceptance proof.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`:
+  A07 active, W03 verified and R01/W02/F01 held. The ac3 candidate, canaries,
+  identity controls, six-handle binding, manifest and isolated protocol `PASS`
+  are historical no-credit metadata after this source advance. No screening,
+  product, threshold, allocation or authority state changed.
+- Owner/phase: `/root` / fresh candidate preparation. Refresh source,
+  release/tag, PR/CI, topology and the ledger, then build a fresh explicit-
+  workdir cd629d4 candidate, freeze identity, run the bounded no-credit canary,
+  rebind the packet and obtain isolated protocol `PASS` before any separately
+  authorized screening request. Preserve all unfavorable and topology evidence.
+
+## Historical candidate preparation and protocol reconciliation — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4`)
 
 - PR #285 reconciled the reviewed c4f post-merge checkpoint at
   `ac3eb13be83f1551b8084a59c9868ff870fa8bf2`. Applicable Documentation,

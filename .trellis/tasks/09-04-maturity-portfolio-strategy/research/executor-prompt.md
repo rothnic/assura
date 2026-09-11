@@ -14,24 +14,21 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current correction checkpoint (2026-09-11, refresh before use):
-`origin/master=ac3eb13be83f1551b8084a59c9868ff870fa8bf2`; the revision-pinned
+`origin/master=cd629d413491f0214fb16850bba629524a342be1`; the revision-pinned
 ledger is 32 items, zero ready-pending, five unfinished and three held, with
-A07 active, W03 verified and R01/W02/F01 held. PR #284 merged the reviewed
-process route and PR #285 reconciled its post-merge checkpoint; applicable
-Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
-checks passed, while product/Rust/performance/release jobs were scope-skipped
-and are not acceptance proof. The 30b and c4f candidate packets are historical
-no-credit after their source advances. The ac3 candidate was built in an
-explicit clean worktree; two corrected source-only canaries pass the full
-seven-dimension evaluator, fresh identity controls reject wrong target/root
-controls, and isolated protocol review returned `PASS`. All are no-credit
-preparation. Refresh source, release/tag, PR/CI, topology and ledger again,
-prove the packet still matches ac3, and only then seek separately authorized
-screening. See
+A07 active, W03 verified and R01/W02/F01 held. PR #286 merged the reviewed
+ac3 process checkpoint; its applicable Documentation, CI Scope, Security
+Scope, Evidence Gates and GitGuardian checks passed, as did post-merge
+Documentation, Security Audit and Rust CI. Product/Rust/performance/release
+jobs were scope-skipped and are not acceptance proof. The 30b, c4f and ac3
+candidate packets are historical no-credit after their source advances. Build
+a fresh explicit-workdir cd629d4 candidate, run the bounded no-credit canary,
+rebind the packet and obtain isolated protocol `PASS` before seeking separately
+authorized screening. See
 [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for the
 measured VPS decision and layered context route.
 
-As-of routing checkpoint (2026-09-11, refresh before use): the latest reset
+Historical as-of routing checkpoint (2026-09-11, superseded by `cd629d4`): the latest reset
 resolved `origin/master=961dced162c8fe67ad87d64e0be750249edd5681`; the ledger is
 32 items, zero ready pending, five unfinished and three held: A07 active, W03
 verified, and R01/W02/F01 held. PR #280's process-only route is merged; its
