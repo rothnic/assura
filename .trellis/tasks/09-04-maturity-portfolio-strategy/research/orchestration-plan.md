@@ -92,27 +92,33 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — af005a7 (refresh required)
+## Current train route — 71adc2e
 
-At the latest post-merge refresh, `origin/master=af005a7dc5c367bc9388e08203fbf351bc0c88f2`
-is the only current source pointer. PR #275 reconciled the current resume-proof
-route as a process-only documentation slice; its merged tree and owned closure
-are verified, and its applicable hosted checks plus post-merge workflows
-passed. The ebed, 9df, 692, 9ad and 129a249 candidates, canaries, bindings and
-isolated protocol `PASS` records are historical no-credit metadata because the
-source tree advanced. The ledger remains 32 items, no ready-pending card, five
-unfinished cards and three narrow holds. A02 is complete and its plain-init
-handoff incident is historical.
+At the current refresh, `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
+is the only current source pointer. The owned candidate-bound build used the
+pinned Rust/Cargo `1.94.1` toolchain; login-shell identity and two corrected
+source-only canaries passed the full evaluator with the expected negative
+policy probe. The earlier omitted-contract attempts remain explicit
+unfavorable no-credit evidence. The ledger remains 32 items, no ready-pending
+card, five unfinished cards and three narrow holds. A02 is complete and its
+plain-init handoff incident is historical.
 
-A07 is the active lane. No af005a7 candidate has been frozen yet. The 129a249
-candidate, login-shell identity controls, two source-only canaries, six-handle
-binding and exactly-two-condition manifest passed no-credit protocol checks but
-are historical after this source advance. The exact next action is to refresh
-source, release/tag, PR/CI and topology state, rerun the ledger, re-freeze the
-current candidate, run a fresh no-credit canary, verify/rebind the current
-six-handle holdout and exactly-two-condition manifest, and obtain isolated
-protocol `PASS` before any separately authorized screening preparation. Do not
-reuse an older packet or allocate/credit cells from this process checkpoint.
+A07 is the active lane. The current canary, immutable holdout/manifest rebind
+and isolated metadata protocol review are preparation only and grant no
+allocation or acceptance credit; the protocol review returned `PASS`. The
+exact next action is to seek the separately authorized screening preparation,
+after refreshing source and ledger again. Do not reuse an older packet or
+allocate or credit cells from this process checkpoint.
+
+## Historical pre-71adc2 train route (superseded by current `71adc2e`) — `af005a7`
+
+The prior post-merge refresh pointed at `af005a7dc5c367bc9388e08203fbf351bc0c88f2`
+after PR #275, a process-only documentation slice. Its merged tree, owned
+closure and applicable hosted checks were verified. At that time no af005a7
+candidate had been frozen; the 129a249 candidate, canaries, bindings and
+protocol `PASS` records were historical no-credit metadata. The preserved
+next-action record was to refresh and re-freeze the candidate, which is now
+superseded by the current canary and rebind route above.
 
 R01 still needs the raw callback trace or a specific maintainer native-readiness
 decision. W02 needs explicit Cloudflare approval before any current push that

@@ -2,7 +2,7 @@
 
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
-the revision-pinned ledger before every canary. The latest 2026-09-11
+the revision-pinned ledger before every canary. The prior 2026-09-11
 post-merge refresh resolved
 `origin/master=af005a7dc5c367bc9388e08203fbf351bc0c88f2` after PR #275, which
 reconciled the current resume-proof route. Its merged tree equals the reviewed
@@ -10,6 +10,23 @@ candidate, applicable Documentation/CI/Security/Evidence/GitGuardian checks
 passed, and the post-merge Documentation/Security/Rust CI workflows passed.
 This process-only checkpoint changes no A07 product or acceptance state and
 does not authorize screening.
+
+The current refresh resolved `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
+after PR #276. A clean owned worktree built and privately froze a candidate
+with the pinned Rust/Cargo `1.94.1` toolchain, fixed prompt and login-shell-safe
+target shim. Two initial source-only fixture attempts are retained as
+unfavorable no-credit setup evidence because the required contract directory
+was omitted. Two corrected sibling-free fixtures then passed candidate-bound
+composed initialization and the full seven-dimension evaluator, including the
+expected negative policy control and a collected native test. No product,
+threshold, allocation, release, deployment, publication, invitation or
+acceptance state changed.
+
+The current private six-handle construction and exactly-two-condition manifest
+were rebound to the frozen candidate, and an independent isolated metadata
+protocol review returned `PASS`. This remains no-credit preparation; screening,
+holdout credit, product acceptance and every external authority boundary stay
+unresolved.
 
 The two `9b410e9` candidate-bound composed-init canaries and their corrected
 private protocol `PASS` are historical, zero-credit metadata for that older
@@ -27,16 +44,14 @@ provenance/linkage corrections; the disqualified raw-hook draft remains
 explicitly excluded. Do not infer conditions or holdout validity from
 historical run names or labels.
 
-A fresh detached checkout at 129a249 was the last candidate build, and its
+A fresh detached checkout at 129a249 was the prior candidate build, and its
 source/tree, version, fixed target and login-shell command identity were frozen
 privately. Two source-only canaries and the six-handle/two-condition packet
 passed their no-credit protocol checks, but all of that evidence is historical
-after PR #275 advanced master. No af005a7 candidate has been frozen yet. The
-next ordered action is to refresh source/ledger, release/tag, PR/CI and topology
-state, re-freeze the current candidate, run a fresh no-credit canary,
-verify/rebind the current six-handle holdout and exactly-two-condition
-manifest, and obtain isolated protocol `PASS` before any separately authorized
-screening preparation.
+after the later source advances. The current 71adc2e candidate canary,
+six-handle/two-condition rebind and isolated protocol `PASS` are now the
+newest preparation evidence. The next step is separately authorized screening
+preparation after another source/ledger refresh.
 This plan does not change the A07 contract, scoring thresholds, fixture
 allocation, or product acceptance.
 
