@@ -5,7 +5,37 @@ routing only. Product acceptance is unchanged; no card is promoted by this
 file. The historical recovery record is preserved in
 [recovery-history-2026-09-11.md](recovery-history-2026-09-11.md).
 
-## Current post-merge reconciliation — PR #304 — 2026-09-11 UTC (`origin/master=284e781`)
+## Current candidate and packet correction — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`)
+
+- PR #305 merged the reviewed process route from `284e781` as
+  `dc031527afd400be52dfd8fe9cfdabc7a6caa685`; exact-head applicable checks and
+  merge-SHA Documentation `34653158838`, Rust CI `34653159004` (CI Scope
+  `103439684733`, Evidence Gates `103439731188`) and Security Audit
+  `34653158857` passed. Scope-skipped product/performance/release jobs remain
+  non-proof.
+- The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with
+  A07 active, W03 verified and R01/W02/F01 held. The clean candidate checkout
+  `/private/tmp/assura-a07-current-reconcile-dc031` uses exact Rust/Cargo
+  `1.94.1` and matching source/tree/binary/shim identity; two source-only
+  canaries and full seven-dimension post-exit evaluators pass with zero
+  critical failures. The canary is no-credit and retains ambient metadata and
+  hook-verifier limitations.
+- The six-holdout/two-condition private packet was rebound at
+  `/private/tmp/assura-a07-private-dc031`. A metadata-only validator resolves
+  current receipt, construction and second-readonly aliases, proves six
+  unique handles and 30 reserved cells, and returns `valid=true` with zero
+  errors. Historical construction records remain preserved; no screening,
+  allocation or credit flag is true. Independent protocol review returned
+  `PASS_NO_CREDIT` after correcting the stale contract digest and construction
+  hash; the private artifact records the scoped rereview.
+
+Next action: reconcile this protocol-pass/no-credit evidence only in a
+reviewed current-base process slice; after any merge refresh source and the
+ledger before further work. If source advances, classify the packet
+candidate-base/no-credit and rebuild. Keep the goal active and do not treat an
+empty pending set or process evidence as product success.
+
+## Historical post-merge reconciliation — PR #304 — 2026-09-11 UTC (`origin/master=284e781`; superseded by dc031527)
 
 - PR #304 merged reviewed process artifacts from head `17fa919` on base
   `d228472` as `284e78156370d49d8315f04391fcc74eaba3acb2`. Independent review

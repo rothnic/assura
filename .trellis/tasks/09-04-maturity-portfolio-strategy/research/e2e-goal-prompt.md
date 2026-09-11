@@ -19,7 +19,36 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, as-of)
+## Current candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, as-of)
+
+PR #305 merged the reviewed process reconciliation from `284e781` as
+`dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Its applicable exact-head and
+merge-SHA Documentation, Rust CI, Security and Evidence checks passed;
+scope-skipped product/performance/release rows remain non-proof. The ledger is
+still `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+verified and R01/W02/F01 held. Earlier candidates are historical or
+candidate-base/no-credit after the source advance.
+
+The fresh current candidate in `/private/tmp/assura-a07-current-reconcile-dc031`
+is bound to source/tree/binary/shim
+`dc031527afd400be52dfd8fe9cfdabc7a6caa685` /
+`b68b66cc47f7e4081afd2dc21c1387de34b30c32` /
+`3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`, with
+Rust/Cargo `1.94.1`. Identity and negative controls pass; two sibling-free
+source-only canaries and full seven-dimension evaluators pass with zero
+critical failures. This is no-credit preparation only.
+
+The private packet `/private/tmp/assura-a07-private-dc031` has six current
+holdouts, exactly two conditions, 30 reserved cells and validator `valid=true`
+after correcting stale current aliases while preserving historical records.
+Independent metadata-only protocol review returned `PASS_NO_CREDIT` after
+correcting the stale contract digest and construction hash. Keep screening,
+allocation, credit, product acceptance, release, deployment, publication and
+invitation authority false. Reconcile this evidence in a reviewed current-base
+slice before any separately authorized screening; refresh source and ledger
+after every merge. An empty pending queue is not a stop condition.
+
+## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, superseded by dc031527)
 
 The latest reset fetched
 `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` after PR #304 merged

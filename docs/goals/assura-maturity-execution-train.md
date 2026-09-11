@@ -30,7 +30,53 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — 284e781 (d228472 candidate-base reconciliation)
+## Current checkpoint — dc031527 (candidate-bound protocol-pass, no-credit preparation)
+
+The latest reset fetched `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`
+after PR #305 merged the reviewed process reconciliation from `284e781`. This
+is the current checkpoint for this continuation; every later phase must fetch
+again before using it. PR #305's reviewed head was
+`5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c`; applicable exact-head
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+passed, and merge-SHA Documentation (`34653158838`), Rust CI (`34653159004`)
+and Security Audit (`34653158857`) completed successfully for applicable
+scope. Rust CI's CI Scope (`103439684733`) and Evidence Gates (`103439731188`)
+passed; product/Rust/performance/release and other scope-skipped rows are not
+product proof.
+
+The revision-pinned ledger remains 32 items, zero ready-pending rows, five
+unfinished rows and three held rows: A07 is active, W03 is verified, and R01,
+W02 and F01 retain their separate evidence or authority holds. The `284e781`
+checkpoint and d228472 candidate are historical or candidate-base/no-credit
+after this source advance and must not be reused. The root unknown path,
+foreign dirty worktree, stale registrations and unfavorable evidence remain
+preserved as ownership boundaries. No product, threshold, screening,
+allocation, acceptance, release, deployment, publication or invitation
+authority changed.
+
+The fresh candidate in `/private/tmp/assura-a07-current-reconcile-dc031` uses
+Rust/Cargo `1.94.1`, matching source/tree/binary/shim identity
+(`dc031527`, `b68b66cc47f7e4081afd2dc21c1387de34b30c32`,
+`3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`).
+Login-shell identity, wrong-target and wrong-root controls pass/reject as
+intended. Two sibling-free source-only canaries and full seven-dimension
+post-exit evaluators pass with zero critical failures; ambient skill metadata
+and the generated-hook verifier discrepancy remain explicit limitations and
+no credit is assigned.
+
+The private packet `/private/tmp/assura-a07-private-dc031` now contains six
+current-candidate holdouts, exactly two conditions, 30 reserved cells and
+corrected current receipt/construction/second-readonly aliases. Its
+metadata-only validator is `valid=true` with zero errors. Independent
+protocol review returned `PASS_NO_CREDIT` after correcting the stale contract
+digest and construction hash; the private review artifact records both
+findings and their scoped rereview. Screening, allocation, credit and product
+acceptance remain false. Reconcile this evidence in a reviewed current-base
+process slice, then refresh source, release/tag, PR/CI, topology and the
+ledger after every merge; never let a canary, protocol metadata, skipped check
+or empty pending queue end the goal.
+
+## Historical checkpoint — 284e781 (d228472 candidate-base reconciliation; superseded by dc031527)
 
 The latest reset fetched `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`
 after PR #304 merged the reviewed post-merge process reconciliation from base

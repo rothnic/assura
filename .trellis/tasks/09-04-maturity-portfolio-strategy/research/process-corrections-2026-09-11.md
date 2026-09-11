@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`.
+`origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,39 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base)
+## Current correction checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit)
+
+- PR #305 merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c`
+  from base `284e781` as `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Applicable
+  exact-head and merge-SHA Documentation, CI Scope, Security Scope, Evidence
+  Gates and GitGuardian checks passed; scope-skipped jobs remain non-proof.
+- The fresh exact-toolchain candidate in
+  `/private/tmp/assura-a07-current-reconcile-dc031` is source/tree
+  `dc031527afd400be52dfd8fe9cfdabc7a6caa685`/
+  `b68b66cc47f7e4081afd2dc21c1387de34b30c32`, with binary and shim
+  `3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`.
+  Exact Rust/Cargo `1.94.1`, login-shell identity, wrong-target and wrong-root
+  controls pass. Two sibling-free canaries and full evaluators pass with zero
+  critical failures; ambient skill metadata and hook-verifier disagreement are
+  retained limitations and no credit is assigned.
+- A rebind correction fixed a process failure observed during preparation:
+  blind substitution had left current metadata pointing to nonexistent `r2`
+  construction/receipt aliases and a wrong identity-control filename. The
+  private packet now uses deliberate current aliases, preserves historical
+  construction records, and passes the metadata-only validator (`valid=true`,
+  zero errors) for six holdouts, two conditions and 30 reserved cells.
+  Independent protocol review returned `PASS_NO_CREDIT` after correcting the
+  stale contract digest and construction hash; the private review artifact
+  records both findings and the scoped rereview. Screening, allocation, credit
+  and product acceptance remain false.
+
+Next action: reconcile this protocol-pass/no-credit checkpoint in a
+current-base process slice. Refresh source, release/tag, PR/CI, topology and
+the ledger after every merge; if source advances, classify the packet
+candidate-base/no-credit and rebuild. Never reuse a candidate packet after its
+source advances.
+
+## Historical post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 
 - PR #304 merged reviewed head `17fa9197ed79083be4b8ba0714851aeaae9bdbf3`
   from base `d228472` as `284e78156370d49d8315f04391fcc74eaba3acb2`. Its

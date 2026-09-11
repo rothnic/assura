@@ -16,7 +16,37 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current-source post-merge checkpoint (2026-09-11, current at this reset;
+Current candidate-bound checkpoint (2026-09-11, current at this reset; refresh
+before use): `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`; PR #305
+merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c` from base
+`284e781`. Its applicable exact-head and merge-SHA Documentation, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed; scope-skipped
+product/performance/release rows remain non-proof. The revision-pinned ledger
+is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+verified, R01/W02/F01 held).
+
+The clean candidate checkout `/private/tmp/assura-a07-current-reconcile-dc031`
+uses exact Rust/Cargo `1.94.1` and source/tree/binary/shim identity
+`dc031527`/`b68b66cc47f7e4081afd2dc21c1387de34b30c32`/
+`3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`. Identity,
+wrong-target and wrong-root controls pass/reject as intended. Two sibling-free
+source-only canaries and full seven-dimension post-exit evaluators pass with
+zero critical failures. The private packet
+`/private/tmp/assura-a07-private-dc031` has six current holdouts, two
+conditions and 30 reserved cells; its metadata-only validator is `valid=true`
+with zero errors after correcting stale aliases. Independent protocol review
+returned `PASS_NO_CREDIT` after correcting the stale contract digest and
+construction hash. No screening, allocation, credit or product acceptance is
+claimed.
+
+Next action: reconcile the protocol-pass/no-credit evidence in a reviewed
+current-base process slice. Refresh source, release/tag, PR/CI, topology and
+the ledger after every merge; preserve the R01 macOS watch-SIGINT failure and
+all other unfavorable evidence. If source advances, classify this packet
+candidate-base/no-credit and rebuild. Do not stop at an empty pending queue.
+
+Historical current-source post-merge checkpoint (2026-09-11, superseded by
+`dc031527`; refresh before use): `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`;
 refresh before use): `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`;
 PR #304 merged the reviewed post-merge reconciliation from head
 `17fa9197ed79083be4b8ba0714851aeaae9bdbf3` on base `d228472`. Its applicable
