@@ -19,8 +19,8 @@ this hosted failure as an unresolved diagnostic rather than silently counting
 it as green or retrying unchanged. R01's missing raw watch/callback trace
 remains unresolved, so R01 is still held. The 30b, c4f, ac3, ca816 and 851a6
 candidate packets are candidate-base/no-credit after source advances; the
-current candidate and packet remain no-credit while protocol review is
-pending.
+current candidate and packet remain protocol-pass/no-credit after the scoped
+rereview.
 Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
@@ -31,13 +31,15 @@ supported runtime goal remains the coordinator; process corrections are merged
 separately from product card slices. Product changes stay in their separately
 owned card slices.
 
-The current A07 preparation owns the next action: complete the pending
-independent metadata protocol review of the 4560c710 packet. If it finds a
-concrete gap, repair only that delta, rerun affected checks and obtain scoped
-rereview; after protocol `PASS`, seek separately authorized screening. The
+The current A07 preparation owns the next action: refresh source, release/tag,
+PR/CI, topology and the revision-pinned ledger before any further phase. The
+4560c710 packet's scoped independent metadata rereview returned `PASS`; its
 candidate identity, two bounded no-credit canaries, six-handle rebind,
 source-only fixture freshness, invariant/evaluation bindings and 30-cell
-reserved manifest are all current but grant no allocation or credit. The
+reserved manifest remain current only at that source and grant no allocation or
+credit. If separate screening authority exists, execute only the screening
+contract and gates; otherwise continue an independent hosted watch-SIGINT
+diagnostic or another explicitly authorized recovery slice. The
 961dced, f4368883, 30b, c4f, ca816 and 851a6 packets are historical/candidate-
 base no-credit preparation. No cell allocation, acceptance, release,
 deployment, publication, invitation or protection change is implied.

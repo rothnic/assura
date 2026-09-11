@@ -34,13 +34,16 @@ now has current six-handle/second-readonly provenance, fixture freshness,
 shared invariants, evaluation bindings, two conditions, and 30 reserved cells.
 The independent reviewer found two metadata defects (receipt-ID aliases and a
 stale construction hash); both are repaired, cross-artifact assertions pass,
-and scoped rereview is pending. Everything remains no-credit.
+and the scoped rereview returned `PASS` for the metadata scope. Everything
+remains no-credit.
 
-Next action is the scoped metadata-only protocol rereview. A finding must name
-the contract, location, failure scenario and smallest verification; repair only
-accepted deltas and rereview again. After protocol `PASS`, seek a separately
-authorized screening decision. Never allocate or credit cells from canaries,
-protocol metadata, skipped/zero-test jobs, or the unresolved hosted run.
+Next action is a fresh source/ledger/topology reset followed by a separately
+authorized screening decision if authority exists. The protocol `PASS` only
+clears metadata review; it does not allocate or credit cells. A future finding
+must name the contract, location, failure scenario and smallest verification;
+repair only accepted deltas and rereview again. Never allocate or credit cells
+from canaries, protocol metadata, skipped/zero-test jobs, or the unresolved
+hosted run.
 Preserve root/foreign/historical topology state and all unfavorable evidence.
 
 ## Outcome invariant

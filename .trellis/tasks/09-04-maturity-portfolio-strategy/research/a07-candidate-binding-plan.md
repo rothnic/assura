@@ -34,9 +34,10 @@ mapping and exactly-two-condition 30-cell reserved manifest all point at this
 candidate. The independent review found two metadata defects: receipt IDs were
 not explicitly aliased to stable condition rows, and the protocol construction
 hash was stale after reference correction. An explicit alias map and refreshed
-hashes now pass cross-artifact assertions; scoped rereview is pending. If it
-finds another gap, repair only that metadata delta and rereview; after `PASS`,
-seek separately authorized screening. Preserve every unfavorable run and keep
+hashes now pass cross-artifact assertions; the scoped rereview returned `PASS`
+for this metadata scope. The protocol record preserves pre-verdict and
+post-verdict hashes. After a fresh source reset, seek separately authorized
+screening only if authority exists; preserve every unfavorable run and keep
 all allocation/credit/authority flags false.
 
 ## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=40f1155c`)

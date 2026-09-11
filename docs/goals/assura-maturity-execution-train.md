@@ -39,11 +39,12 @@ their separate evidence or authority holds. The current A07 candidate is
 identity-frozen at this source with exact Rust/Cargo 1.94.1, two fresh
 source-only full-evaluator canaries, a six-handle holdout rebind, fixture
 freshness/invariant/evaluation bindings, and a 30-cell reserved manifest. The
-independent review found receipt-ID alias and construction-hash metadata gaps;
-both are repaired, cross-artifact assertions pass, and scoped rereview is
-pending. All of that evidence is explicitly no-credit; no screening allocation
-or product acceptance exists. Earlier packets are dated candidate-base/no-credit
-metadata whenever their source is superseded.
+  independent review found receipt-ID alias and construction-hash metadata gaps;
+  both were repaired, cross-artifact assertions pass, and the scoped independent
+  rereview returned `PASS` for the metadata scope. All of that evidence is
+  explicitly no-credit; no screening allocation or product acceptance exists.
+  Earlier packets are dated candidate-base/no-credit metadata whenever their
+  source is superseded.
 The root unknown path, foreign dirty worktree, stale registrations, historical
 branches, and unfavorable evidence remain preserved as ownership boundaries.
 
@@ -178,6 +179,7 @@ cannot be closed or archived with an explicit recovery record.
 | Date | Event | Evidence |
 | --- | --- | --- |
 | 2026-09-11 | PR #292 merged the reviewed agent-content-preservation recovery slice as `4560c710`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates, Rust/platform tests, performance, release/adoption smoke and GitGuardian checks passed (Security Audit was scope-skipped). The subsequent push-triggered Rust CI run failed in the macOS watch SIGINT test and cancelled Ubuntu/Windows siblings; this remains retained unfavorable hosted evidence. | PR #292; hosted check rollup and push run `34615572565`; focused local `watch_stops_cleanly_without_runtime_artifacts` rerun passed once. |
-| 2026-09-11 | Rebuilt the A07 candidate and no-credit protocol packet at current `origin/master=4560c710`: exact login-shell identity with wrong-target/wrong-root rejects, two fresh sibling-free source-only canaries with all seven evaluator dimensions passing, six immutable holdouts, second-readonly pass, current fixture/invariant/evaluation bindings, exactly two conditions and 30 reserved cells. Independent protocol review is pending; screening and credit remain false. | Private packet under `/private/tmp/assura-a07-private-4560c71`; candidate freeze, identity, canary receipts/evaluations, holdout binding, fixture freshness, invariants, evaluation binding, mapping and manifest. |
+| 2026-09-11 | Rebuilt the A07 candidate and no-credit protocol packet at current `origin/master=4560c710`: exact login-shell identity with wrong-target/wrong-root rejects, two fresh sibling-free source-only canaries with all seven evaluator dimensions passing, six immutable holdouts, second-readonly pass, current fixture/invariant/evaluation bindings, exactly two conditions and 30 reserved cells. The packet was initially pending protocol review; the subsequent scoped rereview PASS is recorded below. Screening and credit remain false. | Private packet under `/private/tmp/assura-a07-private-4560c71`; candidate freeze, identity, canary receipts/evaluations, holdout binding, fixture freshness, invariants, evaluation binding, mapping and manifest. |
+| 2026-09-11 | Recorded the scoped independent protocol rereview as `PASS` after repairing the explicit receipt-condition aliases and current construction digest. The private packet is now protocol-pass/no-credit; screening, allocation, credit and product acceptance remain false. | `/private/tmp/assura-a07-private-4560c71/screening/protocol-review-current-4560c71.json`; reviewed hashes are preserved separately from post-verdict hashes. |
 | 2026-09-11 | PR #289 merged the reviewed durable goal, layered-routing skill metadata and current-route corrections as `40f1155c`; the 851a6 candidate packet is now candidate-base/no-credit and must be rebuilt after the next source refresh. | PR #289; `research/progress-current.md` Iteration 147; post-merge ledger/context/structure/evidence/docs gates. |
 | 2026-09-11 | Created the durable active execution goal from the corrected Trellis recovery contract. The current source is `851a6b8`; A07 is the only active lane while the ledger has no ready-pending card. | `.trellis/tasks/09-04-maturity-portfolio-strategy/task.json`; `research/orchestration-plan.md`; `research/process-corrections-2026-09-11.md`; `research/recovery-plan.md`; workflow gate, ledger and topology reset evidence. |

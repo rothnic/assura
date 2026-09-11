@@ -32,15 +32,17 @@ protection changes or a CI-infrastructure change.
   between stable condition rows and receipt IDs) and
   `A07-4560-PROTOCOL-HASH-001` (stale construction digest). An explicit alias
   map was added without changing receipt bytes; the construction and affected
-  artifact hashes were recomputed and assertions pass. Scoped rereview is
-  pending. Screening, allocation, credit and product acceptance remain false.
-- Next owner/action: finish the scoped protocol rereview. Convert any vague
-  concern into a concrete contract, location, failure scenario and smallest
-  verification; repair only accepted metadata deltas, rerun affected checks and
-  obtain scoped rereview. On protocol `PASS`, seek the separately authorized
-  screening gate. In parallel, track the hosted watch-SIGINT failure as a
-  distinct diagnostic; do not weaken performance or cancellation gates and do
-  not merge work whose applicable checks or current-base proof are unresolved.
+  artifact hashes were recomputed and assertions pass. The scoped rereview
+  returned `PASS` and is recorded in the private protocol artifact with pre-
+  and post-verdict hashes. Screening, allocation, credit and product acceptance
+  remain false.
+- Next owner/action: refresh source, release/tag, PR/CI, topology and the
+  revision-pinned ledger before any further A07 phase. If a separately
+  authorized screening gate is granted, execute only its contract and gates;
+  otherwise continue the hosted watch-SIGINT diagnostic or another explicitly
+  authorized recovery slice. Convert any future vague concern into a concrete
+  contract, location, failure scenario and smallest verification; never weaken
+  performance/cancellation gates or merge unresolved current-base work.
 
 ## Current post-merge reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`)
 

@@ -33,17 +33,17 @@ pass the full seven-dimension evaluator with zero critical failures. Its
 private six-handle/two-condition/30-cell packet has current provenance,
 fixture freshness, invariant and evaluation bindings. Independent review found
 missing receipt-condition aliases and a stale construction hash; both are
-repaired and cross-artifact assertions pass, with scoped rereview pending.
-Screening, allocation and credit remain false.
+  repaired and cross-artifact assertions pass; scoped rereview returned
+  `PASS` for the metadata scope and is recorded with pre/post-verdict hashes.
+  Screening, allocation and credit remain false.
 
-The only valid next route is: complete scoped metadata-only protocol rereview;
-turn any
-finding into a concrete contract/location/failure/smallest verification; repair
-accepted metadata deltas and obtain scoped rereview; then seek separately
-authorized screening. Refresh source, release/tag, PR/CI, topology and ledger
-before every phase. Never use canary/protocol/skipped/zero-test evidence as
-product acceptance, and do not finish while a review, repair, integration or
-cleanup action remains live.
+The only valid next route is: refresh source, release/tag, PR/CI, topology and
+ledger; then seek separately authorized screening if authority exists. The
+protocol `PASS` clears metadata review only. Any future finding must become a
+concrete contract/location/failure/smallest verification; repair accepted
+metadata deltas and obtain scoped rereview. Never use canary/protocol/skipped/
+zero-test evidence as product acceptance, and do not finish while a review,
+repair, integration or cleanup action remains live.
 
 ## Historical current-source reconciliation — 2026-09-11 UTC (`origin/master=40f1155c`, superseded)
 

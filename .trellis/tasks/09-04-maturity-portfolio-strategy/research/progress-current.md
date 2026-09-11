@@ -1,5 +1,23 @@
 # Current maturity train checkpoint
 
+## Iteration 150 — 2026-09-11 — protocol PASS recorded and screening gate separated
+
+- The independent metadata reviewer completed the corrected 4560c710 delta
+  rereview with `PASS`. The explicit condition-blinded-to-receipt aliases,
+  unchanged receipt bytes, current construction digest and updated artifact
+  hashes were verified; the protocol artifact now records the verdict and
+  preserves both pre-verdict reviewed hashes and post-verdict hashes.
+- The private candidate freeze, six-handle binding, evaluation binding,
+  manifest and mapping now say `protocol-pass-no-credit`. Screening,
+  allocation, credit and product acceptance remain false; this metadata PASS
+  is not an allocation decision.
+- Next owner/action: refresh source, release/tag, PR/CI, topology and the
+  revision-pinned ledger before any further A07 phase. If separate screening
+  authority is granted, perform only the screening contract and its gates; if
+  it is not granted, continue the independent hosted watch-SIGINT diagnostic
+  or another explicitly authorized recovery slice. Do not treat a local rerun,
+  skipped job, zero-test job, canary, or protocol PASS as product acceptance.
+
 ## Iteration 149 — 2026-09-11 — protocol correction and scoped rereview
 
 - The independent metadata reviewer found two concrete packet defects:
@@ -11,14 +29,13 @@
   receipt-condition alias map and per-condition receipt IDs. The construction
   digest and affected manifest/evaluation-binding/mapping hashes were
   recomputed; cross-artifact hash and alias assertions pass. The protocol
-  artifact remains `PENDING`/no-credit while scoped rereview runs.
-- Next owner/action: complete the scoped protocol rereview. If another finding
-  appears, require the same concrete contract/location/failure/smallest-
-  verification format and repair only the accepted metadata delta. A protocol
-  `PASS` may permit a separately authorized screening decision; it never grants
-  allocation, product acceptance, release, deployment, publication, invitation
-  or protection authority. Preserve the hosted push-CI failure and all other
-  unfavorable evidence.
+  artifact was then recorded as `PASS`/no-credit after the scoped rereview;
+  the preceding pending state is retained as the pre-verdict record.
+- Next owner/action at that checkpoint was the scoped protocol rereview. Its
+  `PASS` is now recorded above; it may permit a separately authorized
+  screening decision, but never grants allocation, product acceptance,
+  release, deployment, publication, invitation or protection authority.
+  Preserve the hosted push-CI failure and all other unfavorable evidence.
 
 ## Iteration 148 — 2026-09-11 — current candidate and protocol packet
 
@@ -40,16 +57,17 @@
   current creation references and second-readonly pass, source-only fixture
   freshness, shared invariants, evaluation bindings, a blinded mapping, exactly
   two conditions differing in one recorded product input, and 30 unique reserved
-  cells. The packet's independent protocol review is pending; screening,
+  cells. The packet's independent protocol review was pending at this
+  checkpoint; the scoped rereview PASS is recorded in Iteration 150. Screening,
   allocation and credit remain false. No product, threshold or authority state
   changed.
-- Next owner/action: complete the metadata-only protocol review. If it finds a
-  concrete gap, repair only that delta, rerun affected checks and obtain scoped
-  rereview; if it passes, seek a separately authorized screening decision. Do
-  not allocate or credit cells from canaries, protocol metadata, skipped jobs,
-  or the unresolved push-triggered CI run. Preserve the root unknown path,
-  foreign dirty worktree, stale registrations, historical branches and all
-  unfavorable evidence.
+- Next owner/action at that checkpoint was to complete the metadata-only
+  protocol review. Its PASS now clears metadata review only; after a fresh
+  reset, seek a separately authorized screening decision if authority exists.
+  Do not allocate or credit cells from canaries, protocol metadata, skipped
+  jobs, or the unresolved push-triggered CI run. Preserve the root unknown
+  path, foreign dirty worktree, stale registrations, historical branches and
+  all unfavorable evidence.
 
 ## Iteration 147 — 2026-09-11 — post-merge source reconciliation
 
