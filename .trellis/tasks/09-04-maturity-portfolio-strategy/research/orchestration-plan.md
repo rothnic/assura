@@ -22,20 +22,20 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=83c382a` (2026-09-11 checkpoint)
+## Current route — `origin/master=6d57b86` (2026-09-11 checkpoint)
 
-The latest reset fetched `origin/master=83c382a78a6b616c3c420fb117404333f78d4381`
-after PR #296 merged the reviewed post-merge reconciliation. This pointer is
-dated evidence, not a permanent baseline: fetch again before the next phase.
-PR #296's reviewed head was `a7045dbc9786add7aedb33d9859fbda703926025` and
-its applicable Documentation, CI Scope, Security Scope, Evidence Gates and
-GitGuardian checks passed. The reviewed head tree equals the merge tree. The
-configured push-triggered Rust CI (`34630104586`), Documentation
-(`34630104663`) and Security Audit (`34630104624`) workflows completed at the
-merge SHA; product/Rust/performance/release jobs were scope-skipped and are
-not product proof. The earlier push-triggered macOS watch-SIGINT failure
-remains retained unfavorable evidence and was not converted into a green
-result.
+The latest reset fetched `origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16`
+after PR #297 merged the reviewed current-checkpoint reconciliation. This
+pointer is dated evidence, not a permanent baseline: fetch again before the
+next phase. PR #297's reviewed head was
+`004aee7cd67a045d0fc5e040759d670961036870` and its applicable Documentation,
+CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. The
+reviewed head tree equals the merge tree. The configured push-triggered Rust
+CI (`34632545493`), Documentation (`34632545635`) and Security Audit
+(`34632545507`) workflows completed at the merge SHA; product/Rust/
+performance/release jobs were scope-skipped and are not product proof. The
+earlier push-triggered macOS watch-SIGINT failure remains retained unfavorable
+evidence and was not converted into a green result.
 
 At this source the revision-pinned ledger is still
 `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified,
@@ -49,8 +49,8 @@ reviewed candidate before merge, and configured push-triggered workflows at
 the merge SHA must be observed during reconciliation. A failed, cancelled,
 unavailable, zero-test, scope-uncertain or absent post-merge job is an
 unresolved recovery route, not a green result or a reason to close the owned
-branch. PR #296's successful merge-SHA runs (`34630104586`, `34630104663`,
-`34630104624`) are evidence that this process fence itself passed; they do not
+branch. PR #297's successful merge-SHA runs (`34632545493`, `34632545635`,
+`34632545507`) are evidence that this process fence itself passed; they do not
 repair R01.
 
 The coordinator owns the process route: refresh source/release/tag/PR/CI,
@@ -60,6 +60,15 @@ phase is separately authorized, rebuild the candidate at the refreshed source,
 run the no-credit canary, rebind the packet and obtain isolated protocol PASS
 before screening. Otherwise continue the hosted watch-SIGINT diagnostic or
 another authorized recovery slice. Do not stop at the empty pending queue.
+
+## Historical post-merge route — `origin/master=83c382a` (superseded by `6d57b86`)
+
+PR #296 merged the reviewed post-merge reconciliation at `83c382a`. Its
+applicable exact-head and merge-SHA checks passed; product/Rust/performance/
+release rows were scope-skipped and were not product proof. This checkpoint is
+retained as historical process evidence; PR #297 is the current source
+reconciliation. The candidate-base/no-credit A07 packet and retained R01
+diagnostic were unchanged.
 
 ## Historical post-merge route — `origin/master=9047a3d` (superseded by `83c382a`)
 

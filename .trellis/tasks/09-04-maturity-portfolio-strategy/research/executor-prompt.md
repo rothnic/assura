@@ -17,13 +17,13 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current-source reconciliation (2026-09-11, current at this reset; refresh
-before use): `origin/master=83c382a78a6b616c3c420fb117404333f78d4381`; PR #296
-merged the reviewed post-merge reconciliation from head
-`a7045dbc9786add7aedb33d9859fbda703926025`. Its applicable Documentation, CI
+before use): `origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16`; PR #297
+merged the reviewed current-checkpoint reconciliation from head
+`004aee7cd67a045d0fc5e040759d670961036870`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
 reviewed head tree equals the merge tree, and the configured push-triggered
-Rust CI (`34630104586`), Documentation (`34630104663`) and Security Audit
-(`34630104624`) workflows completed at merge SHA `83c382a`. Product/Rust/
+Rust CI (`34632545493`), Documentation (`34632545635`) and Security Audit
+(`34632545507`) workflows completed at merge SHA `6d57b86`. Product/Rust/
 performance/release rows were explicitly skipped by scope and are not product
 proof. This is an as-of checkpoint, not a permanent baseline. The
 revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;

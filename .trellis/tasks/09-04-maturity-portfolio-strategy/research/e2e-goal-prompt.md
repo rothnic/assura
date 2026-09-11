@@ -19,16 +19,16 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=83c382a`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=6d57b86`, as-of)
 
 The latest reset fetched
-`origin/master=83c382a78a6b616c3c420fb117404333f78d4381` after PR #296 merged
-the reviewed post-merge reconciliation from head
-`a7045dbc9786add7aedb33d9859fbda703926025`. Its applicable Documentation, CI
+`origin/master=6d57b8660d4db72734d11141e61eeaddce2fbb16` after PR #297 merged
+the reviewed current-checkpoint reconciliation from head
+`004aee7cd67a045d0fc5e040759d670961036870`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
 reviewed head tree equals the merge tree, and the configured push-triggered
-Rust CI (`34630104586`), Documentation (`34630104663`) and Security Audit
-(`34630104624`) workflows completed at the merge SHA. Product/Rust/
+Rust CI (`34632545493`), Documentation (`34632545635`) and Security Audit
+(`34632545507`) workflows completed at the merge SHA. Product/Rust/
 performance/release rows were explicitly skipped by scope and are not product
 proof. Fetch again before every phase because this is an as-of checkpoint.
 
@@ -43,10 +43,17 @@ stop condition.
 The configured push-triggered workflow at a merge SHA is a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,
 scope-uncertain or absent post-merge result remains unresolved; it is never
-overridden by the pull-request rollup or a local pass. PR #296's merge-SHA
-workflows passed (`34630104586`, `34630104663`, `34630104624`), while the
+overridden by the pull-request rollup or a local pass. PR #297's merge-SHA
+workflows passed (`34632545493`, `34632545635`, `34632545507`), while the
 retained R01 diagnostic from run `34615572565` still failed on macOS SIGINT and
 remains open.
+
+## Historical source route — 2026-09-11 UTC (`origin/master=83c382a`, superseded by `6d57b86`)
+
+PR #296's reviewed post-merge reconciliation was merged at `83c382a`; its
+applicable exact-head and merge-SHA checks passed. This is retained process
+evidence only. The candidate-base/no-credit A07 packet and the R01 hosted
+diagnostic were unchanged; refresh to `6d57b86` before routing.
 
 ## Historical source route — 2026-09-11 UTC (`origin/master=9047a3d`, superseded by `83c382a`)
 
