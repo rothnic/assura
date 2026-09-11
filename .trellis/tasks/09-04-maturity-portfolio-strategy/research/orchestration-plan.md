@@ -1,6 +1,6 @@
 # Maturity train orchestration plan
 
-Status: active process contract, 2026-09-10. This document routes the
+Status: active process contract, 2026-09-11. This document routes the
 supported runtime goal; it does not promote a product card, grant authority,
 or create screening, holdout, publication, release, deployment, or invitation
 credit. The task ledger and each card packet remain the acceptance source of
@@ -92,10 +92,35 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current train route — 71adc2e
+## Current post-merge route — c5b2822
 
-At the current refresh, `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
-is the only current source pointer. The owned candidate-bound build used the
+The refreshed source is `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`,
+the merge of PR #278's reviewed R01 retained-artifact inventory. Its exact-head
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed. Product, Rust, performance and release jobs were scope-skipped
+for this documentation/evidence-only slice and are not acceptance proof. The
+post-merge current-master check and tree-diff evidence passed; the retained
+artifact set still lacks the raw watch/callback trace needed to close R01.
+
+The revision-pinned ledger at this source remains 32 items with
+`ready_pending=0`, five unfinished and three held: A07 active, W03 verified,
+and R01/W02/F01 held. The 71adc2e candidate freeze, canaries, six-handle
+binding, manifest and protocol `PASS` are historical no-credit metadata after
+this source advance. Do not allocate screening cells or claim a card from
+those records.
+
+The next owned A07 action is, in order: refresh source, release/tag, PR/CI and
+topology; rerun the revision-pinned ledger; freeze a current candidate and
+identity canary; rebind all six holdouts and both condition receipts; obtain an
+isolated protocol `PASS`; then seek the separately authorized screening gate.
+R01 remains held for the raw trace or a maintainer native-readiness decision;
+W02, W03 publication, F01 outreach, release and deployment retain their named
+authority boundaries. Keep this process goal active while that action exists.
+
+## Historical current train route — 71adc2e (superseded by c5b2822)
+
+At the prior refresh, `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
+was the source pointer. It is now historical after c5b2822. The owned candidate-bound build used the
 pinned Rust/Cargo `1.94.1` toolchain; login-shell identity and two corrected
 source-only canaries passed the full evaluator with the expected negative
 policy probe. The earlier omitted-contract attempts remain explicit

@@ -14,23 +14,26 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 As-of routing checkpoint (2026-09-11, refresh before use): the current source is
-`origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`. The owned candidate-
-bound build used Rust/Cargo `1.94.1`; login-shell identity checks and two
-corrected source-only canaries passed the full evaluator with the expected
-negative policy probe. Two omitted-contract fixture attempts remain
-unfavorable no-credit evidence. The candidate canary is preparation only, not
-screening or acceptance proof. A02 is complete; its old plain-init finding is
-historical. The ledger at 71adc2e has 32 items, zero ready pending, five
-unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
-The current six-handle holdout and exactly-two-condition manifest are rebound
-to `71adc2e`, and an independent isolated metadata protocol review returned
-`PASS`; this remains no-credit preparation. The exact next action is to seek
-separately authorized screening after refreshing source and ledger. The prior
-af005a7 checkpoint and all ebed/9df/692/9ad/129a249 candidate packets and
-protocol records are historical no-credit metadata and must not route current
-work. R01's merged raw-log recovery remains bounded negative evidence. Preserve
-residual fixture, launcher, child-isolation and evaluator limitations. Route from
-`recovery-plan.md`, not this snapshot, after a fresh fetch and ledger.
+`origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`, the merge of PR #278's
+reviewed R01 retained-artifact inventory. Its Documentation Scope, CI Scope,
+Security Scope, Evidence Gates and GitGuardian checks passed; product, Rust,
+performance and release jobs were scope-skipped for this documentation/evidence
+slice and are not acceptance proof. The ledger at c5b2822 has 32 items, zero
+ready pending, five unfinished and three held: A07 active, W03 verified, and
+R01/W02/F01 held. R01's retained artifacts still lack the raw watch/callback
+trace required to close its causal gap.
+
+The 71adc2e candidate freeze, login-shell identity checks, two corrected
+source-only canaries, six-handle binding, exactly-two-condition manifest and
+isolated metadata protocol `PASS` are historical no-credit metadata after this
+source advance. Before any screening or acceptance allocation, refresh source,
+release/tag, PR/CI and topology, rerun the ledger, freeze a c5b2822-based
+candidate, run a fresh identity/full-contract canary, rebind the private
+holdout/manifest records, and obtain an isolated protocol `PASS`. Only then
+seek separately authorized screening. A02 is complete; its old plain-init
+finding is historical. Preserve residual fixture, launcher, child-isolation and
+evaluator limitations. Route from `recovery-plan.md`, not this snapshot, after
+a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink

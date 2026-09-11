@@ -1,41 +1,26 @@
-# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md))
+# Maturity execution train progress ([latest recovery](recovery-evidence.md); [older entries](progress-history-02.md), [progress-history-04.md], [progress-history-05.md](progress-history-05.md), [iterations 4-17](progress-history-06.md), [preserved history](progress-history-03.md), [A01 iterations 15–31](progress-history-08.md), [iterations 5–11](progress-history-09.md), [iteration 114](progress-history-10.md), [iteration 111](progress-history-11.md), [iterations 106–108](progress-history-12.md), [iterations 104 and earlier](progress-history-07.md), [iterations 32–33 and 42](progress-history-13.md), [iterations 44–47](progress-history-14.md), [iteration 127](progress-history-15.md), [iteration 128](progress-history-16.md), [iteration 129](progress-history-17.md), [iteration 132](progress-history-18.md), [iteration 133](progress-history-19.md))
 
-## Iteration 133 — 2026-09-11 — current candidate packet protocol PASS
+## Iteration 135 — 2026-09-11 — post-merge R01 artifact reconciliation
 
-- `origin/master=71adc2e`: the pinned Rust/Cargo `1.94.1` Assura `0.4.0` candidate was identity-frozen; two omitted-contract attempts remain unfavorable no-credit evidence, while two corrected sibling-free canaries passed the full evaluator with expected controls.
-- The six-handle/two-condition packet was rebound and independently reviewed with isolated protocol `PASS`; no screening, holdout, follow-up, final, product, release, deployment, publication or invitation credit changed. Next: seek the separately authorized screening gate after refreshing source/ledger; context not exposed.
-## Iteration 126 — 2026-09-10 — historical protocol disposition (superseded by current `af005a7`; previously `b7043ab`)
-
-- The primary isolated protocol rereview returned `PASS` against the corrected
-  current 8be packet. It verified exact candidate/toolchain/contract identity,
-  the two-condition invariants and receipts, six unique holdout bindings with
-  immutable creation records, explicit raw-hook exclusion, 30 reserved cells,
-  privacy flags and no-credit boundaries. Supplemental metadata review also
-  passed; no raw evaluator or fixture material was exposed.
-- The disposition is metadata-only and does not grant screening, holdout,
-  evaluator, follow-up-feature, final-batch, product, release, deployment,
-  publication or invitation credit. The next owner/action is to refresh
-  `origin/master` and the revision-pinned ledger, freeze a new candidate
-  identity, and prepare only the separately authorized no-credit screening gate.
-  Context level: not exposed.
-
-## Iteration 125 — 2026-09-10 — protocol packet canonicalization and rereview
-
-- The scoped protocol rereview supplied two additional concrete contract
-  findings: shorthand toolchain strings differed from the candidate freeze and
-  receipts did not carry the exact identity; the six holdout rows did not make
-  their creation-time evidence explicit in the second read-only record.
-- The private packet now uses one exact compiler/Cargo identity in the freeze,
-  manifest, both condition rows, both supplied-input receipts and every
-  per-layout binding. Each of the six valid handles carries `created_at` and a
-  creation-evidence reference, and the second read-only confirmation repeats
-  all six records and checks the canonical identity. The raw-hook draft remains
-  explicitly excluded; all screening and credit flags remain false.
-- Independent metadata review passed the corrected packet; the primary
-  disposition is recorded in Iteration 126. The owner must refresh source/ledger
-  before any separately authorized no-credit screening preparation. No product,
-  threshold, evaluator or authority state changed. Context level: not exposed.
-
+- Owner/phase: process coordinator `/root` / `reconcile`; clean owned branch
+  `docs/postmerge-r01-artifact-reconcile-c5b2822` at current
+  `origin/master=c5b2822`. PR #278's reviewed R01 retained-artifact inventory
+  is merged; exact Documentation/CI/Security/Evidence/GitGuardian checks
+  passed, while scope-skipped product/Rust/performance/release jobs remain
+  non-applicable. The retained artifacts still lack the raw watch/callback
+  trace, so R01 remains held and no retry or product change is justified.
+- The ledger is 32 items, `ready_pending=0`, five unfinished and three held:
+  A07 active, W03 verified, and R01/W02/F01 held. The 71adc2e A07 canary,
+  holdout/manifest rebind and isolated protocol `PASS` are historical
+  no-credit metadata after c5b2822. Next: refresh source/release/tag/PR/CI/
+  topology and ledger, freeze a fresh candidate, canary, rebind, protocol
+  `PASS`, then seek separately authorized screening.
+- Context level: not exposed. Review of the repeated failure pattern found
+  stale live pointers after a merge were the rediscovery risk; the canonical
+  task metadata and all routing prompts now point at c5b2822 while preserving
+  dated historical packets. Existing `assura-goal-execution`,
+  `assura-local-build` and context-routing references already cover this route;
+  no new skill or AGENTS expansion is warranted.
 ## Iteration 124 — 2026-09-10 — protocol findings corrected, rereview required
 
 - The isolated 8be protocol review returned concrete changes needed rather

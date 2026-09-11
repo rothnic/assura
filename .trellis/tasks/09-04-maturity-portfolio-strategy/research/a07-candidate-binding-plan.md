@@ -11,8 +11,9 @@ passed, and the post-merge Documentation/Security/Rust CI workflows passed.
 This process-only checkpoint changes no A07 product or acceptance state and
 does not authorize screening.
 
-The current refresh resolved `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
-after PR #276. A clean owned worktree built and privately froze a candidate
+The prior refresh resolved `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`
+after PR #276. That candidate and packet are historical after the later
+c5b2822 source advance. A clean owned worktree built and privately froze a candidate
 with the pinned Rust/Cargo `1.94.1` toolchain, fixed prompt and login-shell-safe
 target shim. Two initial source-only fixture attempts are retained as
 unfavorable no-credit setup evidence because the required contract directory
@@ -22,11 +23,11 @@ expected negative policy control and a collected native test. No product,
 threshold, allocation, release, deployment, publication, invitation or
 acceptance state changed.
 
-The current private six-handle construction and exactly-two-condition manifest
-were rebound to the frozen candidate, and an independent isolated metadata
-protocol review returned `PASS`. This remains no-credit preparation; screening,
-holdout credit, product acceptance and every external authority boundary stay
-unresolved.
+The private six-handle construction and exactly-two-condition manifest were
+rebound to that frozen candidate, and an independent isolated metadata protocol
+review returned `PASS`. This remains historical no-credit preparation after
+c5b2822; screening, holdout credit, product acceptance and every external
+authority boundary stay unresolved.
 
 The two `9b410e9` candidate-bound composed-init canaries and their corrected
 private protocol `PASS` are historical, zero-credit metadata for that older
@@ -52,6 +53,23 @@ after the later source advances. The current 71adc2e candidate canary,
 six-handle/two-condition rebind and isolated protocol `PASS` are now the
 newest preparation evidence. The next step is separately authorized screening
 preparation after another source/ledger refresh.
+
+## Current source rebind required — c5b2822
+
+PR #278 merged the reviewed R01 retained-artifact inventory as
+`origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`. The merge changed no
+A07 contract, scoring threshold, fixture allocation or authority state. Its
+retained artifacts still lack the raw watch/callback trace needed to close
+R01. The 71adc2e candidate and packet above are therefore historical.
+
+On every resume, refresh source/release/tag/PR/CI/topology and rerun the
+revision-pinned ledger before touching private evidence. Then freeze and
+identity-check a c5b2822-based candidate, run a fresh no-credit full-contract
+canary, rebind all six holdouts and both condition receipts, and obtain an
+isolated protocol `PASS`. Only after that sequence may the coordinator seek the
+separately authorized screening gate. Do not infer current candidate, holdout,
+manifest or allocation validity from the superseded packet.
+
 This plan does not change the A07 contract, scoring thresholds, fixture
 allocation, or product acceptance.
 

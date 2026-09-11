@@ -6,8 +6,34 @@ Older tail note: [recovery history 01](recovery-history-01.md) and
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 134 (origin/master=aa2444b post-merge R01 retained-artifact inventory; the failed run's available artifacts contain no watch/raw-callback trace beyond the previously recorded log, so the causal evidence gap remains; no retry, code, product, threshold, allocation or authority state changed. The current A07 packet remains no-credit preparation and its next action is separately authorized screening after source/ledger refresh; the prior candidate-packet entry remains in progress.md).
+Process iteration: 135 (origin/master=c5b2822 post-merge R01 retained-artifact inventory; the failed run's available artifacts contain no watch/raw-callback trace beyond the previously recorded log, so the causal evidence gap remains; no retry, code, product, threshold, allocation or authority state changed. The 71adc2e A07 packet is historical no-credit metadata after this source advance and must be rebound to a fresh current candidate before screening; the prior candidate-packet entry remains in progress history).
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
+
+## Post-merge R01 artifact inventory reconciliation — 2026-09-11 UTC (`origin/master=c5b2822`)
+
+- Owner/phase: process coordinator `/root` / `reconcile`; clean owned checkout
+  `/private/tmp/assura-train-c5b2822` on
+  `docs/postmerge-r01-artifact-reconcile-c5b2822`, based on freshly fetched
+  `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`.
+- PR #278 merged reviewed head `983acecaeada566dfa904c821370fc4c93c3da6d`.
+  Documentation Scope, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian passed. Build/check/test/performance/release jobs were
+  scope-skipped for the documentation/evidence-only change and are not
+  counted as passes. Post-merge source, affected-tree, context-routing and
+  ledger checks passed.
+- The read-only artifact inventory for the failed R01 run found no raw
+  watch/callback trace beyond the previously recorded job log. No retry,
+  classifier/filter/threshold/loop/product change is justified. R01 remains
+  held for the exact raw paths/kinds/rescan/config trace or a named maintainer
+  native-readiness decision.
+- The revision-pinned ledger remains 32 items, `ready_pending=0`, five
+  unfinished and three held: A07 active, W03 verified, and R01/W02/F01 held.
+  The 71adc2e candidate freeze, canaries, six-handle binding, manifest and
+  isolated protocol `PASS` are historical no-credit metadata after c5b2822.
+  The next A07 action is a fresh source/release/tag/PR/CI/topology and ledger
+  reset, current candidate freeze and canary, packet rebind, isolated protocol
+  `PASS`, then separately authorized screening. No product, threshold,
+  allocation, release, deployment, publication or invitation state changed.
 
 ## Historical 8be candidate rebind and protocol correction — 2026-09-10 UTC (`origin/master=8be6103`, superseded by current `af005a7`; previously `b7043ab`)
 

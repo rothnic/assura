@@ -1,12 +1,14 @@
 # Execution recovery plan
 
-Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
-the current source to `origin/master=71adc2e695f4696e6a1fef7d5075aa836f4102b1`;
-this pointer is an as-of checkpoint and must be refreshed before use. The
-candidate-bound canary at this revision passed its full evaluator and expected
-negative policy probe, with two earlier omitted-contract setup attempts
-retained as unfavorable no-credit evidence. No product or acceptance state
-changed. Earlier pointer and
+Status: active continuation route, 2026-09-11 UTC. The latest post-merge
+refresh resolves the current source to
+`origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #278 merged the reviewed
+R01 retained-artifact inventory as a process/evidence-only slice. Its missing
+raw watch/callback trace remains unresolved, so R01 is still held. The prior
+71adc2e candidate-bound canaries and packet are now historical no-credit
+metadata after this source advance; no product or acceptance state changed.
+Earlier pointer and
 reconciliation checkpoints, including the ebed, 9df, 692, 9ad and 129a249
 candidate packets, are historical no-credit evidence. The latest
 diagnostic is the bounded R01 raw-log recovery recorded at candidate base
@@ -36,7 +38,27 @@ proof and full evaluator dimensions remain mandatory. CI, generated files and
 partial checks cannot substitute. R06/publication/pilots retain their separate
 authority and observed-outcome requirements.
 
-## Current candidate checkpoint — 2026-09-11 UTC (`origin/master=71adc2e`)
+## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=c5b2822`)
+
+- PR #278 merged reviewed head `983acecaeada566dfa904c821370fc4c93c3da6d`
+  as `c5b2822a664e3f04924cd0096fc000a5d132777b`. Exact-head Documentation
+  Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
+  passed. Build/check/test/performance/release jobs were scope-skipped for the
+  docs/evidence-only change and are not counted as passes.
+- Post-merge fetch and a clean current-master checkout verified the affected
+  tree, context routing, ledger and configured source check. The ledger is
+  32 items, `ready_pending=0`, five unfinished and three held: A07 active,
+  W03 verified, and R01/W02/F01 held. The retained artifacts still do not
+  expose the raw watch/callback trace required to close R01.
+- The 71adc2e candidate freeze, canaries, six-handle binding, manifest and
+  isolated protocol `PASS` are historical metadata after c5b2822. Before any
+  A07 allocation, refresh again, freeze a c5b2822-based candidate, run a fresh
+  identity/full-contract canary, rebind the holdout and manifest records, and
+  obtain an isolated protocol `PASS`; only then seek separately authorized
+  screening. No screening, holdout, acceptance, release, deployment,
+  publication or invitation credit exists.
+
+## Historical current candidate checkpoint — 2026-09-11 UTC (`71adc2e`, superseded by `c5b2822`)
 
 - The current candidate-bound build used Rust/Cargo `1.94.1`; fresh
   login-shell identity checks and two corrected source-only canaries passed the

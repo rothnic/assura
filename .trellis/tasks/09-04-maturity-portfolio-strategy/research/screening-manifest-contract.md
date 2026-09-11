@@ -104,16 +104,16 @@ but never replaces required macOS/Windows/hosted proof.
 
 ## Current next action
 
-On each resume, the A07 coordinator must first refresh `origin/master`, rerun
-the revision-pinned ledger, and bind all evidence to that revision. The current
-source is `71adc2e`; its candidate-bound no-credit canary passed the full
-evaluator with the expected negative policy probe, while two omitted-contract
-fixture attempts remain unfavorable no-credit evidence. The immutable
-six-handle holdout and exactly-two-condition manifest are now rebound to
-`71adc2e`, and an isolated metadata protocol review returned `PASS` with no
-credit. The next action is to seek the separately authorized screening gate
-after refreshing source and ledger again. The prior af005a7 checkpoint and the 9b,
-8be, 9df, 692, 9ad and 129a249 manifests, canaries and protocol `PASS` records
-are historical no-credit evidence and must not route current work. Prior
-canaries, process PRs and metadata-only evidence never satisfy screening or
-acceptance gates.
+On each resume, the A07 coordinator must first refresh `origin/master`,
+release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
+evidence to that revision. The current source is
+`c5b2822a664e3f04924cd0096fc000a5d132777b`, the merge of the reviewed R01
+retained-artifact inventory. Its retained artifacts still lack the raw
+watch/callback trace required to close R01. The 71adc2e candidate-bound
+no-credit canary, immutable six-handle holdout rebind, exactly-two-condition
+manifest and isolated metadata `PASS` are historical metadata after this
+source advance. Freeze and identity-check a new current candidate, run a fresh
+no-credit full-contract canary, rebind the six holdouts and both condition
+receipts, and obtain isolated protocol `PASS` before seeking the separately
+authorized screening gate. All prior canaries, process PRs and metadata-only
+evidence remain no-credit and never satisfy screening or acceptance gates.
