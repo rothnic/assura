@@ -1,6 +1,55 @@
 # Current maturity train checkpoint
 
-## Iteration 161 — 2026-09-11 — PR #301 post-merge reconciliation
+## Iteration 162 — 2026-09-11 — PR #302 post-merge reconciliation
+
+- Owner/phase: `/root` / current-source reconciliation after the reviewed
+  process slice. A fresh fetch resolved `origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`
+  with tree `4a5a466ec4922c7cce48bbb5906786e3b50f84ac`; refresh again before
+  the next phase. PR #302 merged reviewed head
+  `74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef` from base `24a1966` after
+  independent exact-diff review `PASS` and applicable exact-head checks
+  passed.
+- Configured push-triggered workflows completed successfully at the merge SHA:
+  Documentation `34644511575` (scope job `103411957000`; build and marketing
+  jobs scope-skipped), Rust CI `34644511679` (CI Scope
+  `103411957349` and Evidence Gates `103411992718` passed; product/Rust/
+  performance/release rows scope-skipped), and Security Audit `34644511551`
+  (Security Scope `103411956405` passed; audit job scope-skipped). Skipped
+  jobs remain non-proof. The reviewed tree equals the merge tree; this
+  process result changes routing evidence only.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The 24a1966
+  reconciliation and 0dff804 candidate are now historical or candidate-base/
+  no-credit after this source advance; no product, screening, allocation,
+  acceptance, release, deployment, publication, invitation or authority state
+  changed.
+- The owned `docs/a07-postmerge-24a1966` branch/worktree was verified clean
+  after PR #302 and is ready for exact remote/local cleanup. The fresh
+  reconciliation checkout is `/private/tmp/assura-a07-postmerge-453a`; root
+  unknown dirt, the foreign dirty worktree and stale/prunable topology
+  exceptions remain preserved. The topology report is
+  `base=origin/master, worktrees=52, dirty=2, prunable=3, unreadable=1,
+  goal_branches=13, unmerged_goal=9`.
+- Read-only capacity evidence keeps the VPS efficiency lane held: `vps-dev`
+  is not resolvable in the configured SSH aliases; `vps` has 16 CPUs, 61 GiB
+  RAM, only 20 GiB free on a 339 GiB root volume (95% used), and Rust/Cargo
+  `1.95.0-nightly`. No remote heavy job was run or selected; Linux output
+  cannot replace platform or hosted proof.
+- Current-base validation passes: the workflow gate is `Ready: yes`, the
+  revision-pinned ledger and topology report ran at 453a, and the existing
+  merged documentation slice retains `jq`, `git diff --check`, context audit
+  `55/0`, `cargo run --quiet -- check --format json .`, `cargo xtask evidence`
+  and `cargo xtask docs` evidence. The dependency install was explicit and
+  frozen; no skipped command was counted as passing.
+- Next action: cleanly remove the merged 24a process checkout/branch, then
+  build and identity-freeze a fresh exact-toolchain 453a candidate in a clean
+  owned checkout. Run the sibling-free source-only no-credit canary, rebind
+  the six holdouts/two-condition manifest and obtain isolated protocol `PASS`
+  before any separately authorized screening. Continue held R01/W02/F01
+  routes independently; do not let this process merge or an empty pending
+  queue end the goal.
+
+## Iteration 161 — 2026-09-11 — PR #301 post-merge reconciliation (superseded by 453a32a)
 
 - Owner/phase: `/root` / current-source reconciliation after the reviewed
   process slice. `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`

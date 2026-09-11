@@ -32,24 +32,27 @@ canary, or documentation work satisfies a product card.
 
 ## Current gap
 
-The latest reset fetched `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`
-after PR #301 merged the reviewed current-source process reconciliation. This
-is the current checkpoint for this continuation; every later phase must fetch
-again before using it. PR #301's reviewed head was
-`428c26aee89b449e5c57ed1589d6a9b8d083c3bc`; its applicable Documentation, CI
-Scope, Security Scope, Evidence Gates and GitGuardian checks passed, and the
-configured push-triggered Documentation (`34642991331`), Rust CI
-(`34642991392`) and Security Audit (`34642991344`) workflows completed at the
-merge SHA for their applicable scope. Product/Rust/performance/release rows
-were explicitly skipped by scope and are not product proof. The
-revision-pinned ledger remains 32 items, zero ready-pending rows, five
+The latest reset fetched `origin/master=453a32afb7367f93b943ba70c68f4af82bc0e688`
+with tree `4a5a466ec4922c7cce48bbb5906786e3b50f84ac` after PR #302 merged the
+reviewed post-merge process reconciliation from base `24a1966`. This is the
+current checkpoint for this continuation; every later phase must fetch again
+before using it. PR #302's reviewed head was
+`74bd69e69ae0673c846f1f2b17a8bc5e1ce432ef`; its applicable Documentation, CI
+Scope, Security Scope, Evidence Gates and GitGuardian checks passed after
+independent review `PASS`, and the configured push-triggered Documentation
+(`34644511575`), Rust CI (`34644511679`) and Security Audit (`34644511551`)
+workflows completed at the merge SHA for their applicable scope. Rust CI's CI
+Scope (`103411957349`) and Evidence Gates (`103411992718`) passed; product/
+Rust/performance/release and other scope-skipped rows are not product proof.
+The revision-pinned ledger remains 32 items, zero ready-pending rows, five
 unfinished rows, and three held rows: A07 is active, W03 is verified, and R01,
-W02, and F01 retain their separate evidence or authority holds. The 0dff804
-A07 candidate identity freeze is now candidate-base/no-credit after this
-source advance; its canary, holdout/manifest rebind and protocol review were
-not run and must not be reused. The root unknown path, foreign dirty
-worktree, stale registrations, historical branches and unfavorable evidence
-remain preserved as ownership boundaries.
+W02, and F01 retain their separate evidence or authority holds. The 24a1966
+process checkpoint is historical and the 0dff804 A07 candidate identity
+freeze is candidate-base/no-credit after this source advance; its canary,
+holdout/manifest rebind and protocol review were not run and must not be
+reused. The root unknown path, foreign dirty worktree, stale registrations,
+historical branches and unfavorable evidence remain preserved as ownership
+boundaries.
 
 The reusable execution-control-plane reference defines the state machine,
 checkpoint fields, layered disclosure, validation budget, measured VPS test,
@@ -57,10 +60,11 @@ review contract, post-merge push-workflow fence and terminal topology fence.
 It is a phase reference, not a second goal or a substitute for the task
 ledger. The coordinator's next action is to refresh source/release/tag/PR/CI/
 topology and the ledger, inspect active and held work, then keep one explicitly
-owned recovery or preparation action live. If A07 screening is separately
-authorized, rebuild and rebind at the refreshed source before allocation;
-otherwise continue an authorized recovery slice. Never stop at an empty
-pending queue.
+owned recovery or preparation action live. The first cleanup action is removal
+of the exact clean merged 24a process checkout; then, if A07 screening is
+separately authorized, rebuild and rebind at the refreshed source before
+allocation; otherwise continue an authorized recovery slice. Never stop at an
+empty pending queue.
 
 PR #292's exact-head applicable checks passed, but its separate push-triggered
 Rust CI run reported a macOS `watch_stops_cleanly_without_runtime_artifacts`
@@ -80,11 +84,12 @@ older R01 failure. A configured post-merge failure, cancellation or missing
 result keeps the specific recovery route open.
 
 The read-only remote-capacity probe also keeps the VPS efficiency lane held:
-`vps-dev` is not a configured alias, while `vps` has 20 GiB free on a 339 GiB
-root volume (95% used), runs unrelated long-lived jobs, and exposes nightly
-Rust/Cargo rather than the candidate's pinned toolchain. No remote heavy job
-is eligible until a named host passes an exact-toolchain, free-disk and
-owned-job probe; remote Linux output never replaces platform or hosted proof.
+`vps-dev` is not a configured alias, while `vps` has 16 CPUs, 61 GiB RAM and
+20 GiB free on a 339 GiB root volume (95% used), runs unrelated long-lived
+jobs, and exposes nightly Rust/Cargo rather than the candidate's pinned
+toolchain. No remote heavy job is eligible until a named host passes an
+exact-toolchain, free-disk and owned-job probe; remote Linux output never
+replaces platform or hosted proof.
 
 ## User certainty bar
 
