@@ -1,11 +1,43 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=f4368883ac776cd5a9cb337b68c80165fc228a46`.
+Status: active, current source `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Findings from the current reset
+## Post-merge reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
+
+- The reset fetched `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
+  PR #282 merged the reviewed process-correction slice from `af5240d`; its
+  applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed. Product/Rust/performance/release jobs were
+  scope-skipped for that documentation/skill change and are not acceptance
+  proof. The latest tag remains `v0.3.0` (the source describes as
+  `v0.3.0-445-g55a38ff`); no release branch is present.
+- The revision-pinned ledger at this source is
+  `items=32; ready_pending=0; unfinished=5; held=3`: A07 is active, W03 is
+  verified, and R01/W02/F01 retain their separate holds. Open PRs #194, #187,
+  #142 and #195 remain outside this route; #194 has a failed Performance
+  Report, #187 still has unverified Workers-build/deployment coupling, #142
+  has macOS/Alpine failures and a cancelled Windows job, and #195 is an
+  unmerged R03 collector change. None is merge-ready evidence for this goal.
+- The topology report remains non-zero only for preserved state: the root's
+  unknown A04 note, one foreign dirty worktree, three stale/prunable
+  registrations and historical unmerged goal branches. The owned process
+  branch/worktree for PR #282 was merged and removed after tree/HEAD proof; no
+  preserved exception was changed.
+- The `f4368883` candidate-bound canary and private protocol `PASS` are now
+  historical no-credit metadata because this process-only merge advanced the
+  source. No candidate, holdout binding or manifest is current at `55a`; no
+  screening cell is allocated and no product, threshold or authority state
+  changed.
+- Owner/phase: `/root` / current-source candidate preparation. The next real
+  action is to create a fresh clean owned `55a38ff` candidate, verify its
+  explicit-workdir/toolchain identity, run the bounded no-credit canary, and
+  rebuild/review private packet metadata before any separately authorized
+  screening request. Do not reuse the `f4368883` binary or packet.
+
+## Findings from the `f4368883` reset (historical as-of)
 
 - The root checkout retains one unknown/user-owned path,
   `.trellis/tasks/09-04-maturity-portfolio-strategy/research/a04-host-status-doctor-permission-gap.md`.
@@ -133,7 +165,7 @@ oracle details into prompts or public evidence. The context audit is the cheap
 proof that these links remain reachable; a passing audit is not product
 acceptance.
 
-## Live checkpoint
+## Historical live checkpoint — `f4368883`
 
 Owner: `/root`; phase: A07 candidate-bound canary and corrected private rebind.
 Current candidate: f4368883 with identity recorded in the private freeze and
@@ -145,3 +177,15 @@ refresh source/release/tag/PR/CI/topology and the ledger, prove candidate and
 packet identity at that revision, then seek the separately authorized
 screening gate. Even a protocol `PASS` leaves the packet no-credit until that
 authority is verified.
+
+## Current live checkpoint — `55a38ff`
+
+Owner: `/root`; phase: current-source candidate rebuild and identity freeze.
+The ledger is `32/0/5/3` (A07 active, W03 verified, R01/W02/F01 held), with no
+ready-pending card. The prior `f4368883` canary, six-handle rebind and protocol
+`PASS` are retained as historical no-credit evidence after PR #282 advanced
+master. Exact next action: keep the clean owned `55a38ff` worktree, build once
+with the selected exact toolchain, prove source/tree/binary/shim identity, run
+the fresh no-credit canary and only then recreate/review the private holdout /
+manifest packet. Preserve the root unknown path and foreign/stale topology;
+do not allocate screening cells or claim A07 acceptance.

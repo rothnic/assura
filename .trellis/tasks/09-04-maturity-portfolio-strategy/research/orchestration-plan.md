@@ -97,7 +97,31 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current candidate-bound route — f4368883
+## Current post-merge route — 55a38ff
+
+The latest reset fetched `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
+PR #282 merged the reviewed process-correction slice from `af5240d`; its
+Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
+checks passed. Product/Rust/performance/release jobs were scope-skipped and are
+not acceptance proof. The latest tag is `v0.3.0` (describe:
+`v0.3.0-445-g55a38ff`), and no release branch exists.
+
+The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`:
+A07 active, W03 verified, R01/W02/F01 held. Open PRs #194, #187, #142 and #195
+remain outside this route; #194 has a failed Performance Report, #187 retains
+unverified Workers-build/deployment coupling, #142 has macOS/Alpine failures
+and a cancelled Windows job, and #195 is an unmerged R03 collector change.
+
+The `f4368883` candidate-bound canary, six-handle/two-condition packet and
+isolated protocol `PASS` are historical no-credit metadata after PR #282
+advanced master. No candidate packet is current at `55a`; no screening cells
+are allocated. `/root` owns the next preparation phase: build and freeze a
+fresh explicit-workdir candidate at `55a`, prove identity, run the bounded
+no-credit canary, then rebuild/review packet metadata before any separately
+authorized screening request. Preserve the root unknown path and foreign,
+stale and historical topology exceptions.
+
+## Historical candidate-bound route — f4368883 (superseded by `55a38ff`)
 
 The current source is `origin/master=f4368883ac776cd5a9cb337b68c80165fc228a46`.
 The process-only PR #281 merge is current; its applicable documentation,
