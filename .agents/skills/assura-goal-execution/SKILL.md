@@ -85,6 +85,26 @@ only improves its process. Do not substitute a process PR for product acceptance
 - Never load all packets, all historical logs or private evaluation fixtures
   into an implementation/reviewer prompt. Link exact evidence on demand.
 
+## Expensive-gate and context discipline
+
+Use a bounded context ladder rather than copying the whole task into each
+prompt. At reset or compaction load `AGENTS.md`, the workflow-gate result, the
+current source/ledger and `research/orchestration-plan.md`; for a card load
+only its packet, evidence file and named contract; for a special phase load
+the linked reference (runner isolation, CI triage or local-build VPS
+selection). Record the exact source, owner, phase and next command in the
+checkpoint. A routing audit is process evidence, never product acceptance.
+
+Place cheap gates before expensive ones: workflow/context/structure/scope and
+identity first, one focused test or evaluator next, then one serialized Cargo
+or hosted tier for the changed surface. Reuse a build only when source,
+dependencies, toolchain, configuration and invocation are unchanged. Select
+`vps-dev` only after a fresh SSH, capacity/disk, existing-job and exact
+toolchain probe passes; remote Linux supplements and never replaces platform,
+browser, permission, performance or hosted proof. Preserve failed, skipped,
+zero-test, cancelled and unavailable required gates; do not retry an unchanged
+failure or turn a passing canary into card success.
+
 ## Iteration Review Hook
 
 Treat one iteration as a meaningful implementation/review loop: planning a

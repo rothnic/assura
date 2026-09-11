@@ -42,15 +42,16 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue one owned A07 preparation phase at that revision. PR #282 now makes
-`origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9` the current source;
-the `f4368883` candidate packet is historical no-credit preparation after that
-advance. No candidate packet is current at `55a`; the next owned phase is an
-explicit-workdir candidate build and identity freeze, followed by a bounded
-no-credit canary and fresh holdout/manifest metadata review. Refresh
-source/release/tag/PR/CI/topology and the ledger before each phase. Never
-allocate from a historical or unreviewed packet. Keep R01, W02, W03 and F01's
-named holds separate.
+continue one owned A07 preparation phase at that revision. PR #283 now makes
+`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45` the current source;
+the fresh candidate is identity-frozen and its two source-only canaries pass
+the full seven-dimension evaluator, but all results remain no-credit. The
+current six-handle/two-condition packet is rebound and its isolated protocol
+rereview returned `PASS` after concrete metadata corrections. Refresh
+source/release/tag/PR/CI/topology and the ledger, prove the current packet
+still matches, and seek separately authorized screening only afterward. Never allocate
+from a historical or unreviewed packet. Keep R01, W02, W03 and F01's named
+holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
@@ -74,7 +75,7 @@ identity, six immutable holdout records, excluded draft and materialized
 Refresh source/ledger and verify packet identity before any separately
 authorized screening request. Never allocate or claim A07 from this canary.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`961dced`)
+## Historical post-merge checkpoint — 2026-09-11 UTC (`961dced`)
 
 PR #280 merged the reviewed process-only route as `961dced` after applicable
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks

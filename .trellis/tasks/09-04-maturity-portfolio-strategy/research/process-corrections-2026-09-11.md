@@ -1,11 +1,19 @@
 # Process corrections and continuation plan
 
-Status: active, current source `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
+Status: active, current source `origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45`.
 This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Post-merge reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
+## Current-source candidate canary — 2026-09-11 UTC (`origin/master=30b4c663`)
+
+- PR #283 reconciled the reviewed process route into `origin/master=30b4c663`; its applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. Product/Rust/performance/release jobs were scope-skipped and are not acceptance proof. The latest tag remains `v0.3.0`; no release branch exists.
+- The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The topology report still contains only preserved unknown/foreign/stale exceptions; no pending card is executable.
+- A clean explicit-workdir candidate was built from this source with Rust/Cargo `1.94.1` and Assura `0.4.0`. Two fresh sibling-free source-only children completed the initializer and full seven-dimension evaluator with the expected negative policy control. These are bounded no-credit canaries only.
+- Earlier runner defects (minimal PATH omitted `node`; an exit sentinel misreported a successful child) remain unfavorable evidence. The corrected reruns also record ambient user-level skill metadata despite `--ignore-user-config`; no private contract, mapping, hidden oracle, foreign worktree or global Assura fallback was observed.
+- The first isolated review found three concrete metadata blockers: historical second-readonly binding refs, historical fixture handles in the current manifest/matrix, and missing evaluator/predicate/threshold identities in condition invariants. A follow-up found one stale top-level second-readonly ref. The private correction adds current fixture-freshness and r2 second-readonly records plus a shared invariant record; the scoped rereview returned `PASS`. Screening authorization is false and zero cells are allocated. No product, threshold, allocation or authority state changed.
+
+## Historical post-merge reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
 
 - The reset fetched `origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9`.
   PR #282 merged the reviewed process-correction slice from `af5240d`; its
@@ -178,7 +186,7 @@ packet identity at that revision, then seek the separately authorized
 screening gate. Even a protocol `PASS` leaves the packet no-credit until that
 authority is verified.
 
-## Current live checkpoint — `55a38ff`
+## Historical live checkpoint — `55a38ff` (superseded by `30b4c663`)
 
 Owner: `/root`; phase: current-source candidate rebuild and identity freeze.
 The ledger is `32/0/5/3` (A07 active, W03 verified, R01/W02/F01 held), with no

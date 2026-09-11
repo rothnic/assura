@@ -105,16 +105,16 @@
       "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup; never convert process, evaluator or skipped-check evidence into product success.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only.",
       "current_checkpoint": {
-        "origin_master": "55a38ff68e39aae9ede78bb51c01a9c2e1392de9",
+        "origin_master": "30b4c663b28bf1d15f12c99b6263411d3bfc8d45",
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
         "held": ["R01", "W02", "F01"],
         "current_evidence": {
-          "candidate": "No candidate is current at 55a38ff. The f4368883 candidate and canary are historical no-credit metadata after PR #282 advanced master; the next owned phase is an explicit-workdir build and identity freeze at the refreshed source",
-          "holdout_binding": "No current holdout binding exists at 55a38ff; the prior private six-handle construction and rebind must not be reused without a fresh candidate",
-          "manifest": "No current manifest or screening allocation exists at 55a38ff; the prior exactly-two-condition and 30-cell packet is historical no-credit metadata",
-          "protocol_review": "The f4368883 packet's isolated metadata protocol PASS is historical no-credit after PR #282; a fresh current-source packet requires a new scoped review"
+          "candidate": "The 30b4c663 candidate is identity-frozen from a clean explicit worktree with Rust/Cargo 1.94.1; two fresh source-only canaries pass the seven-dimension evaluator but remain no-credit",
+          "holdout_binding": "The private six-handle binding is rebound to the 30b4c663 candidate and awaits isolated protocol review; no screening cells are allocated",
+          "manifest": "The exactly-two-condition and 30-cell manifest is current to the 30b4c663 candidate, but screening_authorized remains false",
+          "protocol_review": "The current packet's isolated metadata rereview returned PASS after concrete fixes; this is metadata-only and no screening authority or credit follows"
         },
         "corrections": [
           "A02 is complete; the old plain-init handoff finding is historical.",
@@ -138,10 +138,10 @@
           "PR #280 merged the reviewed process-only route at 961dced. Its applicable Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and not counted. The 5b03c7f candidate packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.",
           "A provenance audit caught a candidate build launched from the dirty root instead of the claimed 961dced worktree; its c7815c5 binary and the resulting permissive wrapper output are retained as failed no-credit evidence. Rebuilding with an explicit workdir produced the be33c501 binary, and the corrected current packet now requires source-path/compiler-output verification before identity or canary credit.",
           "Independent protocol review found stale 5b03c7f manifest/fixture references and contradictory pending/pass prose in the current 961dced packet. The coordinator rebound every manifest reference and matrix fixture to current artifacts, removed premature pass wording and cleared pending review timestamps; the cross-artifact correction assertion passes and the scoped rereview returned metadata PASS. No screening, allocation, acceptance, release, deployment, publication or invitation authority changed.",
-          "PR #282 merged the reviewed layered-context and continuation corrections at 55a38ff. The revision-pinned ledger remains items=32, ready_pending=0, unfinished=5 and held=3; the f4368883 candidate-bound packet is historical no-credit after this source advance, so a fresh 55a candidate, canary and packet review are required before any separately authorized screening."
+          "PR #282 merged the reviewed layered-context and continuation corrections at 55a38ff; PR #283 then reconciled the current route at 30b4c663. The revision-pinned ledger remains items=32, ready_pending=0, unfinished=5 and held=3; the current candidate's two canaries are no-credit. The first isolated review found stale second-readonly/fixture refs and missing evaluator-predicate-threshold invariants; a follow-up found one stale top-level ref; private correction added current refs, a fresh comparison and shared invariant record, and scoped rereview returned PASS. No product, threshold, allocation or authority state changed."
         ]
       },
-      "next_action": "After each refresh of origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, the A07 coordinator must bind every candidate and packet artifact to that full current revision. At 55a38ff no candidate packet is current: the f4368883 canary and protocol PASS are historical no-credit after PR #282. The next owned sequence is an explicit-workdir candidate build and identity freeze, fresh bounded no-credit canary, current six-handle/two-condition packet rebind and isolated protocol review before any separately authorized screening. If any later audit finds a mismatch, record its contract, location, failure scenario and smallest verification, freeze a new candidate and repeat the no-credit sequence. Retain earlier packets as metadata-only and do not allocate or credit cells without every later gate.",
+      "next_action": "Refresh origin/master, release/tag, PR/CI, topology and the revision-pinned ledger, prove the 30b4c663 candidate and protocol-passed packet still match, and seek separately authorized screening. If the source advances or any mismatch appears, freeze a new candidate and repeat the no-credit canary and packet rebind plus isolated protocol review; retain earlier packets as metadata-only and never allocate or credit cells without every later gate.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",

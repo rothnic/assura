@@ -8,10 +8,16 @@ Older tail note: [recovery history 01](recovery-history-01.md),
 The historical proof below is retained; the current continuation route and
 post-merge source reconciliation are maintained in [recovery-plan.md](recovery-plan.md)
 and the newest progress entry before these historical notes.
-Process iteration: 140 (`origin/master=55a38ff68e39aae9ede78bb51c01a9c2e1392de9` after PR #282 merged the reviewed process-correction route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The f4368883 packet is historical no-credit after this source advance; no product, threshold, allocation or authority state changed.)
+Process iteration: 141 (`origin/master=30b4c663b28bf1d15f12c99b6263411d3bfc8d45` after PR #283 reconciled the reviewed process route; applicable Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed; product/Rust/performance/release jobs were scope-skipped and are not acceptance proof). Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held). The current candidate canaries are no-credit and the packet awaits protocol review; no product, threshold, allocation or authority state changed.)
 Context level: not exposed. The before/after phase record is this evidence file, linked from the full historical progress log.
 
-## Current post-merge source reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
+## Current candidate canary and packet review — 2026-09-11 UTC (`origin/master=30b4c663`)
+
+- A clean explicit-workdir candidate from current master was identity-frozen with Rust/Cargo `1.94.1` and Assura `0.4.0`; two fresh source-only children completed the initializer and full seven-dimension evaluator with the expected negative policy control. This is bounded no-credit preparation, not screening or acceptance.
+- The corrected runner retains the initial missing-`node` PATH and exit-sentinel failures as unfavorable evidence and records ambient user-level skill metadata despite `--ignore-user-config`; no private evaluator input or hidden oracle was exposed. The first isolated review found three concrete provenance/invariant blockers and a follow-up found one stale top-level ref; private correction added current fixture-freshness, current second-readonly refs and shared evaluator/predicate/threshold identities, and scoped rereview returned `PASS`. Screening authorization remains false and zero cells are allocated.
+- Owner/phase: `/root` / protocol review and current-source reconciliation. Finish the live review, resolve and rereview concrete findings, then refresh source/ledger before any separately authorized screening request. Preserve the root unknown note, foreign dirty worktree, stale registrations and historical branches.
+
+## Historical post-merge source reconciliation — 2026-09-11 UTC (`origin/master=55a38ff`)
 
 - Owner/phase: `/root` / current-source candidate preparation in the clean
   owned reconciliation worktree. PR #282 is merged at
