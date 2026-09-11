@@ -72,18 +72,19 @@ string is not current-candidate holdout proof.
 
 ## Gate order
 
-1. Refresh and freeze the current-master candidate identity; this observation
-   is not screening credit.
-2. Confirm the immutable six-handle holdout-binding record is frozen privately;
+1. Refresh current source, release/tag, PR/CI and topology state; rerun the
+   revision-pinned ledger; and freeze the current-master candidate identity.
+   This observation is not screening credit.
+2. Run a fresh candidate-bound canary against the frozen current-master
+   identity and confirm the full contract passes; the canary remains no-credit.
+3. Confirm the immutable six-handle holdout-binding record is frozen privately;
    verify all six per-handle creation records and exact toolchain identity;
    exclude every disqualified or unfrozen construction draft.
-3. Validate the manifest schema, exactly-two condition rule, one-variable
+4. Validate the manifest schema, exactly-two condition rule, one-variable
    difference, private mapping, and complete 30-cell matrix in an isolated
    protocol review. Keep the separate product/code review boundary intact. This
    is the smallest resolution for the missing-condition finding; a review that
    does not return `PASS` leaves the matrix unexecutable.
-4. Run a fresh candidate-bound canary against the frozen current-master
-   identity and confirm the full contract passes; the canary remains no-credit.
 5. Run cheap identity/context checks before each child, then evaluate and run
    the separate follow-up feature. Preserve failures and stop invalid runs;
    never repeat an unchanged method until it happens to pass.

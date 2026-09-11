@@ -124,19 +124,19 @@ counts as a blinded run.
   successful exact-target binding. Keep private fixture and evaluator
   identities out of source, prompts, reviewer briefs, and public evidence.
 - The prior candidate-bound canary is complete for historical `77b41fe` only.
-  Before the first screening run, fetch `origin/master`, rerun the
-  revision-pinned ledger and freeze the candidate identity, then record the
-  authoritative names and contract references for both product-input
-  conditions in a private screening manifest. Validate its supplied-input
-  evidence and complete matrix, and obtain an isolated protocol-review `PASS`;
-  do not infer or rename conditions in public evidence. Then refresh the
-  current `origin/master` source pointer and ledger (latest as-of checkpoint:
-  `af005a7`, refresh before use) and run a fresh candidate-bound canary
-  against that frozen identity; all embedded checkpoints remain historical.
-  launch one fresh source-only fixture and child under a sibling-free
-  disposable parent per run. If identity, context, or contract checks fail,
-  retain the result as invalid/no-credit evidence, repair the owning method, and
-  obtain a fresh canary before resuming.
+  Before the first screening run, refresh `origin/master`, release/tag, PR/CI
+  and topology state; rerun the revision-pinned ledger; and freeze the current
+  candidate identity. Run a fresh candidate-bound canary against that frozen
+  identity before recording current holdout or manifest proof. Then record the
+  authoritative names and contract references for both product-input conditions
+  in a private screening manifest, verify/rebind the six current-candidate
+  holdouts, validate the supplied-input evidence and complete matrix, and obtain
+  an isolated protocol-review `PASS`. Do not infer or rename conditions in
+  public evidence. All embedded checkpoints remain historical. Launch one
+  fresh source-only fixture and child under a sibling-free disposable parent
+  per run. If identity, context, or contract checks fail, retain the result as
+  invalid/no-credit evidence, repair the owning method, and obtain a fresh
+  canary before resuming.
 - The earlier plain-route product failure and context-contaminated attempt are
   historical protocol evidence. They remain no-credit records and must not be
   replayed as an unchanged method or treated as a replacement for the passed

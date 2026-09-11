@@ -631,7 +631,7 @@ classified historical or user-owned and must not be deleted by pattern.
 | Priority / owner | Action | Exit proof / next action |
 | --- | --- | --- |
 | 1 / process coordinator | Keep the current-master pointer and continuation route reconciled across the recovery plan, A07 routing evidence, continuation prompt, task metadata and goal-execution skill | PR #256 merged the bounded R01 raw-log recovery record at `a819c0c`; fetch and rerun the ledger before the next phase |
-| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, rerun the ledger and freeze candidate identity; confirm holdouts; create/validate the private manifest and obtain protocol-review `PASS`; then run the canary against that frozen identity |
+| 2 / train coordinator | Apply the current A07 evidence and manifest contract before any allocation; keep private values outside public artifacts | Refresh `origin/master`, release/tag, PR/CI and topology; rerun the ledger and freeze candidate identity; run a fresh no-credit canary against that frozen identity; confirm/rebind holdouts; create/validate the private manifest and obtain isolated protocol-review `PASS`; then seek separately authorized screening |
 | 3 / A07 implementation owner | Test explicit composed init proposal against public semantics; plain init remains config-only; preserve conflicts and honest runtime permission reporting | Focused negative/positive controls, review, required final-source local/hosted gates; merge slice only if its own goals pass; rerun blinded protocol before A07 completion |
 | 4 / independent R01 investigator | Read latest R01 packet/evidence and rejected diagnostics; determine missing causal observable before spending another platform run | Concrete hypothesis, distinguishing observation and reviewed method amendment; do not repeat prior unchanged diagnostic or invent native readiness |
 | 5 / topology owner | Inventory existing goal branches, live owners and base reachability; repair audit parser as a separately tested slice if needed | Complete report; merged clean branches removed by exact identity or verified archive; unknown work preserved |
@@ -688,15 +688,17 @@ build tool is absent, run `pnpm --dir website install --frozen-lockfile` in the
 disposable worktree and rerun the same gate; a missing tool is a failed
 environment precondition, never a skipped or passing docs result.
 
-For A07, after refreshing current source identity, freezing holdouts, and
-obtaining an isolated protocol-review `PASS` for the private manifest, perform
-the cheap identity/context canary before native tests or a screening batch. One
-candidate build may support multiple diagnostics only when its source, binary,
-fixture and invocation remain unchanged; a child that sees private evaluator
-material or a global Assura install is invalid and must not be repeated
-unchanged. A safety-guard rejection is an operational observation, not
-permission to weaken the guard; use a disposable fixture and preserve the
-rejection in evidence.
+For A07, after refreshing current source, release/tag, PR/CI and topology state
+and rerunning the ledger, freeze the candidate and perform the cheap
+identity/context canary against that frozen identity before binding current
+holdouts or validating the private manifest. Then obtain isolated protocol
+review `PASS` for the six-handle binding and exactly-two-condition manifest
+before native tests or a separately authorized screening batch. One candidate
+build may support multiple diagnostics only when its source, binary, fixture
+and invocation remain unchanged; a child that sees private evaluator material
+or a global Assura install is invalid and must not be repeated unchanged. A
+safety-guard rejection is an operational observation, not permission to weaken
+the guard; use a disposable fixture and preserve the rejection in evidence.
 
 ## Verification and continuation
 
@@ -707,10 +709,11 @@ while A07 acceptance fails. Expected decisions follow the execution contract.
 Record actual reviewer decisions and limitations in `recovery-evidence.md`.
 
 Next action: keep the supported runtime goal active and follow the refreshed
-checkpoint's identity/holdout → manifest validation → isolated protocol review
-`PASS` → fresh current-master canary against the refreshed `origin/master` →
-screening sequence. R01's retained raw trace/maintainer decision, W02's
-approval, W03's publication and F01's participant authorization remain
-separate held actions.
+checkpoint's source/release/tag/PR/CI/topology refresh → revision-pinned ledger
+→ candidate freeze → fresh current-master canary → current six-handle holdout
+rebind and exactly-two-condition manifest validation → isolated protocol review
+`PASS` → separately authorized screening sequence. R01's retained raw
+trace/maintainer decision, W02's approval, W03's publication and F01's
+participant authorization remain separate held actions.
 Do not replace or complete an unfinished goal to repair a status mismatch, and
 do not treat this process reconciliation as A07 acceptance.
