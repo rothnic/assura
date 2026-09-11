@@ -14,15 +14,15 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current correction checkpoint (2026-09-11, refresh before use):
-`origin/master=cd629d413491f0214fb16850bba629524a342be1`; the revision-pinned
+`origin/master=ca81689d47fac6876654a1a9cced4dce28135e15`; the revision-pinned
 ledger is 32 items, zero ready-pending, five unfinished and three held, with
 A07 active, W03 verified and R01/W02/F01 held. PR #286 merged the reviewed
-ac3 process checkpoint; its applicable Documentation, CI Scope, Security
+ac3 process checkpoint and PR #287 reconciled it; their applicable Documentation, CI Scope, Security
 Scope, Evidence Gates and GitGuardian checks passed, as did post-merge
 Documentation, Security Audit and Rust CI. Product/Rust/performance/release
 jobs were scope-skipped and are not acceptance proof. The 30b, c4f and ac3
 candidate packets are historical no-credit after their source advances. Build
-a fresh explicit-workdir cd629d4 candidate, run the bounded no-credit canary,
+a fresh explicit-workdir ca81689 candidate, run the bounded no-credit canary,
 rebind the packet and obtain isolated protocol `PASS` before seeking separately
 authorized screening. See
 [process-corrections-2026-09-11.md](process-corrections-2026-09-11.md) for the

@@ -97,10 +97,10 @@ public evidence.
   three measured comparable runs show queue/execution, retry and coverage
   effects.
 
-## Current post-merge route — cd629d4
+## Current post-merge route — ca81689
 
-The latest reset fetched `origin/master=cd629d413491f0214fb16850bba629524a342be1`
-after PR #286 reconciled the reviewed ac3 checkpoint. Its applicable
+The latest reset fetched `origin/master=ca81689d47fac6876654a1a9cced4dce28135e15`
+after PR #287 reconciled the reviewed cd629 checkpoint. Its applicable
 Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian
 checks passed, as did the post-merge Documentation, Security Audit and Rust CI
 workflows; product/Rust/performance/release jobs were scope-skipped and are not
@@ -114,12 +114,12 @@ isolated protocol `PASS` are historical no-credit metadata after this source
 advance; no candidate or screening allocation is current.
 
 Refresh source, release/tag, PR/CI, topology and the ledger, then build a fresh
-explicit-workdir cd629d4 candidate, freeze identity, run the bounded no-credit
+explicit-workdir ca81689 candidate, freeze identity, run the bounded no-credit
 canary, rebind the packet and obtain isolated protocol `PASS` before seeking
 separately authorized screening. Preserve the root unknown path, foreign dirty
 worktree, stale registrations, historical failures and goal branches.
 
-## Historical candidate route — ac3eb13 (superseded by `cd629d4`)
+## Historical candidate route — ac3eb13 (superseded by `cd629d4`, then `ca81689`)
 
 PR #285 reconciled the reviewed c4f checkpoint at `ac3eb13`; its applicable
 checks passed and the ac3 candidate/packet protocol rereview returned `PASS`.

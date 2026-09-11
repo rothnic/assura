@@ -11,10 +11,10 @@ passed, and the post-merge Documentation/Security/Rust CI workflows passed.
 This process-only checkpoint changes no A07 product or acceptance state and
 does not authorize screening.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=cd629d4`)
+## Current post-merge checkpoint — 2026-09-11 UTC (`origin/master=ca81689`)
 
-PR #286 merged the reviewed ac3 process checkpoint at
-`cd629d413491f0214fb16850bba629524a342be1`; applicable hosted checks and
+PR #287 merged the reviewed cd629 process checkpoint at
+`ca81689d47fac6876654a1a9cced4dce28135e15`; applicable hosted checks and
 post-merge workflows passed. The ac3 candidate, canaries, identity controls,
 six-handle binding, manifest and isolated protocol `PASS` are historical
 no-credit metadata after that source advance. No current candidate or screening
@@ -23,7 +23,7 @@ then build a fresh explicit-workdir candidate, run the bounded no-credit
 canary, rebind the packet and obtain isolated protocol `PASS` before seeking
 separately authorized screening. Preserve failures and authority boundaries.
 
-## Historical candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4`)
+## Historical candidate-bound checkpoint — 2026-09-11 UTC (`origin/master=ac3eb13`, superseded by `cd629d4` and `ca81689`)
 
 PR #285 reconciled the c4f process checkpoint into current master at
 `ac3eb13be83f1551b8084a59c9868ff870fa8bf2`. The revision-pinned ledger remains
