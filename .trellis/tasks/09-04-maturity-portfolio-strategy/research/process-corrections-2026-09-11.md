@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=d2284724192dbca848bbd135afacc33d2533e06f`.
+`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,38 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current candidate-bound checkpoint — PR #303 — 2026-09-11 UTC (`origin/master=d228472`, no-credit)
+## Current post-merge checkpoint — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base)
+
+- PR #304 merged reviewed head `17fa9197ed79083be4b8ba0714851aeaae9bdbf3`
+  from base `d228472` as `284e78156370d49d8315f04391fcc74eaba3acb2`. Its
+  exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
+  GitGuardian checks passed after independent exact-diff review `PASS`.
+  Merge-SHA Documentation `34651068660`, Rust CI `34651068675` (CI Scope
+  `103433100783`, Evidence Gates `103433136825`) and Security Audit
+  `34651068699` completed successfully for applicable scope; scope-skipped
+  rows remain non-proof. No product or authority state changed.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The d228472
+  candidate, freeze and two-condition canary/evaluator results are now
+  candidate-base/no-credit after this source advance. Preserve their ambient
+  skill-metadata limitation and initial structure-placement failure; no
+  holdout, manifest, protocol, screening, allocation or acceptance state
+  carries forward.
+- The owned `docs/a07-canary-d228` branch/worktree was clean, merged and
+  removed. Root unknown dirt, foreign dirty work, stale/prunable registrations
+  and unfavorable R01 evidence remain preserved. The post-merge topology
+  observation was `worktrees=53, dirty=3, prunable=3, unreadable=1` before
+  owned cleanup.
+- Next owner/action: refresh source, release/tag, PR/CI, topology and the
+  revision-pinned ledger again before any candidate or held recovery phase. If
+  A07 preparation is separately authorized, build a fresh exact-toolchain
+  candidate from `284e781`, run identity and sibling-free no-credit canary,
+  rebind six holdouts plus the exactly-two-condition manifest, and obtain
+  isolated protocol `PASS` before screening. Otherwise continue the smallest
+  independently authorized held recovery slice. Never reuse d228472 evidence
+  for credit or let an empty pending queue end the goal.
+
+## Historical candidate-bound checkpoint — PR #303 — 2026-09-11 UTC (`origin/master=d228472`, superseded by `284e781`)
 
 - PR #303 merged reviewed head `bec17c3aa872ee00ec43cf25a291423b1a96667f`
   from base `453a32a` as `d2284724192dbca848bbd135afacc33d2533e06f`. Its

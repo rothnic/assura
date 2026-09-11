@@ -19,31 +19,30 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current candidate route — 2026-09-11 UTC (`origin/master=d228472`, as-of, no-credit)
+## Current post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, as-of)
 
 The latest reset fetched
-`origin/master=d2284724192dbca848bbd135afacc33d2533e06f` with tree
-`dc30855addffae4e3b19c0589bfcbd08aa4ebb45` after PR #303 merged the reviewed
-post-merge process reconciliation from base `453a32a`. Its exact-head
+`origin/master=284e78156370d49d8315f04391fcc74eaba3acb2` after PR #304 merged
+the reviewed process reconciliation from base `d228472`. Its exact-head
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian
 checks passed after independent review `PASS`; the configured push-triggered
-Documentation (`34646077514`), Rust CI (`34646077520`) and Security Audit
-(`34646077494`) workflows completed successfully at the merge SHA for
+Documentation (`34651068660`), Rust CI (`34651068675`) and Security Audit
+(`34651068699`) workflows completed successfully at the merge SHA for
 applicable scope. Product/Rust/performance/release and other scope-skipped
 rows are not product proof. Fetch again before every phase because this is an
 as-of checkpoint.
 
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
-held=3`: A07 active, W03 verified and R01/W02/F01 held. The 453a32a process
-checkpoint is historical and the 0dff804 candidate is candidate-base/no-credit;
-do not reuse either. The fresh d228472 candidate is identity-bound; its two
-sibling-free source-only children and full seven-dimension evaluators pass with
-zero critical failures. Child streams expose generic ambient skill metadata,
-which remains an isolation limitation. No screening, allocation, credit,
-release, deployment, publication or invitation authority exists. Rebind the
-current six-holdout/two-condition packet and obtain isolated protocol review
-before any separately authorized screening. An empty pending queue is not a
-stop condition.
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The d228472 process
+checkpoint and candidate are candidate-base/no-credit after this source
+advance; do not reuse them. Their two sibling-free source-only children and
+full seven-dimension evaluators passed with zero critical failures, but their
+ambient skill metadata limitation and initial structure-placement failure are
+retained as unfavorable evidence. No screening, allocation, credit, release,
+deployment, publication or invitation authority exists. Refresh again, then
+build a fresh candidate from `284e781` if A07 preparation is authorized;
+otherwise continue an independently authorized held recovery slice. An empty
+pending queue is not a stop condition.
 
 The configured push-triggered workflow at a merge SHA remains a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,
