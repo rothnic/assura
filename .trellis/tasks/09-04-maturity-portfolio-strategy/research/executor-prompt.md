@@ -13,27 +13,30 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-As-of routing checkpoint (2026-09-11, refresh before use): the current source is
-`origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`, the merge of PR #278's
-reviewed R01 retained-artifact inventory. Its Documentation Scope, CI Scope,
-Security Scope, Evidence Gates and GitGuardian checks passed; product, Rust,
-performance and release jobs were scope-skipped for this documentation/evidence
-slice and are not acceptance proof. The ledger at c5b2822 has 32 items, zero
-ready pending, five unfinished and three held: A07 active, W03 verified, and
-R01/W02/F01 held. R01's retained artifacts still lack the raw watch/callback
-trace required to close its causal gap.
+As-of routing checkpoint (2026-09-11, refresh before use): the latest reset
+resolved `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`; the ledger is
+32 items, zero ready pending, five unfinished and three held: A07 active, W03
+verified, and R01/W02/F01 held. PR #278's process-only R01 inventory remains
+merged and R01 still lacks its raw watch/callback trace. The root checkout has
+unknown user-owned dirt; use the clean owned candidate/docs worktrees and
+preserve all foreign or stale topology exceptions.
 
-The 71adc2e candidate freeze, login-shell identity checks, two corrected
-source-only canaries, six-handle binding, exactly-two-condition manifest and
-isolated metadata protocol `PASS` are historical no-credit metadata after this
-source advance. Before any screening or acceptance allocation, refresh source,
-release/tag, PR/CI and topology, rerun the ledger, freeze a c5b2822-based
-candidate, run a fresh identity/full-contract canary, rebind the private
-holdout/manifest records, and obtain an isolated protocol `PASS`. Only then
-seek separately authorized screening. A02 is complete; its old plain-init
-finding is historical. Preserve residual fixture, launcher, child-isolation and
-evaluator limitations. Route from `recovery-plan.md`, not this snapshot, after
-a fresh fetch and ledger.
+The current A07 candidate is frozen from 5b03c7f with the exact Rust/Cargo
+1.94.1 toolchain and login-shell identity. Two fresh sibling-free source-only
+canaries completed the composed Codex route; both full evaluator runs passed
+all seven dimensions, the expected negative policy probe and a collected
+native test. The six-handle holdout and exactly-two-condition packet are
+rebound with 30 reserved no-credit cells. The isolated protocol review
+  returned `PASS` with no mandatory findings; its metadata-only scope and
+  residual limits remain explicit. Before any screening or acceptance
+  allocation, refresh source, release/tag, PR/CI, topology and the ledger, then
+  prove the refreshed revision still matches this packet. On mismatch, record
+  contract/location/failure/smallest verification, freeze a new candidate,
+  rerun the no-credit canary, rebind holdout/manifest and obtain an isolated
+  protocol `PASS` before separately authorized screening. The earlier 71adc2e/c5b2822 packets remain dated
+  historical metadata. A02 is complete; preserve residual fixture, launcher,
+child-isolation and evaluator limitations. Route from `recovery-plan.md`, not
+this snapshot, after a fresh fetch and ledger.
 
 The historical parent-`c34f917` candidate-freeze observation used a clean
 detached checkout and the exact Rust/Cargo `1.94.1` toolchain. Its non-symlink
@@ -155,7 +158,10 @@ executable. Refresh the candidate-bound canary against the current master
 after the manifest review and before allocation.
 Keep initializer events, private evaluator output and redacted evidence
 separate. Run the evaluator only after the identity canary and initializer have
-completed.
+completed. Before supplying `--dimensions`, read the evaluator's declared
+dimension set and pass exactly that set; the `policy` dimension owns the
+trusted negative probe. An unsupported token is a failed no-credit invocation,
+not a reason to weaken the contract or omit a required dimension.
 
 Before a complex PR, request an independent review under project rules. Review
 findings critically and fix valid issues. Commit only your owned, verified changes

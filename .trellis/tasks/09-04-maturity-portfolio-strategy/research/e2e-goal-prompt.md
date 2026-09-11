@@ -42,19 +42,46 @@ evaluator, canary or process documentation never grants screening, release,
 deployment, publication or invitation credit.
 
 Current route: refresh the current source and revision-pinned ledger, then
-continue the owned A07 candidate packet at that revision. The last candidate-
-bound no-credit canary, immutable six-handle holdout rebind and private
-manifest review are complete only for the superseded 71adc2e source; after the
-c5b2822 merge they are historical metadata. The next gate is a fresh
-current-candidate freeze, identity/full-contract canary, holdout/manifest
-rebind and isolated protocol `PASS`, followed by separately authorized
-screening preparation. The prior 8be6103, af005a7 and 71adc2e packets are
-historical after later process merges; never reuse them for current allocation.
-Keep R01, W02, W03 and F01's named holds separate.
+continue the owned A07 candidate packet at that revision. The current
+5b03c7f candidate freeze, login-shell identity control, two full-contract
+source-only canaries and six-handle/two-condition rebind are complete as
+no-credit preparation; the isolated protocol review returned `PASS` with no
+mandatory findings. Refresh source/ledger before seeking separately authorized
+screening, and never allocate from this metadata alone. The prior
+8be6103, af005a7, 71adc2e and c5b2822 packets are historical after later
+process merges; never reuse them for current allocation. Keep R01, W02, W03 and
+F01's named holds separate.
 Do not finish the goal while a live review, repair, integration, cleanup or
 independently authorized preparation action remains.
 
-## Current post-merge checkpoint — 2026-09-11 UTC (`c5b2822`)
+## Current A07 preparation checkpoint — 2026-09-11 UTC (`5b03c7f`)
+
+The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`;
+the ledger remains 32 items, `ready_pending=0`, five unfinished and three held:
+A07 active, W03 verified, R01/W02/F01 held. A clean candidate worktree built
+Assura `0.4.0` with Rust/Cargo `1.94.1`; the private freeze and login-shell
+identity control match source/tree, absolute binary, version and shim. An
+explicit wrong-path control returned exit `97`.
+
+Two fresh sibling-free source-only fixtures completed the composed Codex route
+for exactly two private values of one input flag. Both full evaluator runs
+passed all seven dimensions with zero critical failures, the expected negative
+policy probe and a collected native test. The six-handle binding and
+second-readonly confirmation are current-candidate bound; the manifest has 30
+reserved no-credit cells and no screening authority. Independent protocol
+review returned `PASS` with no mandatory findings; its metadata-only scope and
+residual limits are recorded privately. An unsupported evaluator-dimension
+invocation is retained as failed no-credit evidence, and runner isolation now
+requires checking the declared evaluator dimension set before invocation.
+
+Next owner/action: `/root` refreshes source/release/tag/PR/CI/topology and the
+revision-pinned ledger, then proves the refreshed revision still matches this
+packet. On mismatch, record contract/location/failure/smallest verification,
+freeze a new candidate, rerun the no-credit canary, rebind holdout/manifest and
+obtain an isolated protocol `PASS` before separately authorized screening. Do
+not allocate or credit any cell from this preparation.
+
+## Historical post-merge checkpoint — 2026-09-11 UTC (`c5b2822`)
 
 The refreshed source is `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`,
 the merge of reviewed PR #278. The PR's Documentation Scope, CI Scope,

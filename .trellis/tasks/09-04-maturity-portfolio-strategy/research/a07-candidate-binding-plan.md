@@ -54,7 +54,43 @@ six-handle/two-condition rebind and isolated protocol `PASS` are now the
 newest preparation evidence. The next step is separately authorized screening
 preparation after another source/ledger refresh.
 
-## Current source rebind required — c5b2822
+## Current source rebind completed — 5b03c7f (protocol PASS; no-credit)
+
+The latest reset fetched `origin/master=5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`
+and reran the revision-pinned ledger (`items=32`, `ready_pending=0`,
+`unfinished=5`, `held=3`; A07 active, W03 verified, R01/W02/F01 held). The
+root's unknown user-owned dirt and foreign/stale topology exceptions were
+preserved. A clean owned checkout at
+`/private/tmp/assura-a07-current-5b03c7f` built the candidate once with the
+exact Rust/Cargo `1.94.1` toolchain; the private freeze and login-shell
+identity control match the current source, Git tree, absolute binary, version
+and shim. The wrong-path control returned exit `97` as expected.
+
+Two fresh sibling-free source-only fixtures completed the composed Codex
+initialization route for exactly two private values of one input flag. Both
+full evaluator results are eligible/pass with zero critical failures and all
+seven dimensions passing, including the expected negative policy probe and a
+collected native test. An unsupported evaluator-dimension invocation is
+retained as failed no-credit evidence; the runner-isolation skill now routes
+future invocations through the evaluator's declared dimension set.
+
+The six-handle construction, current binding and second-readonly confirmation
+are rebound to the 5b03c7f candidate with immutable creation records, exact
+toolchain identity, current contract digest and explicit raw-hook exclusion.
+The manifest has exactly two conditions, a separate blinded mapping and 30
+reserved cells. The independent protocol review returned `PASS` with no
+mandatory findings; its metadata-only scope and residual limits are retained
+privately. No screening, holdout, acceptance, release, deployment,
+publication, invitation or protection authority is granted by this preparation.
+
+Next owner/action: `/root` refreshes source/release/tag, PR/CI, topology and
+the revision-pinned ledger, then proves the refreshed revision still matches
+this packet. On mismatch, record contract/location/failure/smallest
+verification, freeze a new candidate, rerun the no-credit canary, rebind the
+holdout/manifest and obtain an isolated protocol `PASS` before separately
+authorized screening. Do not allocate a cell.
+
+## Historical source rebind checkpoint — c5b2822
 
 PR #278 merged the reviewed R01 retained-artifact inventory as
 `origin/master=c5b2822a664e3f04924cd0096fc000a5d132777b`. The merge changed no

@@ -106,14 +106,16 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, the A07 coordinator must first refresh `origin/master`,
 release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
-evidence to that revision. The current source is
-`c5b2822a664e3f04924cd0096fc000a5d132777b`, the merge of the reviewed R01
-retained-artifact inventory. Its retained artifacts still lack the raw
-watch/callback trace required to close R01. The 71adc2e candidate-bound
-no-credit canary, immutable six-handle holdout rebind, exactly-two-condition
-manifest and isolated metadata `PASS` are historical metadata after this
-source advance. Freeze and identity-check a new current candidate, run a fresh
-no-credit full-contract canary, rebind the six holdouts and both condition
-receipts, and obtain isolated protocol `PASS` before seeking the separately
-authorized screening gate. All prior canaries, process PRs and metadata-only
-evidence remain no-credit and never satisfy screening or acceptance gates.
+evidence to that revision. The latest recorded source is
+`5b03c7f41df1fe8ecf9ae5168eaa11f550b8721f`; the 5b03c7f candidate freeze,
+login-shell identity control, two full-contract source-only canaries and
+six-handle/two-condition rebind are complete as no-credit preparation. The
+isolated protocol review of that packet returned `PASS` with no mandatory
+findings. Refresh source/ledger again and prove the revision still matches the
+packet before seeking the separately authorized screening gate. If it does not
+match, record contract/location/failure/smallest verification, freeze a new
+candidate, rerun the no-credit canary, rebind holdout/manifest and obtain an
+isolated protocol `PASS` before allocation.
+All prior canaries, process PRs and metadata-only evidence remain no-credit and
+never satisfy screening or acceptance gates. The retained R01 artifacts still
+lack the raw watch/callback trace, so R01's hold is unchanged.
