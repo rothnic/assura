@@ -59,6 +59,7 @@
       "goal/a07-onboarding-activation",
       "goal/a07-composed-init",
       "goal/a07-composed-init-reconciliation",
+      "goal/a07-agent-content-preservation",
       "goal/a02-init-discovery-correction",
       "goal/execution-recovery-plan",
       "goal/maturity-goal-contract",
