@@ -7,17 +7,17 @@ not a replacement goal or a product-card acceptance record.
 
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolves
 the current source to
-`origin/master=329bce02396d1378bc4306c446294c3f5ebbfd41`; this pointer is an
-as-of checkpoint and must be refreshed before use. PR #297 merged the prior
-current-checkpoint reconciliation, and PR #298 most recently reconciled it
-from reviewed head `ba4c980c13001e97bdd6aa06e68bd5d7a115fd53`; its exact-head applicable
+`origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`; this pointer is an
+as-of checkpoint and must be refreshed before use. PR #298 merged the prior
+current-checkpoint reconciliation, and PR #299 most recently reconciled it
+from reviewed head `c6a47ae4e486d4d226a747a3f49653c235f251d1`; its exact-head applicable
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks
 passed, the reviewed tree equals the merge tree, and the configured
-push-triggered Rust CI (`34633883919`), Documentation (`34633883756`) and
-Security Audit (`34633883854`) workflows completed at the merge SHA.
+push-triggered Rust CI (`34635475363`), Documentation (`34635475400`) and
+Security Audit (`34635475378`) workflows completed at the merge SHA.
 Product/Rust/performance/release jobs were scope-skipped and are not product
-proof. PR #297's `6d57b86` and PR #296's `83c382a` reconciliations are now
-historical process evidence.
+proof. PR #298's `329bce0`, PR #297's `6d57b86` and PR #296's `83c382a`
+reconciliations are now historical process evidence.
 The earlier push-triggered macOS watch-SIGINT failure remains retained
 unfavorable hosted evidence: run `34615572565`, job `103316578631`, failed at
 `tests/watch_cli.rs:196` with `watch did not stop after SIGINT`. R01's missing

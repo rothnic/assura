@@ -19,16 +19,16 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current source route — 2026-09-11 UTC (`origin/master=329bce0`, as-of)
+## Current source route — 2026-09-11 UTC (`origin/master=651ef31`, as-of)
 
 The latest reset fetched
-`origin/master=329bce02396d1378bc4306c446294c3f5ebbfd41` after PR #298 merged
+`origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3` after PR #299 merged
 the reviewed current-checkpoint reconciliation from head
-`ba4c980c13001e97bdd6aa06e68bd5d7a115fd53`. Its applicable Documentation, CI
+`c6a47ae4e486d4d226a747a3f49653c235f251d1`. Its applicable Documentation, CI
 Scope, Security Scope, Evidence Gates and GitGuardian checks passed, the
 reviewed head tree equals the merge tree, and the configured push-triggered
-Rust CI (`34633883919`), Documentation (`34633883756`) and Security Audit
-(`34633883854`) workflows completed at the merge SHA. Product/Rust/
+Rust CI (`34635475363`), Documentation (`34635475400`) and Security Audit
+(`34635475378`) workflows completed at the merge SHA. Product/Rust/
 performance/release rows were explicitly skipped by scope and are not product
 proof. Fetch again before every phase because this is an as-of checkpoint.
 
@@ -43,17 +43,24 @@ stop condition.
 The configured push-triggered workflow at a merge SHA is a separate
 reconciliation observation. A failed, cancelled, unavailable, zero-test,
 scope-uncertain or absent post-merge result remains unresolved; it is never
-overridden by the pull-request rollup or a local pass. PR #297's merge-SHA
-workflows passed (`34632545493`, `34632545635`, `34632545507`), while the
+overridden by the pull-request rollup or a local pass. PR #299's merge-SHA
+workflows passed (`34635475363`, `34635475400`, `34635475378`), while the
 retained R01 diagnostic from run `34615572565` still failed on macOS SIGINT and
 remains open.
+
+## Historical source route — 2026-09-11 UTC (`origin/master=329bce0`, superseded by `651ef31`)
+
+PR #298's reviewed current-checkpoint reconciliation was merged at `329bce0`.
+Its applicable exact-head and merge-SHA checks passed; product/Rust/
+performance/release rows were scope-skipped and were not product proof. This
+is retained process evidence only; refresh to `651ef31` before routing.
 
 ## Historical source route — 2026-09-11 UTC (`origin/master=6d57b86`, superseded by `329bce0`)
 
 PR #297's reviewed current-checkpoint reconciliation was merged at `6d57b86`.
 Its applicable exact-head and merge-SHA checks passed; product/Rust/
 performance/release rows were scope-skipped and were not product proof. This
-is retained process evidence only; refresh to `329bce0` before routing.
+is retained process evidence only; refresh to `651ef31` before routing.
 
 ## Historical source route — 2026-09-11 UTC (`origin/master=83c382a`, superseded by `6d57b86`)
 
