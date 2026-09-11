@@ -1,5 +1,44 @@
 # Current maturity train checkpoint
 
+## Iteration 161 — 2026-09-11 — PR #301 post-merge reconciliation
+
+- Owner/phase: `/root` / current-source reconciliation after the reviewed
+  process slice. `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`
+  with tree `57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00` is current at this
+  checkpoint; refresh again before the next phase. PR #301 merged reviewed
+  head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc` after independent review
+  `PASS` and applicable exact-head gates passed.
+- Configured push-triggered workflows completed successfully at the merge SHA:
+  Documentation `34642991331`, Rust CI `34642991392` (CI Scope and Evidence
+  Gates passed; product/Rust/performance/release jobs were scope-skipped), and
+  Security Audit `34642991344`. Skipped jobs remain non-proof. The reviewed
+  tree equals the merge tree; this process result changes routing/skill
+  evidence only.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified and R01/W02/F01 held. The 0dff804
+  candidate and freeze are now candidate-base/no-credit after this source
+  advance; do not reuse its binary, packet or canary. No product, screening,
+  allocation, acceptance, release, deployment, publication, invitation or
+  authority state changed.
+- The owned `docs/a07-current-0dff` branch and worktree were verified clean,
+  merged through PR #301 and removed (remote and local branch). The current
+  reconciliation worktree is `/private/tmp/assura-a07-postmerge-24a1966`;
+  root unknown dirt, the foreign dirty worktree and stale/prunable topology
+  exceptions remain preserved. Topology report is `base=origin/master,
+  worktrees=51, dirty=2, prunable=3, unreadable=1, goal_branches=13,
+  unmerged_goal=9`.
+- Current-base validation passes: `jq empty`, `git diff --check`, context
+  routing audit `55/0`, `cargo run --quiet -- check --format json .` with
+  `success=true`, `1849` files, `396` directories, six low non-blocking
+  advisories and zero blocking violations, `cargo xtask evidence`, and
+  `cargo xtask docs` after `pnpm --dir website install --frozen` (48 pages).
+- Next action: commit this post-merge checkpoint, independently review the
+  exact reconciliation diff and merge it only after applicable gates pass.
+  Then fetch again and rebuild/freeze a fresh 24a1966 candidate in a clean
+  owned checkout before the sibling-free no-credit canary, packet rebind and
+  isolated protocol review. Continue R01/W02/F01 held routes independently;
+  do not let an empty pending queue or this process merge end the goal.
+
 ## Iteration 159 — 2026-09-11 — A07 current-source identity preparation
 
 - Owner/phase: `/root` / A07 candidate-freeze identity preparation. The reset

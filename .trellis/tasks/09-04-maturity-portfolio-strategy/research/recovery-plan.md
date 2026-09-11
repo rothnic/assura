@@ -5,7 +5,34 @@ The durable active goal is
 This recovery plan records task evidence and the next bounded action; it is
 not a replacement goal or a product-card acceptance record.
 
-## Current source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`)
+## Current source reconciliation — 2026-09-11 UTC (`origin/master=24a1966`)
+
+The latest reset fetched
+`origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801` with tree
+`57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00`; refresh it before the next phase.
+PR #301 merged reviewed head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc`;
+its applicable exact-head checks passed, and the configured push-triggered
+Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit
+(`34642991344`) workflows completed successfully at the merge SHA. Product/
+Rust/performance/release rows were scope-skipped and are not product proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified and R01/W02/F01 held. The 0dff804 candidate
+identity freeze is now candidate-base/no-credit after this process merge; its
+canary, holdout/manifest rebind and protocol review were not run and must not
+be reused. Root unknown dirt, foreign dirty work, stale/prunable registrations
+and unfavorable R01 evidence remain preserved. The merged docs/a07-current-0dff
+branch and worktree were verified clean and removed.
+
+Next action: `/root` owns a fresh exact-toolchain candidate rebuild and identity
+freeze from 24a1966 in a clean checkout, followed by the sibling-free
+source-only no-credit canary, six-holdout/two-condition rebind and isolated
+protocol `PASS` before any separately authorized screening. If that route is
+not authorized, continue the held R01 recovery or another independent
+authorized slice. Keep the goal active and close only exact clean owned
+branches/worktrees after post-merge proof.
+
+## Historical source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`, superseded by `24a1966`)
 
 The latest reset fetched
 `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; refresh it before

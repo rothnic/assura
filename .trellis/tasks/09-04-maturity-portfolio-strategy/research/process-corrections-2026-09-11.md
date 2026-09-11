@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=0dff804421c7563b08773eb75d9327fd0194db56`.
+`origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,31 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current A07 preparation checkpoint — 2026-09-11 UTC (`origin/master=0dff804`)
+## Current post-merge checkpoint — PR #301 — 2026-09-11 UTC (`origin/master=24a1966`)
+
+- PR #301 merged reviewed head `428c26aee89b449e5c57ed1589d6a9b8d083c3bc` as
+  `24a1966`; exact-head Documentation, CI Scope, Security Scope, Evidence
+  Gates and GitGuardian checks passed. The reviewed tree equals the merge tree.
+- Configured push-triggered Documentation `34642991331`, Rust CI
+  `34642991392` and Security Audit `34642991344` completed successfully at
+  the merge SHA for their applicable scope. Rust CI's CI Scope and Evidence
+  Gates passed; product/Rust/performance/release jobs were scope-skipped and
+  remain non-proof. This is a post-merge process observation, not product
+  acceptance.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3` with A07 active, W03 verified and R01/W02/F01 held. The 0dff804
+  candidate identity freeze and process artifacts are now candidate-base or
+  historical no-credit after this source advance. No screening, allocation,
+  acceptance, release, deployment, publication, invitation or protection
+  authority changed. The merged docs/a07-current-0dff branch/worktree was
+  verified clean and removed; root/foreign/stale topology exceptions remain
+  preserved.
+- Next action: rebuild and identity-freeze a fresh candidate from 24a1966 in a
+  clean owned checkout before the sibling-free source-only no-credit canary,
+  six-holdout/two-condition rebind and isolated protocol `PASS`. Continue held
+  R01/W02/F01 routes independently and do not reuse the 0dff804 packet.
+
+## Historical A07 preparation checkpoint — 2026-09-11 UTC (`origin/master=0dff804`, superseded by `24a1966`)
 
 - `/root` refreshed the source and ledger before claiming this preparation
   slice. `origin/master=0dff804421c7563b08773eb75d9327fd0194db56` has tree
