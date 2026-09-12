@@ -22,7 +22,29 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Latest observed integration route — PR #319 — `afa1637` (2026-09-12; refresh required)
+## Latest observed integration route — PR #320 — `38626e0` (2026-09-12; refresh required)
+
+- PR #320 merged the reviewed R01 owner-approved archive reconciliation from
+  head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
+  `afa1637ccceb93feff1bed5e652cf50516f68a9a` as
+  `38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+  `37bbea4b34812964ea91db62ad6e2c7c25e465b2`. Independent review returned
+  PASS for the exact candidate. Exact-head Documentation Scope, CI Scope,
+  Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+  Documentation `34681519433`, Security Audit `34681519434` and Rust CI
+  `34681519451` passed, including Evidence Gates job `103520912276`.
+  Scope-skipped product, Rust, performance and release rows remain non-proof.
+- The post-merge ledger is `items=32; ready_pending=0; unfinished=4; held=2`.
+  Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+  accepts H01; R01 is `not_needed` as an explicit scoped exclusion, not a
+  product-fix claim. The failed run and missing causal callback fields remain
+  preserved. A07 remains active/no-credit with no live candidate; W02/F01
+  retain external holds and W03 retains publication authority.
+- The active goal remains active. Refresh source, release/tag, PR/CI, topology
+  and ledger before the next phase; keep A07 ahead of empty pending rows and
+  never infer product acceptance from this process merge.
+
+## Historical integration route — PR #319 — `afa1637` (2026-09-12; superseded by PR #320)
 
 - PR #319 merged the reviewed R01 owner-approved archive reconciliation from
   head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
@@ -38,7 +60,7 @@ decision; keep this plan as the task-level route.
   product-fix claim; the failed run and missing causal callback fields remain
   preserved. The revision-pinned route must not infer that the historical
   regression was repaired.
-- The active goal remains active. A07 remains ahead of empty pending rows with
+- At that observation the active goal remained active. A07 remained ahead of empty pending rows with
   no live candidate; W02/F01 retain their external authority holds and W03
   retains publication authority. Refresh source, release/tag, PR/CI, topology
   and ledger before the next phase.

@@ -19,7 +19,28 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Latest observed post-merge route — PR #319 — 2026-09-12 UTC (`afa1637`; refresh required)
+## Latest observed post-merge route — PR #320 — 2026-09-12 UTC (`38626e0`; refresh required)
+
+PR #320 merged the reviewed R01 owner-approved archive reconciliation from
+head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
+`afa1637ccceb93feff1bed5e652cf50516f68a9a` as
+`38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+`37bbea4b34812964ea91db62ad6e2c7c25e465b2`. Independent review returned
+PASS for the exact candidate. Exact-head applicable checks and merge-SHA
+Documentation `34681519433`, Security Audit `34681519434` and Rust CI
+`34681519451` (Evidence Gates job `103520912276`) passed; scope-skipped
+product/Rust/performance/release rows remain non-proof.
+
+Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+accepts H01. R01 is `not_needed` as an explicit scoped exclusion, not a
+product-fix claim; the failed run and missing causal callback fields remain
+preserved. The post-merge ledger is
+`items=32; ready_pending=0; unfinished=4; held=2`; A07 remains active/no-
+credit with no live candidate, W02/F01 remain held, and W03 publication stays
+separately authorized. Refresh source, release/tag, PR/CI, topology and the
+ledger before any next phase.
+
+## Historical post-merge route — PR #319 — 2026-09-12 UTC (`afa1637`; superseded by PR #320)
 
 PR #319 merged the reviewed R01 owner-approved archive reconciliation from
 head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
@@ -49,7 +70,7 @@ Documentation `34679613211`, Security Audit `34679613203` and Rust CI
 `34679613179` passed. Scope-skipped product, Rust, performance and release
 rows remain non-proof.
 
-This is the latest observed as-of record, not a live pointer. The reset found
+At that observation this was the latest as-of record, not a live pointer. The reset found
 no `origin/release` head and no release tag at `3c01e65`. Before any next phase
 fetch `origin/master`, release/tag, PR/CI and topology, rerun the revision-
 pinned ledger, and preserve the A07 candidate-base/no-credit state. The ledger

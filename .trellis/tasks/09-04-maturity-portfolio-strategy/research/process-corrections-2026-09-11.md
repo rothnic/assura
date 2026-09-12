@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=afa1637ccceb93feff1bed5e652cf50516f68a9a`.
+`origin/master=38626e0a80fdf7a6a646bac29d810f9097e75686`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,29 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed R01 disposition — `afa1637` — 2026-09-12 UTC (H01 archive)
+## Latest observed post-merge reconciliation — `38626e0` — 2026-09-12 UTC (R01 H01 archive)
+
+PR #320 merged the reviewed R01 owner-approved archive reconciliation from
+head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
+`afa1637ccceb93feff1bed5e652cf50516f68a9a` as
+`38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+`37bbea4b34812964ea91db62ad6e2c7c25e465b2`. Independent review returned
+PASS; exact-head Documentation Scope, CI Scope, Evidence Gates, Security
+Scope and GitGuardian passed; merge-SHA Documentation `34681519433`,
+Security Audit `34681519434` and Rust CI `34681519451` passed, including
+Evidence Gates job `103520912276`. Scope-skipped product/Rust/performance/
+release rows remain non-proof.
+
+The refreshed post-merge ledger is `items=32; ready_pending=0; unfinished=4;
+held=2`. Nick's owner-level [PR #185 decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+accepts H01; R01 is `not_needed` as an explicit scoped exclusion, not a
+product-fix claim. The failed run, missing causal callback fields, candidate
+bundle and unfavorable no-cause evidence remain preserved. A07 remains
+active/no-credit with no live candidate; W02/F01 remain externally held and
+W03 publication remains separately authorized. The active goal continues with
+refresh-before-use as the next action.
+
+## Historical R01 disposition checkpoint — `afa1637` — 2026-09-12 UTC (H01 archive; superseded by `38626e0`)
 
 The refreshed reset found no new R01 raw callback artifact: the failed macOS
 job `101643647551` still exposes only the sequence-2

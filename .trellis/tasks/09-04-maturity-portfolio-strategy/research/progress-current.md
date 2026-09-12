@@ -1,5 +1,31 @@
 # Current maturity train checkpoint
 
+## Iteration 176 — 2026-09-12 — PR #320 post-merge reconciliation
+
+- Owner/phase: `/root` / post-merge reconciliation. PR #320 merged the
+  reviewed R01 H01 archive reconciliation from head
+  `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
+  `afa1637ccceb93feff1bed5e652cf50516f68a9a` as
+  `38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+  `37bbea4b34812964ea91db62ad6e2c7c25e465b2`. Independent review returned
+  PASS for the exact candidate.
+- Exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope
+  and GitGuardian passed. Merge-SHA Documentation `34681519433`, Security
+  Audit `34681519434` and Rust CI `34681519451` passed, including Evidence
+  Gates job `103520912276`. Product/Rust/performance/release rows were
+  scope-skipped and remain non-proof.
+- The post-merge ledger is `items=32; ready_pending=0; unfinished=4; held=2`.
+  R01 is `not_needed` under Nick's owner-level H01 decision in PR #185, not a
+  product fix; its failed run and missing causal callback fields remain
+  preserved. A07 remains active/no-credit with no live candidate, W02/F01
+  retain external holds, and W03 publication remains separately held pending
+  authority.
+- The merged `recovery/r01-trace-afa` branch/worktree is clean and ready for
+  closure. This reconciliation checkout is the sole owned worktree until its
+  commit is integrated; remove both owned branches/worktrees only after merged
+  reachability and a final strict topology audit. Preserve root unknown dirt,
+  foreign dirty work, stale registrations and historical unfavorable evidence.
+
 ## Iteration 175 — 2026-09-12 — R01 owner-approved archive disposition
 
 - Owner/phase: `/root` / independent R01 impasse review and evidence
