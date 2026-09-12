@@ -2,29 +2,30 @@
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
 
-## Current post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, no-credit)
-
-PR #307 merged the reviewed process slice from head `9723a673` on base
-`66e0b7e` as `eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head
-Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian passed;
-merge-SHA Documentation `34660366526`, Security Audit `34660366986` and Rust
-CI `34660366735` passed for applicable scope. Scope-skipped product, Rust,
-performance and release rows remain non-proof.
-
-Ledger is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active,
-W03 verified, R01/W02/F01 held). The `66e0b7e` process checkpoint and all
-earlier candidate/canary/packet artifacts are candidate-base/no-credit; the
-owned branch/worktree is being reconciled. Refresh
-source, release/tag, PR/CI, topology and ledger; inspect active/verified/held
-rows; then keep one owned recovery or fresh current-master A07 slice live.
-Fresh identity, canary, six-holdout/two-condition rebind and isolated protocol
-`PASS` are required before separately authorized screening. Empty pending is not
-completion; preserve all external dirt, failures and authority holds.
-
-The owned PR #307 branch must be independently reviewed, gated, merged at its
-exact head, observed at the merge SHA, and then removed only after clean
-verification. This checkpoint records no product or authority success.
-
+## Current recovery route — 3e67d5f — 2026-09-12 UTC (candidate-bound no-credit)
+Reset source/tree: `3e67d5fe123c6ebcf3ac05617966919151e44868` /
+`1b3b2c130a294b1020f0c63d84df120434bebf42`; ledger
+`items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
+R01/W02/F01 held). Preserve unknown/foreign/stale topology state and failures.
+Owned candidate `/private/tmp/assura-train-current-3e67` uses exact
+Rust/Cargo `1.94.1`, with binary/shim
+`bbb244635770c44862db1becfab5ae46c107c904821baec303bcc52ae6bd05fa`;
+identity and both negative controls pass/reject. The stale-login-shell attempt
+is retained as unfavorable evidence; corrected A/B canaries exit `0` and
+post-exit evaluators pass all seven dimensions with zero critical failures,
+expected negative rejection and a collected native test.
+Private packet `/private/tmp/assura-a07-private-3e67` has six unique holdouts,
+two conditions and 30 reserved cells; adapted metadata validation is
+`valid=true`. Canary summary is
+`screening/canary-2026-09-12-current-3e67.json`; protocol review is
+`PASS_NO_CREDIT`, while all credit flags remain false.
+Next: update redacted evidence via a reviewed current-base process slice, run
+applicable gates, merge at current master, observe merge-SHA workflows, refresh
+source/ledger/strict topology and rebuild. Concrete findings require scoped
+correction/rereview; a canary or protocol pass never closes A07, and a process
+merge invalidates candidate credit.
+The VPS lane remains held by unresolved alias, disk pressure, unrelated jobs
+and toolchain mismatch; remote output cannot replace hosted/platform proof.
 ## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 
 The latest reset fetched
@@ -85,7 +86,6 @@ canary, holdout/manifest rebind and protocol review were not run and must not
 be reused. Root unknown dirt, foreign dirty work, stale/prunable registrations
 and unfavorable R01 evidence remain preserved. The merged docs/a07-current-0dff
 branch and worktree were verified clean and removed.
-
 Next action: `/root` owns a fresh exact-toolchain candidate rebuild and identity
 freeze from 24a1966 in a clean checkout, followed by the sibling-free
 source-only no-credit canary, six-holdout/two-condition rebind and isolated

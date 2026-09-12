@@ -22,7 +22,35 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=eef7e1a` (2026-09-11 post-merge reconciliation)
+## Current route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit)
+
+- Reset evidence is current at source
+  `3e67d5fe123c6ebcf3ac05617966919151e44868`, tree
+  `1b3b2c130a294b1020f0c63d84df120434bebf42`; the ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+  verified, R01/W02/F01 held). Preserve root/foreign/stale topology findings
+  and unknown dirt outside ownership.
+- `/root` owns `/private/tmp/assura-train-current-3e67`, an exact
+  Rust/Cargo `1.94.1` release candidate with binary/shim
+  `bbb244635770c44862db1becfab5ae46c107c904821baec303bcc52ae6bd05fa`.
+  Login-shell identity and both negative controls pass/reject as intended.
+  The corrected canary runner retains the earlier stale-login-shell mismatch
+  as unfavorable evidence rather than hiding or overwriting it.
+- Conditions A and B are fresh sibling-free source-only one-shot runs with
+  initializer exit `0`; full seven-dimension post-exit evaluators pass with
+  zero critical failures. The private packet has six unique holdouts, two
+  conditions and 30 reserved cells; adapted metadata validation is `valid=true`.
+  All cells remain reserved/no-credit and screening is unauthorized.
+- Independent protocol metadata review is `PASS_NO_CREDIT` for the corrected
+  packet. Update a concise public evidence slice and send it through
+  independent review plus applicable gates. Any merge advances source, so
+  refresh and rebuild the candidate before screening. A protocol pass is not
+  A07 acceptance; any new finding still needs a scoped correction/rereview.
+- The VPS efficiency lane is held by the measured unresolved alias, disk
+  pressure, unrelated jobs and toolchain mismatch. Do not launch remote heavy
+  work or replace hosted/platform proof.
+
+## Historical route — `origin/master=eef7e1a` (2026-09-11 post-merge reconciliation; superseded by `3e67d5f`)
 
 - PR #307 merged reviewed process corrections from head
   `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
