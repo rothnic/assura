@@ -1,6 +1,34 @@
 # Current maturity train checkpoint
 
-## Iteration 170 — 2026-09-12 — PR #313 post-merge reconciliation (no-credit)
+## Iteration 171 — 2026-09-12 — PR #314 post-merge reconciliation (no-credit)
+
+- Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation
+  in clean checkout `/private/tmp/assura-a07-postmerge-20256c1` on
+  `docs/a07-postmerge-20256c1`.
+- Source is `origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+  `a90744735e7a0b157f41a48a0e78ca7665403efb`. PR #314 merged reviewed head
+  `c458ef3f9843848d10fabb7ba2ce32b5409d0e73` from base
+  `e1c9b78216b5736abd24fbd165ed7e1e383b1744`. Exact-head Documentation Scope,
+  CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+  Documentation `34675964341`, Security Audit `34675964350` and Rust CI
+  `34675964340` passed, including CI Scope `103505761574` and Evidence Gates
+  `103505781689`. Scope-skipped product, Rust, performance and release jobs
+  remain non-proof.
+- Workflow gate is `Ready: yes`; the revision-pinned ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+  verified, and R01/W02/F01 held. The owned e1c9 branch/worktree was verified
+  clean with reviewed-tree equality and removed; the a6ed packet remains
+  candidate-base/no-credit. Screening, allocation, credit, acceptance and all
+  authority flags are false; unknown/foreign/stale topology and unfavorable
+  evidence remain preserved.
+- Next action: refresh release/tag, PR/CI, topology and ledger again. If
+  no-credit A07 preparation remains authorized, create one fresh exact-
+  toolchain candidate from `20256c1` in a clean owned worktree and run
+  identity, sibling-free canary, current holdout/manifest rebind and isolated
+  protocol review in order. Any public process change needs independent review,
+  applicable gates, current-master integration and merge-SHA observation.
+
+## Historical Iteration 170 — 2026-09-12 — PR #313 post-merge reconciliation (no-credit; superseded by 20256c1)
 
 - Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation
   in clean checkout `/private/tmp/assura-a07-postmerge-e1c9` on

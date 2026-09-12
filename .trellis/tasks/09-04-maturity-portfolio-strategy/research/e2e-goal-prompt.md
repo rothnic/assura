@@ -19,7 +19,35 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current post-merge route — PR #313 — 2026-09-12 UTC (`origin/master=e1c9b78`, as-of)
+## Current post-merge route — PR #314 — 2026-09-12 UTC (`origin/master=20256c1`, as-of)
+
+PR #314 merged the reviewed e1c9 post-merge reconciliation from head
+`c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` as
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+`a90744735e7a0b157f41a48a0e78ca7665403efb`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34675964341`, Security Audit `34675964350` and Rust CI
+`34675964340` passed, including CI Scope `103505761574` and Evidence Gates
+`103505781689`. Scope-skipped product, Rust, performance and release rows
+remain non-proof.
+
+The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with A07
+active, W03 verified and R01/W02/F01 held. The clean owned e1c9 branch/worktree
+was verified with reviewed-tree equality and removed; the a6ed candidate and
+packet remain candidate-base/no-credit. No screening, allocation, credit,
+acceptance, release, deployment, publication, invitation or protection
+authority exists.
+
+Next action: refresh source, release/tag, PR/CI, topology and the ledger before
+any further phase. If no-credit A07 preparation is authorized, build a fresh
+exact-toolchain candidate from `20256c1` in one clean owned worktree, then run
+identity, sibling-free canary, current holdout/manifest rebind and isolated
+protocol review in order. Any public correction requires independent review,
+applicable gates, current-master integration and merge-SHA observation; do not
+reuse a6ed or infer product success from process metadata or skipped checks.
+
+## Historical post-merge route — PR #313 — 2026-09-12 UTC (`origin/master=e1c9b78`, superseded by 20256c1)
 
 PR #313 merged the reviewed packet-coherence process slice from head
 `a134fc6815fc76730926d9f8ded57f16a8740e74` on base

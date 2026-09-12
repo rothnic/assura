@@ -17,6 +17,34 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current post-merge checkpoint (2026-09-12, refresh before use):
+`origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+`a90744735e7a0b157f41a48a0e78ca7665403efb`; PR #314 merged reviewed head
+`c458ef3f9843848d10fabb7ba2ce32b5409d0e73` from base
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
+Documentation (`34675964341`), Security Audit (`34675964350`) and Rust CI
+(`34675964340`) passed, including CI Scope (`103505761574`) and Evidence Gates
+(`103505781689`); product/Rust/performance/release jobs were scope-skipped and
+remain non-proof.
+
+The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` (A07
+active, W03 verified, R01/W02/F01 held). The e1c9 branch/worktree was verified
+clean with reviewed-tree equality, then removed; the a6ed candidate/packet is
+candidate-base/no-credit and the e1c9 process slice is historical. No
+screening, allocation, credit, acceptance, release, deployment, publication,
+invitation or protection authority exists. Preserve unknown/foreign/stale
+topology and unfavorable evidence; the optional VPS lane remains held.
+
+Next action: refresh release/tag, PR/CI, topology and ledger again. Keep A07
+ahead of empty pending rows; if no-credit preparation remains authorized,
+create one fresh exact-toolchain candidate from `20256c1` in a clean owned
+worktree and run identity, sibling-free canary, current holdout/manifest
+rebind and isolated protocol review in order. Any public update requires
+independent review, applicable gates, current-master integration and merge-SHA
+observation. Never reuse the a6ed packet or infer product success from process
+metadata or skipped checks.
+
+Historical post-merge checkpoint (2026-09-12, superseded by 20256c1):
 `origin/master=e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
 `9d57888eec65d892dcc2a65b829369dd90278637`; PR #313 merged reviewed head
 `a134fc6815fc76730926d9f8ded57f16a8740e74` from base
@@ -37,7 +65,7 @@ acceptance, release, deployment, publication, invitation or protection
 authority exists. Preserve unknown/foreign/stale topology and unfavorable
 evidence; the optional VPS lane remains held.
 
-Next action: refresh release/tag, PR/CI, topology and the ledger again. Keep
+Historical next action: refresh release/tag, PR/CI, topology and the ledger again. Keep
 the active A07 route ahead of empty pending rows; if no-credit preparation is
 authorized, create one fresh exact-toolchain candidate from `e1c9b78` in a
 clean owned worktree and run identity, sibling-free canary, current

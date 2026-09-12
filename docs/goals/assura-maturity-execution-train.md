@@ -31,28 +31,29 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — e1c9b78 (post-merge reconciliation; A07 packet candidate-base/no-credit)
+## Current checkpoint — 20256c1 (post-merge reconciliation; A07 packet candidate-base/no-credit)
 
-PR #313 merged the reviewed packet-coherence process slice from head
-`a134fc6815fc76730926d9f8ded57f16a8740e74` on base
-`a6ed20f532d93f830099e9095798a09515fead0b` as
-`e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
-`9d57888eec65d892dcc2a65b829369dd90278637`. Exact-head Documentation Scope,
+PR #314 merged the reviewed e1c9 post-merge reconciliation from head
+`c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` as
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+`a90744735e7a0b157f41a48a0e78ca7665403efb`. Exact-head Documentation Scope,
 CI Scope, Evidence Gates, Security Scope and GitGuardian passed. The
-merge-SHA Documentation (`34675049056`), Security Audit (`34675049038`) and
-Rust CI (`34675049055`) workflows passed; Rust CI CI Scope
-(`103503298569`) and Evidence Gates (`103503318127`) passed. Product, Rust,
+merge-SHA Documentation (`34675964341`), Security Audit (`34675964350`) and
+Rust CI (`34675964340`) workflows passed; Rust CI CI Scope
+(`103505761574`) and Evidence Gates (`103505781689`) passed. Product, Rust,
 performance and release rows were scope-skipped and remain non-proof. The
 revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
 held=3`: A07 active, W03 verified, R01/W02/F01 held.
 
-The clean owned candidate branch/worktree for `a6ed20f` was verified
-ancestor-reachable and removed after merge. Its exact-toolchain candidate,
-identity controls, two sibling-free canaries, six-holdout/two-condition
-packet, persisted validator and isolated `PASS_NO_CREDIT` protocol review are
-now candidate-base/no-credit metadata because source advanced to `e1c9b78`.
-The reviewer artifact remains immutable; the coordinator's pre/post hash
-finalization and all three corrected findings remain retained as evidence.
+The clean owned `docs/a07-postmerge-e1c9` branch/worktree was verified clean
+and its reviewed tree matched the squash merge tree before removal. The a6ed
+exact-toolchain candidate, identity controls, two sibling-free canaries,
+six-holdout/two-condition packet, persisted validator and isolated
+`PASS_NO_CREDIT` protocol review remain candidate-base/no-credit metadata;
+the e1c9 process artifacts are now current-source history. The reviewer
+artifact remains immutable; the coordinator's pre/post hash finalization and
+all three corrected findings remain retained as evidence.
 
 No screening, allocation, credit, product acceptance, release, deployment,
 publication, invitation or protection authority exists. Raw evaluator,
@@ -64,14 +65,26 @@ proof. Unknown root dirt, foreign dirty work, stale registrations, unrelated
 branches and unfavorable evidence remain outside this goal's ownership.
 
 Next action: refresh release/tag, PR/CI, topology and the revision-pinned
-ledger at `e1c9b78`; keep the active A07 route ahead of empty ready-pending
+ledger at `20256c1`; keep the active A07 route ahead of empty ready-pending
 rows, then build a fresh exact-toolchain candidate in one clean owned
 worktree only if the no-credit preparation route remains authorized. Re-run
 identity, sibling-free canary, current holdout/manifest rebind and isolated
 protocol review in order. Any public process update needs independent review,
 applicable gates, current-master integration and merge-SHA observation before
-the next refresh. Never reuse the `a6ed20f` packet for screening or acceptance,
+the next refresh. Never reuse the a6ed packet for screening or acceptance,
 and never infer product success from process metadata or skipped checks.
+
+## Historical checkpoint — e1c9b78 (post-merge reconciliation; superseded by 20256c1)
+
+PR #313 merged the reviewed packet-coherence process slice from head
+`a134fc6815fc76730926d9f8ded57f16a8740e74` as
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+`9d57888eec65d892dcc2a65b829369dd90278637`. Its exact-head and merge-SHA
+Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian
+checks passed for applicable scope. The a6ed candidate/packet remained
+candidate-base/no-credit; the clean owned e1c9 reconciliation branch/worktree
+was later verified clean with an equal merge tree and removed. No product,
+screening, allocation, credit, acceptance or authority state changed.
 
 ## Historical checkpoint — a6ed20f (candidate-bound protocol disposition; no-credit; superseded by e1c9b78)
 

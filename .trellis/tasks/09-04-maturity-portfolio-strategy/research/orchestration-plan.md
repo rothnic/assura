@@ -22,7 +22,36 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=e1c9b78` (2026-09-12 post-merge reconciliation; A07 candidate-base/no-credit)
+## Current route — `origin/master=20256c1` (2026-09-12 post-merge reconciliation; A07 candidate-base/no-credit)
+
+- PR #314 merged the reviewed e1c9 reconciliation from head
+  `c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base
+  `e1c9b78216b5736abd24fbd165ed7e1e383b1744` as
+  `20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+  `a90744735e7a0b157f41a48a0e78ca7665403efb`. Exact-head Documentation
+  Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian passed;
+  merge-SHA Documentation `34675964341`, Security Audit `34675964350` and
+  Rust CI `34675964340` passed, including CI Scope `103505761574` and
+  Evidence Gates `103505781689`. Scope-skipped product, Rust, performance and
+  release rows remain non-proof.
+- Ledger remains `items=32; ready_pending=0; unfinished=5; held=3` (A07
+  active, W03 verified, R01/W02/F01 held). The clean owned
+  `docs/a07-postmerge-e1c9` branch/worktree was verified with equal reviewed
+  and merge trees, then removed; the a6ed candidate/packet remains
+  candidate-base/no-credit and the e1c9 process slice is now historical.
+- No screening, allocation, credit, acceptance, release, deployment,
+  publication, invitation or protection authority changed. Preserve
+  unknown/foreign/stale topology and unfavorable evidence; the optional VPS
+  lane remains held.
+- Next action: refresh release/tag, PR/CI, topology and ledger again. Keep A07
+  ahead of empty pending rows and, if no-credit preparation remains
+  authorized, build a fresh exact-toolchain candidate from `20256c1` in one
+  clean owned worktree, then run identity, sibling-free canary, current
+  holdout/manifest rebind and isolated protocol review in order. Public
+  process updates still require independent review, applicable gates,
+  current-master integration and merge-SHA observation.
+
+## Historical route — `origin/master=e1c9b78` (2026-09-12 post-merge reconciliation; superseded by 20256c1)
 
 - PR #313 merged the reviewed packet-coherence process slice from head
   `a134fc6815fc76730926d9f8ded57f16a8740e74` on base
