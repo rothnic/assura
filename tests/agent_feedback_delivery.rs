@@ -423,6 +423,9 @@ fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
 fn expired_refresh_does_not_publish_a_snapshot() {
     let root = fixture("");
     let path = root.path().to_str().unwrap();
+    let lock = root.path().join(".git/assura/feedback/expired.refresh");
+    fs::create_dir_all(lock.parent().unwrap()).expect("feedback directory");
+    fs::write(&lock, "expired").expect("expired refresh lease");
     let deadline = SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .expect("clock")
@@ -440,10 +443,13 @@ fn expired_refresh_does_not_publish_a_snapshot() {
             "json",
         ])
         .current_dir(root.path())
+        .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
+        .env("ASSURA_FEEDBACK_REFRESH_TOKEN", "expired")
         .env("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS", deadline)
         .output()
         .expect("expired inspect runs");
     assert!(!output.status.success());
+    assert!(!lock.exists(), "expired refresh lease was not released");
     let cache_dir = root.path().join(".git/assura/trajectory");
     assert!(!cache_dir.exists() || fs::read_dir(cache_dir).unwrap().next().is_none());
 }

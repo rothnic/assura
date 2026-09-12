@@ -702,7 +702,9 @@ pub(super) fn start_refresh_watchdog() {
     };
     let remaining = deadline.saturating_sub(now_millis());
     if remaining <= 0 {
-        return;
+        let lock = PathBuf::from(lock);
+        let _ = remove_refresh_lease_if_owned(&lock, &token);
+        std::process::exit(1);
     }
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(remaining as u64));
