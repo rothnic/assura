@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=600e9cd7fa77d2ea55664cae201d5db45fac6a3c`.
+`origin/master=b286c8272466ca980267c4b3858833bd7da74f8b`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,30 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed route correction — `600e9cd` — 2026-09-12 UTC (PR #322; current source)
+## Latest observed route correction — `b286c82` — 2026-09-12 UTC (PR #323; current source)
+
+The independent scoped rereview found `TRAIN-ROUTE-600E9CD-001`: the recovery
+evidence entry still labeled PR #307/`eef7e1a` current and could misroute an
+executor entering through that file. PR #323 merged the correction from head
+`feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` on base
+`600e9cd7fa77d2ea55664cae201d5db45fac6a3c` as
+`b286c8272466ca980267c4b3858833bd7da74f8b` with tree
+`f4add323397986f074d8f21de7dd28f7ab4241bf`. Independent scoped rereview
+returned PASS for the exact candidate. Exact-head Evidence Gates, CI Scope,
+Documentation Scope, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34684176319`, Security Audit `34684176377` and Rust CI
+`34684176310` passed, including Evidence Gates job `103528145700`; scope-skipped
+rows remain non-proof.
+
+All live route copies now use `b286c82`; PR #322 and earlier source pointers
+are historical. The refreshed ledger is `items=32; ready_pending=0; unfinished=4;
+held=2`; R01 remains `not_needed` under H01, A07 remains active/no-credit with
+no live candidate, W02/F01 remain externally held and W03 publication remains
+separately authorized. No product, threshold, screening, allocation, credit,
+acceptance, release, deployment, publication, invitation or protection state
+changed.
+
+## Historical route correction — `600e9cd` — 2026-09-12 UTC (PR #322; superseded by PR #323)
 
 The independent rereview found `TRAIN-ROUTE-3834-002`: the A07 binding plan
 still called the PR #307/`eef7e1a` source current and could bind a fresh

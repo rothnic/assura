@@ -16,21 +16,22 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed current-source reconciliation (PR #322, 2026-09-12; refresh required):
-`origin/master=600e9cd7fa77d2ea55664cae201d5db45fac6a3c` with tree
-`685ca988d88c1045503bc24eb6e4f2bbbb1b1a5a`; PR #322 merged reviewed head
-`686adc4bddd87b5eab48e8f7fedd66f926adcf8b` from base
-`3834b1b0647983475f9489da42c9c001b1484a56`. Independent rereview returned PASS
-and resolved `TRAIN-ROUTE-3834-002`, the stale PR #307 A07 binding reference.
-Exact-head Evidence Gates, CI Scope, Documentation Scope, Security Scope and
-GitGuardian passed. Merge-SHA Documentation (`34683313454`), Security Audit
-(`34683313445`) and Rust CI (`34683313452`, including Evidence Gates job
-`103525808073`) passed; product/Rust/performance/release jobs were
-scope-skipped and remain non-proof. PR #321 is historical; refresh source,
-release/tag, PR/CI, topology and ledger before acting.
+Latest observed current-source reconciliation (PR #323, 2026-09-12; refresh required):
+`origin/master=b286c8272466ca980267c4b3858833bd7da74f8b` with tree
+`f4add323397986f074d8f21de7dd28f7ab4241bf`; PR #323 merged reviewed head
+`feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` from base
+`600e9cd7fa77d2ea55664cae201d5db45fac6a3c`. Independent scoped rereview
+returned PASS and resolved `TRAIN-ROUTE-600E9CD-001`, the stale PR #307
+recovery-evidence route. Exact-head Evidence Gates, CI Scope, Documentation
+Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
+(`34684176319`), Security Audit (`34684176377`) and Rust CI (`34684176310`,
+including Evidence Gates job `103528145700`) passed for applicable scope.
+Product/Rust/performance/release rows were scope-skipped and remain non-proof.
+PR #322 and earlier pointers are historical; refresh source, release/tag,
+PR/CI, topology and ledger before acting.
 
 Historical observed current-source reconciliation (PR #321, 2026-09-12;
-superseded by PR #322; refresh required):
+superseded by PR #322 and PR #323; refresh required):
 `origin/master=3834b1b0647983475f9489da42c9c001b1484a56` with tree
 `703d21c6627ac0575be09d3242091134104bd605`; PR #321 merged reviewed head
 `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` from base

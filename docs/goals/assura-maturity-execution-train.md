@@ -38,7 +38,31 @@ continues; a card-level hold is not a whole-goal block. Every continuation
 must end with a live handle or one explicit next action, and the runtime goal
 stays active until authorized scope is accepted and owned topology is terminal.
 
-## Latest observed integration — PR #322 — `600e9cd` (2026-09-12; current source)
+## Latest observed integration — PR #323 — `b286c82` (2026-09-12; current source)
+
+PR #323 merged the reviewed recovery-entry correction from head
+`feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` on base
+`600e9cd7fa77d2ea55664cae201d5db45fac6a3c` as
+`b286c8272466ca980267c4b3858833bd7da74f8b` with tree
+`f4add323397986f074d8f21de7dd28f7ab4241bf`. Independent scoped rereview
+returned PASS and confirmed `TRAIN-ROUTE-600E9CD-001` was resolved: recovery
+evidence now routes to PR #322 and labels PR #307 historical. Exact-head
+Evidence Gates, CI Scope, Documentation Scope, Security Scope and GitGuardian
+passed. Merge-SHA Documentation (`34684176319`), Security Audit
+(`34684176377`) and Rust CI (`34684176310`, Evidence Gates job
+`103528145700`) passed for applicable scope; scope-skipped product, Rust,
+performance and release jobs remain non-proof.
+
+At `b286c82`, the ledger remains `items=32; ready_pending=0; unfinished=4;
+held=2`: R01 remains `not_needed` under H01, A07 remains active/no-credit with
+no live candidate, W03 is verified while publication remains held, and W02/F01
+retain external holds. PR #322 and earlier source pointers are historical;
+refresh source, release/tag, PR/CI, topology and ledger before every phase.
+This process merge changes routing only and grants no product, screening,
+allocation, credit, acceptance, release, deployment, publication, invitation
+or protection authority.
+
+## Historical checkpoint — PR #322 — `600e9cd` (2026-09-12; superseded by PR #323)
 
 PR #322 merged the reviewed current-source route correction from head
 `686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
