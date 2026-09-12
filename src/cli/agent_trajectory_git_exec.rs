@@ -95,7 +95,7 @@ fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutp
 
 #[cfg(test)]
 mod tests {
-    use super::{run_bounded, GitOutput};
+    use super::{refresh_timeout_from, run_bounded, GitOutput};
     use std::process::{Command, Stdio};
     use std::time::Duration;
 
