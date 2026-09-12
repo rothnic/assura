@@ -51,9 +51,21 @@ ancestor of `origin/master` at `48f18fab7527150b384603ca64cec8b374295842`.
 Its remote/local ref and attached clean worktree were removed after the plan
 was carried into CF01. Restore it with
 `git branch codex/compact-feedback-plan 48f18fab7527150b384603ca64cec8b374295842`.
-CF02 is the sole active execution candidate: owner Nick/Codex, worktree
-`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf02`, next action
-complete and review the cached trajectory slice. The detached historical
+CF02 was the sole active execution candidate: owner Nick/Codex, worktree
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf02`, and it completed
+through PR #329 at merge commit `9383acc2fd9a47d63553fd32768aef7428c7b34c`.
+Its candidate tip `ea634c5401a27578c62b4b0de2ba6db30dddd583` is an ancestor of
+that merge; focused tests, independent review, current-base gates, exact-head
+PR checks, and post-merge Rust CI/Documentation/Security workflows passed.
+The clean CF02 worktree, local branch, and remote branch were removed after
+reachability proof. Restore it with
+`git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30dddd583`.
+Owner Nick/Codex; handle none; next action none unless CF02 is deliberately
+reopened. The current CF03 candidate is owner Nick/Codex at
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03`, branch
+`goal/compact-feedback-cf03`, base `9383acc2fd9a47d63553fd32768aef7428c7b34c`,
+next action implement CF03 and preserve this restore decision.
+The detached historical
 worktree at `/Users/nroth/.codex/worktrees/2f5f1792-b405-41ee-8885-bbb1ad693526/assura`
 has no branch owner and remains untouched.
 
@@ -66,3 +78,13 @@ snapshots remain recoverable as stash commits
 `851de4adc7050437d2f53e1e7006801e6879d84a` and
 `f220df766396106ba2b4e01960a707feb4a65761`; they are preserved foreign work,
 not candidate commits.
+
+CF02 completed through PR #329. Candidate tip
+`ea634c5401a27578c62b4b0de2ba6db30dddd583` merged into `origin/master` as
+`9383acc2fd9a47d63553fd32768aef7428c7b34c`. The exact-tip focused tests,
+independent review, current-base gates, and hosted PR checks passed before the
+merge. Post-merge Rust CI run `34713601124`, Documentation run `34713601114`,
+and Security Audit run `34713601129` all passed for the merge SHA. The clean
+CF02 worktree and local/remote candidate branch were then removed. Owner is
+Nick/Codex; next action is CF03 implementation. Restore the archived candidate
+with `git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30dddd583`.
