@@ -99,6 +99,11 @@ impl LocalDaemonCore {
         Self::load_with_references(path, config, references_enabled)
     }
 
+    /// Return compact automatic feedback settings from the prepared config.
+    pub(crate) fn feedback_config(&self) -> Option<&crate::config::config::AgentFeedbackConfig> {
+        self.prepared.config().agent_feedback.as_ref()
+    }
+
     fn load_with_references(
         path: PathBuf,
         config: Option<PathBuf>,

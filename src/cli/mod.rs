@@ -10,6 +10,8 @@ mod agent_lifecycle;
 #[cfg(feature = "full-cli")]
 mod agent_nudge;
 #[cfg(feature = "full-cli")]
+mod agent_nudge_delivery;
+#[cfg(feature = "full-cli")]
 mod agent_onboarding;
 #[cfg(feature = "full-cli")]
 mod agent_onboarding_content_templates;

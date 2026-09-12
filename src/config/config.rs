@@ -12,6 +12,7 @@ use std::collections::HashMap;
 #[cfg(feature = "full-cli")]
 use validator::Validate;
 
+mod agent_feedback;
 mod bundles;
 mod content;
 mod extensions;
@@ -24,6 +25,11 @@ pub use crate::config::inheritance::{ResolvedRule, RuleResolver};
 #[cfg(feature = "yaml-config")]
 pub use crate::config::loader::ConfigLoader;
 pub use crate::config::ls_compat::LsLintCompatibility;
+pub use agent_feedback::{
+    AgentFeedbackCollectionConfig, AgentFeedbackConfig, AgentFeedbackCoordinationSignal,
+    AgentFeedbackMode, AgentFeedbackPatchSignal, AgentFeedbackSignalsConfig,
+    AgentFeedbackTrajectoryConfig, AgentFeedbackUnintegratedSignal, AgentFeedbackWindowConfig,
+};
 pub(crate) use bundles::{merge_markdown_rule_configs, MarkdownOutlineView};
 pub use bundles::{
     DirectoryBundle, ExistsValidation, FileBundle, MarkdownBundle, MarkdownOutlineEntry,
@@ -122,6 +128,10 @@ pub struct Config {
     #[serde(default, skip_serializing_if = "HashMap::is_empty")]
     pub code_symbols: HashMap<String, ContentCodeSymbolConfig>,
 
+    /// Optional compact automatic agent feedback configuration.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub agent_feedback: Option<AgentFeedbackConfig>,
+
     /// Paths to exclude from validation
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub exclude: Vec<String>,
@@ -205,6 +215,7 @@ impl Config {
             collections: HashMap::new(),
             relations: HashMap::new(),
             code_symbols: HashMap::new(),
+            agent_feedback: None,
             exclude: Vec::new(),
         }
     }
@@ -272,6 +283,12 @@ impl Config {
         symbol: ContentCodeSymbolConfig,
     ) -> Self {
         self.code_symbols.insert(key.into(), symbol);
+        self
+    }
+
+    /// Add compact automatic agent feedback configuration.
+    pub fn with_agent_feedback(mut self, feedback: AgentFeedbackConfig) -> Self {
+        self.agent_feedback = Some(feedback);
         self
     }
 

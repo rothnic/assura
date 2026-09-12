@@ -5,6 +5,7 @@ mod git;
 #[path = "agent_trajectory_snapshot.rs"]
 mod snapshot;
 
+use crate::config::config::AgentFeedbackConfig;
 use git::{CategoryStats, CollectionResult, GitInput};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
@@ -32,6 +33,167 @@ pub(super) struct TrajectorySnapshot {
     pending: Option<PendingMetrics>,
     pub(super) freshness: Freshness,
     cache: CacheInfo,
+}
+
+impl TrajectorySnapshot {
+    pub(super) fn coverage(&self) -> &str {
+        &self.coverage
+    }
+
+    pub(super) fn age_seconds(&self, now: i64) -> i64 {
+        now.saturating_sub(self.captured_at).max(0)
+    }
+
+    pub(super) fn has_pending_work(&self) -> bool {
+        let Some(pending) = &self.pending else {
+            return false;
+        };
+        pending.commits.is_some_and(|value| value > 0)
+            || pending.files.is_some_and(|value| value > 0)
+            || pending.dirty_files.is_some_and(|value| value > 0)
+            || [
+                &pending.source,
+                &pending.tests,
+                &pending.coordination,
+                &pending.generated,
+                &pending.other,
+            ]
+            .iter()
+            .any(|category| category.files.is_some_and(|value| value > 0))
+    }
+
+    pub(super) fn pending_changed_lines(&self) -> Option<u64> {
+        let pending = self.pending.as_ref()?;
+        let categories = [
+            &pending.source,
+            &pending.tests,
+            &pending.coordination,
+            &pending.generated,
+            &pending.other,
+        ];
+        let mut total = 0u64;
+        for category in categories {
+            total = total
+                .checked_add(category.additions?)
+                .and_then(|value| value.checked_add(category.deletions?))?;
+        }
+        Some(total)
+    }
+
+    pub(super) fn coordination_only_commits(&self, window: u64) -> Option<u64> {
+        if self.window.kind != "commits" || self.window.value != window {
+            return None;
+        }
+        let history = self.integrated.as_ref()?;
+        history
+            .complete_window
+            .then_some(history.coordination_only_commits?)
+    }
+
+    pub(super) fn compact_line_for(
+        &self,
+        episode_started_at: Option<i64>,
+        max_bytes: usize,
+        metrics: &[String],
+    ) -> String {
+        let mut fields = vec![format!(
+            "base={}{}",
+            self.integration.requested_ref,
+            self.integration
+                .sha
+                .as_ref()
+                .map(|_| "(local)")
+                .unwrap_or("(?)")
+        )];
+        fields.push(format!(
+            "{}{}",
+            self.window.value,
+            if self.window.kind == "minutes" {
+                "m"
+            } else {
+                "c"
+            }
+        ));
+        if metrics.iter().any(|metric| metric == "integrated_commits") {
+            if let Some(commits) = self.integrated.as_ref().and_then(|value| value.commits) {
+                fields.push(format!("commits={commits}"));
+            }
+        }
+        if let Some(integrated) = &self.integrated {
+            for (metric, label, category) in [
+                ("source_lines", "src", &integrated.source),
+                ("test_lines", "test", &integrated.tests),
+                ("coordination_lines", "coord", &integrated.coordination),
+                ("generated_lines", "gen", &integrated.generated),
+            ] {
+                if metrics.iter().any(|value| value == metric) {
+                    if let Some((additions, deletions)) = known_lines(category) {
+                        fields.push(format!("{label}=+{additions}/-{deletions}"));
+                    }
+                }
+            }
+        }
+        if let Some(pending) = &self.pending {
+            if metrics.iter().any(|metric| metric == "pending_age") {
+                if let Some(started) = episode_started_at {
+                    let age = self.captured_at.saturating_sub(started).max(0) / 60;
+                    fields.push(format!("pending={age}m"));
+                }
+            }
+            if metrics.iter().any(|metric| metric == "pending_commits") {
+                if let Some(commits) = pending.commits {
+                    fields.push(format!("pending_commits={commits}"));
+                }
+            }
+            if metrics.iter().any(|metric| metric == "pending_lines") {
+                let categories = [
+                    &pending.source,
+                    &pending.tests,
+                    &pending.coordination,
+                    &pending.generated,
+                    &pending.other,
+                ];
+                let totals = categories.into_iter().try_fold(
+                    (0u64, 0u64),
+                    |(additions, deletions), category| {
+                        let (next_additions, next_deletions) = known_lines(category)?;
+                        Some((
+                            additions.saturating_add(next_additions),
+                            deletions.saturating_add(next_deletions),
+                        ))
+                    },
+                );
+                if let Some((additions, deletions)) = totals {
+                    fields.push(format!("lines=+{additions}/-{deletions}"));
+                }
+            }
+            if metrics.iter().any(|metric| metric == "dirty_files") {
+                if let Some(dirty) = pending.dirty_files {
+                    fields.push(format!("dirty={dirty}"));
+                }
+            }
+        }
+        bound_line(format!("assura: {}", fields.join(" ")), max_bytes)
+    }
+}
+
+fn known_lines(category: &CategoryMetrics) -> Option<(u64, u64)> {
+    category.additions.zip(category.deletions)
+}
+
+fn bound_line(value: String, max_bytes: usize) -> String {
+    if value.len() <= max_bytes {
+        return value;
+    }
+    let mut bounded = String::new();
+    for character in value.chars() {
+        if bounded.len() + character.len_utf8() + 3 > max_bytes {
+            break;
+        }
+        bounded.push(character);
+    }
+    bounded.push_str("...");
+    bounded
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -68,6 +230,10 @@ struct TrajectoryWindow {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct HistoryMetrics {
     commits: Option<u64>,
+    #[serde(default)]
+    coordination_only_commits: Option<u64>,
+    #[serde(default)]
+    complete_window: bool,
     source: CategoryMetrics,
     tests: CategoryMetrics,
     coordination: CategoryMetrics,
@@ -106,14 +272,50 @@ struct CacheInfo {
     source: String,
 }
 
-/// Collect trajectory facts for an explicit, bounded inspect request.
-pub(super) fn inspect(project_root: &Path) -> Result<TrajectorySnapshot, String> {
+pub(super) fn inspect_with_config(
+    project_root: &Path,
+    config: Option<&AgentFeedbackConfig>,
+) -> Result<TrajectorySnapshot, String> {
     let now = current_time()?;
-    inspect_at(project_root, now)
+    inspect_at(project_root, now, config)
 }
 
-fn inspect_at(project_root: &Path, now: i64) -> Result<TrajectorySnapshot, String> {
-    let input = git::discover(project_root, now)?;
+pub(super) fn cached_snapshot(project_root: &Path) -> Option<TrajectorySnapshot> {
+    let marker = project_root.join(".git");
+    let git_dir = if marker.is_dir() {
+        marker
+    } else {
+        let value = std::fs::read_to_string(marker).ok()?;
+        let value = value.strip_prefix("gitdir: ")?.trim();
+        let path = Path::new(value);
+        if path.is_absolute() {
+            path.to_path_buf()
+        } else {
+            project_root.join(path)
+        }
+    };
+    let common_dir = if git_dir.file_name().and_then(|name| name.to_str()) == Some(".git") {
+        git_dir.clone()
+    } else {
+        git_dir.parent()?.parent()?.to_path_buf()
+    };
+    let root = project_root
+        .canonicalize()
+        .unwrap_or_else(|_| project_root.to_path_buf());
+    snapshot::read_latest_for_worktree(&common_dir, &root).snapshot
+}
+
+fn inspect_at(
+    project_root: &Path,
+    now: i64,
+    config: Option<&AgentFeedbackConfig>,
+) -> Result<TrajectorySnapshot, String> {
+    let input = git::discover(
+        project_root,
+        now,
+        config.map(|value| &value.trajectory),
+        config.map_or(500, |value| u64::from(value.collection.max_commits)),
+    )?;
     let generation = git::generation(&input, CLASSIFICATION_VERSION, now);
     let cache_key = snapshot::CacheKey::new(&input, CLASSIFICATION_VERSION);
     let cache_read = snapshot::read(&cache_key);
@@ -258,6 +460,8 @@ fn build_snapshot(
 fn history_metrics(history: git::HistoryResult) -> HistoryMetrics {
     HistoryMetrics {
         commits: Some(history.commits),
+        coordination_only_commits: history.coordination_only_commits,
+        complete_window: history.complete_window,
         source: category_metrics(history.categories[0].clone()),
         tests: category_metrics(history.categories[1].clone()),
         coordination: category_metrics(history.categories[2].clone()),
@@ -356,8 +560,9 @@ mod tests {
             .duration_since(UNIX_EPOCH)
             .expect("clock")
             .as_secs() as i64;
-        let first = super::inspect_at(root.path(), now).expect("first inspect");
-        let second = super::inspect_at(root.path(), now + 30 * 60).expect("next bucket inspect");
+        let first = super::inspect_at(root.path(), now, None).expect("first inspect");
+        let second =
+            super::inspect_at(root.path(), now + 30 * 60, None).expect("next bucket inspect");
         assert_eq!(first.cache.status, "refreshed");
         assert_eq!(second.cache.status, "refreshed");
         assert_eq!(second.freshness.snapshot, "refreshed");

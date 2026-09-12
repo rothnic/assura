@@ -7,6 +7,7 @@ mod helpers;
 #[path = "agent_nudge_log.rs"]
 mod log;
 
+use super::agent_nudge_delivery;
 use super::{AgentNudgeDelivery, AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
 use crate::cli::agent_trajectory::TrajectorySnapshot;
 use crate::cli::check::{StructureCheckReport, StructureViolation};
@@ -48,12 +49,17 @@ pub struct AgentNudgeOptions {
 
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
-    match build_agent_nudge(options, config) {
+    let result = build_agent_nudge(options, config);
+    agent_nudge_delivery::finish_refresh();
+    match result {
         Ok(output) => {
             if let Err(error) = log::maybe_write(&output.project_root, &output.output) {
                 eprintln!("Warning: failed to write Assura nudge log: {error}");
             }
-            println!("{}", output.render());
+            let rendered = output.render();
+            if !rendered.is_empty() {
+                println!("{rendered}");
+            }
             ExitCode::Success
         }
         Err(error) => {
@@ -70,11 +76,6 @@ fn build_agent_nudge(
     let project_path = match options.path.clone() {
         Some(path) => path,
         None => std::env::current_dir().map_err(|error| error.to_string())?,
-    };
-    let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
-        Some(crate::cli::agent_trajectory::inspect(&project_path)?)
-    } else {
-        None
     };
     let policy_generation = cooldown::policy_generation(&project_path, config.as_deref());
     let agent_fallback_command = suggested_command(&project_path, options.agent);
@@ -118,6 +119,18 @@ fn build_agent_nudge(
                     "daemon state unavailable",
                 )
             })
+    };
+    let feedback_config = core
+        .as_ref()
+        .and_then(LocalDaemonCore::feedback_config)
+        .cloned();
+    let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
+        Some(crate::cli::agent_trajectory::inspect_with_config(
+            &project_path,
+            feedback_config.as_ref(),
+        )?)
+    } else {
+        None
     };
 
     if let Some(core) = core.as_mut() {
@@ -237,6 +250,30 @@ fn build_agent_nudge(
         }
     }
 
+    let mut feedback_status = feedback_config
+        .as_ref()
+        .map(agent_nudge_delivery::inspect_status);
+    if options.delivery == AgentNudgeDelivery::Automatic {
+        if let Some(config) = feedback_config.as_ref() {
+            if !nudges.iter().any(|nudge| nudge.severity == "critical")
+                && nudges.len() < options.max_issues
+            {
+                let delivery = agent_nudge_delivery::automatic(
+                    &project_path,
+                    config,
+                    event_name(options.event),
+                    agent_nudge_delivery::now(),
+                );
+                feedback_status = Some(delivery.status);
+                if let Some(line) = delivery.line {
+                    nudges.push(NudgeItem::trajectory(&line));
+                }
+            } else if let Some(status) = feedback_status.as_mut() {
+                status.reason = "critical_precedence";
+            }
+        }
+    }
+
     let cooldown = cooldown::apply(
         &project_path,
         event_name(options.event),
@@ -299,6 +336,7 @@ fn build_agent_nudge(
         changed_path_batch,
         changed_path_checks,
         reference_contexts,
+        feedback: feedback_status,
         trajectory,
         nudges,
     };
@@ -391,6 +429,8 @@ struct AgentNudgeOutput {
     changed_path_batch: ChangedPathBatch,
     changed_path_checks: Vec<ChangedPathCheck>,
     reference_contexts: Vec<ReferenceContext>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    feedback: Option<agent_nudge_delivery::DeliveryStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
     trajectory: Option<TrajectorySnapshot>,
     nudges: Vec<NudgeItem>,
@@ -556,6 +596,19 @@ impl NudgeItem {
             daemon_health: None,
         }
     }
+
+    fn trajectory(line: &str) -> Self {
+        Self {
+            category: "trajectory",
+            path: None,
+            rule: Some("trajectory_stats".to_string()),
+            severity: "low",
+            message: line.to_string(),
+            suggested_command: "assura agent nudge --delivery inspect --format json".to_string(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
 }
 
 struct Findings {
@@ -583,6 +636,17 @@ impl RenderedNudge {
 
 impl AgentNudgeOutput {
     fn render_text(&self) -> String {
+        if self.delivery == "automatic" {
+            let Some(nudge) = self.nudges.iter().find(|nudge| nudge.inject) else {
+                return String::new();
+            };
+            let rule = nudge
+                .rule
+                .as_deref()
+                .or(Some(nudge.category))
+                .unwrap_or("signal");
+            return bound_routine_line(format!("assura: [{rule}] {}", nudge.message));
+        }
         let mut lines = vec![
             format!("Assura nudge: {}", self.event),
             format!("delivery={}", self.delivery),
@@ -612,6 +676,22 @@ impl AgentNudgeOutput {
         }
         lines.join("\n")
     }
+}
+
+fn bound_routine_line(value: String) -> String {
+    const MAX_BYTES: usize = 256;
+    if value.len() <= MAX_BYTES {
+        return value;
+    }
+    let mut bounded = String::new();
+    for character in value.chars() {
+        if bounded.len() + character.len_utf8() + 3 > MAX_BYTES {
+            break;
+        }
+        bounded.push(character);
+    }
+    bounded.push_str("...");
+    bounded
 }
 
 fn relative_path_string(path: &Path, root: &Path) -> String {

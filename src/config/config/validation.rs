@@ -2,8 +2,8 @@
 
 #[cfg(feature = "yaml-config")]
 use super::{
-    Config, CustomConstraintConfig, DirectoryBundle, DirectoryNode, ExtensionConfig,
-    MarkdownBundle, RelationshipConstraintConfig,
+    AgentFeedbackConfig, AgentFeedbackMode, Config, CustomConstraintConfig, DirectoryBundle,
+    DirectoryNode, ExtensionConfig, MarkdownBundle, RelationshipConstraintConfig,
 };
 #[cfg(feature = "yaml-config")]
 use glob::Pattern;
@@ -46,6 +46,178 @@ pub(crate) fn validate_config_semantics(config: &Config) -> Result<(), String> {
     }
     if let Some(quality) = &config.quality {
         quality::validate_quality_config(quality)?;
+    }
+    validate_agent_feedback(config.agent_feedback.as_ref())?;
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_agent_feedback(config: Option<&AgentFeedbackConfig>) -> Result<(), String> {
+    let Some(config) = config else {
+        return Ok(());
+    };
+    if !(64..=256).contains(&config.max_bytes) {
+        return Err("agent_feedback.max_bytes: expected 64..=256".to_string());
+    }
+    if config.min_interval_seconds == 0 || config.min_interval_seconds > 86_400 {
+        return Err("agent_feedback.min_interval_seconds: expected 1..=86400".to_string());
+    }
+    if config.max_messages_per_hour == 0 || config.max_bytes_per_hour == 0 {
+        return Err("agent_feedback hourly budgets must be greater than zero".to_string());
+    }
+    if config.max_messages_per_hour > 60
+        || config.max_bytes_per_hour < config.max_bytes as u32
+        || config.max_bytes_per_hour > 64 * 1024
+    {
+        return Err("agent_feedback hourly budgets are unbounded or impossible".to_string());
+    }
+    if matches!(config.mode, AgentFeedbackMode::Periodic)
+        && (config.periodic_seconds == 0 || config.periodic_seconds > 7 * 86_400)
+    {
+        return Err(
+            "agent_feedback.periodic_seconds: expected 1..=604800 in periodic mode".to_string(),
+        );
+    }
+    let collection = &config.collection;
+    if collection.debounce_ms > 60_000
+        || collection.max_commits == 0
+        || collection.max_commits > 500
+    {
+        return Err("agent_feedback.collection.max_commits: expected 1..=500".to_string());
+    }
+    if collection.timeout_ms == 0
+        || collection.timeout_ms > 10_000
+        || collection.min_refresh_seconds == 0
+        || collection.min_refresh_seconds > 86_400
+        || collection.stale_after_seconds == 0
+        || collection.stale_after_seconds > 7 * 86_400
+    {
+        return Err("agent_feedback.collection refresh limits are invalid".to_string());
+    }
+    validate_feedback_ref(&config.trajectory.integration_ref)?;
+    let window = &config.trajectory.window;
+    if window
+        .minutes
+        .is_some_and(|value| value == 0 || value > 7 * 24 * 60)
+        || window
+            .commits
+            .is_some_and(|value| value == 0 || value > 500)
+    {
+        return Err("agent_feedback.trajectory.window: values are unbounded or zero".to_string());
+    }
+    if window.minutes.is_some() == window.commits.is_some() {
+        return Err(
+            "agent_feedback.trajectory.window: choose minutes or commits, not both".to_string(),
+        );
+    }
+    let trajectory = &config.trajectory;
+    let allowed_metrics = [
+        "integrated_commits",
+        "source_lines",
+        "test_lines",
+        "coordination_lines",
+        "generated_lines",
+        "pending_age",
+        "pending_commits",
+        "pending_lines",
+        "dirty_files",
+    ];
+    if trajectory.metrics.is_empty() || trajectory.metrics.len() > allowed_metrics.len() {
+        return Err("agent_feedback.trajectory.metrics: choose 1..=9 metrics".to_string());
+    }
+    if trajectory
+        .metrics
+        .iter()
+        .any(|metric| !allowed_metrics.contains(&metric.as_str()))
+    {
+        return Err("agent_feedback.trajectory.metrics: unknown metric".to_string());
+    }
+    validate_feedback_paths("source_paths", &trajectory.source_paths)?;
+    validate_feedback_paths("test_paths", &trajectory.test_paths)?;
+    validate_feedback_paths("coordination_paths", &trajectory.coordination_paths)?;
+    validate_feedback_paths("generated_paths", &trajectory.generated_paths)?;
+
+    let unintegrated = &trajectory.signals.unintegrated;
+    if unintegrated.enabled
+        && (unintegrated.pending_minutes == 0
+            || unintegrated.step_minutes == 0
+            || unintegrated.clear_after_clean_seconds == 0
+            || unintegrated.clear_after_clean_seconds
+                >= unintegrated.pending_minutes.saturating_mul(60))
+    {
+        return Err(
+            "agent_feedback.trajectory.signals.unintegrated: thresholds are invalid".to_string(),
+        );
+    }
+    let coordination = &trajectory.signals.coordination;
+    if coordination.commits == 0
+        || coordination.commits > 500
+        || coordination.min_only_coordination_commits == 0
+        || coordination.min_only_coordination_commits > coordination.commits
+        || coordination.clear_below_only_coordination_commits
+            >= coordination.min_only_coordination_commits
+    {
+        return Err(
+            "agent_feedback.trajectory.signals.coordination: thresholds are invalid".to_string(),
+        );
+    }
+    let patch = &trajectory.signals.patch_size;
+    if patch.changed_lines == 0
+        || patch.step_lines == 0
+        || patch.clear_below_changed_lines >= patch.changed_lines
+    {
+        return Err(
+            "agent_feedback.trajectory.signals.patch_size: thresholds are invalid".to_string(),
+        );
+    }
+    if config.max_reminders_per_episode > 1 {
+        return Err("agent_feedback.max_reminders_per_episode: maximum is 1".to_string());
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_feedback_ref(value: &str) -> Result<(), String> {
+    let invalid = value.trim().is_empty()
+        || value.starts_with('-')
+        || value.ends_with('.')
+        || value.ends_with('/')
+        || value.contains("..")
+        || value.contains("@{")
+        || value.chars().any(|character| {
+            character.is_whitespace()
+                || character.is_control()
+                || matches!(character, '~' | '^' | ':' | '?' | '*' | '[' | '\\')
+        });
+    if invalid {
+        return Err("agent_feedback.trajectory.integration_ref: invalid ref syntax".to_string());
+    }
+    Ok(())
+}
+
+#[cfg(feature = "yaml-config")]
+fn validate_feedback_paths(label: &str, paths: &[String]) -> Result<(), String> {
+    if paths.is_empty() || paths.len() > 64 {
+        return Err(format!(
+            "agent_feedback.trajectory.{label}: expected 1..=64 relative globs"
+        ));
+    }
+    for path in paths {
+        let relative = Path::new(path);
+        if path.trim().is_empty()
+            || relative.is_absolute()
+            || relative.components().any(|component| {
+                matches!(
+                    component,
+                    Component::ParentDir | Component::RootDir | Component::Prefix(_)
+                )
+            })
+            || Pattern::new(path).is_err()
+        {
+            return Err(format!(
+                "agent_feedback.trajectory.{label}: invalid relative glob"
+            ));
+        }
     }
     Ok(())
 }

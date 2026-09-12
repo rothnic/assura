@@ -101,7 +101,7 @@ def main():
     collect_paths(payload.get("tool_input"), changed)
     command = assura_command(root) + [
         "agent", "nudge", str(root), "--agent", TARGET,
-        "--event", event, "--format", "json",
+        "--event", event, "--delivery", "automatic", "--format", "json",
     ]
     for path in sorted(changed)[:20]:
         command.extend(["--changed", path])
@@ -175,7 +175,7 @@ async function nudge(directory, event, sessionID, args) {{
   const command = process.env.ASSURA_BIN || "assura"
   const changed = pathsFrom(args).flatMap((path) => ["--changed", path])
   try {{
-    const {{ stdout }} = await runFile(command, ["agent", "nudge", directory, "--agent", "opencode", "--event", event, "--format", "json", ...changed], {{
+    const {{ stdout }} = await runFile(command, ["agent", "nudge", directory, "--agent", "opencode", "--event", event, "--delivery", "automatic", "--format", "json", ...changed], {{
       cwd: directory,
       timeout: 8000,
       env: {{ ...process.env, ASSURA_AGENT_LOG: process.env.ASSURA_AGENT_LOG ?? "1", ASSURA_AGENT_SESSION_ID: sessionID }},
@@ -237,7 +237,7 @@ function bounded(value) {{
 export default function (pi) {{
   async function nudge(event, ctx, input = {{}}) {{
     const changed = pathsFrom(input).flatMap((path) => ["--changed", path])
-    const result = await pi.exec(process.env.ASSURA_BIN || "assura", ["agent", "nudge", ctx.cwd, "--agent", "pi", "--event", event, "--format", "json", ...changed], {{ signal: ctx.signal, timeout: 8000 }})
+    const result = await pi.exec(process.env.ASSURA_BIN || "assura", ["agent", "nudge", ctx.cwd, "--agent", "pi", "--event", event, "--delivery", "automatic", "--format", "json", ...changed], {{ signal: ctx.signal, timeout: 8000 }})
     if (result.code !== 0) return ""
     try {{ return compact(JSON.parse(result.stdout)) }} catch {{ return "" }}
   }}
@@ -278,7 +278,7 @@ export ASSURA_AGENT_LOG_DIR="${{ASSURA_AGENT_LOG_DIR:-$PROJECT_ROOT/.assura/agen
 export ASSURA_AGENT_SESSION_ID="${{ASSURA_AGENT_SESSION_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$$}}"
 
 case "$MODE" in
-  nudge) "$ASSURA_BIN" agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --format json "$@" ;;
+  nudge) "$ASSURA_BIN" agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --delivery automatic --format json "$@" ;;
   check) "$ASSURA_BIN" check "$PROJECT_ROOT" --format agent{check_extra} --warn "$@" ;;
   daemon-status) "$ASSURA_BIN" daemon status "$PROJECT_ROOT" --format json "$@" ;;
   daemon-doctor) "$ASSURA_BIN" daemon doctor "$PROJECT_ROOT" --format json "$@" ;;

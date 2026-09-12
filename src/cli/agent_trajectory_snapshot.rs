@@ -81,6 +81,51 @@ pub(super) fn read(key: &CacheKey) -> CacheRead {
     }
 }
 
+pub(super) fn read_latest_for_worktree(common_dir: &Path, worktree_root: &Path) -> CacheRead {
+    let directory = common_dir.join("assura").join("trajectory");
+    let mut newest = None;
+    let entries = match fs::read_dir(directory) {
+        Ok(entries) => entries,
+        Err(_) => {
+            return CacheRead {
+                snapshot: None,
+                source: "miss",
+            }
+        }
+    };
+    for entry in entries.take(128).flatten() {
+        let path = entry.path();
+        if path.extension().and_then(|value| value.to_str()) != Some("json") {
+            continue;
+        }
+        let Some(bytes) = read_bounded(&path).ok().flatten() else {
+            continue;
+        };
+        let Ok(value) = serde_json::from_slice::<serde_json::Value>(&bytes) else {
+            continue;
+        };
+        if value.get("schema").and_then(serde_json::Value::as_str) != Some(super::SNAPSHOT_SCHEMA) {
+            continue;
+        }
+        let Ok(snapshot) = serde_json::from_value::<TrajectorySnapshot>(value) else {
+            continue;
+        };
+        if snapshot.worktree.root != worktree_root.to_string_lossy() {
+            continue;
+        }
+        if newest
+            .as_ref()
+            .is_none_or(|current: &TrajectorySnapshot| current.captured_at < snapshot.captured_at)
+        {
+            newest = Some(snapshot);
+        }
+    }
+    CacheRead {
+        snapshot: newest,
+        source: "cache_scan",
+    }
+}
+
 fn read_bounded(path: &Path) -> Result<Option<Vec<u8>>, String> {
     let file = File::open(path).map_err(|error| error.to_string())?;
     let mut bytes = Vec::new();

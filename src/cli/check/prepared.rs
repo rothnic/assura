@@ -26,6 +26,7 @@ pub struct PreparedStructureCheck {
     fail_fast: bool,
     check_compiled: CompiledStructureConfig,
     compiled: CompiledStructureConfig,
+    config: Config,
 }
 
 /// Results for one bounded changed-path validation batch.
@@ -234,6 +235,11 @@ impl PreparedStructureCheck {
         &self.config_path
     }
 
+    /// Return the parsed project configuration for lightweight consumers.
+    pub(crate) fn config(&self) -> &Config {
+        &self.config
+    }
+
     /// Return whether one changed path can prove the configured policy locally.
     ///
     /// Repository-wide extensions and content relationships require a full
@@ -270,7 +276,7 @@ impl PreparedStructureCheck {
     ) -> Self {
         let incremental_path_safe = config_supports_incremental_path_checks(&config);
         let check_compiled = CompiledStructureConfig::new_for_check(config.clone(), fail_fast);
-        let compiled = CompiledStructureConfig::new(config, fail_fast);
+        let compiled = CompiledStructureConfig::new(config.clone(), fail_fast);
         Self {
             project_root,
             config_path,
@@ -280,6 +286,7 @@ impl PreparedStructureCheck {
             fail_fast,
             check_compiled,
             compiled,
+            config,
         }
     }
 
@@ -296,7 +303,8 @@ impl PreparedStructureCheck {
         self.incremental_path_safe = config_supports_incremental_path_checks(&config);
         self.check_compiled =
             CompiledStructureConfig::new_for_check(config.clone(), self.fail_fast);
-        self.compiled = CompiledStructureConfig::new(config, self.fail_fast);
+        self.compiled = CompiledStructureConfig::new(config.clone(), self.fail_fast);
+        self.config = config;
         self.config_hash = config_hash;
         self.config_fingerprint = SourceConfigFingerprint::from_path(&self.config_path).ok();
         Ok(true)
@@ -312,7 +320,7 @@ impl PreparedStructureCheck {
         let config = ConfigLoader::parse_validated(&content)?;
         let incremental_path_safe = config_supports_incremental_path_checks(&config);
         let check_compiled = CompiledStructureConfig::new_for_check(config.clone(), fail_fast);
-        let compiled = CompiledStructureConfig::new(config, fail_fast);
+        let compiled = CompiledStructureConfig::new(config.clone(), fail_fast);
         let config_fingerprint = SourceConfigFingerprint::from_path(&config_path).ok();
 
         Ok(Self {
@@ -324,6 +332,7 @@ impl PreparedStructureCheck {
             fail_fast,
             check_compiled,
             compiled,
+            config,
         })
     }
 }

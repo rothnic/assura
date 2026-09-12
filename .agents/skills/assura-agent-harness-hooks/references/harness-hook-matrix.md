@@ -101,6 +101,23 @@ say so; do not promote it to supported until an adapter or proof test exists.
 
 ## Verified Records
 
+### Shared automatic feedback - 2026-09-12
+
+- Source: local `assura agent nudge` implementation and
+  `tests/agent_feedback_delivery.rs`.
+- Hook surface: existing Codex, OpenCode, Claude, and Pi adapters invoke the
+  shared Rust `--delivery automatic` mode; no new host-specific policy layer.
+- Delivery: automatic mode reads one bounded cached snapshot, stays silent on
+  missing/stale/incomplete coverage, and schedules at most one background
+  inspect refresh per repository.
+- State: repository-common persisted lease and hourly byte/message budgets are
+  shared across worktrees and process restarts; explicit `--delivery inspect`
+  remains the detailed report.
+- Proof: `agent_feedback_delivery` plus `agent_surface_cli` and
+  `agent_trajectory_cli` integration tests.
+- Gaps: host trust, hook approval, and native lifecycle availability remain
+  host-owned; performance claims require CF04 evidence.
+
 ### Codex - 2026-08-14
 
 - Source: `https://learn.chatgpt.com/docs/hooks`
