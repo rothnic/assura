@@ -33,6 +33,7 @@ pub struct PreparedStructureCheck {
 /// A repository-wide policy is represented by one full-project report and an
 /// explicit fallback count instead of repeating the same expensive report for
 /// every changed path.
+#[cfg(feature = "full-cli")]
 #[derive(Debug)]
 pub(crate) struct PreparedChangedPathsReport {
     pub(crate) reports: Vec<StructureCheckReport>,
@@ -122,6 +123,7 @@ impl PreparedStructureCheck {
     /// Cross-path policies intentionally produce one authoritative
     /// full-project report for the batch. The returned coverage and fallback
     /// count make that reduction observable to callers.
+    #[cfg(feature = "full-cli")]
     pub(crate) fn check_changed_paths(
         &self,
         paths: Vec<PathBuf>,
