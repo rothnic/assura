@@ -33,6 +33,11 @@ the maturity train.
    until acceptance, user pause or a specific held action. Retain live test
    and review handles instead of restarting them.
 
+After reset or compaction, load only the universal layer, this execution
+contract and the selected card. Apply the review-derived convergence fence
+before any heavy check; use the execution helpers for state counts and context
+limits instead of rewriting a status narrative.
+
 ## Boundaries
 
 - Implement CF01–CF04 only. No framework replacement, private evaluation,

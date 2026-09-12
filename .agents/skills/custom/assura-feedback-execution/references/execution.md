@@ -47,6 +47,28 @@ authority; coupled publication triggers still need their actual authorization.
 5. Capture the approved product initiative in Hindsight immediately before
    implementation as required by its tool contract. Planning did not start it.
 
+## Review-derived convergence fence
+
+The recent retrospective is a contract for CF01, not a new queue. Before a
+heavy check, take one read-only baseline of source/ledger counts, runtime goal
+state, topology and disk/toolchain headroom. Preserve unknown or foreign dirt;
+classify only exact owned candidates. Keep stale PRs and external holds as
+named dispositions rather than silently treating them as complete.
+
+Reconciliation is allowed to write only when a relevant input changed or a
+concrete correction is required. With identical source/tree, ledger, topology
+and policy inputs it must render the same compact as-of checkpoint and produce
+no new commit. A process-only merge, reviewer-only restriction, verified card
+without its declared terminal outcome, publication hold or empty ready queue
+cannot satisfy product or whole-goal completion.
+
+The live context after reset or compaction is 3–6 bullets: current base, one
+selected card, last proof, unresolved finding/hold, live handle and next action.
+Historical detail stays behind a linked as-of record. Every owned candidate
+must have an owner, handle/none, next action and merge/archive restore decision;
+strict owned-scope checks reject abandoned owned work and report unknown or
+foreign work without removing it.
+
 ## Delivery
 
 - One owner/candidate per active slice, explicit outcome and acceptance. Reuse

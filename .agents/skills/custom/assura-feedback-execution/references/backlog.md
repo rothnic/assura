@@ -30,6 +30,13 @@ generated host bundles, integration tests and performance tooling.
   performance gates. Keep LS-Lint comparison priority and truthful labels.
 - No framework replacement, generic orchestration, semantic productivity
   scoring, automatic repair, proposed-change feature or turn attribution.
+- The retrospective process gate below is part of CF01. Do not create a
+  reconciliation-only checkpoint PR, a second status table or a full maturity
+  train restart.
+- A process/documentation merge cannot advance a product card. Holds,
+  publication-pending states and verified-but-not-terminal work remain open.
+- Keep the live checkpoint to 3–6 bullets and about 1 KiB; move historical
+  detail to as-of evidence. AGENTS.md remains a router, not a protocol dump.
 - Newly proposed paths/flags/types below are implementation destinations;
   they do not claim those interfaces already exist.
 
@@ -53,6 +60,35 @@ Do not reopen all cards, copy private packets or change old statuses just to
 register this plan. Unresolved R01 coverage cannot be assumed fixed by caching;
 Git-only facts and batch fallback deduplication can progress independently.
 
+## Retrospective process gate — CF01 acceptance
+
+This is a bounded contract carried by the first product slice. It converts the
+review into checks that can fail without requiring another instruction rewrite:
+
+- **Idempotent reconciliation:** for identical source SHA/tree, ledger,
+  topology and policy inputs, a second reconciliation produces the same
+  compact checkpoint and no candidate or evidence diff. Historical records are
+  labeled `as_of`; a changed SHA alone does not justify a new commit.
+- **Outcome accounting:** the ledger summary reports all 32 fixture cards and
+  counts every nonterminal state (`pending`, `active`, `implemented`,
+  `verified`, `blocked`). It must expose `done` and `not_needed` separately;
+  process-only merges, external holds and reviewer-only restrictions cannot
+  satisfy product acceptance or whole-goal completion.
+- **Context bound:** a reset/compaction loads the universal layer, one goal
+  layer and one selected card, then emits a 3–6 bullet checkpoint within the
+  configured byte budget. Repeating an unchanged observation does not create a
+  progress iteration or duplicate the narrative.
+- **Ownership closure:** every owned candidate has an owner, live handle (or
+  explicit none), one next action and a retention/archive decision. The strict
+  owned-scope audit fails on abandoned owned work. It reports foreign,
+  unknown, dirty, detached and stale registrations without deleting them.
+
+Before an expensive build, take one read-only baseline of the fetched source,
+ledger counts, goal/runtime state, topology and disk/toolchain headroom. Preserve
+the root unknown file and foreign dirty paths; classify exact owned branches and
+stale PR dispositions as held inputs. This baseline is evidence, never a
+status-only commit.
+
 ## CF01 — Make existing feedback cheap and bounded
 
 **Outcome:** Remove repeated work and oversized output before adding signals.
@@ -62,11 +98,15 @@ Ship the small instruction corrections with this product fix.
 `agent_nudge_cooldown.rs`; `src/cli/content_query/agent_query.rs`,
 `context.rs`; `src/cli/check/prepared.rs`; `src/daemon/mod.rs`;
 `.codex/hooks/assura-agent-nudge.py`; relevant generated carriers in
-`src/cli/agent_integration_templates.rs` and `agent_integration_bundle.rs`.
-Confirm the generated carrier; editing the repository hook alone is insufficient.
+`src/cli/agent_integration_templates.rs` and `agent_integration_bundle.rs`;
+the read-only execution helpers
+`.agents/skills/assura-goal-execution/scripts/audit-ledger.sh` and
+`audit-context-routing.py`. Confirm the generated carrier; editing the
+repository hook alone is insufficient.
 
-**Test:** `tests/content_query_cli.rs`, `tests/agent_surface_cli.rs`;
-new focused `tests/agent_feedback_delivery.rs` for added delivery cases.
+**Test:** `tests/content_query_cli.rs`, `tests/agent_surface_cli.rs`, and a
+focused `tests/agent_process_contract_tests.py` fixture for the execution
+helpers; new `tests/agent_feedback_delivery.rs` covers added delivery cases.
 
 **Interfaces:** Preserve public nudge/check surfaces. Add a private batch-check
 operation whose changed paths share one full fallback and coverage metadata.
@@ -93,6 +133,15 @@ to adapters; explicit reports remain available.
   fallback; unchanged reads do not build the query graph; policy changes
   invalidate reuse. Use an actual-validation observer/counter in tests;
   latency alone cannot prove that work was skipped safely.
+- [ ] Add the retrospective process fixtures above: repeat reconciliation on
+  unchanged inputs and assert zero diff; assert the 32-card summary reports
+  10 nonterminal cards rather than the old `unfinished=4`; prove a process-only
+  merge and an external hold leave product acceptance open; prove reviewer
+  restrictions do not bind the parent; and reject an abandoned owned candidate
+  while preserving foreign/unknown topology.
+- [ ] Keep the live checkpoint compact (3–6 bullets, about 1 KiB) and move old
+  entries behind an as-of history link. The context-routing audit must flag
+  duplicated full ledgers and a summary that grows beyond the configured cap.
 - [ ] Implement count/byte limits, shared batch reports and demand-driven
   context. Missing coverage remains pending/unknown; explicit full checks stay
   authoritative. Retain deletion/sibling/reference dependencies.
@@ -101,6 +150,12 @@ to adapters; explicit reports remain available.
   Remove repeated metadata and log paths from automatic text.
 - [ ] Apply CF01 instruction edits from the table below; include this planning
   package in the same candidate instead of a separate reconciliation PR.
+- [ ] Run one read-only preflight before heavy validation: refresh the local
+  integration ref, report ledger state counts, inspect goal/runtime state,
+  inventory worktrees/branches and review prune candidates, and check
+  disk/toolchain headroom. Preserve unknown/foreign dirt; do not turn the
+  report into a checkpoint commit. Stale PRs and external holds remain named
+  dispositions.
 - [ ] Run focused red/green controls, then affected suites. Confirm the named
   tests ran (zero selected tests is not proof). Run current applicable Rust
   validation once the candidate settles, avoiding duplicate nested suites:
@@ -259,6 +314,9 @@ instruction/spec routes below. Website deployment is not implied.
   “Persistent-session benchmark” for that measured operation; distinguish the
   released build from development source. Never promote local probes into
   release proof or leave installed-hook cost implied by a different benchmark.
+- [ ] Keep process-only CI scope explicit: skipped product, performance,
+  installer or release jobs remain non-proof, and stale/failed comparison PRs
+  retain their disposition until a current equivalent run exists.
 - [ ] Explicitly opt Assura into compact feedback. Run a fixed six matched task
   pairs: small unintegrated edits, coordination-only activity, healthy delivery;
   feedback on/off with balanced order and unchanged acceptance. Include docs-only
@@ -275,11 +333,12 @@ instruction/spec routes below. Website deployment is not implied.
 
 | Timing | Surface | Required change |
 | --- | --- | --- |
-| Planning now | `AGENTS.md` | One route to this skill, no embedded protocol. |
+| Planning now | `AGENTS.md` | One route to this skill plus one compact noncompletion invariant; no embedded protocol. |
 | Planning now | This skill, contract, execution and backlog | Durable start command and pending sequence; no runtime start. |
 | Planning now | `.trellis/tasks/09-12-compact-feedback-plan` | Thin planning record/context pointers; no duplicated card statuses. |
 | CF01 | `.agents/skills/assura-goal-execution/references/source-pointer-lifecycle.md` | Replace unconditional pointer reconciliation with immutable as-of evidence and refresh-before-use; preserve actual integration checks. A commit never needs to contain its own final SHA. |
 | CF01 | Same skill's `references/continuation-control.md` and `execution-control-plane.md` | One candidate/next action; remove checkpoint-only commits and repeated whole-ledger rewrites, retain ownership/review/evidence/authority. |
+| CF01 | `.agents/skills/assura-goal-execution/scripts/audit-ledger.sh`, `audit-context-routing.py` and `tests/agent_process_contract_tests.py` | Make state counts and context bounds machine-checkable: include all nonterminal cards, render unchanged inputs idempotently, keep process-only/held/reviewer scopes from satisfying product completion, and reject abandoned owned work without deleting foreign/unknown paths. |
 | CF01 | `.agents/skills/assura-goal-execution/SKILL.md` | Route compact-feedback scope here; replace repeated instruction-improvement cycles with bounded diagnosis and one durable correction when warranted. |
 | CF01 | `/Users/nroth/.codex/skills/assura-orchestration/SKILL.md` | Prepare matching minimal edits to reconciliation/iteration guidance. Apply only on an authorized host; otherwise retain the patch and state the limit. No fleet-wide settings rollout. |
 | CF01–CF03 | `.trellis/spec/assura/codex-agent-feedback.md`, `agent-harness-hooks.md` | Update implemented payload, scheduling, coverage, worker lifecycle and error contracts with each change; retain explicit check semantics. |
@@ -295,7 +354,8 @@ identity, scoped independent review, applicable current-candidate checks and
 existing authority. Use validation routing without duplicate unchanged suites.
 Keep failed gates visible and fix their causes.
 
-At the end: CF01–CF04 terminal, actual hook measurements, proved byte/cadence/
-concurrency controls, correctly scoped claims, and owned candidates integrated
-or explicitly held/preserved. Honor user pause/scope changes. Do not invent
-additional cards to keep execution running.
+At the end: CF01–CF04 terminal, the retrospective process gate passes, actual
+hook measurements exist, byte/cadence/concurrency controls are proved, claims
+are correctly scoped, and owned candidates are integrated or explicitly
+held/preserved with restore evidence. Honor user pause/scope changes. Do not
+invent additional cards to keep execution running.

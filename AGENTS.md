@@ -27,6 +27,9 @@ policy, and public third-party plugin APIs are outside the supported contract.
   user configuration, errors, policy thresholds, and unfavorable evidence.
 - A passing command is insufficient when expected tests were skipped or zero,
   policy was empty, or generated hooks were never observed executing.
+- A status/checkpoint, process-only merge or external hold never satisfies
+  product acceptance; close only on the declared outcome plus owned
+  merge/archive closure.
 - Independently review complex changes before a PR. Resolve concrete findings,
   rerun affected checks, and obtain scoped rereview of the final changes.
 - Merge only within existing authorization, with current-base source, resolved

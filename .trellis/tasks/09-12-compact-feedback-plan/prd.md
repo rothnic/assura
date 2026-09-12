@@ -18,3 +18,14 @@ threshold/async contracts are concrete, cards have observable acceptance, and
 no product implementation or execution session has started.
 
 Do not duplicate CF01–CF04 status here or in another task queue.
+
+## Retrospective delta
+
+The supplied review is incorporated as four process invariants inside CF01,
+not as a second maturity queue: reconciliation is idempotent; activity,
+authority and product acceptance remain separate; live context stays a small
+single-source checkpoint; and every owned candidate ends merged or deliberately
+archived with an owner, handle, next action and restore evidence. The reported
+32-card/count mismatch, process-only churn, oversized progress file and
+worktree/disk inventory are as-of diagnostics for negative tests and preflight,
+not reasons to restart or rewrite historical records.
