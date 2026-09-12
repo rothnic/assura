@@ -22,19 +22,19 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Latest observed integration route — PR #317 — `a1d387f` (2026-09-12; refresh required)
+## Latest observed integration route — PR #318 — `3c01e65` (2026-09-12; refresh required)
 
-- PR #317 merged the reviewed checkout-pointer closure from head
-  `a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
-  `2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
-  `a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
-  `9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head Documentation
+- PR #318 merged the reviewed current-source continuation-route correction
+  from head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
+  `a1d387f736d52e19ee0037bcd2e62146a21147d8` as
+  `3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+  `4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`. Exact-head Documentation
   Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian passed;
-  merge-SHA Documentation `34678359451`, Security Audit `34678359480` and
-  Rust CI `34678359434` passed. Scope-skipped product, Rust, performance and
+  merge-SHA Documentation `34679613211`, Security Audit `34679613203` and
+  Rust CI `34679613179` passed. Scope-skipped product, Rust, performance and
   release rows remain non-proof.
 - Treat this as the latest observed as-of record, not a live pointer. The
-  reset found no `origin/release` head and no release tag at `a1d387f`; fetch
+  reset found no `origin/release` head and no release tag at `3c01e65`; fetch
   `origin/master` and rerun release/tag, PR/CI, topology and the revision-
   pinned ledger before routing work. The ledger is
   `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03

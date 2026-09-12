@@ -16,18 +16,18 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed post-merge integration (PR #317, 2026-09-12; refresh required):
-`origin/master=a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
-`9e64c20bebe24e2527238c206ea38f0e2245332c`; PR #317 merged reviewed head
-`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` from base
-`2760ec6e1121ce0b56e20e29da191ccc17bd44d6`. Exact-head Documentation Scope,
+Latest observed post-merge integration (PR #318, 2026-09-12; refresh required):
+`origin/master=3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+`4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`; PR #318 merged reviewed head
+`78fdfb0ca3f61873b50078e077d5744345a85101` from base
+`a1d387f736d52e19ee0037bcd2e62146a21147d8`. Exact-head Documentation Scope,
 CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
-Documentation (`34678359451`), Security Audit (`34678359480`) and Rust CI
-(`34678359434`) passed; product/Rust/performance/release jobs were
+Documentation (`34679613211`), Security Audit (`34679613203`) and Rust CI
+(`34679613179`) passed; product/Rust/performance/release jobs were
 scope-skipped and remain non-proof.
 
 This is an as-of observation, not a live source claim. The reset found no
-`origin/release` head and no release tag at `a1d387f`. Fetch `origin/master`,
+`origin/release` head and no release tag at `3c01e65`. Fetch `origin/master`,
 release/tag, PR/CI, topology and the ledger before routing the next phase. The
 ledger is `items=32; ready_pending=0; unfinished=5; held=3`; A07 remains
 active with no live candidate and candidate-base/no-credit evidence, W03 is

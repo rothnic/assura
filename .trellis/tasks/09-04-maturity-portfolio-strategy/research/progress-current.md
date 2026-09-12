@@ -1,5 +1,31 @@
 # Current maturity train checkpoint
 
+## Iteration 174 — 2026-09-12 — PR #318 post-merge reconciliation (no-credit)
+
+- Owner/phase: `/root` / post-merge reconciliation. PR #318 merged the
+  reviewed current-source route correction from `78fdfb0c` on base `a1d387f7`
+  as `3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+  `4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`. Exact-head Documentation Scope,
+  CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+  Documentation `34679613211`, Security Audit `34679613203` and Rust CI
+  `34679613179` passed. Scope-skipped product/Rust/performance/release rows
+  remain non-proof.
+- The reviewed branch/worktree was clean and tree-equal before removal. The
+  current source still has no `origin/release` head or release tag at the
+  merge SHA. The revision-pinned ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+  verified, R01/W02/F01 held. The runtime goal remains active; no product,
+  screening, allocation, credit, acceptance, release, deployment,
+  publication or invitation state changed.
+- A07 candidate/packet evidence is candidate-base/no-credit and no live
+  candidate exists. The next authorized A07 sequence is a fresh exact-
+  toolchain candidate, identity, sibling-free canary, current
+  holdout/manifest rebind and isolated protocol review, followed by the
+  existing review/gate/integration fence. If that preparation authority is
+  absent, continue the named R01/W02/W03/F01 held-action audits rather than
+  stopping or declaring the goal blocked. Preserve unknown/foreign/stale
+  topology, unfavorable evidence and all authority boundaries.
+
 ## Iteration 173 — 2026-09-12 — current-source route reconciliation (no-credit)
 
 - Owner/phase: `/root` / reset and route reconciliation from a clean detached

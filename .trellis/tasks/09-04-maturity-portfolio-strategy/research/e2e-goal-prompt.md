@@ -19,20 +19,20 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Latest observed post-merge route — PR #317 — 2026-09-12 UTC (a1d387f; refresh required)
+## Latest observed post-merge route — PR #318 — 2026-09-12 UTC (3c01e65; refresh required)
 
-PR #317 merged the reviewed checkout-pointer closure from head
-`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
-`2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
-`a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
-`9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head Documentation Scope,
+PR #318 merged the reviewed current-source continuation-route correction from
+head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
+`a1d387f736d52e19ee0037bcd2e62146a21147d8` as
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+`4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`. Exact-head Documentation Scope,
 CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
-Documentation `34678359451`, Security Audit `34678359480` and Rust CI
-`34678359434` passed. Scope-skipped product, Rust, performance and release
+Documentation `34679613211`, Security Audit `34679613203` and Rust CI
+`34679613179` passed. Scope-skipped product, Rust, performance and release
 rows remain non-proof.
 
 This is the latest observed as-of record, not a live pointer. The reset found
-no `origin/release` head and no release tag at `a1d387f`. Before any next phase
+no `origin/release` head and no release tag at `3c01e65`. Before any next phase
 fetch `origin/master`, release/tag, PR/CI and topology, rerun the revision-
 pinned ledger, and preserve the A07 candidate-base/no-credit state. The ledger
 is `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
