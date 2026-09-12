@@ -95,8 +95,9 @@ CF03 remains one owned candidate at
 `/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03-final`, branch
 `goal/compact-feedback-cf03`, based on CF02 merge
 `9383acc2fd9a47d63553fd32768aef7428c7b34c`. The product candidate is
-Nick/Codex-owned and currently ends at `f4d0859fd05bcb9b9d7a7420d815013434917176`;
-the latest watchdog change is retained until CF03 review and merge gates finish.
+Nick/Codex-owned and currently ends at `c1f0a94` (the full SHA is the current
+branch tip); the watchdog and owner-liveness corrections are retained until
+CF03 review and merge gates finish.
 
 The duplicate writer task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` was
 interrupted and archived after it was found editing the same candidate. Its
@@ -117,6 +118,12 @@ handle `stash@{0}` / `389641009075d6eec126adc6a9fca8a225a37f23`; next action is
 owner review before any reapplication; restore with
 `git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
 No unknown or foreign source was deleted.
+
+An unowned concurrent watchdog/lease overlay appeared in the candidate after
+the reviewed CF03 commit and was excluded from the candidate: owner
+unknown/foreign; handle `e4e627daed7c08628d900779e22f20dadd925df2`; next
+action is owner review before reapplication; restore with
+`git stash apply e4e627daed7c08628d900779e22f20dadd925df2`.
 
 During the final CF03 freeze, another owner reintroduced a foreign harness
 matrix note and an alternate `bound_line` implementation into this shared
