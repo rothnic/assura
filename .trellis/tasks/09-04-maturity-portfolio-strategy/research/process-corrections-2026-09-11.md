@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=2d51296d2a61b7a7b41f2277164a97926b806ba4`.
+`origin/master=a1d387f736d52e19ee0037bcd2e62146a21147d8`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,26 +12,28 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed correction checkpoint — PR #315 / 2d512c1 — 2026-09-12 UTC (refresh required; no-credit)
+## Latest observed correction checkpoint — PR #317 / a1d387f — 2026-09-12 UTC (refresh required; no-credit)
 
-PR #315 merged the reviewed 20256 reconciliation from head
-`964f15de3e81430d499e1b9e7c861857dff0eebc` on base
-`20256c132b208bdbce5637d693c4ff8c4b03b5e6` as
-`2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
-`6c400e42834b86a7ba2853e554386f69afa27848`. Exact-head applicable checks
-and merge-SHA Documentation `34676984403`, Security Audit `34676984409` and
-Rust CI `34676984395` passed, including CI Scope `103508475702` and Evidence
-Gates `103508495744`; scope-skipped rows remain non-proof. Ledger remains
+PR #317 merged the reviewed checkout-pointer closure from head
+`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
+`2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
+`a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
+`9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head applicable checks
+and merge-SHA Documentation `34678359451`, Security Audit `34678359480` and
+Rust CI `34678359434` passed; scope-skipped rows remain non-proof. Ledger is
 `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
 R01/W02/F01 held).
 
-This is an as-of observation, not a live pointer. Refresh source/release/tag,
-PR/CI, topology and ledger before the next phase; preserve candidate-base/no-
-credit evidence, unfavorable results, unknown topology and the VPS hold. If
-authorized, build a fresh current-source candidate and repeat identity,
-sibling-free canary, holdout/manifest rebind and isolated protocol review in
-order. Public corrections still require independent review, applicable gates,
-current-master integration and merge-SHA observation.
+This is an as-of observation, not a live pointer. The reset found no
+`origin/release` head and no release tag at `a1d387f`; refresh source,
+release/tag, PR/CI, topology and ledger before the next phase. Preserve
+candidate-base/no-credit evidence, unfavorable results, unknown topology and
+the VPS hold. No live A07 candidate exists. If explicit no-credit preparation
+authority is confirmed, build a fresh current-source candidate and repeat
+identity, sibling-free canary, holdout/manifest rebind and isolated protocol
+review in order. Otherwise continue the independently audited held-action
+routes in `progress-current.md`. Public corrections still require independent
+review, applicable gates, current-master integration and merge-SHA observation.
 
 ## Historical correction checkpoint — 20256c1 — 2026-09-12 UTC (post-merge; superseded by 2d512c1; no-credit)
 

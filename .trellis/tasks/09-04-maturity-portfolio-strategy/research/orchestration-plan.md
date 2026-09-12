@@ -22,29 +22,31 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Latest observed integration route — PR #315 — `2d512c1` (2026-09-12; refresh required)
+## Latest observed integration route — PR #317 — `a1d387f` (2026-09-12; refresh required)
 
-- PR #315 merged the reviewed 20256 reconciliation from head
-  `964f15de3e81430d499e1b9e7c861857dff0eebc` on base
-  `20256c132b208bdbce5637d693c4ff8c4b03b5e6` as
-  `2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
-  `6c400e42834b86a7ba2853e554386f69afa27848`. Exact-head Documentation
+- PR #317 merged the reviewed checkout-pointer closure from head
+  `a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
+  `2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
+  `a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
+  `9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head Documentation
   Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian passed;
-  merge-SHA Documentation `34676984403`, Security Audit `34676984409` and
-  Rust CI `34676984395` passed, including CI Scope `103508475702` and
-  Evidence Gates `103508495744`. Scope-skipped product, Rust, performance and
+  merge-SHA Documentation `34678359451`, Security Audit `34678359480` and
+  Rust CI `34678359434` passed. Scope-skipped product, Rust, performance and
   release rows remain non-proof.
-- Treat this as the latest observed as-of record, not a live pointer. Fetch
+- Treat this as the latest observed as-of record, not a live pointer. The
+  reset found no `origin/release` head and no release tag at `a1d387f`; fetch
   `origin/master` and rerun release/tag, PR/CI, topology and the revision-
-  pinned ledger before routing work. The ledger remains
+  pinned ledger before routing work. The ledger is
   `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
   verified, R01/W02/F01 held); A07 candidate/packet evidence remains
   candidate-base/no-credit and authority flags remain false.
-- The reviewed worktree was clean and tree-equal before closure; preserve
-  unknown/foreign/stale topology and unfavorable evidence. If no-credit A07
-  preparation is authorized after refresh, create one clean owned candidate
-  from the fetched source and run identity, sibling-free canary,
-  holdout/manifest rebind and isolated protocol review in order.
+- No live A07 candidate exists. Keep A07 ahead of empty pending rows without
+  declaring the goal blocked: confirm explicit no-credit preparation authority
+  before creating one clean candidate and running identity, sibling-free
+  canary, holdout/manifest rebind and isolated protocol review in order. If
+  authority is absent, continue the independently audited held-action routes
+  in `progress-current.md`; preserve unknown/foreign/stale topology and
+  unfavorable evidence.
 
 ## Historical route — `origin/master=20256c1` (2026-09-12 post-merge reconciliation; superseded by 2d512c1)
 
