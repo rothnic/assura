@@ -176,15 +176,13 @@ pub(super) fn automatic(
     let pending = snapshot.has_pending_work();
     update_pending_episode(&mut state, pending, snapshot.captured_at(), config);
     let selection = match config.mode {
-        AgentFeedbackMode::Periodic => Some(SignalSelection {
-            key: "periodic".to_string(),
-            reminder: false,
-        })
-        .filter(|_| {
-            state
-                .last_sent_at
-                .is_none_or(|last| now.saturating_sub(last) >= config.periodic_seconds as i64)
-        }),
+        AgentFeedbackMode::Periodic => state
+            .last_sent_at
+            .is_none_or(|last| now.saturating_sub(last) >= config.periodic_seconds as i64)
+            .then_some(SignalSelection {
+                key: "periodic".to_string(),
+                reminder: false,
+            }),
         AgentFeedbackMode::Threshold => threshold_selection(&mut state, &snapshot, now, config),
         AgentFeedbackMode::Off => None,
     };
