@@ -56,3 +56,13 @@ CF02 is the sole active execution candidate: owner Nick/Codex, worktree
 complete and review the cached trajectory slice. The detached historical
 worktree at `/Users/nroth/.codex/worktrees/2f5f1792-b405-41ee-8885-bbb1ad693526/assura`
 has no branch owner and remains untouched.
+
+CF02 review follow-up: the independent review found seven boundedness and
+reconciliation risks. Accepted fixes in the active candidate cover Git
+timeouts, honest status unknowns, untracked-path counts, hostile diff
+isolation, retained-branch tree matching, bounded/schema-checked cache reads,
+and no cache-hit reuse for partial snapshots. Two reviewer-created dirty
+snapshots remain recoverable as stash commits
+`851de4adc7050437d2f53e1e7006801e6879d84a` and
+`f220df766396106ba2b4e01960a707feb4a65761`; they are preserved foreign work,
+not candidate commits.

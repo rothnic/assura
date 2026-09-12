@@ -59,7 +59,9 @@ impl Window {
 
     pub(super) fn cache_bucket(self, now: i64) -> String {
         match self {
-            Self::Minutes(_) => format!("minute:{}", now.div_euclid(60)),
+            Self::Minutes(minutes) => {
+                format!("minute:{}", now.div_euclid((minutes.max(1) * 60) as i64))
+            }
             Self::Commits(_) => "commits".to_string(),
         }
     }

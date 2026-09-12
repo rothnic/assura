@@ -299,8 +299,8 @@ mod tests {
     fn trajectory_windows_have_stable_public_labels() {
         assert_eq!(Window::Minutes(30).kind(), "minutes");
         assert_eq!(Window::Minutes(30).value(), 30);
-        assert_eq!(Window::Minutes(30).cache_bucket(119), "minute:1");
-        assert_eq!(Window::Minutes(30).cache_bucket(120), "minute:2");
+        assert_eq!(Window::Minutes(30).cache_bucket(1799), "minute:0");
+        assert_eq!(Window::Minutes(30).cache_bucket(1800), "minute:1");
         assert_eq!(Window::Commits(20).kind(), "commits");
         assert_eq!(Window::Commits(20).value(), 20);
         assert_eq!(Window::Commits(20).cache_bucket(119), "commits");
