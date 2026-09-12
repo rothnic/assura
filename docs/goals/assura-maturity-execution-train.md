@@ -38,7 +38,31 @@ continues; a card-level hold is not a whole-goal block. Every continuation
 must end with a live handle or one explicit next action, and the runtime goal
 stays active until authorized scope is accepted and owned topology is terminal.
 
-## Latest observed integration — PR #318 — 3c01e65 (2026-09-12; refresh required)
+## Latest observed integration — PR #319 — `afa1637` (2026-09-12; refresh required)
+
+PR #319 merged the reviewed R01 owner-approved archive reconciliation from
+head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29` as
+`afa1637ccceb93feff1bed5e652cf50516f68a9a` with tree
+`d286f78b299f5c080d9e4f2f452bf8615f01ceb1`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation (`34680275467`), Security Audit (`34680275427`) and Rust CI
+(`34680275538`, including Evidence Gates `103517573693`) passed. Product,
+Rust, performance and release rows were scope-skipped and remain non-proof.
+
+The refreshed ledger records R01 as `not_needed` under Nick's explicit H01
+archive decision in [PR #185](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709).
+This is an approved scoped exclusion, not a product-fix claim: the historical
+failed run and missing causal callback fields remain preserved. The active
+runtime goal remains active; A07 remains the next owner-controlled route, and
+W02/F01 retain their external authority holds while W03 retains publication
+authority.
+
+This is the latest observed integration, not a live source claim. On every
+continuation fetch `origin/master` again, rerun the revision-pinned ledger and
+topology audit, and use the fetched SHA as the only current route.
+
+## Historical checkpoint — PR #318 — 3c01e65 (2026-09-12; superseded by PR #319)
 
 PR #318 merged the reviewed current-source continuation-route correction from
 head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
@@ -50,9 +74,9 @@ merge-SHA Documentation (`34679613211`), Security Audit (`34679613203`) and
 Rust CI (`34679613179`) workflows passed; product, Rust, performance and
 release rows were scope-skipped and remain non-proof.
 
-This is the latest observed integration, not a live source claim. On every
-continuation fetch `origin/master` again, rerun the revision-pinned ledger and
-topology audit, and use the fetched SHA as the only current route. The ledger
+At that observation this was the latest integration, not a live source claim.
+On every continuation fetch `origin/master` again, rerun the revision-pinned
+ledger and topology audit, and use the fetched SHA as the only current route. The ledger
 refresh at this source is `items=32; ready_pending=0; unfinished=5; held=3`:
 A07 active, W03 verified, R01/W02/F01 held. The reset found no
 `origin/release` head; remote tags `v0.1.0`, `v0.2.0` and `v0.3.0` do not point

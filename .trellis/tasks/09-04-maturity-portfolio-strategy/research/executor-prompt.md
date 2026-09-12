@@ -16,7 +16,25 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed post-merge integration (PR #318, 2026-09-12; refresh required):
+Latest observed post-merge integration (PR #319, 2026-09-12; refresh required):
+`origin/master=afa1637ccceb93feff1bed5e652cf50516f68a9a` with tree
+`d286f78b299f5c080d9e4f2f452bf8615f01ceb1`; PR #319 merged reviewed head
+`8d09ebd64bc764ce00337a4a957164ffc0a622d2` from base
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
+Documentation (`34680275467`), Security Audit (`34680275427`) and Rust CI
+(`34680275538`) passed; product/Rust/performance/release jobs were
+scope-skipped and remain non-proof.
+
+Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+accepts H01. R01 is `not_needed` as an explicit scoped exclusion, not a
+product-fix claim; preserve its failed run and missing causal callback fields.
+The next live route remains A07 no-credit preparation or the W02/F01
+held-action routes. Refresh the source, release/tag, PR/CI, topology and
+ledger before acting.
+
+Historical observed post-merge integration (PR #318, 2026-09-12; superseded
+by PR #319; refresh required):
 `origin/master=3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
 `4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`; PR #318 merged reviewed head
 `78fdfb0ca3f61873b50078e077d5744345a85101` from base

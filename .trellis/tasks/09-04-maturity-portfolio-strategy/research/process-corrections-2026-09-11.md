@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=3c01e65ab609e40b4cdb9d53d4337577899d5a29`.
+`origin/master=afa1637ccceb93feff1bed5e652cf50516f68a9a`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -11,6 +11,24 @@ for any construction, correction, review or verdict transition. This record
 is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
+
+## Latest observed R01 disposition — `afa1637` — 2026-09-12 UTC (H01 archive)
+
+The refreshed reset found no new R01 raw callback artifact: the failed macOS
+job `101643647551` still exposes only the sequence-2
+`warm_full`/`full_rescan_event` summary. Nick's owner-level [PR #185
+decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+accepts H01 and records a verified archive decision. The current-master exact
+scope reproduction passed one test, and the R01 no-reproduced-cause stop rule
+prohibits speculative reactivation.
+
+The R01 packet and ledger now record `not_needed` as an explicitly approved
+scoped exclusion. This does not claim the historical regression fixed: its
+unknown callback paths/kinds/rescan/config state, failed run, candidate source,
+and unfavorable no-cause reproduction remain preserved. No product, loop,
+classifier, threshold, CI or release change was made. Dependents must not
+convert this archive disposition into product acceptance; the next live route
+remains A07 no-credit preparation or the independently audited W02/F01 holds.
 
 ## Latest observed correction checkpoint — PR #318 / 3c01e65 — 2026-09-12 UTC (refresh required; no-credit)
 

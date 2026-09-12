@@ -19,7 +19,25 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Latest observed post-merge route — PR #318 — 2026-09-12 UTC (3c01e65; refresh required)
+## Latest observed post-merge route — PR #319 — 2026-09-12 UTC (`afa1637`; refresh required)
+
+PR #319 merged the reviewed R01 owner-approved archive reconciliation from
+head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29` as
+`afa1637ccceb93feff1bed5e652cf50516f68a9a` with tree
+`d286f78b299f5c080d9e4f2f452bf8615f01ceb1`. Exact-head applicable checks and
+merge-SHA Documentation `34680275467`, Security Audit `34680275427` and Rust
+CI `34680275538` passed; scope-skipped product/Rust/performance/release rows
+remain non-proof.
+
+Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+accepts H01. R01 is `not_needed` as an explicit scoped exclusion, not a
+product-fix claim; the failed run and missing causal callback fields remain
+preserved. Keep A07 active/no-credit and continue W02/F01 held-action routes
+until their named authority exists. Refresh source, release/tag, PR/CI,
+topology and the ledger before any next phase.
+
+## Historical post-merge route — PR #318 — 2026-09-12 UTC (3c01e65; superseded by PR #319)
 
 PR #318 merged the reviewed current-source continuation-route correction from
 head `78fdfb0ca3f61873b50078e077d5744345a85101` on base

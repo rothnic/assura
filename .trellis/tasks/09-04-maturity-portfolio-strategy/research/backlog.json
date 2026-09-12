@@ -1,6 +1,6 @@
 {
   "schema": "assura.execution-backlog.v1",
-  "updated": "2026-09-11",
+  "updated": "2026-09-12",
   "source_snapshot": "ed093668918bc271fc98b9112acaf7c1bf3eb314",
   "refresh_source_before_execution": true,
   "spec": "../prd.md",
@@ -42,10 +42,10 @@
         "B00"
       ],
       "executor": "agent",
-      "state": "blocked",
-      "owner": "Codex goal/r01-diagnostic-association; existing PR #185",
+      "state": "not_needed",
+      "owner": "Codex goal/r01-diagnostic-association; owner-approved H01 archive decision in PR #185",
       "evidence": "evidence/R01.md",
-      "blocker": "R01 packet stop: single diagnostic run34094418980 passed platform tests but did not reproduce prior macOS external-config cause. Need complete raw paths/kinds/rescan/config state for run34090768850/job101643647551 seq2/count3, or specific maintainer native-readiness decision. Source/evidence preserved through2debe29; no further diagnostic CI or speculative loop refactor."
+      "blocker": null
     },
     {
       "id": "R02",
