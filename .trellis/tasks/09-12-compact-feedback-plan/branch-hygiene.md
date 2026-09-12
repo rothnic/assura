@@ -134,6 +134,27 @@ trajectory snapshots at 128 files; rereview is required at the corrected tip.
 
 An incomplete concurrent refresh-pointer/token overlay was observed during
 CF03 validation and parked intact: owner unknown/foreign; handle
+`fcbe82e358aa3f1b3432b6111fb9e85cbbd61fbe`; next action is owner review;
+restore with `git stash apply fcbe82e358aa3f1b3432b6111fb9e85cbbd61fbe`.
+
+A second concurrent trajectory-refresh-lease overlay was also parked intact:
+owner unknown/foreign; handle `de2d5f39f3d2a3c57f97ef2311be3082d91a00d6`;
+next action is owner review; restore with
+`git stash apply de2d5f39f3d2a3c57f97ef2311be3082d91a00d6`.
+
+A third concurrent routed-doc overlay was parked intact: owner
+unknown/foreign; handle `c4c146e3f4ffd0f211f4f020c0d390bc390398a5`; next
+action is owner review; restore with
+`git stash apply c4c146e3f4ffd0f211f4f020c0d390bc390398a5`.
+
+Windows CI run `34720474090`, job `103625300231`, exposed a valid race in the
+wrapper test: the async refresh may finish before the second invocation, so
+`feedback.refresh=not_requested` is valid with a warm snapshot. The test
+accepts that state; product single-flight coverage remains in the queued-
+refresh test.
+
+An incomplete concurrent refresh-pointer/token overlay was observed during
+CF03 validation and parked intact: owner unknown/foreign; handle
 `stash@{0}` (`preserved foreign CF03 overlay 2026-09-12`); next action is owner
 review; restore with `git stash apply stash@{0}`. It includes a wrapper-test
 timing relaxation, hook guidance, backlog state, and task-log additions; none

@@ -547,6 +547,12 @@ fn request_refresh(
 pub(super) fn finish_refresh() {
     if let Some(path) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") {
         let path = PathBuf::from(path);
+        let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
+            return;
+        };
+        if !refresh_lease_owned(&path, &token) {
+            return;
+        }
         let queued = path.with_extension("queued");
         let _ = fs::remove_file(&path);
         if fs::remove_file(&queued).is_ok()
@@ -556,11 +562,17 @@ pub(super) fn finish_refresh() {
                 .open(&path)
                 .is_ok()
         {
+            let next_token = format!("{}:{}", std::process::id(), now_millis());
+            if fs::write(&path, &next_token).is_err() {
+                let _ = fs::remove_file(&path);
+                return;
+            }
             if let Ok(executable) = std::env::current_exe() {
                 let args = std::env::args_os().skip(1).collect::<Vec<_>>();
                 if Command::new(executable)
                     .args(args)
                     .env("ASSURA_FEEDBACK_REFRESH_LOCK", &path)
+                    .env(REFRESH_TOKEN_ENV, &next_token)
                     .env(
                         "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
                         now_millis()
@@ -587,6 +599,12 @@ pub(super) fn finish_refresh() {
             }
         }
     }
+}
+
+fn refresh_lease_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
+    fs::read_to_string(path)
+        .map(|current| current == token.to_string_lossy())
+        .unwrap_or(false)
 }
 
 pub(super) fn refresh_deadline_expired() -> bool {
