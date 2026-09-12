@@ -19,7 +19,28 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Latest observed post-merge route — PR #320 — 2026-09-12 UTC (`38626e0`; refresh required)
+## Latest observed post-merge route — PR #321 — 2026-09-12 UTC (`3834b1b`; current source)
+
+PR #321 merged the reviewed current-source reconciliation from head
+`ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+`38626e0a80fdf7a6a646bac29d810f9097e75686` as
+`3834b1b0647983475f9489da42c9c001b1484a56` with tree
+`703d21c6627ac0575be09d3242091134104bd605`. Independent review returned PASS
+for the exact candidate. Exact-head Evidence Gates, CI Scope, Documentation
+Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
+`34682178166`, Security Audit `34682178164` and Rust CI `34682178146`
+(`103522728922` Evidence Gates job) passed; scope-skipped product/Rust/
+performance/release rows remain non-proof.
+
+The route audit finding `TRAIN-ROUTE-3834-001` corrected stale current pointers
+to PR #320. The refreshed ledger remains
+`items=32; ready_pending=0; unfinished=4; held=2`: R01 is `not_needed` under
+H01, A07 remains active/no-credit with no live candidate, W02/F01 remain held,
+and W03 publication stays separately authorized. Refresh source, release/tag,
+PR/CI, topology and ledger before any next phase; do not reuse PR #320 or prior
+A07 candidate/packet evidence as current proof.
+
+## Historical post-merge route — PR #320 — 2026-09-12 UTC (`38626e0`; superseded by PR #321)
 
 PR #320 merged the reviewed R01 owner-approved archive reconciliation from
 head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base

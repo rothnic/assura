@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=38626e0a80fdf7a6a646bac29d810f9097e75686`.
+`origin/master=3834b1b0647983475f9489da42c9c001b1484a56`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,29 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed post-merge reconciliation — `38626e0` — 2026-09-12 UTC (R01 H01 archive)
+## Latest observed route correction — `3834b1b` — 2026-09-12 UTC (PR #321; current source)
+
+The independent route audit found `TRAIN-ROUTE-3834-001`: task, goal and
+supporting route copies still named PR #320/`38626e0` after `origin/master`
+advanced. PR #321 merged the reviewed reconciliation from head
+`ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+`38626e0a80fdf7a6a646bac29d810f9097e75686` as
+`3834b1b0647983475f9489da42c9c001b1484a56` with tree
+`703d21c6627ac0575be09d3242091134104bd605`. Independent review returned PASS
+for the exact candidate. Exact-head Evidence Gates, CI Scope, Documentation
+Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
+`34682178166`, Security Audit `34682178164` and Rust CI `34682178146` passed,
+including Evidence Gates job `103522728922`; scope-skipped rows remain
+non-proof.
+
+All live route copies now use `3834b1b`; PR #320 is historical. The refreshed
+ledger is `items=32; ready_pending=0; unfinished=4; held=2`; R01 remains
+`not_needed` under H01, A07 remains active/no-credit with no live candidate,
+W02/F01 remain externally held and W03 publication remains separately
+authorized. No product, threshold, screening, allocation, credit, acceptance,
+release, deployment, publication, invitation or protection state changed.
+
+## Historical post-merge reconciliation — `38626e0` — 2026-09-12 UTC (PR #320; superseded by `3834b1b`; R01 H01 archive)
 
 PR #320 merged the reviewed R01 owner-approved archive reconciliation from
 head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
