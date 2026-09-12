@@ -7,6 +7,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const STATE_SCHEMA: &str = "assura.agent-feedback-delivery.v1";
@@ -15,6 +16,7 @@ const MAX_STATE_SENDS: usize = 64;
 const MAX_STATE_BYTES: u64 = 64 * 1024;
 const ROUTINE_WRAPPER_BYTES: usize = "<assura-feedback>\n\n</assura-feedback>".len();
 const REFRESH_TOKEN_ENV: &str = "ASSURA_FEEDBACK_REFRESH_TOKEN";
+static REFRESH_FINISHED: AtomicBool = AtomicBool::new(false);
 
 /// Effective automatic feedback settings exposed by inspect output.
 #[derive(Debug, Serialize)]
@@ -542,6 +544,7 @@ fn request_refresh(
         return "unavailable";
     }
     if let Ok(metadata) = fs::metadata(&lock) {
+        let owner_alive = lease_owner_alive(&lock);
         let stale_after = (config.collection.timeout_ms / 1000).max(10) as i64 * 2;
         let stale = metadata
             .modified()
@@ -549,7 +552,7 @@ fn request_refresh(
             .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
             .map(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
             .unwrap_or(false);
-        if stale && lease_owner_alive(&lock) != Some(true) {
+        if owner_alive == Some(false) || (stale && owner_alive != Some(true)) {
             let _ = fs::remove_file(&lock);
         } else {
             let queued = lock.with_extension("queued");
@@ -622,7 +625,7 @@ fn request_refresh(
         .env(
             "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
             now_millis()
-                .saturating_add(config.collection.timeout_ms as i64 * 1_000)
+                .saturating_add(config.collection.timeout_ms as i64)
                 .to_string(),
         )
         .env_remove("ASSURA_AGENT_LOG")
@@ -639,6 +642,7 @@ fn request_refresh(
 
 /// Release a refresh lease when the short-lived inspect child exits.
 pub(super) fn finish_refresh() {
+    REFRESH_FINISHED.store(true, Ordering::Release);
     if let Some(path) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") {
         let path = PathBuf::from(path);
         let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
@@ -667,7 +671,7 @@ pub(super) fn finish_refresh() {
                                     .ok()
                                     .and_then(|value| value.parse::<i64>().ok())
                                     .unwrap_or(2_000)
-                                    .saturating_mul(1_000),
+                                    ,
                             )
                             .to_string(),
                     )
@@ -694,23 +698,23 @@ pub(super) fn start_refresh_watchdog() {
     let Some(deadline) = refresh_deadline_millis() else {
         return;
     };
-    let Some(lock) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") else {
+    if std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none() {
         return;
-    };
-    let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
+    }
+    if std::env::var_os(REFRESH_TOKEN_ENV).is_none() {
         return;
-    };
+    }
     let remaining = deadline.saturating_sub(now_millis());
     if remaining <= 0 {
-        let lock = PathBuf::from(lock);
-        let _ = remove_refresh_lease_if_owned(&lock, &token);
+        // The process is about to exit; leave reclamation to owner-liveness
+        // recovery so a replacement lease cannot be deleted by this worker.
         std::process::exit(1);
     }
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(remaining as u64));
         if refresh_deadline_expired() {
-            let lock = PathBuf::from(lock);
-            let _ = remove_refresh_lease_if_owned(&lock, &token);
+            // Reclamation is intentionally deferred to the next requester;
+            // read-then-delete could race with a replacement lease.
             std::process::exit(1);
         }
     });

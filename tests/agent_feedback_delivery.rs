@@ -449,9 +449,22 @@ fn expired_refresh_does_not_publish_a_snapshot() {
         .output()
         .expect("expired inspect runs");
     assert!(!output.status.success());
-    assert!(!lock.exists(), "expired refresh lease was not released");
     let cache_dir = root.path().join(".git/assura/trajectory");
     assert!(!cache_dir.exists() || fs::read_dir(cache_dir).unwrap().next().is_none());
+
+    let recovery = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ],
+    ));
+    assert_eq!(recovery["feedback"]["refresh"], "scheduled");
 }
 
 #[test]
