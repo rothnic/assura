@@ -5,30 +5,29 @@ routing only. Product acceptance is unchanged; no card is promoted by this
 file. The historical recovery record is preserved in
 [recovery-history-2026-09-11.md](recovery-history-2026-09-11.md).
 
-## Current post-merge reconciliation — PR #323 — 2026-09-12 UTC (`origin/master=b286c82`)
+## Current post-merge reconciliation — PR #324 — 2026-09-12 UTC (`origin/master=74f565c`)
 
-- PR #323 merged the reviewed recovery-entry correction from head
-  `feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` on base
-  `600e9cd7fa77d2ea55664cae201d5db45fac6a3c` as
-  `b286c8272466ca980267c4b3858833bd7da74f8b` with tree
-  `f4add323397986f074d8f21de7dd28f7ab4241bf`. Independent scoped rereview
-  returned PASS and resolved `TRAIN-ROUTE-600E9CD-001`, the stale PR #307
-  current-source label in this evidence file. Exact-head Evidence Gates, CI
-  Scope, Documentation Scope, Security Scope and GitGuardian passed; merge-SHA
-  Documentation `34684176319`, Security Audit `34684176377` and Rust CI
-  `34684176310` (Evidence Gates job `103528145700`) passed for applicable
+- PR #324 merged the reviewed source-pointer reconciliation from head
+  `00ebba92cc0d79de43d0f321f576b1197150ece6` on base
+  `b286c8272466ca980267c4b3858833bd7da74f8b` as
+  `74f565c119c9b8db4262ab26bb17163ffc1111d9` with tree
+  `72064d387f09d48f5fbe3fe3e9db329397a24bd2`. Independent scoped review
+  returned PASS with no remaining concrete findings. Exact-head Evidence Gates,
+  CI Scope, Documentation Scope, Security Scope and GitGuardian passed; merge-
+  SHA Documentation `34684935262`, Security Audit `34684935286` and Rust CI
+  `34684935294` (Evidence Gates job `103530193780`) passed for applicable
   scope. Scope-skipped product, Rust, performance and release rows remain
   non-proof.
 - The ledger remains `items=32; ready_pending=0; unfinished=4; held=2` with
   R01 `not_needed` under H01, A07 active/no-credit and no live candidate, W03
   verified with publication held, and W02/F01 externally held. Refresh
   source/release/tag, PR/CI, topology and ledger before any new phase. If
-  A07 preparation is authorized, rebuild from `b286c82` and run identity,
+  A07 preparation is authorized, rebuild from `74f565c` and run identity,
   sibling-free canary, current holdout/manifest rebind and isolated protocol
   review in order. This process evidence grants no screening, allocation,
   credit or acceptance authority.
 
-## Historical post-merge reconciliation — PR #322 — 2026-09-12 UTC (`origin/master=600e9cd`; superseded by PR #323)
+## Historical post-merge reconciliation — PR #323 — 2026-09-12 UTC (`origin/master=b286c82`; superseded by PR #324)
 
 - PR #322 merged the reviewed route correction from head
   `686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
