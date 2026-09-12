@@ -19,7 +19,27 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, as-of)
+## Current post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, as-of)
+
+PR #306 merged the reviewed process slice from head
+`8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+`66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+CI Scope, Security Scope, Evidence Gates and GitGuardian passed; merge-SHA
+Documentation `34658963096`, Security Audit `34658963070` and Rust CI
+`34658963059` passed for applicable scope. Scope-skipped product, Rust,
+performance and release rows remain non-proof.
+
+The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with A07
+active, W03 verified and R01/W02/F01 held. The `dc031527` candidate, canary and
+protocol packet are candidate-base/no-credit after this source advance and the
+owned process branch/worktree is closed. Refresh source/release/tag, PR/CI,
+topology and ledger before selecting the next phase. Keep one named owner and
+one live recovery or preparation action; for A07 rebuild at current master,
+then run identity, no-credit canary, six-holdout/two-condition rebind and
+isolated protocol `PASS` before any separately authorized screening. Do not
+stop at an empty queue, process merge or metadata pass.
+
+## Historical candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, as-of; superseded by 66e0b7e)
 
 PR #305 merged the reviewed process reconciliation from `284e781` as
 `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Its applicable exact-head and

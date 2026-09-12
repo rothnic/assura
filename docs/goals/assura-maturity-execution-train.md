@@ -30,7 +30,37 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — dc031527 (candidate-bound protocol-pass, no-credit preparation)
+## Current checkpoint — 66e0b7e (post-merge reconciliation; no-credit)
+
+PR #306 merged the reviewed process slice from head
+`8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+`66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation Scope,
+CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. The
+configured merge-SHA Documentation (`34658963096`), Security Audit
+(`34658963070`) and Rust CI (`34658963059`) workflows also passed; Rust CI's
+CI Scope (`103457282547`) and Evidence Gates (`103457314567`) succeeded, while
+product/Rust/performance/release jobs were scope-skipped and remain non-proof.
+
+The revision-pinned ledger remains 32 items, zero ready-pending rows, five
+unfinished rows and three held rows: A07 is active, W03 is verified, and R01,
+W02 and F01 retain their separate evidence or authority holds. The reviewed
+`dc031527` candidate, canary and protocol-pass packet are now
+candidate-base/no-credit after this source advance and must not be reused for
+screening or acceptance. The clean owned PR branch/worktree was removed;
+unknown root dirt, foreign dirty work, stale registrations and unfavorable
+evidence remain preserved as ownership boundaries. No product, threshold,
+screening, allocation, acceptance, release, deployment, publication or
+invitation authority changed.
+
+Current source is `66e0b7e` with tree `f08120b991b0fd51c311212e45ffeeff3c6a972c`.
+The next action is to refresh release/tag, PR/CI, topology and the ledger,
+inspect active/verified/held work before pending rows, and keep one explicitly
+owned recovery or fresh current-master A07 preparation slice live. A fresh
+candidate, identity/no-credit canary, holdout rebind and protocol review are
+required before any separately authorized screening. Never stop at this
+post-merge status, an empty pending queue, a skipped check or process evidence.
+
+## Historical checkpoint — dc031527 (candidate-bound protocol-pass, no-credit preparation; superseded by 66e0b7e)
 
 The latest reset fetched `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`
 after PR #305 merged the reviewed process reconciliation from `284e781`. This

@@ -104,20 +104,18 @@ but never replaces required macOS/Windows/hosted proof.
 
 ## Current next action
 
-On each resume, the A07 coordinator must first refresh `origin/master`,
-release/tag, PR/CI and topology, rerun the revision-pinned ledger, and bind all
-evidence to that revision. PR #305 now places the current source at
-`dc031527afd400be52dfd8fe9cfdabc7a6caa685` after the reviewed process merge;
-its applicable exact-head and merge-SHA Documentation, Rust CI and Security
-Audit checks passed. The `284e781` checkpoint and all earlier candidate
-packets, canaries and protocol results are historical or candidate-base/no-
-credit after their source advances. A fresh candidate-bound canary and a
-metadata-only packet validator now pass for the current source; the six-handle
-rebind and 30-cell matrix remain no-credit after isolated protocol review
-`PASS_NO_CREDIT`. The review corrected a stale contract digest and construction
-hash, and the validator was rerun with zero errors. If any later audit finds a stale alias or identity mismatch, record
-contract/location/failure/smallest verification, repair the explicit current
-reference and rerun the validator plus scoped rereview before allocation.
-All prior canaries, process PRs and metadata-only evidence remain no-credit and
-never satisfy screening or acceptance gates. The retained R01 artifacts still
-lack the raw watch/callback trace, so R01's hold is unchanged.
+On each resume, first refresh `origin/master`, release/tag, PR/CI and topology,
+rerun the revision-pinned ledger, and bind all evidence to that revision. PR
+#306 now places current source at
+`66e0b7e75f644dc4d047853488daee4a1cd716a3`; its applicable exact-head and
+merge-SHA Documentation, Rust CI, Security and Evidence checks passed, while
+scope-skipped product/performance/release rows remain non-proof. The `dc031527`
+candidate, canaries, packet and `PASS_NO_CREDIT` protocol artifact are now
+candidate-base/no-credit and must not be reused. Build a fresh candidate at
+the refreshed source, then run identity, sibling-free no-credit canary,
+six-holdout/two-condition rebind and isolated protocol `PASS` before any
+separately authorized screening. If a stale alias or identity mismatch is
+found, record contract/location/failure/smallest verification, repair the
+explicit reference and rerun the validator plus scoped rereview. All process,
+canary and metadata-only evidence remains no-credit; the retained R01
+watch/callback gap and other unfavorable evidence remain held.

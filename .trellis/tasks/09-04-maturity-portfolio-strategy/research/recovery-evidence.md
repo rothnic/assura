@@ -5,7 +5,33 @@ routing only. Product acceptance is unchanged; no card is promoted by this
 file. The historical recovery record is preserved in
 [recovery-history-2026-09-11.md](recovery-history-2026-09-11.md).
 
-## Current candidate and packet correction — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`)
+## Current post-merge reconciliation — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`)
+
+- PR #306 merged the reviewed process route from head
+  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian passed. Merge-SHA
+  Documentation `34658963096`, Security Audit `34658963070` and Rust CI
+  `34658963059` passed for applicable scope; CI Scope `103457282547` and
+  Evidence Gates `103457314567` succeeded. Scope-skipped product, Rust,
+  performance and release rows remain non-proof.
+- The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with
+  A07 active, W03 verified and R01/W02/F01 held. The `dc031527` candidate and
+  packet are candidate-base/no-credit after the source advance; the protocol
+  `PASS_NO_CREDIT` is historical metadata only. The owned branch/worktree was
+  clean and removed; unknown or foreign dirt, stale registrations and
+  unfavorable evidence remain outside ownership. No product or authority
+  state changed.
+
+Next action: refresh source/release/tag/PR/CI/topology and the ledger before a
+new phase. If A07 preparation is authorized, rebuild the candidate at
+`66e0b7e`, rerun identity and no-credit canary gates, rebind the six holdouts
+and exactly-two-condition manifest, and obtain a scoped isolated protocol
+`PASS`; otherwise continue an independently authorized held recovery slice.
+Keep the goal active and never infer product success from process, canary,
+protocol, skipped or zero-test evidence.
+
+## Historical candidate and packet correction — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`; superseded by 66e0b7e)
 
 - PR #305 merged the reviewed process route from `284e781` as
   `dc031527afd400be52dfd8fe9cfdabc7a6caa685`; exact-head applicable checks and

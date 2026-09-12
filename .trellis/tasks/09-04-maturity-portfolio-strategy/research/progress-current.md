@@ -1,6 +1,39 @@
 # Current maturity train checkpoint
 
-## Iteration 165 — 2026-09-11 — current candidate canary and packet rebind (no-credit)
+## Iteration 166 — 2026-09-11 — PR #306 post-merge reconciliation (no-credit)
+
+- Owner/phase: `/root` / current-source post-merge reconciliation. PR #306
+  merged reviewed head `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` from base
+  `dc031527afd400be52dfd8fe9cfdabc7a6caa685` as
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation Scope,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian passed. The
+  merge-SHA Documentation `34658963096`, Security Audit `34658963070` and
+  Rust CI `34658963059` workflows passed for applicable scope; Rust CI's CI
+  Scope `103457282547` and Evidence Gates `103457314567` succeeded. Product,
+  Rust, performance and release rows were scope-skipped and remain non-proof.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3`: A07 active, W03 verified, and R01/W02/F01 held. The `dc031527`
+  candidate, canary and protocol-pass packet are now candidate-base/no-credit
+  after this source advance and must not be reused. The owned process branch
+  and worktree were verified clean and removed; root unknown dirt, foreign
+  dirty work, stale registrations and unfavorable evidence remain preserved.
+  No product, threshold, screening, allocation, acceptance, release,
+  deployment, publication or invitation authority changed.
+- Current source is `66e0b7e` with tree
+  `f08120b991b0fd51c311212e45ffeeff3c6a972c`. Next owner/action: refresh
+  source, release/tag, PR/CI, topology and ledger; inspect active, verified
+  and held work before pending rows; then keep one explicitly owned recovery
+  or fresh current-master A07 preparation slice live. A fresh candidate,
+  identity/no-credit canary, six-holdout/two-condition rebind and isolated
+  protocol review are required before any separately authorized screening.
+  Do not stop at this reconciliation, an empty pending queue, a skipped check
+  or process evidence.
+- Independent public process review of this reconciliation returned `PASS`:
+  the current route, historical supersession, no-credit boundary, ledger and
+  cleanup requirements are explicit; no private packet or raw evaluator data
+  was inspected.
+
+## Historical Iteration 165 — 2026-09-11 — current candidate canary and packet rebind (no-credit; superseded by 66e0b7e)
 
 - Owner/phase: `/root` / A07 candidate-bound preparation from the refreshed
   current source. PR #305 merged reviewed head

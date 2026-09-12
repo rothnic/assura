@@ -16,13 +16,32 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current candidate-bound checkpoint (2026-09-11, current at this reset; refresh
-before use): `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`; PR #305
+Current post-merge checkpoint (2026-09-11, refresh before use):
+`origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`; PR #306 merged
+reviewed head `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` from base `dc031527`.
+Its exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
+GitGuardian checks passed; merge-SHA Documentation `34658963096`, Security
+Audit `34658963070` and Rust CI `34658963059` passed for applicable scope.
+Product/Rust/performance/release rows were scope-skipped and remain non-proof.
+The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The `dc031527`
+candidate, canary and protocol packet are candidate-base/no-credit and must
+not be reused; the owned process branch/worktree was clean and removed.
+
+Next action: refresh source, release/tag, PR/CI, topology and ledger; inspect
+active/implemented/verified/held rows before pending; then keep one explicitly
+owned recovery or fresh current-master A07 preparation slice live. For A07,
+fresh identity, sibling-free no-credit canary, six-holdout/two-condition
+rebind and isolated protocol `PASS` are required before separately authorized
+screening. Never stop at an empty queue, skipped check or process evidence.
+
+Historical candidate-bound checkpoint (2026-09-11, superseded by `66e0b7e`;
+refresh before using only as history): `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`; PR #305
 merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c` from base
 `284e781`. Its applicable exact-head and merge-SHA Documentation, CI Scope,
 Security Scope, Evidence Gates and GitGuardian checks passed; scope-skipped
 product/performance/release rows remain non-proof. The revision-pinned ledger
-is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+was `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
 verified, R01/W02/F01 held).
 
 The clean candidate checkout `/private/tmp/assura-a07-current-reconcile-dc031`
@@ -39,11 +58,11 @@ returned `PASS_NO_CREDIT` after correcting the stale contract digest and
 construction hash. No screening, allocation, credit or product acceptance is
 claimed.
 
-Next action: reconcile the protocol-pass/no-credit evidence in a reviewed
-current-base process slice. Refresh source, release/tag, PR/CI, topology and
-the ledger after every merge; preserve the R01 macOS watch-SIGINT failure and
-all other unfavorable evidence. If source advances, classify this packet
-candidate-base/no-credit and rebuild. Do not stop at an empty pending queue.
+Historical next action: reconcile the protocol-pass/no-credit evidence only in
+a reviewed current-base slice; if source advances, classify the packet
+candidate-base/no-credit and rebuild. Preserve the R01 macOS watch-SIGINT
+failure and all other unfavorable evidence. Do not reuse this historical
+checkpoint for screening or acceptance.
 
 Historical current-source post-merge checkpoint (2026-09-11, superseded by
 `dc031527`; refresh before use): `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`;

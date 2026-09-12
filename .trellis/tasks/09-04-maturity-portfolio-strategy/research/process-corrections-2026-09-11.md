@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`.
+`origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,33 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit)
+## Current correction checkpoint — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, post-merge no-credit)
+
+- PR #306 merged the reviewed process slice from head
+  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian passed. Merge-SHA
+  Documentation `34658963096`, Security Audit `34658963070` and Rust CI
+  `34658963059` passed for applicable scope; CI Scope `103457282547` and
+  Evidence Gates `103457314567` succeeded. Product, Rust, performance and
+  release rows were scope-skipped and remain non-proof.
+- The revision-pinned ledger is unchanged at `items=32; ready_pending=0;
+  unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The
+  `dc031527` candidate/canary/packet and `PASS_NO_CREDIT` protocol result are
+  candidate-base/no-credit after the source advance. The owned branch/worktree
+  was verified clean and removed; unknown/foreign dirty work, stale
+  registrations and unfavorable evidence remain preserved. No product,
+  threshold, screening, allocation, acceptance, release, deployment,
+  publication or invitation authority changed.
+- The current route is: refresh source, release/tag, PR/CI, topology and
+  ledger; inspect active/verified/held rows before pending; keep one owner and
+  one next action live; then either continue an authorized held recovery or
+  rebuild a fresh exact-toolchain A07 candidate at current master. A07 must
+  repeat identity, no-credit canary, six-holdout/two-condition rebind and
+  isolated protocol `PASS` before separately authorized screening. A process
+  merge or empty queue is never goal completion.
+
+## Historical correction checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit; superseded by 66e0b7e)
 
 - PR #305 merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c`
   from base `284e781` as `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Applicable
