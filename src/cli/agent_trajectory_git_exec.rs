@@ -25,7 +25,22 @@ pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutpu
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    run_bounded(command, limit, MAX_RUNTIME)
+    run_bounded(command, limit, refresh_timeout())
+}
+
+fn refresh_timeout() -> Duration {
+    refresh_timeout_from(
+        std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
+            .ok()
+            .as_deref(),
+    )
+}
+
+fn refresh_timeout_from(value: Option<&str>) -> Duration {
+    value
+        .and_then(|value| value.parse::<u64>().ok())
+        .map(|millis| Duration::from_millis(millis.clamp(1, 10_000)))
+        .unwrap_or(MAX_RUNTIME)
 }
 
 fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutput {
@@ -96,5 +111,16 @@ mod tests {
             run_bounded(command, 1024, Duration::from_millis(20)),
             GitOutput::TimedOut
         ));
+    }
+
+    #[test]
+    fn refresh_timeout_is_bounded_and_configurable() {
+        assert_eq!(refresh_timeout_from(Some("20")), Duration::from_millis(20));
+        assert_eq!(refresh_timeout_from(Some("0")), Duration::from_millis(1));
+        assert_eq!(refresh_timeout_from(Some("99999")), Duration::from_secs(10));
+        assert_eq!(
+            refresh_timeout_from(Some("invalid")),
+            Duration::from_secs(2)
+        );
     }
 }

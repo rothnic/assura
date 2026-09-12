@@ -67,6 +67,10 @@ struct DeliveryState {
     last_signal: Option<String>,
     reminders_sent: u8,
     last_refresh_at: Option<i64>,
+    #[serde(default)]
+    last_refresh_at_ms: Option<i64>,
+    #[serde(default)]
+    last_refresh_event: Option<String>,
     sends: Vec<SendRecord>,
 }
 
@@ -86,7 +90,7 @@ struct SignalSelection {
 pub(super) fn automatic(
     project_root: &Path,
     config: &AgentFeedbackConfig,
-    _event: &str,
+    event: &str,
     now: i64,
 ) -> DeliveryResult {
     let mode = config.mode.as_str();
@@ -104,8 +108,8 @@ pub(super) fn automatic(
         );
     }
 
-    let Some(snapshot) = super::agent_trajectory::cached_snapshot(project_root) else {
-        let refresh = request_refresh(project_root, config, now);
+    let Some(snapshot) = super::agent_trajectory::cached_snapshot(project_root, config) else {
+        let refresh = request_refresh(project_root, config, now, event);
         return result(
             mode,
             "missing",
@@ -118,7 +122,7 @@ pub(super) fn automatic(
         );
     };
     if snapshot.coverage() != "complete" {
-        let refresh = request_refresh(project_root, config, now);
+        let refresh = request_refresh(project_root, config, now, event);
         return result(
             mode,
             "incomplete",
@@ -131,7 +135,7 @@ pub(super) fn automatic(
         );
     }
     if snapshot.age_seconds(now) > config.collection.stale_after_seconds as i64 {
-        let refresh = request_refresh(project_root, config, now);
+        let refresh = request_refresh(project_root, config, now, event);
         return result(
             mode,
             "stale",
@@ -241,6 +245,8 @@ pub(super) fn automatic(
     }
 }
 
+// Keep the status constructor explicit so every suppression reason is visible
+// in the inspect envelope and no delivery policy is hidden in a builder.
 #[allow(clippy::too_many_arguments)]
 fn result(
     mode: &'static str,
@@ -427,7 +433,12 @@ fn prune_sends(state: &mut DeliveryState, now: i64) {
     }
 }
 
-fn request_refresh(project_root: &Path, config: &AgentFeedbackConfig, now: i64) -> &'static str {
+fn request_refresh(
+    project_root: &Path,
+    config: &AgentFeedbackConfig,
+    now: i64,
+    event: &str,
+) -> &'static str {
     let lock = refresh_lock_path(project_root);
     let Some(parent) = lock.parent() else {
         return "unavailable";
@@ -454,6 +465,11 @@ fn request_refresh(project_root: &Path, config: &AgentFeedbackConfig, now: i64) 
         return "state_corrupt";
     }
     let mut state = read_state(&state_path);
+    if state.last_refresh_at_ms.is_some_and(|last| {
+        now_millis().saturating_sub(last) < config.collection.debounce_ms as i64
+    }) {
+        return "debounced";
+    }
     if state
         .last_refresh_at
         .is_some_and(|last| now.saturating_sub(last) < config.collection.min_refresh_seconds as i64)
@@ -469,6 +485,8 @@ fn request_refresh(project_root: &Path, config: &AgentFeedbackConfig, now: i64) 
         return "in_flight";
     }
     state.last_refresh_at = Some(now);
+    state.last_refresh_at_ms = Some(now_millis());
+    state.last_refresh_event = Some(event.to_string());
     let _ = write_state(&state_path, &state);
     let executable = match std::env::current_exe() {
         Ok(path) => path,
@@ -515,6 +533,13 @@ pub(super) fn now() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_secs() as i64)
+        .unwrap_or_default()
+}
+
+fn now_millis() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)
         .unwrap_or_default()
 }
 

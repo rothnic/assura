@@ -222,3 +222,45 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
         .iter()
         .any(|item| item["category"] == "trajectory"));
 }
+
+#[test]
+fn collector_configuration_change_does_not_reuse_an_old_snapshot() {
+    let root = fixture("");
+    let path = root.path().to_str().unwrap();
+    let _ = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ],
+    ));
+    fs::write(
+        root.path().join(".assura/config.yml"),
+        "structure: {}\nagent_feedback:\n  mode: periodic\n  periodic_seconds: 1\n  min_interval_seconds: 1\n  max_bytes_per_hour: 1024\n  trajectory:\n    source_paths: [different/**]\n",
+    )
+    .expect("changed config");
+    let output = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ],
+    ));
+    assert_eq!(output["feedback"]["reason"], "cold_snapshot");
+    assert_eq!(output["feedback"]["refresh"], "scheduled");
+    assert!(!output["nudges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|item| item["category"] == "trajectory"));
+}

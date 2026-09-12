@@ -19,6 +19,8 @@ const CLASSIFICATION_VERSION: &str = "paths-v1";
 pub(super) struct TrajectorySnapshot {
     schema: String,
     generation: String,
+    #[serde(default)]
+    configuration: String,
     repository: RepositoryIdentity,
     worktree: WorktreeIdentity,
     integration: IntegrationIdentity,
@@ -276,7 +278,10 @@ pub(super) fn inspect_with_config(
     inspect_at(project_root, now, config)
 }
 
-pub(super) fn cached_snapshot(project_root: &Path) -> Option<TrajectorySnapshot> {
+pub(super) fn cached_snapshot(
+    project_root: &Path,
+    config: &AgentFeedbackConfig,
+) -> Option<TrajectorySnapshot> {
     let marker = project_root.join(".git");
     let git_dir = if marker.is_dir() {
         marker
@@ -298,7 +303,19 @@ pub(super) fn cached_snapshot(project_root: &Path) -> Option<TrajectorySnapshot>
     let root = project_root
         .canonicalize()
         .unwrap_or_else(|_| project_root.to_path_buf());
-    snapshot::read_latest_for_worktree(&common_dir, &root).snapshot
+    let expected_configuration = collector_configuration_key(Some(config));
+    snapshot::read_latest_for_worktree(&common_dir, &root)
+        .snapshot
+        .filter(|snapshot| snapshot.configuration == expected_configuration)
+}
+
+fn collector_configuration_key(config: Option<&AgentFeedbackConfig>) -> String {
+    config
+        .map(|config| {
+            serde_json::to_string(&(config.collection.max_commits, &config.trajectory))
+                .unwrap_or_default()
+        })
+        .unwrap_or_else(|| "unconfigured".to_string())
 }
 
 fn inspect_at(
@@ -344,6 +361,7 @@ fn inspect_at(
         collection,
         cache_source,
         &cache_read,
+        config,
     );
     if let Err(error) = snapshot::write(&cache_key, &snapshot) {
         snapshot.cache = CacheInfo {
@@ -373,6 +391,7 @@ fn build_snapshot(
     collection: CollectionResult,
     cache_source: &str,
     cache_read: &snapshot::CacheRead,
+    config: Option<&AgentFeedbackConfig>,
 ) -> TrajectorySnapshot {
     let mut reasons = collection.reasons;
     if input.status_truncated {
@@ -418,6 +437,7 @@ fn build_snapshot(
     TrajectorySnapshot {
         schema: SNAPSHOT_SCHEMA.to_string(),
         generation,
+        configuration: collector_configuration_key(config),
         repository: RepositoryIdentity {
             root: input.repo_root.display().to_string(),
             common_dir: input.common_dir.display().to_string(),
