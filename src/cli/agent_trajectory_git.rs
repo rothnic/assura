@@ -247,7 +247,7 @@ pub(super) fn collect_history(
         "--first-parent".to_string(),
         "--diff-merges=first-parent".to_string(),
         "--numstat".to_string(),
-        format!("--format=__ASSURA_COMMIT__%x09%H%x09%ct%x09%P"),
+        "--format=__ASSURA_COMMIT__%x09%H%x09%ct%x09%P".to_string(),
         "-n".to_string(),
         max_commits.to_string(),
     ];
