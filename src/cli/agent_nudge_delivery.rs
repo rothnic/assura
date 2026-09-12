@@ -245,8 +245,8 @@ pub(super) fn automatic(
     }
 }
 
-// Keep the status constructor explicit so every suppression reason is visible
-// in the inspect envelope and no delivery policy is hidden in a builder.
+// allow-reason: keep the status constructor explicit so every suppression
+// reason is visible in the inspect envelope and no delivery policy is hidden in a builder.
 #[allow(clippy::too_many_arguments)]
 fn result(
     mode: &'static str,
