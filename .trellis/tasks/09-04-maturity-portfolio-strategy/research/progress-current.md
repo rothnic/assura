@@ -1,5 +1,16 @@
 # Current maturity train checkpoint
 
+## Iteration 181 — 2026-09-12 — F01 validation and target-path correction
+
+- `/root` / `prove` at `origin/master=943fc45d` (tree `cb5f0cb8`) on the
+  owned `goal/f01-validation-environment` checkout; full proof is in [F01
+  evidence](evidence/F01.md).
+- Pinned website install, `cargo xtask docs`, `cargo xtask evidence`, and
+  current-source `assura check` pass. The invalid out-of-tree target failure
+  and reusable constraint are recorded in `assura-local-build/SKILL.md`.
+- F01 remains locally prepared; exact next action is Nick's authorization for
+  participant selection and invitations. No product or authority state changed.
+
 ## Iteration 180 — 2026-09-12 — PR #324 post-merge source-pointer reconciliation
 
 - Owner/phase: `/root` / post-merge reconciliation at refreshed

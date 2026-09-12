@@ -89,7 +89,13 @@ original cwd. Use OpenSSL overrides only after confirming that specific Linux
 layout. See [validation routing](../assura-goal-execution/references/validation-routing.md)
 for the changed surface; do not run unrelated Rust, website and integration
 suites as a universal recovery recipe. For website setup, use
-`pnpm --dir website install --frozen-lockfile` from the repository root.
+`pnpm --dir website install --frozen-lockfile` from the repository root. When
+running `cargo xtask docs` or `cargo xtask website-demo-data --check`, keep the
+default checkout-local Cargo target directory (or set `CARGO_TARGET_DIR` to
+`$PWD/target`). The xtask website helper builds `assura-full` with inherited
+Cargo environment but then resolves `target/debug/assura-full` under the
+checkout; an out-of-tree target therefore produces `No such file or directory`
+and is invalid-environment evidence, not a product failure.
 
 ## Isolated VPS validation
 
