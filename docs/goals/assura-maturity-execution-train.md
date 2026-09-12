@@ -38,7 +38,30 @@ continues; a card-level hold is not a whole-goal block. Every continuation
 must end with a live handle or one explicit next action, and the runtime goal
 stays active until authorized scope is accepted and owned topology is terminal.
 
-## Latest observed integration — PR #320 — `38626e0` (2026-09-12; refresh required)
+## Latest observed integration — PR #321 — `3834b1b` (2026-09-12; current source)
+
+PR #321 merged the reviewed current-source reconciliation from head
+`ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+`38626e0a80fdf7a6a646bac29d810f9097e75686` as
+`3834b1b0647983475f9489da42c9c001b1484a56` with tree
+`703d21c6627ac0575be09d3242091134104bd605`. Independent review returned PASS
+for the exact candidate. Exact-head Evidence Gates, CI Scope, Documentation
+Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
+(`34682178166`), Security Audit (`34682178164`) and Rust CI (`34682178146`,
+including Evidence Gates job `103522728922`) passed. Product, Rust,
+performance and release rows were scope-skipped and remain non-proof.
+
+The route audit finding `TRAIN-ROUTE-3834-001` corrected stale live pointers to
+PR #320. The current ledger is `items=32; ready_pending=0; unfinished=4;
+held=2`: R01 remains `not_needed` under Nick's H01 archive decision, A07
+remains active/no-credit with no live candidate, W03 is verified while
+publication remains held, and W02/F01 retain external holds. The failed R01
+run and missing causal callback fields remain preserved; this process merge is
+not a product fix. Refresh source, release/tag, PR/CI, topology and ledger
+before every phase; PR #320 and prior A07 candidate/packet evidence are
+historical and cannot be reused as current proof.
+
+## Historical checkpoint — PR #320 — `38626e0` (2026-09-12; superseded by PR #321)
 
 PR #320 merged the reviewed R01 owner-approved archive reconciliation from
 head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base

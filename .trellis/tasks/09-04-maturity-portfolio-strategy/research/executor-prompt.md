@@ -16,16 +16,17 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed post-merge integration (PR #320, 2026-09-12; refresh required):
-`origin/master=38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
-`37bbea4b34812964ea91db62ad6e2c7c25e465b2`; PR #320 merged reviewed head
-`f9b19902a8ed076215b62fb1106efa53f6ffa470` from base
-`afa1637ccceb93feff1bed5e652cf50516f68a9a`. Independent review returned
-PASS for the exact candidate. Exact-head Documentation Scope, CI Scope,
-Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
-Documentation (`34681519433`), Security Audit (`34681519434`) and Rust CI
-(`34681519451`, including Evidence Gates job `103520912276`) passed;
-product/Rust/performance/release jobs were scope-skipped and remain non-proof.
+Latest observed current-source reconciliation (PR #321, 2026-09-12; refresh required):
+`origin/master=3834b1b0647983475f9489da42c9c001b1484a56` with tree
+`703d21c6627ac0575be09d3242091134104bd605`; PR #321 merged reviewed head
+`ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` from base
+`38626e0a80fdf7a6a646bac29d810f9097e75686`. Independent review returned PASS
+for the exact candidate. Exact-head Evidence Gates, CI Scope, Documentation
+Scope, Security Scope and GitGuardian passed. Merge-SHA Documentation
+(`34682178166`), Security Audit (`34682178164`) and Rust CI (`34682178146`,
+including Evidence Gates job `103522728922`) passed; product/Rust/performance/
+release jobs were scope-skipped and remain non-proof. The route audit finding
+`TRAIN-ROUTE-3834-001` is resolved: PR #320 is historical, not the live route.
 
 Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
 accepts H01. R01 is `not_needed` as an explicit scoped exclusion, not a
@@ -33,6 +34,17 @@ product-fix claim; preserve its failed run and missing causal callback fields.
 The next live route remains A07 no-credit preparation or the W02/F01
 held-action routes. Refresh the source, release/tag, PR/CI, topology and
 ledger before acting.
+
+Historical observed post-merge integration (PR #320, 2026-09-12; superseded
+by PR #321):
+`origin/master=38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+`37bbea4b34812964ea91db62ad6e2c7c25e465b2`; PR #320 merged reviewed head
+`f9b19902a8ed076215b62fb1106efa53f6ffa470` from base
+`afa1637ccceb93feff1bed5e652cf50516f68a9a`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
+Documentation (`34681519433`), Security Audit (`34681519434`) and Rust CI
+(`34681519451`) passed; product/Rust/performance/release jobs were
+scope-skipped and remain non-proof.
 
 Historical observed post-merge integration (PR #319, 2026-09-12; superseded
 by PR #320; refresh required):

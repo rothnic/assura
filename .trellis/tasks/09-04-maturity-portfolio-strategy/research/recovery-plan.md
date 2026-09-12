@@ -1,11 +1,13 @@
 # Execution recovery plan
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
-## Latest observed recovery route — PR #320 / `38626e0` — 2026-09-12 UTC (refresh required; R01 archived, A07 candidate-base/no-credit)
+## Latest observed recovery route — PR #321 / `3834b1b` — 2026-09-12 UTC (current source; R01 archived, A07 candidate-base/no-credit): PR #321 merged the reviewed current-source reconciliation from head `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base `38626e0a80fdf7a6a646bac29d810f9097e75686` as `3834b1b0647983475f9489da42c9c001b1484a56` (tree `703d21c6627ac0575be09d3242091134104bd605`). Independent review returned PASS; exact-head Evidence Gates, CI Scope, Documentation Scope, Security Scope and GitGuardian plus merge-SHA Documentation `34682178166`, Security Audit `34682178164` and Rust CI `34682178146` (Evidence Gates job `103522728922`) passed. Scope-skipped product/Rust/performance/release rows remain non-proof.
+The route audit finding `TRAIN-ROUTE-3834-001` showed that current pointers still named PR #320 after this source advance; all live route copies now use `3834b1b`, while PR #320 is historical. The refreshed source has no `origin/release` head or release tag at this head. Ledger is `items=32; ready_pending=0; unfinished=4; held=2` (A07 active, W03 verified, R01 `not_needed`, W02/F01 held); failed R01 and unfavorable evidence remain preserved and no product fix is claimed.
+Keep A07 ahead of empty ready-pending rows without declaring the goal blocked. No live A07 candidate exists; if explicit no-credit preparation authority is confirmed, create one clean owned exact-toolchain candidate from `3834b1b`, then run identity, sibling-free canary, current holdout/manifest rebind and isolated protocol review in order. Otherwise continue independently audited held-action/readiness routes; process metadata, protocol pass and skipped checks never grant screening, allocation, credit or acceptance authority.
+## Historical recovery route — PR #320 / `38626e0` — 2026-09-12 UTC (superseded by `3834b1b`; R01 archived, A07 candidate-base/no-credit)
 PR #320 merged the reviewed R01 owner-approved archive reconciliation from head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base `afa1637ccceb93feff1bed5e652cf50516f68a9a` as `38626e0a80fdf7a6a646bac29d810f9097e75686` (tree `37bbea4b34812964ea91db62ad6e2c7c25e465b2`). Independent review returned PASS for the exact candidate. Exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation `34681519433`, Security Audit `34681519434` and Rust CI `34681519451` (Evidence Gates job `103520912276`) passed. Scope-skipped product/Rust/performance/release rows remain non-proof. Nick's owner-level PR #185 comment accepts H01; R01 is `not_needed` as an explicit scoped exclusion, not a product-fix claim. Ledger is `items=32; ready_pending=0; unfinished=4; held=2` (A07 active, W03 verified, W02/F01 held).
 This is an as-of observation, not a live pointer. The reset found no `origin/release` head or release tag at `38626e0`; refresh source, release/tag, PR/CI, topology and ledger before routing work. Keep A07 ahead of empty ready-pending rows without declaring the goal blocked. No live A07 candidate exists; preserve the failed R01 run, unknown callback fields, candidate bundle, unfavorable evidence, unknown/foreign/stale topology and the held VPS lane.
 If explicit no-credit preparation authority is confirmed after refresh, create one clean owned exact-toolchain candidate from the fetched source, then run identity, sibling-free canary, current holdout/manifest rebind and isolated protocol review in order. Otherwise continue the independently audited W02/F01 held-action routes recorded in `progress-current.md`. Process metadata, protocol pass and skipped checks never grant screening, allocation, credit or acceptance authority.
-
 Historical recovery route `afa1637` (PR #319) is superseded by `38626e0`; its post-merge facts remain in the historical sections of the goal, executor and progress records linked from this task.
 ## Historical recovery route — a6ed20f — 2026-09-12 UTC (candidate-bound protocol disposition; superseded by e1c9b78)
 PR #312 merged the reviewed dcf2 process evidence at `a6ed20f532d93f830099e9095798a09515fead0b` (tree `bd399cd480dc7a31630740718dd8248a0c77bef5`); exact-head applicable Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation `34671630183`, Security Audit `34671630154` and Rust CI `34671630166` passed. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held).
@@ -65,7 +67,6 @@ seven-dimension evaluators with zero critical failures, but it is now
 candidate-base/no-credit. Its ambient-context limitation and initial
 structure-placement failure remain retained. No holdout/manifest rebind,
 protocol, screening or product acceptance carries forward.
-
 Next action: refresh source/release/tag/PR/CI/topology and the ledger. If A07
 preparation is separately authorized, build a fresh exact-toolchain candidate
 from `284e781`, then run identity, no-credit canary, six-holdout/two-condition
@@ -82,7 +83,6 @@ its applicable exact-head checks passed, and the configured push-triggered
 Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit
 (`34642991344`) workflows completed successfully at the merge SHA. Product/
 Rust/performance/release rows were scope-skipped and are not product proof.
-
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
 held=3`: A07 active, W03 verified and R01/W02/F01 held. The 0dff804 candidate
 identity freeze is now candidate-base/no-credit after this process merge; its

@@ -22,7 +22,31 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Latest observed integration route — PR #320 — `38626e0` (2026-09-12; refresh required)
+## Latest observed integration route — PR #321 — `3834b1b` (2026-09-12; current source)
+
+- PR #321 merged the reviewed current-source reconciliation from head
+  `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+  `38626e0a80fdf7a6a646bac29d810f9097e75686` as
+  `3834b1b0647983475f9489da42c9c001b1484a56` with tree
+  `703d21c6627ac0575be09d3242091134104bd605`. Independent review returned
+  PASS for the exact candidate. Exact-head Evidence Gates, CI Scope,
+  Documentation Scope, Security Scope and GitGuardian passed; merge-SHA
+  Documentation `34682178166`, Security Audit `34682178164` and Rust CI
+  `34682178146` passed, including Evidence Gates job `103522728922`.
+  Scope-skipped product, Rust, performance and release rows remain non-proof.
+- `TRAIN-ROUTE-3834-001` found that route copies still named PR #320 after the
+  source advanced. They now use `3834b1b` as the current source and retain PR
+  #320 only as historical evidence. The ledger is
+  `items=32; ready_pending=0; unfinished=4; held=2`; R01 is terminal
+  `not_needed` under H01, A07 is active/no-credit with no live candidate, W02/
+  F01 remain held and W03 publication remains separately authorized.
+- Refresh source, release/tag, PR/CI, topology and ledger before every phase.
+  No-credit A07 preparation remains the next owner-controlled action only after
+  explicit authority; no process pass, skipped check or metadata grants
+  screening, allocation, credit, acceptance, release, deployment, publication,
+  invitation or protection authority.
+
+## Historical integration route — PR #320 — `38626e0` (2026-09-12; superseded by PR #321)
 
 - PR #320 merged the reviewed R01 owner-approved archive reconciliation from
   head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base

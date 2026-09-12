@@ -1,5 +1,34 @@
 # Current maturity train checkpoint
 
+## Iteration 177 — 2026-09-12 — PR #321 current-source route correction
+
+- Owner/phase: `/root` / independent continuation-route correction at refreshed
+  `origin/master=3834b1b0647983475f9489da42c9c001b1484a56` (tree
+  `703d21c6627ac0575be09d3242091134104bd605`). PR #321 merged the reviewed
+  current-source reconciliation from head
+  `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+  `38626e0a80fdf7a6a646bac29d810f9097e75686` as
+  `3834b1b0647983475f9489da42c9c001b1484a56`.
+- Independent review returned PASS for the exact candidate. Exact-head Evidence
+  Gates, CI Scope, Documentation Scope, Security Scope and GitGuardian passed;
+  merge-SHA Documentation `34682178166`, Security Audit `34682178164` and Rust
+  CI `34682178146` passed, including Evidence Gates job `103522728922`.
+  Scope-skipped product/Rust/performance/release rows remain non-proof.
+- The route audit finding `TRAIN-ROUTE-3834-001` identified stale current
+  pointers to PR #320 after the source advanced. Task, goal, recovery,
+  orchestration, executor, E2E, process-correction and card evidence pointers
+  now record `3834b1b` as the current source and PR #320 as historical. This
+  changes process routing only; R01 remains terminal `not_needed` under H01,
+  A07 remains active/no-credit with no live candidate, W02/F01 remain held and
+  W03 publication remains separately authorized.
+- The refreshed ledger is `items=32; ready_pending=0; unfinished=4; held=2`.
+  No product, threshold, screening, allocation, credit, acceptance, release,
+  deployment, publication, invitation or protection state changed. The next
+  action is explicit no-credit A07 preparation authority followed by a fresh
+  exact-toolchain candidate sequence; absent that authority, retain the held
+  routes and continue independent read-only readiness audits. Preserve unknown,
+  foreign and stale topology plus unfavorable evidence.
+
 ## Iteration 176 — 2026-09-12 — PR #320 post-merge reconciliation
 
 - Owner/phase: `/root` / post-merge reconciliation. PR #320 merged the
