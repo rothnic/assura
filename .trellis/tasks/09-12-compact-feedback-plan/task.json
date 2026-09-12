@@ -25,5 +25,10 @@
     "AGENTS.md"
   ],
   "notes": "Planning package prepared. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. Independent review of the initial package found no blockers; this delta is a plan update, not a runtime checkpoint. CF01-CF04 remain pending; explicit skill invocation starts execution. Card status lives only in skill references/backlog.md.",
-  "meta": {}
+  "meta": {
+    "execution_branches": [
+      "codex/compact-feedback-plan",
+      "goal/compact-feedback-execution"
+    ]
+  }
 }
