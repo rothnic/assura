@@ -317,7 +317,7 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
     let queued_json: Value = serde_json::from_slice(&queued.stdout).expect("queued wrapper JSON");
     assert!(matches!(
         queued_json["feedback"]["refresh"].as_str(),
-        Some("in_flight" | "queued" | "cooldown" | "debounced" | "scheduled")
+        Some("in_flight" | "queued" | "cooldown" | "debounced" | "scheduled" | "not_requested")
     ));
 
     let cache_dir = root.path().join(".git/assura/trajectory");
