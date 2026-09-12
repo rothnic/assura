@@ -1065,7 +1065,19 @@ mod tests {
         let path = root.path().join("lease");
         fs::write(&path, format!("{}:0", std::process::id())).expect("live owner");
         assert_eq!(lease_owner_alive(&path), Some(true));
-        fs::write(&path, "999999:0").expect("gone owner");
+        #[cfg(windows)]
+        let mut child = Command::new("cmd")
+            .args(["/C", "exit", "0"])
+            .spawn()
+            .expect("short-lived owner");
+        #[cfg(not(windows))]
+        let mut child = Command::new("sh")
+            .args(["-c", "exit 0"])
+            .spawn()
+            .expect("short-lived owner");
+        let child_pid = child.id();
+        child.wait().expect("short-lived owner exits");
+        fs::write(&path, format!("{child_pid}:0")).expect("gone owner");
         assert_eq!(lease_owner_alive(&path), Some(false));
     }
 
