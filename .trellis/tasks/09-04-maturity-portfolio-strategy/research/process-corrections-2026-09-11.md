@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
-Status: active, current source as-of the latest refresh
-`origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6`.
+Status: active, latest observed source as-of the latest refresh
+`origin/master=2d51296d2a61b7a7b41f2277164a97926b806ba4`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,28 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — 20256c1 — 2026-09-12 UTC (post-merge; no-credit)
+## Latest observed correction checkpoint — PR #315 / 2d512c1 — 2026-09-12 UTC (refresh required; no-credit)
+
+PR #315 merged the reviewed 20256 reconciliation from head
+`964f15de3e81430d499e1b9e7c861857dff0eebc` on base
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6` as
+`2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
+`6c400e42834b86a7ba2853e554386f69afa27848`. Exact-head applicable checks
+and merge-SHA Documentation `34676984403`, Security Audit `34676984409` and
+Rust CI `34676984395` passed, including CI Scope `103508475702` and Evidence
+Gates `103508495744`; scope-skipped rows remain non-proof. Ledger remains
+`items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
+R01/W02/F01 held).
+
+This is an as-of observation, not a live pointer. Refresh source/release/tag,
+PR/CI, topology and ledger before the next phase; preserve candidate-base/no-
+credit evidence, unfavorable results, unknown topology and the VPS hold. If
+authorized, build a fresh current-source candidate and repeat identity,
+sibling-free canary, holdout/manifest rebind and isolated protocol review in
+order. Public corrections still require independent review, applicable gates,
+current-master integration and merge-SHA observation.
+
+## Historical correction checkpoint — 20256c1 — 2026-09-12 UTC (post-merge; superseded by 2d512c1; no-credit)
 
 PR #314 merged the reviewed e1c9 reconciliation from head
 `c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base
