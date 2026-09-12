@@ -16,7 +16,12 @@ pub(super) enum GitOutput {
 
 const MAX_RUNTIME: Duration = Duration::from_secs(2);
 
-pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutput {
+pub(super) fn run_git(
+    repo_root: &Path,
+    args: &[&str],
+    limit: usize,
+    deadline: Option<Instant>,
+) -> GitOutput {
     let mut command = Command::new("git");
     command
         .env("GIT_OPTIONAL_LOCKS", "0")
@@ -25,7 +30,7 @@ pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutpu
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    run_bounded(command, limit, refresh_timeout())
+    run_bounded_until(command, limit, refresh_timeout(), deadline)
 }
 
 fn refresh_timeout() -> Duration {
@@ -59,7 +64,17 @@ fn refresh_timeout_from(value: Option<&str>) -> Duration {
         .unwrap_or(MAX_RUNTIME)
 }
 
-fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutput {
+#[cfg(test)]
+fn run_bounded(command: Command, limit: usize, timeout: Duration) -> GitOutput {
+    run_bounded_until(command, limit, timeout, None)
+}
+
+fn run_bounded_until(
+    mut command: Command,
+    limit: usize,
+    timeout: Duration,
+    deadline: Option<Instant>,
+) -> GitOutput {
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(_) => return GitOutput::Failed,
@@ -71,7 +86,8 @@ fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutp
             (output, result.is_ok())
         })
     });
-    let deadline = Instant::now() + timeout;
+    let timeout_deadline = Instant::now() + timeout;
+    let deadline = deadline.map_or(timeout_deadline, |deadline| deadline.min(timeout_deadline));
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -111,9 +127,9 @@ fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutp
 
 #[cfg(test)]
 mod tests {
-    use super::{refresh_timeout_from, run_bounded, GitOutput};
+    use super::{refresh_timeout_from, run_bounded, run_bounded_until, GitOutput};
     use std::process::{Command, Stdio};
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     #[cfg(unix)]
     #[test]
@@ -125,6 +141,25 @@ mod tests {
             .stderr(Stdio::null());
         assert!(matches!(
             run_bounded(command, 1024, Duration::from_millis(20)),
+            GitOutput::TimedOut
+        ));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn aggregate_deadline_caps_the_worker_timeout() {
+        let mut command = Command::new("sh");
+        command
+            .args(["-c", "sleep 1"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        assert!(matches!(
+            run_bounded_until(
+                command,
+                1024,
+                Duration::from_secs(2),
+                Some(Instant::now() + Duration::from_millis(20)),
+            ),
             GitOutput::TimedOut
         ));
     }

@@ -91,13 +91,24 @@ with `git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30ddd
 
 ## CF03 ownership checkpoint
 
-CF03 remains one owned candidate at `/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03`,
-branch `goal/compact-feedback-cf03`, based on CF02 merge `9383acc2fd9a47d63553fd32768aef7428c7b34c`.
-The product candidate is Nick/Codex-owned; commits `3e82ea8` and `0f78e42`
-implement the bounded automatic delivery contract, `3148110` scopes its
-delivery state to the canonical worktree, and `aaabba4` excludes the foreign
-note from the net candidate diff. The exact current tip is retained until
-CF03 review and merge gates finish.
+CF03 remains one owned candidate at
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03-final`, branch
+`goal/compact-feedback-cf03`, based on CF02 merge
+`9383acc2fd9a47d63553fd32768aef7428c7b34c`. The product candidate is
+Nick/Codex-owned and currently ends at `8e406d4890668f91319d5cdd67cfb1364c853011`;
+it is retained until CF03 review and merge gates finish.
+
+The duplicate writer task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` was
+interrupted and archived after it was found editing the same candidate. Its
+older local ref is archived as
+`archive/2026-09-12/compact-feedback-cf03-duplicate` at
+`7d3ba219e722a987c15f8c33bbc9f075eaf4b71a`, with the dirty delivery overlay
+preserved in stash `c0cbbfd88c5d04b24817ce77511c6df25fd57233`. Owner is
+unknown/duplicate; next action is owner review; restore the ref with
+`git branch archive/2026-09-12/compact-feedback-cf03-duplicate 7d3ba219e722a987c15f8c33bbc9f075eaf4b71a`
+and the overlay with `git stash apply c0cbbfd88c5d04b24817ce77511c6df25fd57233`.
+The duplicate worktree was removed after its non-ignored overlay was preserved;
+the remote candidate ref was retained. No source or foreign stash was deleted.
 
 An unrelated harness-matrix note was observed in the shared candidate while
 another validation owner was active. It is deliberately excluded from the

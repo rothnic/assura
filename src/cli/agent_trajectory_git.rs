@@ -7,6 +7,7 @@ use crate::config::config::AgentFeedbackTrajectoryConfig;
 use glob::Pattern;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
+use std::time::Instant;
 
 use exec::{run_git, GitOutput};
 
@@ -37,6 +38,7 @@ pub(super) struct GitInput {
     pub(super) window: Window,
     pub(super) max_commits: u64,
     pub(super) classification: PathClassification,
+    pub(super) deadline: Option<Instant>,
 }
 
 #[derive(Debug, Clone)]
@@ -153,6 +155,7 @@ pub(super) fn discover(
     now: i64,
     trajectory: Option<&AgentFeedbackTrajectoryConfig>,
     max_commits: u64,
+    deadline: Option<Instant>,
 ) -> Result<GitInput, String> {
     let classification = trajectory
         .map(PathClassification::from_config)
@@ -172,8 +175,12 @@ pub(super) fn discover(
     let worktree_root = project_root
         .canonicalize()
         .unwrap_or_else(|_| project_root.to_path_buf());
-    let Some(repo_text) = git_text(project_root, &["rev-parse", "--show-toplevel"], 8 * 1024)
-    else {
+    let Some(repo_text) = git_text(
+        project_root,
+        &["rev-parse", "--show-toplevel"],
+        8 * 1024,
+        deadline,
+    ) else {
         return Ok(unavailable(
             worktree_root,
             now,
@@ -181,6 +188,7 @@ pub(super) fn discover(
             window,
             classification,
             max_commits,
+            deadline,
         ));
     };
     let repo_root = PathBuf::from(repo_text.trim())
@@ -188,33 +196,52 @@ pub(super) fn discover(
         .unwrap_or_else(|_| PathBuf::from(repo_text.trim()));
     let common_dir = resolve_git_path(
         &repo_root,
-        git_text(&repo_root, &["rev-parse", "--git-common-dir"], 8 * 1024),
+        git_text(
+            &repo_root,
+            &["rev-parse", "--git-common-dir"],
+            8 * 1024,
+            deadline,
+        ),
     );
     let git_dir = resolve_git_path(
         &repo_root,
-        git_text(&repo_root, &["rev-parse", "--git-dir"], 8 * 1024),
+        git_text(&repo_root, &["rev-parse", "--git-dir"], 8 * 1024, deadline),
     );
     let branch = git_text(
         &repo_root,
         &["symbolic-ref", "--quiet", "--short", "HEAD"],
         8 * 1024,
+        deadline,
     )
     .map(|value| value.trim().to_string());
-    let head_sha = git_text(&repo_root, &["rev-parse", "--verify", "HEAD"], 8 * 1024)
-        .map(|value| value.trim().to_string());
+    let head_sha = git_text(
+        &repo_root,
+        &["rev-parse", "--verify", "HEAD"],
+        8 * 1024,
+        deadline,
+    )
+    .map(|value| value.trim().to_string());
     let (integration_ref, integration_sha) =
-        resolve_integration_ref(&repo_root, &requested_integration_ref);
+        resolve_integration_ref(&repo_root, &requested_integration_ref, deadline);
     let merge_base = integration_ref
         .as_deref()
-        .and_then(|reference| git_text(&repo_root, &["merge-base", "HEAD", reference], 8 * 1024))
+        .and_then(|reference| {
+            git_text(
+                &repo_root,
+                &["merge-base", "HEAD", reference],
+                8 * 1024,
+                deadline,
+            )
+        })
         .map(|value| value.trim().to_string());
     let shallow = git_text(
         &repo_root,
         &["rev-parse", "--is-shallow-repository"],
         8 * 1024,
+        deadline,
     )
     .is_some_and(|value| value.trim() == "true");
-    let status = status_facts(&repo_root);
+    let status = status_facts(&repo_root, deadline);
 
     Ok(GitInput {
         available: true,
@@ -238,6 +265,7 @@ pub(super) fn discover(
         window,
         max_commits: max_commits.clamp(1, MAX_COMMITS),
         classification,
+        deadline,
     })
 }
 
@@ -248,6 +276,7 @@ pub(super) fn unavailable(
     window: Window,
     classification: PathClassification,
     max_commits: u64,
+    deadline: Option<Instant>,
 ) -> GitInput {
     GitInput {
         available: false,
@@ -271,6 +300,7 @@ pub(super) fn unavailable(
         window,
         max_commits: max_commits.clamp(1, MAX_COMMITS),
         classification,
+        deadline,
     }
 }
 
@@ -333,6 +363,7 @@ pub(super) fn collect(input: &GitInput, now: i64) -> CollectionResult {
             now,
             input.max_commits,
             &input.classification,
+            input.deadline,
         ) {
             Ok((history, capped)) => {
                 if capped {
@@ -378,6 +409,7 @@ pub(super) fn collect_history(
         now,
         MAX_COMMITS,
         &PathClassification::default(),
+        None,
     )
 }
 
@@ -388,6 +420,7 @@ fn collect_history_with_paths(
     now: i64,
     configured_max_commits: u64,
     classification: &PathClassification,
+    deadline: Option<Instant>,
 ) -> Result<(HistoryResult, bool), String> {
     let max_commits = match window {
         Window::Minutes(_) => configured_max_commits.min(MAX_COMMITS),
@@ -411,7 +444,7 @@ fn collect_history_with_paths(
     }
     args.push(reference.to_string());
     let borrowed = args.iter().map(String::as_str).collect::<Vec<_>>();
-    let text = match run_git(repo_root, &borrowed, MAX_HISTORY_BYTES) {
+    let text = match run_git(repo_root, &borrowed, MAX_HISTORY_BYTES, deadline) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("history_output_truncated".to_string()),
         GitOutput::Failed => return Err("history_unavailable".to_string()),
@@ -503,13 +536,14 @@ fn collect_pending(
                     &format!("{reference}..HEAD"),
                 ],
                 8 * 1024,
+                input.deadline,
             )
         })
         .and_then(|value| value.trim().parse::<u64>().ok());
     let same_integration_tree = input
         .integration_ref
         .as_deref()
-        .and_then(|reference| trees_match(repo_root, reference, "HEAD"));
+        .and_then(|reference| trees_match(repo_root, reference, "HEAD", input.deadline));
     if same_integration_tree == Some(true)
         && input.status_files == Some(0)
         && input.untracked_paths.is_empty()
@@ -535,7 +569,7 @@ fn collect_pending(
         diff_base,
         "--",
     ];
-    let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES) {
+    let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES, input.deadline) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("pending_diff_output_truncated".to_string()),
         GitOutput::Failed => return Err("pending_diff_unavailable".to_string()),
@@ -569,7 +603,12 @@ fn collect_pending(
     })
 }
 
-fn trees_match(repo_root: &Path, left: &str, right: &str) -> Option<bool> {
+fn trees_match(
+    repo_root: &Path,
+    left: &str,
+    right: &str,
+    deadline: Option<Instant>,
+) -> Option<bool> {
     match run_git(
         repo_root,
         &[
@@ -582,6 +621,7 @@ fn trees_match(repo_root: &Path, left: &str, right: &str) -> Option<bool> {
             "--",
         ],
         MAX_STATUS_BYTES,
+        deadline,
     ) {
         GitOutput::Text(text) => Some(text.trim().is_empty()),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
@@ -668,11 +708,12 @@ struct StatusFacts {
     digest: String,
 }
 
-fn status_facts(repo_root: &Path) -> StatusFacts {
+fn status_facts(repo_root: &Path, deadline: Option<Instant>) -> StatusFacts {
     let output = run_git(
         repo_root,
         &["status", "--porcelain=v1", "--untracked-files=normal"],
         MAX_STATUS_BYTES,
+        deadline,
     );
     let (text, truncated, files_available, unavailable, timed_out) = match output {
         GitOutput::Text(text) => (text, false, true, false, false),
@@ -708,7 +749,11 @@ fn is_runtime_status_path(line: &str) -> bool {
     path == ".assura/agent-sessions" || path.starts_with(".assura/agent-sessions/")
 }
 
-fn resolve_integration_ref(repo_root: &Path, requested: &str) -> (Option<String>, Option<String>) {
+fn resolve_integration_ref(
+    repo_root: &Path,
+    requested: &str,
+    deadline: Option<Instant>,
+) -> (Option<String>, Option<String>) {
     let candidates = if requested == "origin/master" {
         vec![requested, "origin/main", "master", "main"]
     } else {
@@ -719,6 +764,7 @@ fn resolve_integration_ref(repo_root: &Path, requested: &str) -> (Option<String>
             repo_root,
             &["rev-parse", "--verify", "--quiet", candidate],
             8 * 1024,
+            deadline,
         ) {
             return (Some(candidate.to_string()), Some(sha.trim().to_string()));
         }
@@ -738,8 +784,13 @@ fn resolve_git_path(repo_root: &Path, value: Option<String>) -> PathBuf {
     path.canonicalize().unwrap_or(path)
 }
 
-fn git_text(repo_root: &Path, args: &[&str], limit: usize) -> Option<String> {
-    match run_git(repo_root, args, limit) {
+fn git_text(
+    repo_root: &Path,
+    args: &[&str],
+    limit: usize,
+    deadline: Option<Instant>,
+) -> Option<String> {
+    match run_git(repo_root, args, limit, deadline) {
         GitOutput::Text(text) => Some(text),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
     }

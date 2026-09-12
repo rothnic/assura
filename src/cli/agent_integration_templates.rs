@@ -79,10 +79,15 @@ def compact_context(payload):
         rule = item.get("rule") or item.get("category") or "signal"
         line += f"; [{{rule}}] {{path}}: {{item.get('message', '')}}"
     context = "\n".join(["<assura-feedback>", line, "</assura-feedback>"])
-    if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
+    feedback = payload.get("feedback") or {{}}
+    effective = feedback.get("effective") or {{}}
+    limit = effective.get("max_bytes", MAX_CONTEXT_BYTES)
+    if not isinstance(limit, int) or not 64 <= limit <= MAX_CONTEXT_BYTES:
+        limit = MAX_CONTEXT_BYTES
+    if len(context.encode("utf-8")) <= limit:
         return context
     suffix = "\n...\n</assura-feedback>"
-    remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
+    remaining = limit - len(suffix.encode("utf-8"))
     prefix = context.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")
     return prefix + suffix
 
@@ -156,16 +161,18 @@ function compact(payload) {{
   const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
-  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+  const limit = payload?.feedback?.effective?.max_bytes ?? 256
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"), limit)
 }}
 
-function bounded(value) {{
+function bounded(value, limit) {{
   const encoder = new TextEncoder()
-  if (encoder.encode(value).length <= 256) return value
+  const maxBytes = Number.isInteger(limit) && limit >= 64 && limit <= 256 ? limit : 256
+  if (encoder.encode(value).length <= maxBytes) return value
   const suffix = "\n...\n</assura-feedback>"
   let body = ""
   for (const character of value) {{
-    if (encoder.encode(body + character + suffix).length > 256) break
+    if (encoder.encode(body + character + suffix).length > maxBytes) break
     body += character
   }}
   return body + suffix
@@ -219,16 +226,18 @@ function compact(payload) {{
   const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
-  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+  const limit = payload?.feedback?.effective?.max_bytes ?? 256
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"), limit)
 }}
 
-function bounded(value) {{
+function bounded(value, limit) {{
   const encoder = new TextEncoder()
-  if (encoder.encode(value).length <= 256) return value
+  const maxBytes = Number.isInteger(limit) && limit >= 64 && limit <= 256 ? limit : 256
+  if (encoder.encode(value).length <= maxBytes) return value
   const suffix = "\n...\n</assura-feedback>"
   let body = ""
   for (const character of value) {{
-    if (encoder.encode(body + character + suffix).length > 256) break
+    if (encoder.encode(body + character + suffix).length > maxBytes) break
     body += character
   }}
   return body + suffix

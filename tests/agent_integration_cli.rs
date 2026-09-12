@@ -40,6 +40,19 @@ fn adapter_fixture() -> TempDir {
     project
 }
 
+fn bounded_adapter_fixture() -> TempDir {
+    let project = adapter_fixture();
+    let config =
+        fs::read_to_string(project.path().join(".assura/config.yml")).expect("adapter config");
+    let config = config.replace("    extra: true\n", "");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        format!("agent_feedback:\n  max_bytes: 96\n{config}"),
+    )
+    .expect("bounded adapter config");
+    project
+}
+
 fn run_agent(project: &Path, args: &[&str]) -> Output {
     Command::new(assura_bin())
         .args(["agent"])
@@ -214,6 +227,18 @@ fn claude_pre_tool_event_injects_bounded_assura_context() {
     assert!(context.len() <= 256);
     assert!(context.contains("<assura-feedback>"));
     assert!(context.contains("src/BadName.rs"));
+}
+
+#[test]
+fn generated_python_adapter_uses_configured_feedback_budget() {
+    let project = bounded_adapter_fixture();
+    for agent in ["codex", "claude"] {
+        let output = run_python_adapter(project.path(), agent, "PostToolUse");
+        let context = output["hookSpecificOutput"]["additionalContext"]
+            .as_str()
+            .expect("configured adapter context");
+        assert!(context.len() <= 96, "{agent}: {context:?}");
+    }
 }
 
 #[test]

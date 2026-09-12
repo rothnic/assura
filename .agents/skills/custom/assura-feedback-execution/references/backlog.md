@@ -19,9 +19,9 @@ generated host bundles, integration tests and performance tooling.
 
 ## Global constraints
 
-- Execution is active after the explicit start; CF01 is terminal on
-  `origin/master` and CF02 owns the current product candidate. CF03-CF04
-  remain gated on their prerequisites.
+- Execution is active after the explicit start; CF01 and CF02 are terminal on
+  `origin/master`, CF03 owns the current product candidate, and CF04 remains
+  gated on CF03.
 - Routine injection: one line, <=256 UTF-8 bytes including wrapper, default
   spacing 600 seconds, <=4 messages and <=1024 bytes per rolling hour.
 - Configurable entry/clear thresholds, material steps, bounded reminders,

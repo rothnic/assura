@@ -9,10 +9,11 @@ use crate::config::config::AgentFeedbackConfig;
 use git::{CategoryStats, CollectionResult, GitInput};
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 const SNAPSHOT_SCHEMA: &str = "assura.agent-trajectory.v1";
 const CLASSIFICATION_VERSION: &str = "paths-v1";
+const DEFAULT_INSPECT_TIMEOUT_MS: u64 = 2_000;
 
 /// A bounded, cached snapshot of locally observable Git facts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -342,11 +343,17 @@ fn inspect_at(
     now: i64,
     config: Option<&AgentFeedbackConfig>,
 ) -> Result<TrajectorySnapshot, String> {
+    let timeout_ms = config
+        .map(|value| value.collection.timeout_ms)
+        .unwrap_or(DEFAULT_INSPECT_TIMEOUT_MS)
+        .clamp(1, 10_000);
+    let deadline = Instant::now() + Duration::from_millis(timeout_ms);
     let input = git::discover(
         project_root,
         now,
         config.map(|value| &value.trajectory),
         config.map_or(500, |value| u64::from(value.collection.max_commits)),
+        Some(deadline),
     )?;
     let generation = git::generation(&input, CLASSIFICATION_VERSION, now);
     let cache_key = snapshot::CacheKey::new(&input, CLASSIFICATION_VERSION);
@@ -397,7 +404,7 @@ fn inspect_at(
         &cache_read,
         config,
     );
-    if super::agent_nudge_delivery::refresh_deadline_expired() {
+    if Instant::now() >= deadline || super::agent_nudge_delivery::refresh_deadline_expired() {
         return Err("trajectory refresh deadline exceeded".to_string());
     }
     if let Err(error) = snapshot::write(&cache_key, &snapshot) {

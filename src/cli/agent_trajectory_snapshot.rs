@@ -138,7 +138,7 @@ fn read_bounded_with_limit(path: &Path, limit: usize) -> Result<Option<Vec<u8>>,
     file.take((limit + 1) as u64)
         .read_to_end(&mut bytes)
         .map_err(|error| error.to_string())?;
-    Ok((bytes.len() <= MAX_CACHE_BYTES).then_some(bytes))
+    Ok((bytes.len() <= limit).then_some(bytes))
 }
 
 pub(super) fn write(key: &CacheKey, snapshot: &TrajectorySnapshot) -> Result<(), String> {
@@ -201,12 +201,11 @@ impl CacheLease {
                 .ok()
                 .and_then(|value| value.duration_since(std::time::UNIX_EPOCH).ok())
                 .map(|value| {
-                    crate::cli::agent_nudge_delivery::now_millis()
-                        .saturating_sub(value.as_secs() as i64)
+                    crate::cli::agent_nudge_delivery::now().saturating_sub(value.as_secs() as i64)
                         > CACHE_LOCK_SECONDS
                 })
                 .unwrap_or(false);
-            if stale {
+            if stale && crate::cli::agent_nudge_delivery::lease_owner_alive(&path) == Some(false) {
                 let _ = fs::remove_file(&path);
             }
         }
@@ -335,5 +334,16 @@ mod tests {
             })
             .count();
         assert_eq!(count, MAX_CACHE_FILES);
+    }
+
+    #[test]
+    fn bounded_reads_honor_small_pointer_limit() {
+        let directory = tempdir().expect("cache directory");
+        let path = directory.path().join("pointer");
+        fs::write(&path, vec![b'x'; MAX_POINTER_BYTES + 1]).expect("pointer file");
+        assert_eq!(
+            read_bounded_with_limit(&path, MAX_POINTER_BYTES).expect("bounded read"),
+            None
+        );
     }
 }

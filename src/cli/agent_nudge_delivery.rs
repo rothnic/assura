@@ -68,7 +68,12 @@ struct DeliveryState {
     first_pending_at: Option<i64>,
     clean_since: Option<i64>,
     last_sent_at: Option<i64>,
+    #[serde(default)]
+    signals: SignalStates,
+    // Read legacy state once and migrate it into the per-signal fields.
+    #[serde(default, skip_serializing)]
     last_signal: Option<String>,
+    #[serde(default, skip_serializing)]
     reminders_sent: u8,
     last_refresh_at: Option<i64>,
     #[serde(default)]
@@ -76,6 +81,56 @@ struct DeliveryState {
     #[serde(default)]
     last_refresh_event: Option<String>,
     sends: Vec<SendRecord>,
+}
+
+#[derive(Clone, Copy, Debug)]
+enum SignalFamily {
+    Pending,
+    Coordination,
+    Patch,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+struct SignalState {
+    #[serde(default)]
+    last_key: Option<String>,
+    #[serde(default)]
+    reminders_sent: u8,
+}
+
+impl SignalState {
+    fn clear(&mut self) {
+        self.last_key = None;
+        self.reminders_sent = 0;
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
+struct SignalStates {
+    #[serde(default)]
+    pending: SignalState,
+    #[serde(default)]
+    coordination: SignalState,
+    #[serde(default)]
+    patch: SignalState,
+}
+
+impl SignalStates {
+    fn get(&self, family: SignalFamily) -> &SignalState {
+        match family {
+            SignalFamily::Pending => &self.pending,
+            SignalFamily::Coordination => &self.coordination,
+            SignalFamily::Patch => &self.patch,
+        }
+    }
+
+    fn get_mut(&mut self, family: SignalFamily) -> &mut SignalState {
+        match family {
+            SignalFamily::Pending => &mut self.pending,
+            SignalFamily::Coordination => &mut self.coordination,
+            SignalFamily::Patch => &mut self.patch,
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -88,6 +143,7 @@ struct SendRecord {
 struct SignalSelection {
     key: String,
     reminder: bool,
+    family: Option<SignalFamily>,
 }
 
 /// Apply automatic delivery to one already-collected event.
@@ -191,6 +247,7 @@ pub(super) fn automatic(
             .then_some(SignalSelection {
                 key: "periodic".to_string(),
                 reminder: false,
+                family: None,
             }),
         AgentFeedbackMode::Threshold => threshold_selection(&mut state, &snapshot, now, config),
         AgentFeedbackMode::Off => None,
@@ -221,9 +278,15 @@ pub(super) fn automatic(
                 reason = "hourly_byte_budget";
             } else {
                 state.last_sent_at = Some(now);
-                state.last_signal = Some(selection.key);
-                if selection.reminder {
-                    state.reminders_sent = state.reminders_sent.saturating_add(1);
+                if let Some(family) = selection.family {
+                    let signal = state.signals.get_mut(family);
+                    if signal.last_key.as_deref() != Some(selection.key.as_str()) {
+                        signal.reminders_sent = 0;
+                    }
+                    signal.last_key = Some(selection.key.clone());
+                    if selection.reminder {
+                        signal.reminders_sent = signal.reminders_sent.saturating_add(1);
+                    }
                 }
                 state.sends.push(SendRecord {
                     at: now,
@@ -324,8 +387,7 @@ fn update_pending_episode(
         if observed_at.saturating_sub(*clean_since) >= clear_after {
             state.first_pending_at = None;
             state.clean_since = None;
-            state.last_signal = None;
-            state.reminders_sent = 0;
+            state.signals.get_mut(SignalFamily::Pending).clear();
         }
     }
 }
@@ -344,14 +406,18 @@ fn threshold_selection(
             if snapshot.has_pending_work() && age >= threshold {
                 let step = signals.unintegrated.step_minutes.max(1).saturating_mul(60) as i64;
                 let key = format!("pending:{}", age.div_euclid(step));
-                if state.last_signal.as_deref() != Some(key.as_str()) {
+                if state.signals.get(SignalFamily::Pending).last_key.as_deref()
+                    != Some(key.as_str())
+                {
                     return Some(SignalSelection {
                         key,
                         reminder: false,
+                        family: Some(SignalFamily::Pending),
                     });
                 }
                 if config.reminder_seconds > 0
-                    && state.reminders_sent < config.max_reminders_per_episode
+                    && state.signals.get(SignalFamily::Pending).reminders_sent
+                        < config.max_reminders_per_episode
                     && state.last_sent_at.is_some_and(|last| {
                         now.saturating_sub(last) >= config.reminder_seconds as i64
                     })
@@ -359,6 +425,7 @@ fn threshold_selection(
                     return Some(SignalSelection {
                         key,
                         reminder: true,
+                        family: Some(SignalFamily::Pending),
                     });
                 }
             }
@@ -371,14 +438,22 @@ fn threshold_selection(
         {
             if only_coordination >= signals.coordination.min_only_coordination_commits {
                 let key = "coordination".to_string();
-                if state.last_signal.as_deref() != Some(key.as_str()) {
+                if state
+                    .signals
+                    .get(SignalFamily::Coordination)
+                    .last_key
+                    .as_deref()
+                    != Some(key.as_str())
+                {
                     return Some(SignalSelection {
                         key,
                         reminder: false,
+                        family: Some(SignalFamily::Coordination),
                     });
                 }
                 if config.reminder_seconds > 0
-                    && state.reminders_sent < config.max_reminders_per_episode
+                    && state.signals.get(SignalFamily::Coordination).reminders_sent
+                        < config.max_reminders_per_episode
                     && state.last_sent_at.is_some_and(|last| {
                         now.saturating_sub(last) >= config.reminder_seconds as i64
                     })
@@ -386,13 +461,18 @@ fn threshold_selection(
                     return Some(SignalSelection {
                         key,
                         reminder: true,
+                        family: Some(SignalFamily::Coordination),
                     });
                 }
             } else if only_coordination < signals.coordination.clear_below_only_coordination_commits
-                && state.last_signal.as_deref() == Some("coordination")
+                && state
+                    .signals
+                    .get(SignalFamily::Coordination)
+                    .last_key
+                    .as_deref()
+                    == Some("coordination")
             {
-                state.last_signal = None;
-                state.reminders_sent = 0;
+                state.signals.get_mut(SignalFamily::Coordination).clear();
             }
         }
     }
@@ -402,14 +482,17 @@ fn threshold_selection(
             if lines >= signals.patch_size.changed_lines {
                 let step = signals.patch_size.step_lines.max(1);
                 let key = format!("patch:{}", lines / step);
-                if state.last_signal.as_deref() != Some(key.as_str()) {
+                if state.signals.get(SignalFamily::Patch).last_key.as_deref() != Some(key.as_str())
+                {
                     return Some(SignalSelection {
                         key,
                         reminder: false,
+                        family: Some(SignalFamily::Patch),
                     });
                 }
                 if config.reminder_seconds > 0
-                    && state.reminders_sent < config.max_reminders_per_episode
+                    && state.signals.get(SignalFamily::Patch).reminders_sent
+                        < config.max_reminders_per_episode
                     && state.last_sent_at.is_some_and(|last| {
                         now.saturating_sub(last) >= config.reminder_seconds as i64
                     })
@@ -417,16 +500,18 @@ fn threshold_selection(
                     return Some(SignalSelection {
                         key,
                         reminder: true,
+                        family: Some(SignalFamily::Patch),
                     });
                 }
             } else if lines < signals.patch_size.clear_below_changed_lines
                 && state
-                    .last_signal
+                    .signals
+                    .get(SignalFamily::Patch)
+                    .last_key
                     .as_deref()
                     .is_some_and(|value| value.starts_with("patch:"))
             {
-                state.last_signal = None;
-                state.reminders_sent = 0;
+                state.signals.get_mut(SignalFamily::Patch).clear();
             }
         }
     }
@@ -464,7 +549,7 @@ fn request_refresh(
             .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
             .map(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
             .unwrap_or(false);
-        if stale {
+        if stale && lease_owner_alive(&lock) == Some(false) {
             let _ = fs::remove_file(&lock);
         } else {
             let queued = lock.with_extension("queued");
@@ -498,11 +583,6 @@ fn request_refresh(
         .is_err()
     {
         return "in_flight";
-    }
-    let token = format!("{}:{}", std::process::id(), now_millis());
-    if fs::write(&lock, &token).is_err() {
-        let _ = fs::remove_file(&lock);
-        return "unavailable";
     }
     let token = format!("{}:{}", std::process::id(), now_millis());
     if fs::write(&lock, &token).is_err() {
@@ -564,26 +644,18 @@ pub(super) fn finish_refresh() {
         let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
             return;
         };
-        if !refresh_lease_owned_or_released(&path, &token) {
+        if !refresh_lease_owned(&path, &token) {
             return;
         }
         let queued = path.with_extension("queued");
-        let _ = fs::remove_file(&path);
-        if fs::remove_file(&queued).is_ok()
-            && OpenOptions::new()
-                .write(true)
-                .create_new(true)
-                .open(&path)
-                .is_ok()
-        {
+        if queued.is_file() {
             let next_token = format!("{}:{}", std::process::id(), now_millis());
-            if fs::write(&path, &next_token).is_err() {
-                let _ = fs::remove_file(&path);
+            if !replace_refresh_lease(&path, &next_token) {
                 return;
             }
-            if let Ok(executable) = std::env::current_exe() {
+            let spawned = std::env::current_exe().ok().is_some_and(|executable| {
                 let args = std::env::args_os().skip(1).collect::<Vec<_>>();
-                if Command::new(executable)
+                Command::new(executable)
                     .args(args)
                     .env("ASSURA_FEEDBACK_REFRESH_LOCK", &path)
                     .env(REFRESH_TOKEN_ENV, &next_token)
@@ -604,23 +676,42 @@ pub(super) fn finish_refresh() {
                     .stdout(Stdio::null())
                     .stderr(Stdio::null())
                     .spawn()
-                    .is_err()
-                {
-                    let _ = fs::remove_file(&path);
-                }
+                    .is_ok()
+            });
+            if spawned {
+                let _ = fs::remove_file(&queued);
             } else {
-                let _ = fs::remove_file(&path);
+                let _ = remove_refresh_lease_if_owned(&path, std::ffi::OsStr::new(&next_token));
             }
+            return;
         }
+        let _ = remove_refresh_lease_if_owned(&path, &token);
     }
 }
 
-fn refresh_lease_owned_or_released(path: &Path, token: &std::ffi::OsStr) -> bool {
-    match fs::read_to_string(path) {
-        Ok(current) => current == token.to_string_lossy(),
-        Err(error) if error.kind() == std::io::ErrorKind::NotFound => true,
-        Err(_) => false,
+fn refresh_lease_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
+    fs::read_to_string(path)
+        .ok()
+        .is_some_and(|current| current == token.to_string_lossy())
+}
+
+fn remove_refresh_lease_if_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
+    refresh_lease_owned(path, token) && fs::remove_file(path).is_ok()
+}
+
+fn replace_refresh_lease(path: &Path, token: &str) -> bool {
+    let Some(parent) = path.parent() else {
+        return false;
+    };
+    let temporary = parent.join(format!(".{}.{}.tmp", std::process::id(), now_millis()));
+    if fs::write(&temporary, token).is_err() {
+        return false;
     }
+    let result = super::replace_file(&temporary, path).is_ok();
+    if !result {
+        let _ = fs::remove_file(&temporary);
+    }
+    result
 }
 
 pub(super) fn refresh_deadline_expired() -> bool {
@@ -714,13 +805,37 @@ fn digest(path: &Path) -> String {
 }
 
 fn read_state(path: &Path) -> DeliveryState {
-    read_bounded(path)
+    let mut state = read_bounded(path)
         .and_then(|bytes| serde_json::from_slice(&bytes).ok())
         .filter(|state: &DeliveryState| state.schema == STATE_SCHEMA)
         .unwrap_or_else(|| DeliveryState {
             schema: STATE_SCHEMA.to_string(),
             ..Default::default()
-        })
+        });
+    if let Some(key) = state.last_signal.take() {
+        if let Some(family) = signal_family(&key) {
+            let legacy_reminders = state.reminders_sent;
+            let signal = state.signals.get_mut(family);
+            if signal.last_key.is_none() {
+                signal.last_key = Some(key);
+                signal.reminders_sent = legacy_reminders;
+            }
+        }
+    }
+    state.reminders_sent = 0;
+    state
+}
+
+fn signal_family(key: &str) -> Option<SignalFamily> {
+    if key.starts_with("pending:") {
+        Some(SignalFamily::Pending)
+    } else if key == "coordination" {
+        Some(SignalFamily::Coordination)
+    } else if key.starts_with("patch:") {
+        Some(SignalFamily::Patch)
+    } else {
+        None
+    }
 }
 
 fn state_is_valid(path: &Path) -> bool {
@@ -757,8 +872,52 @@ fn write_state(path: &Path, state: &DeliveryState) -> Result<(), String> {
     super::replace_file(&temporary, path).map_err(|error| error.to_string())
 }
 
+pub(super) fn lease_owner_alive(path: &Path) -> Option<bool> {
+    let token = fs::read_to_string(path).ok()?;
+    let pid = token.split(':').next()?.parse::<u32>().ok()?;
+    process_owner_alive(pid)
+}
+
+#[cfg(unix)]
+fn process_owner_alive(pid: u32) -> Option<bool> {
+    Command::new("kill")
+        .args(["-0", &pid.to_string()])
+        .status()
+        .ok()
+        .map(|status| status.success())
+}
+
+#[cfg(windows)]
+fn process_owner_alive(pid: u32) -> Option<bool> {
+    use windows_sys::Win32::Foundation::{
+        CloseHandle, GetLastError, ERROR_INVALID_PARAMETER, STILL_ACTIVE,
+    };
+    use windows_sys::Win32::System::Threading::{
+        GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
+    };
+
+    // SAFETY: OpenProcess receives a PID parsed from the lease and no borrowed pointers.
+    let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
+    if handle.is_null() {
+        // Access failures are unknown; an invalid PID proves the owner is gone.
+        return Some(unsafe { GetLastError() } == ERROR_INVALID_PARAMETER);
+    }
+    let mut exit_code = 0;
+    // SAFETY: handle is owned above and exit_code is writable storage.
+    let result = unsafe { GetExitCodeProcess(handle, &mut exit_code) } != 0;
+    // SAFETY: handle is the process handle returned by OpenProcess.
+    unsafe { CloseHandle(handle) };
+    result.then_some(exit_code == STILL_ACTIVE)
+}
+
+#[cfg(not(any(unix, windows)))]
+fn process_owner_alive(_pid: u32) -> Option<bool> {
+    None
+}
+
 struct DeliveryLease {
     path: PathBuf,
+    token: String,
 }
 
 impl DeliveryLease {
@@ -775,22 +934,30 @@ impl DeliveryLease {
                 .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
                 .map(|value| now().saturating_sub(value.as_secs() as i64) > 30)
                 .unwrap_or(false);
-            if stale {
+            if stale && lease_owner_alive(&path) == Some(false) {
                 let _ = fs::remove_file(&path);
             }
         }
-        OpenOptions::new()
+        let token = format!("{}:{}", std::process::id(), now_millis());
+        let file = OpenOptions::new()
             .write(true)
             .create_new(true)
             .open(&path)
-            .ok()
-            .map(|_| Self { path })
+            .ok()?;
+        drop(file);
+        if fs::write(&path, &token).is_err() {
+            let _ = fs::remove_file(&path);
+            return None;
+        }
+        Some(Self { path, token })
     }
 }
 
 impl Drop for DeliveryLease {
     fn drop(&mut self) {
-        let _ = fs::remove_file(&self.path);
+        if fs::read_to_string(&self.path).ok().as_deref() == Some(self.token.as_str()) {
+            let _ = fs::remove_file(&self.path);
+        }
     }
 }
 
@@ -841,6 +1008,29 @@ mod tests {
     }
 
     #[test]
+    fn legacy_signal_state_migrates_without_cross_family_reuse() {
+        let root = tempdir().expect("state directory");
+        let path = root.path().join("state.json");
+        fs::write(
+            &path,
+            serde_json::json!({
+                "schema": STATE_SCHEMA,
+                "last_signal": "patch:2",
+                "reminders_sent": 1,
+                "sends": []
+            })
+            .to_string(),
+        )
+        .expect("legacy state");
+
+        let state = read_state(&path);
+        assert_eq!(state.signals.patch.last_key.as_deref(), Some("patch:2"));
+        assert_eq!(state.signals.patch.reminders_sent, 1);
+        assert!(state.signals.pending.last_key.is_none());
+        assert_eq!(state.signals.pending.reminders_sent, 0);
+    }
+
+    #[test]
     fn pending_episode_table_keeps_short_clean_gaps_in_one_episode() {
         let config = AgentFeedbackConfig::default();
         let mut state = DeliveryState {
@@ -870,6 +1060,16 @@ mod tests {
     }
 
     #[test]
+    fn lease_owner_probe_distinguishes_live_and_gone_processes() {
+        let root = tempdir().expect("lease directory");
+        let path = root.path().join("lease");
+        fs::write(&path, format!("{}:0", std::process::id())).expect("live owner");
+        assert_eq!(lease_owner_alive(&path), Some(true));
+        fs::write(&path, "999999:0").expect("gone owner");
+        assert_eq!(lease_owner_alive(&path), Some(false));
+    }
+
+    #[test]
     fn threshold_delivery_has_one_step_and_one_reminder() {
         let mut config = AgentFeedbackConfig::default();
         config.trajectory.signals.unintegrated.step_minutes = 120;
@@ -885,14 +1085,14 @@ mod tests {
             threshold_selection(&mut state, &snapshot, 1_800, &config).expect("entry threshold");
         assert_eq!(first.key, "pending:0");
         assert!(!first.reminder);
-        state.last_signal = Some(first.key);
+        state.signals.pending.last_key = Some(first.key.clone());
         state.last_sent_at = Some(1_800);
         assert!(threshold_selection(&mut state, &snapshot, 1_801, &config).is_none());
         let reminder =
             threshold_selection(&mut state, &snapshot, 3_600, &config).expect("one reminder");
         assert_eq!(reminder.key, "pending:0");
         assert!(reminder.reminder);
-        state.reminders_sent = 1;
+        state.signals.pending.reminders_sent = 1;
         assert!(threshold_selection(&mut state, &snapshot, 5_400, &config).is_none());
     }
 

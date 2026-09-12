@@ -391,8 +391,6 @@ fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
         queued.is_file(),
         "active refresh did not queue a generation"
     );
-    fs::remove_file(&lock).expect("release active refresh lease");
-
     let inspect = Command::new(bin())
         .args([
             "agent",
