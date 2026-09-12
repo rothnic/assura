@@ -2,23 +2,28 @@
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
 
-## Current post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, no-credit)
+## Current post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, no-credit)
 
-PR #306 merged the reviewed process slice from head `8576f64d` on base
-`dc031527` as `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head
+PR #307 merged the reviewed process slice from head `9723a673` on base
+`66e0b7e` as `eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head
 Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian passed;
-merge-SHA Documentation `34658963096`, Security Audit `34658963070` and Rust
-CI `34658963059` passed for applicable scope. Scope-skipped product, Rust,
+merge-SHA Documentation `34660366526`, Security Audit `34660366986` and Rust
+CI `34660366735` passed for applicable scope. Scope-skipped product, Rust,
 performance and release rows remain non-proof.
 
 Ledger is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active,
-W03 verified, R01/W02/F01 held). The `dc031527` candidate/canary/packet is
-candidate-base/no-credit and the owned branch/worktree is closed. Refresh
+W03 verified, R01/W02/F01 held). The `66e0b7e` process checkpoint and all
+earlier candidate/canary/packet artifacts are candidate-base/no-credit; the
+owned branch/worktree is being reconciled. Refresh
 source, release/tag, PR/CI, topology and ledger; inspect active/verified/held
 rows; then keep one owned recovery or fresh current-master A07 slice live.
 Fresh identity, canary, six-holdout/two-condition rebind and isolated protocol
 `PASS` are required before separately authorized screening. Empty pending is not
 completion; preserve all external dirt, failures and authority holds.
+
+The owned PR #307 branch must be independently reviewed, gated, merged at its
+exact head, observed at the merge SHA, and then removed only after clean
+verification. This checkpoint records no product or authority success.
 
 ## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 
@@ -985,7 +990,6 @@ with failed required hosted performance; live CI timeout; process-only scope;
 VPS nightly/low disk; clean branches with unknown dirt elsewhere; passing slice
 while A07 acceptance fails. Expected decisions follow the execution contract.
 Record actual reviewer decisions and limitations in `recovery-evidence.md`.
-
 Next action: keep the supported runtime goal active and follow the refreshed
 checkpoint's source/release/tag/PR/CI/topology refresh → revision-pinned ledger
 → candidate freeze → fresh current-master canary → current six-handle holdout
@@ -993,5 +997,4 @@ rebind and exactly-two-condition manifest validation → isolated protocol revie
 `PASS` → separately authorized screening sequence. R01's retained raw
 trace/maintainer decision, W02's approval, W03's publication and F01's
 participant authorization remain separate held actions.
-Do not replace or complete an unfinished goal to repair a status mismatch, and
-do not treat this process reconciliation as A07 acceptance.
+Do not replace or complete an unfinished goal to repair a status mismatch; do not treat this process reconciliation as A07 acceptance.

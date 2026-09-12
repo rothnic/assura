@@ -22,20 +22,21 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=66e0b7e` (2026-09-11 post-merge reconciliation)
+## Current route — `origin/master=eef7e1a` (2026-09-11 post-merge reconciliation)
 
-- PR #306 merged reviewed process corrections from head
-  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
-  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+- PR #307 merged reviewed process corrections from head
+  `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
+  `eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation,
   CI Scope, Security Scope, Evidence Gates and GitGuardian passed; applicable
-  merge-SHA Documentation `34658963096`, Security Audit `34658963070` and
-  Rust CI `34658963059` passed. Scope-skipped product/Rust/performance/release
+  merge-SHA Documentation `34660366526`, Security Audit `34660366986` and
+  Rust CI `34660366735` passed. Scope-skipped product/Rust/performance/release
   rows remain non-proof.
 - Ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07
-  active, W03 verified, R01/W02/F01 held. The `dc031527` candidate, canary and
-  protocol packet are candidate-base/no-credit after this source advance; the
-  clean owned branch/worktree was removed and preserved external/unknown dirt
-  remains outside ownership. No product or authority state changed.
+  active, W03 verified, R01/W02/F01 held. The `66e0b7e` process checkpoint and
+  all earlier candidate/canary/protocol packets are candidate-base/no-credit
+  after this source advance. The owned branch/worktree is being reconciled;
+  preserved external/unknown dirt remains outside ownership. No product or
+  authority state changed.
 - Resume route: refresh source/release/tag/PR/CI/topology and the ledger;
   inspect active/implemented/verified/held before pending; choose one named
   owner and one actionable recovery/preparation phase; and keep it live
@@ -43,6 +44,12 @@ decision; keep this plan as the task-level route.
   cleanup. For A07, rebuild at refreshed master, then identity/no-credit
   canary, holdout/manifest rebind, isolated protocol `PASS`, and only then a
   separately authorized screening decision. Empty pending is not completion.
+
+## Historical route — `origin/master=66e0b7e` (2026-09-11 checkpoint; superseded by eef7e1a)
+
+PR #306 merged the reviewed process reconciliation at `66e0b7e`; applicable
+hosted gates passed and the `dc031527` candidate/packet was classified
+candidate-base/no-credit. No product or authority state changed.
 
 ## Historical route — `origin/master=dc031527` (2026-09-11 checkpoint; superseded by 66e0b7e)
 
