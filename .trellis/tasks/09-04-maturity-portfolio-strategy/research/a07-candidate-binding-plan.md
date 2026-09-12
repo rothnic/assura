@@ -3,16 +3,34 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=3834b1b0647983475f9489da42c9c001b1484a56` (tree
-`703d21c6627ac0575be09d3242091134104bd605`) after PR #321 merged the reviewed
-current-source route reconciliation from base `38626e0`. PR #320, the `eef7e1a`
-process checkpoint and all earlier candidate, canary and protocol packets are
+`origin/master=600e9cd7fa77d2ea55664cae201d5db45fac6a3c` (tree
+`685ca988d88c1045503bc24eb6e4f2bbbb1b1a5a`) after PR #322 merged the reviewed
+route correction from base `3834b1b`. PR #321, PR #307, the `eef7e1a` process
+checkpoint and all earlier candidate, canary and protocol packets are
 historical candidate-base/no-credit after that source advance. No screening,
 allocation or acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current post-merge route — PR #321 — 2026-09-12 UTC (`origin/master=3834b1b`)
+## Current post-merge route — PR #322 — 2026-09-12 UTC (`origin/master=600e9cd`)
+
+- PR #322 merged the reviewed route correction from head
+  `686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
+  `3834b1b0647983475f9489da42c9c001b1484a56` as
+  `600e9cd7fa77d2ea55664cae201d5db45fac6a3c`. Independent rereview returned
+  PASS and resolved `TRAIN-ROUTE-3834-002`, the stale PR #307 binding route.
+  Exact-head Evidence Gates, CI Scope, Documentation Scope, Security Scope and
+  GitGuardian passed; merge-SHA Documentation `34683313454`, Security Audit
+  `34683313445` and Rust CI `34683313452` passed, including Evidence Gates job
+  `103525808073`. Scope-skipped product/Rust/performance/release rows remain
+  non-proof. The merge tree is `685ca988d88c1045503bc24eb6e4f2bbbb1b1a5`.
+- Before A07 screening or acceptance, refresh source/release/tag, PR/CI,
+  topology and ledger; build a fresh exact-toolchain candidate from `600e9cd`;
+  run identity and sibling-free no-credit canary gates; rebind all six holdouts
+  and exactly two conditions; and obtain isolated protocol `PASS`. This process
+  evidence is preparation only, and screening/allocation/credit remain false.
+
+## Historical post-merge route — PR #321 — 2026-09-12 UTC (`origin/master=3834b1b`; superseded by PR #322)
 
 - PR #321 merged reviewed process artifacts from head
   `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base

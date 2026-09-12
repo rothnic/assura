@@ -1,6 +1,35 @@
 # Current maturity train checkpoint
 
-## Iteration 177 — 2026-09-12 — PR #321 current-source route correction
+## Iteration 178 — 2026-09-12 — PR #322 post-merge route reconciliation
+
+- Owner/phase: `/root` / post-merge reconciliation at refreshed
+  `origin/master=600e9cd7fa77d2ea55664cae201d5db45fac6a3c` (tree
+  `685ca988d88c1045503bc24eb6e4f2bbbb1b1a5a`). PR #322 merged reviewed head
+  `686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
+  `3834b1b0647983475f9489da42c9c001b1484a56`. Independent rereview returned
+  PASS and resolved `TRAIN-ROUTE-3834-002`, which found a stale PR #307 source
+  reference in the A07 binding plan.
+- Exact-head Evidence Gates, CI Scope, Documentation Scope, Security Scope and
+  GitGuardian passed. Merge-SHA Documentation `34683313454`, Security Audit
+  `34683313445` and Rust CI `34683313452` passed, including Evidence Gates job
+  `103525808073`; product/Rust/performance/release rows were scope-skipped and
+  remain non-proof. The reviewed tree equals the merge tree and the owned
+  branch/worktree were clean before removal.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=4;
+  held=2`: R01 is `not_needed` under H01, A07 is active/no-credit with no live
+  candidate, W03 is verified with publication held, and W02/F01 remain held.
+  PR #321 and earlier candidate/packet pointers are historical after this
+  source advance. No product, threshold, screening, allocation, credit,
+  acceptance, release, deployment, publication, invitation or protection state
+  changed.
+- Final owned cleanup removes only `docs/postmerge-600e9cd` after merged
+  reachability. Preserve root unknown dirt, the foreign dirty worktree, stale
+  registrations, historical branches and unfavorable evidence. Keep the goal
+  active: the next action is explicit no-credit A07 preparation authority,
+  followed by a fresh current-source identity/canary/rebind/protocol sequence;
+  held W02/F01 routes remain independently auditable.
+
+## Iteration 177 — 2026-09-12 — PR #321 historical current-source route correction
 
 - Owner/phase: `/root` / independent continuation-route correction at refreshed
   `origin/master=3834b1b0647983475f9489da42c9c001b1484a56` (tree
