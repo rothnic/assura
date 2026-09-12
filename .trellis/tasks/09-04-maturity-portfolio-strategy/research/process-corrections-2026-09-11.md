@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=e1c9b78216b5736abd24fbd165ed7e1e383b1744`.
+`origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,35 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — e1c9b78 — 2026-09-12 UTC (post-merge; no-credit)
+## Current correction checkpoint — 20256c1 — 2026-09-12 UTC (post-merge; no-credit)
+
+PR #314 merged the reviewed e1c9 reconciliation from head
+`c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` as
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
+`a90744735e7a0b157f41a48a0e78ca7665403efb`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34675964341`, Security Audit `34675964350` and Rust CI
+`34675964340` passed, including CI Scope `103505761574` and Evidence Gates
+`103505781689`. Scope-skipped product, Rust, performance and release rows
+remain non-proof. Ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held).
+
+The clean owned e1c9 branch/worktree was verified with equal reviewed and
+merge trees and removed. The a6ed packet remains candidate-base/no-credit;
+its reviewer/finalization hashes and three corrected coherence findings are
+retained. No screening, allocation, credit, acceptance or authority state
+changed. Unknown/foreign/stale topology, unfavorable evidence and the VPS
+hold remain preserved.
+
+Next action: refresh source/release/tag/PR/CI/topology and ledger at
+`20256c1`. If no-credit A07 preparation remains authorized, create one clean
+owned exact-toolchain candidate and repeat identity, sibling-free canary,
+current holdout/manifest rebind and isolated protocol review in order. Public
+process updates still require independent review, applicable gates,
+current-master integration and merge-SHA observation.
+
+## Historical correction checkpoint — e1c9b78 — 2026-09-12 UTC (post-merge; superseded by 20256c1)
 
 PR #313 merged the reviewed packet-coherence process slice from head
 `a134fc6815fc76730926d9f8ded57f16a8740e74` on base
