@@ -85,8 +85,8 @@ to adapters; explicit reports remain available.
   Expected assertions on a deliberately multi-match fixture:
 
   ```rust
-  assert_eq!(output["matches"].as_array().unwrap().len(), 1);
-  assert!(output["omitted"].as_u64().unwrap() > 0);
+  assert_eq!(output["response"]["matches"].as_array().unwrap().len(), 1);
+  assert!(output["response"]["omitted"].as_u64().unwrap() > 0);
   ```
 
 - [ ] Add negative controls: five changed paths cause only one actual full
@@ -200,6 +200,8 @@ snapshot, event, clock and persisted episode/budget state. Adapters call new
   cooldown expiry alone -> quiet
   one eligible reminder on later event -> one line; no second reminder
   exhausted budget -> quiet; expired bucket still needs eligible event
+  four sends in worktree A, then restart/new session in A -> budget still exhausted
+  concurrent sessions in A -> one shared atomic budget, no duplicated send
   clean <60s then dirty -> same episode; sustained clean/reentry -> new episode
   stale/incomplete/missing/obsolete snapshot -> quiet + refresh request
   periodic boundary during idle -> no wake; next event -> at most one line

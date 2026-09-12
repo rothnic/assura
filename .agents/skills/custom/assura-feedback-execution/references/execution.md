@@ -9,18 +9,22 @@ is the acceptance source. This contract does not depend on a task framework.
 In an Assura Codex conversation:
 
 ```text
-$assura-feedback-execution
+$assura-feedback-execution merge
 ```
 
 Or from a terminal in the checkout containing this package:
 
 ```sh
-codex '$assura-feedback-execution'
+codex '$assura-feedback-execution merge'
 ```
 
 Single quotes preserve the literal skill name. No model, permission, hook-trust
 or automation flags are added. Positional prompt syntax was checked against
 the installed CLI; a real execution session is deliberately left to the user.
+The explicit `merge` argument authorizes implementing, reviewing and normally
+merging CF01–CF04 after their required gates pass. Omit it to prepare/review
+using only existing merge authority. It grants no new release or deployment
+authority; coupled publication triggers still need their actual authorization.
 
 1. Inspect cwd, remote, HEAD, branch, status and existing candidate/PR ownership.
    Refresh `origin/master`; this repository uses `master`.
@@ -86,7 +90,8 @@ squash correctly. Remove only clean owned worktrees with proved integration or
 deliberate preservation. CF01–CF04 acceptance completes this scope; do not add
 new cards to keep execution alive. The user can pause/narrow it at any point.
 
-Invocation grants no new merge, deployment, release, publication or protection
-authority. Inspect existing authority and actual trigger coupling; keep a precise
-held action when needed. For an obsolete command/path, correct that route once
+Bare invocation grants no new merge authority; the explicit `merge` form grants
+the scoped gated integration above. Neither grants deployment, release,
+publication or protection authority. Inspect actual trigger coupling; keep a
+precise held action when needed. For an obsolete command/path, correct that route once
 against current source instead of rebuilding the plan or restarting finished cards.

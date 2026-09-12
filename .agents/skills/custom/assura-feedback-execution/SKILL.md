@@ -7,6 +7,9 @@ description: "Start or resume the approved compact-feedback and performance back
 
 Explicit `$assura-feedback-execution` invocation starts or resumes this plan.
 Merely reading, reviewing, or creating the skill does not start implementation.
+The explicit `$assura-feedback-execution merge` form additionally authorizes
+normal gated merges of CF01–CF04 when the user invokes it. It does not grant
+release, deployment or protection-change authority.
 Read [execution](references/execution.md), then the selected card in
 [backlog](references/backlog.md). The product contract is
 [feedback-contract](references/feedback-contract.md).
@@ -40,9 +43,10 @@ the maturity train.
   process-reconciliation PR before the first product fix.
 - A changed integration SHA is an observation. Reuse proof with unchanged
   actual inputs; retain required current-candidate integration checks.
-- Invocation authorizes implementing and preparing/reviewing this backlog.
-  Use existing merge authority; this grants no new release, deployment,
-  protection, publication or global-setting authority. Name the exact held
-  action when authority is missing instead of silently stopping at a PR.
+- Bare invocation authorizes implementation/review using existing merge authority;
+  the explicit `merge` form also authorizes normal checked integration of these
+  cards. Neither grants release, deployment, protection, publication or global
+  settings authority. Inspect coupled triggers and name the exact held action
+  when authority is missing instead of silently stopping at a PR.
 - Preserve the planning branch until its contents are integrated or explicitly
   preserved with an owner. The backlog is the only new card-status ledger.

@@ -109,7 +109,9 @@ Selection is deterministic:
 6. Periodic mode makes one fresh stats line eligible at the configured cadence,
    without requiring a threshold. No catch-up queue or burst after idle.
    All routine sends share spacing and rolling hourly message/byte caps per
-   session/worktree. Cap exhaustion does not create later automatic catch-up.
+   canonical worktree. Restarts, new/concurrent host sessions, ref movement and
+   config edits do not replenish that shared rolling budget. Cap exhaustion
+   does not create later automatic catch-up.
 7. Select at most one line, stable priority: unintegrated, coordination, patch.
    Coalesce useful counters only within the cap. Required stale/incomplete
    facts mean quiet plus refresh request. Keep suppression reasons outside
