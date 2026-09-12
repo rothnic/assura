@@ -27,6 +27,9 @@ policy, and public third-party plugin APIs are outside the supported contract.
   user configuration, errors, policy thresholds, and unfavorable evidence.
 - A passing command is insufficient when expected tests were skipped or zero,
   policy was empty, or generated hooks were never observed executing.
+- A status/checkpoint, process-only merge or external hold never satisfies
+  product acceptance; close only on the declared outcome plus owned
+  merge/archive closure.
 - Independently review complex changes before a PR. Resolve concrete findings,
   rerun affected checks, and obtain scoped rereview of the final changes.
 - Merge only within existing authorization, with current-base source, resolved
@@ -47,6 +50,7 @@ Read the selected `SKILL.md` before applying it. Paths below are repo-relative.
 
 | Work | Entry point |
 | --- | --- |
+| Start the compact feedback/performance plan | [.agents/skills/custom/assura-feedback-execution/SKILL.md](.agents/skills/custom/assura-feedback-execution/SKILL.md) |
 | Resume or orchestrate a goal/Trellis backlog | [.agents/skills/assura-goal-execution/SKILL.md](.agents/skills/assura-goal-execution/SKILL.md) |
 | Revalidate an older goal or scope | [.agents/skills/assura-goal-validation/SKILL.md](.agents/skills/assura-goal-validation/SKILL.md) |
 | Session setup without injected context | [.agents/skills/trellis-start/SKILL.md](.agents/skills/trellis-start/SKILL.md) |
