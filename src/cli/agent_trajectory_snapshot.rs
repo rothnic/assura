@@ -7,6 +7,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 
 const MAX_CACHE_BYTES: usize = 1024 * 1024;
+const MAX_CACHE_FILES: usize = 128;
 
 pub(super) struct CacheKey {
     path: PathBuf,
@@ -93,7 +94,7 @@ pub(super) fn read_latest_for_worktree(common_dir: &Path, worktree_root: &Path) 
             }
         }
     };
-    for entry in entries.take(128).flatten() {
+    for entry in entries.take(MAX_CACHE_FILES).flatten() {
         let path = entry.path();
         if path.extension().and_then(|value| value.to_str()) != Some("json") {
             continue;
@@ -145,16 +146,72 @@ pub(super) fn write(key: &CacheKey, snapshot: &TrajectorySnapshot) -> Result<(),
     let bytes = serde_json::to_vec(snapshot).map_err(|error| error.to_string())?;
     let result = (|| {
         fs::write(&temporary, bytes).map_err(|error| error.to_string())?;
-        fs::rename(&temporary, &key.path).map_err(|error| error.to_string())
+        crate::cli::replace_file(&temporary, &key.path).map_err(|error| error.to_string())
     })();
+    if result.is_ok() {
+        prune_cache(directory);
+    }
     if result.is_err() {
         let _ = fs::remove_file(&temporary);
     }
     result
 }
 
+fn prune_cache(directory: &Path) {
+    let Ok(entries) = fs::read_dir(directory) else {
+        return;
+    };
+    let mut snapshots = entries
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.path();
+            if path.extension().and_then(|value| value.to_str()) != Some("json") {
+                return None;
+            }
+            entry
+                .metadata()
+                .ok()
+                .and_then(|metadata| metadata.modified().ok())
+                .map(|modified| (modified, path))
+        })
+        .collect::<Vec<_>>();
+    let remove_count = snapshots.len().saturating_sub(MAX_CACHE_FILES);
+    if remove_count == 0 {
+        return;
+    }
+    snapshots.sort_by_key(|(modified, _)| *modified);
+    for (_, path) in snapshots.into_iter().take(remove_count) {
+        let _ = fs::remove_file(path);
+    }
+}
+
 fn digest(value: &str) -> String {
     let mut hasher = Sha256::new();
     hasher.update(value.as_bytes());
     format!("{:x}", hasher.finalize())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::tempdir;
+
+    #[test]
+    fn cache_retention_is_bounded() {
+        let directory = tempdir().expect("cache directory");
+        for index in 0..=MAX_CACHE_FILES {
+            fs::write(directory.path().join(format!("{index}.json")), b"{}").expect("cache file");
+        }
+
+        prune_cache(directory.path());
+
+        let count = fs::read_dir(directory.path())
+            .expect("cache entries")
+            .flatten()
+            .filter(|entry| {
+                entry.path().extension().and_then(|value| value.to_str()) == Some("json")
+            })
+            .count();
+        assert_eq!(count, MAX_CACHE_FILES);
+    }
 }

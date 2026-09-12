@@ -126,3 +126,8 @@ During CF03, a foreign harness-contract overlay was briefly committed as
 that commit. Owner unknown/foreign; next action is owner review; restore with
 `git show 0e815a9 -- .agents/skills/assura-agent-harness-hooks` (or apply the
 existing preserved stash for the same owner work).
+
+Independent CF03 review at `a0c18fa` found Windows snapshot replacement,
+refresh-state writer serialization, and cache-retention gaps. The correction
+keeps one shared atomic-replace helper, leases refresh-state writes, and caps
+trajectory snapshots at 128 files; rereview is required at the corrected tip.

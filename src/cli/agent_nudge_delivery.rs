@@ -473,6 +473,9 @@ fn request_refresh(
     if !state_is_valid(&state_path) {
         return "state_corrupt";
     }
+    let Some(_state_lease) = DeliveryLease::acquire(&state_path) else {
+        return "in_flight";
+    };
     let mut state = read_state(&state_path);
     if state.last_refresh_at_ms.is_some_and(|last| {
         now_millis().saturating_sub(last) < config.collection.debounce_ms as i64
@@ -496,7 +499,10 @@ fn request_refresh(
     state.last_refresh_at = Some(now);
     state.last_refresh_at_ms = Some(now_millis());
     state.last_refresh_event = Some(event.to_string());
-    let _ = write_state(&state_path, &state);
+    if write_state(&state_path, &state).is_err() {
+        let _ = fs::remove_file(&lock);
+        return "unavailable";
+    }
     let executable = match std::env::current_exe() {
         Ok(path) => path,
         Err(_) => {
@@ -714,43 +720,7 @@ fn write_state(path: &Path, state: &DeliveryState) -> Result<(), String> {
         serde_json::to_vec(state).map_err(|error| error.to_string())?,
     )
     .map_err(|error| error.to_string())?;
-    replace_state_file(&temporary, path).map_err(|error| error.to_string())
-}
-
-#[cfg(not(windows))]
-fn replace_state_file(source: &Path, destination: &Path) -> std::io::Result<()> {
-    fs::rename(source, destination)
-}
-
-#[cfg(windows)]
-fn replace_state_file(source: &Path, destination: &Path) -> std::io::Result<()> {
-    use std::os::windows::ffi::OsStrExt;
-    use windows_sys::Win32::Storage::FileSystem::{
-        MoveFileExW, MOVEFILE_REPLACE_EXISTING, MOVEFILE_WRITE_THROUGH,
-    };
-
-    let source = source
-        .as_os_str()
-        .encode_wide()
-        .chain(std::iter::once(0))
-        .collect::<Vec<_>>();
-    let destination = destination
-        .as_os_str()
-        .encode_wide()
-        .chain(std::iter::once(0))
-        .collect::<Vec<_>>();
-    let result = unsafe {
-        MoveFileExW(
-            source.as_ptr(),
-            destination.as_ptr(),
-            MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH,
-        )
-    };
-    if result == 0 {
-        Err(std::io::Error::last_os_error())
-    } else {
-        Ok(())
-    }
+    super::replace_file(&temporary, path).map_err(|error| error.to_string())
 }
 
 struct DeliveryLease {
