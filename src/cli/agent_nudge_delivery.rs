@@ -808,6 +808,33 @@ mod tests {
     }
 
     #[test]
+    fn threshold_delivery_has_one_step_and_one_reminder() {
+        let mut config = AgentFeedbackConfig::default();
+        config.trajectory.signals.unintegrated.step_minutes = 120;
+        let snapshot = crate::cli::agent_trajectory::test_snapshot(0, true);
+        let mut state = DeliveryState {
+            schema: STATE_SCHEMA.to_string(),
+            first_pending_at: Some(0),
+            ..Default::default()
+        };
+
+        assert!(threshold_selection(&mut state, &snapshot, 1_799, &config).is_none());
+        let first =
+            threshold_selection(&mut state, &snapshot, 1_800, &config).expect("entry threshold");
+        assert_eq!(first.key, "pending:0");
+        assert!(!first.reminder);
+        state.last_signal = Some(first.key);
+        state.last_sent_at = Some(1_800);
+        assert!(threshold_selection(&mut state, &snapshot, 1_801, &config).is_none());
+        let reminder =
+            threshold_selection(&mut state, &snapshot, 3_600, &config).expect("one reminder");
+        assert_eq!(reminder.key, "pending:0");
+        assert!(reminder.reminder);
+        state.reminders_sent = 1;
+        assert!(threshold_selection(&mut state, &snapshot, 5_400, &config).is_none());
+    }
+
+    #[test]
     fn linked_worktrees_share_cache_root_but_not_delivery_state() {
         let root = tempdir().expect("repository root");
         let common = root.path().join(".git");

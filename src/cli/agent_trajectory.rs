@@ -511,6 +511,70 @@ fn category_metrics(stats: CategoryStats) -> CategoryMetrics {
 }
 
 #[cfg(test)]
+pub(super) fn test_snapshot(captured_at: i64, pending: bool) -> TrajectorySnapshot {
+    let category = || CategoryMetrics {
+        files: Some(0),
+        additions: Some(0),
+        deletions: Some(0),
+    };
+    TrajectorySnapshot {
+        schema: SNAPSHOT_SCHEMA.to_string(),
+        generation: "test-generation".to_string(),
+        configuration: "test-configuration".to_string(),
+        repository: RepositoryIdentity {
+            root: "test-repository".to_string(),
+            common_dir: "test-common".to_string(),
+        },
+        worktree: WorktreeIdentity {
+            root: "test-worktree".to_string(),
+            git_dir: "test-git".to_string(),
+            branch: Some("test".to_string()),
+            head_sha: Some("test-sha".to_string()),
+        },
+        integration: IntegrationIdentity {
+            requested_ref: "origin/master".to_string(),
+            resolved_ref: Some("origin/master".to_string()),
+            sha: Some("integration-sha".to_string()),
+        },
+        captured_at,
+        coverage: "complete".to_string(),
+        coverage_reasons: Vec::new(),
+        window: TrajectoryWindow {
+            kind: "minutes".to_string(),
+            value: 30,
+        },
+        integrated: Some(HistoryMetrics {
+            commits: Some(1),
+            coordination_only_commits: Some(0),
+            complete_window: true,
+            source: category(),
+            tests: category(),
+            coordination: category(),
+            generated: category(),
+            other: category(),
+        }),
+        pending: Some(PendingMetrics {
+            commits: Some(u64::from(pending)),
+            files: Some(u64::from(pending)),
+            dirty_files: Some(u64::from(pending)),
+            source: category(),
+            tests: category(),
+            coordination: category(),
+            generated: category(),
+            other: category(),
+        }),
+        freshness: Freshness {
+            snapshot: "test".to_string(),
+            integration_ref: "known_local".to_string(),
+        },
+        cache: CacheInfo {
+            status: "test".to_string(),
+            source: "test".to_string(),
+        },
+    }
+}
+
+#[cfg(test)]
 mod tests {
     use super::git::{collect_history, Window};
     use std::fs;

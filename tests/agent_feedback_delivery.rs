@@ -1,4 +1,5 @@
 use serde_json::Value;
+use sha2::{Digest, Sha256};
 use std::fs;
 use std::process::{Command, Output};
 use std::thread;
@@ -238,6 +239,67 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
         .unwrap()
         .iter()
         .any(|item| item["category"] == "trajectory"));
+}
+
+#[test]
+fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
+    let root = fixture("");
+    let path = root.path().to_str().unwrap();
+    let identity = root.path().join(".git").canonicalize().unwrap();
+    let digest = format!(
+        "{:x}",
+        Sha256::digest(identity.to_string_lossy().as_bytes())
+    );
+    let feedback_dir = root.path().join(".git/assura/feedback");
+    fs::create_dir_all(&feedback_dir).expect("feedback directory");
+    let lock = feedback_dir.join(format!("{digest}.refresh"));
+    let queued = lock.with_extension("queued");
+    fs::write(&lock, "active").expect("active refresh lease");
+
+    let output = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ],
+    ));
+    assert_eq!(output["feedback"]["refresh"], "in_flight");
+    assert!(
+        queued.is_file(),
+        "active refresh did not queue a generation"
+    );
+    fs::remove_file(&lock).expect("release active refresh lease");
+
+    let inspect = Command::new(bin())
+        .args([
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ])
+        .current_dir(root.path())
+        .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
+        .env("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS", "2000")
+        .output()
+        .expect("release inspect runs");
+    assert!(inspect.status.success());
+
+    for _ in 0..100 {
+        if !queued.exists() {
+            break;
+        }
+        thread::sleep(Duration::from_millis(25));
+    }
+    assert!(!queued.exists(), "queued refresh did not run after release");
+    assert!(root.path().join(".git/assura/trajectory").is_dir());
 }
 
 #[test]
