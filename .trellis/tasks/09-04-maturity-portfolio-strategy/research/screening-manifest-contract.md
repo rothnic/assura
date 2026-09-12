@@ -106,12 +106,13 @@ but never replaces required macOS/Windows/hosted proof.
 
 On each resume, first refresh `origin/master`, release/tag, PR/CI and topology,
 rerun the revision-pinned ledger, and bind all evidence to that revision. PR
-#306 now places current source at
-`66e0b7e75f644dc4d047853488daee4a1cd716a3`; its applicable exact-head and
+#307 now places current source at
+`eef7e1a7400c84ec35be33a58914ad07da7fa376`; its applicable exact-head and
 merge-SHA Documentation, Rust CI, Security and Evidence checks passed, while
-scope-skipped product/performance/release rows remain non-proof. The `dc031527`
-candidate, canaries, packet and `PASS_NO_CREDIT` protocol artifact are now
-candidate-base/no-credit and must not be reused. Build a fresh candidate at
+scope-skipped product/performance/release rows remain non-proof. The `66e0b7e`
+process checkpoint and all earlier candidate, canaries, packets and
+`PASS_NO_CREDIT` protocol artifacts are candidate-base/no-credit and must not
+be reused. Build a fresh candidate at
 the refreshed source, then run identity, sibling-free no-credit canary,
 six-holdout/two-condition rebind and isolated protocol `PASS` before any
 separately authorized screening. If a stale alias or identity mismatch is

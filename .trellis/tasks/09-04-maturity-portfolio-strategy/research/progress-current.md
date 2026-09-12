@@ -1,6 +1,31 @@
 # Current maturity train checkpoint
 
-## Iteration 166 — 2026-09-11 — PR #306 post-merge reconciliation (no-credit)
+## Iteration 167 — 2026-09-11 — PR #307 post-merge reconciliation (no-credit)
+
+- Owner/phase: `/root` / current-source post-merge reconciliation. PR #307
+  merged reviewed head `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` from base
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3` as
+  `eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation Scope,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian passed. Merge-SHA
+  Documentation `34660366526`, Security Audit `34660366986` and Rust CI
+  `34660366735` passed; Rust CI's CI Scope `103461414969` and Evidence Gates
+  `103461446382` succeeded. Product, Rust, performance and release rows were
+  scope-skipped and remain non-proof.
+- Ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07
+  active, W03 verified, R01/W02/F01 held. The `66e0b7e` process checkpoint and
+  all `dc031527` candidate/canary/packet/protocol artifacts are historical
+  candidate-base/no-credit. The owned PR branch/worktree is being reconciled;
+  unknown/foreign dirt, stale registrations and unfavorable evidence remain
+  preserved. No product or authority state changed.
+- Current source is `eef7e1a` with tree
+  `1bfbcc27e5504ff23af489c1d076c4f6aba448a0`. Refresh source, release/tag,
+  PR/CI, topology and ledger before the next phase; inspect active, verified
+  and held rows before pending; then keep one explicitly owned recovery or
+  fresh current-master A07 preparation slice live. Fresh identity, no-credit
+  canary, six-holdout/two-condition rebind and isolated protocol review remain
+  required before separately authorized screening. Do not stop at this merge.
+
+## Historical Iteration 166 — 2026-09-11 — PR #306 post-merge reconciliation (no-credit; superseded by eef7e1a)
 
 - Owner/phase: `/root` / current-source post-merge reconciliation. PR #306
   merged reviewed head `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` from base

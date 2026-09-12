@@ -19,25 +19,32 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, as-of)
+## Current post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, as-of)
 
-PR #306 merged the reviewed process slice from head
-`8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
-`66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+PR #307 merged the reviewed process slice from head
+`9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
+`eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation,
 CI Scope, Security Scope, Evidence Gates and GitGuardian passed; merge-SHA
-Documentation `34658963096`, Security Audit `34658963070` and Rust CI
-`34658963059` passed for applicable scope. Scope-skipped product, Rust,
+Documentation `34660366526`, Security Audit `34660366986` and Rust CI
+`34660366735` passed for applicable scope. Scope-skipped product, Rust,
 performance and release rows remain non-proof.
 
 The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with A07
-active, W03 verified and R01/W02/F01 held. The `dc031527` candidate, canary and
-protocol packet are candidate-base/no-credit after this source advance and the
-owned process branch/worktree is closed. Refresh source/release/tag, PR/CI,
+active, W03 verified and R01/W02/F01 held. The `66e0b7e` process checkpoint and
+all earlier candidate/canary/protocol packets are candidate-base/no-credit
+after this source advance; the owned process branch/worktree is being
+reconciled. Refresh source/release/tag, PR/CI,
 topology and ledger before selecting the next phase. Keep one named owner and
 one live recovery or preparation action; for A07 rebuild at current master,
 then run identity, no-credit canary, six-holdout/two-condition rebind and
 isolated protocol `PASS` before any separately authorized screening. Do not
 stop at an empty queue, process merge or metadata pass.
+
+## Historical post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, as-of; superseded by eef7e1a)
+
+PR #306 merged the reviewed process reconciliation at `66e0b7e`; applicable
+hosted gates passed and the `dc031527` candidate/packet was classified
+candidate-base/no-credit. No product or authority state changed.
 
 ## Historical candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, as-of; superseded by 66e0b7e)
 

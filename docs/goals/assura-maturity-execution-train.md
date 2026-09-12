@@ -30,7 +30,36 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — 66e0b7e (post-merge reconciliation; no-credit)
+## Current checkpoint — eef7e1a (post-merge reconciliation; no-credit)
+
+PR #307 merged the reviewed post-merge pointer slice from head
+`9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
+`eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation Scope,
+CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed. The
+merge-SHA Documentation (`34660366526`), Security Audit (`34660366986`) and
+Rust CI (`34660366735`) workflows passed; Rust CI's CI Scope
+(`103461414969`) and Evidence Gates (`103461446382`) succeeded, while
+product/Rust/performance/release jobs were scope-skipped and remain non-proof.
+
+The revision-pinned ledger remains 32 items, zero ready-pending rows, five
+unfinished rows and three held rows: A07 is active, W03 is verified, and R01,
+W02 and F01 retain their separate evidence or authority holds. The reviewed
+`66e0b7e` process checkpoint and all `dc031527` candidate, canary and
+protocol-pass artifacts remain historical candidate-base/no-credit; none may
+be reused for screening or acceptance. No product, threshold, screening,
+allocation, acceptance, release, deployment, publication or invitation
+authority changed.
+
+Current source is `eef7e1a` with tree
+`1bfbcc27e5504ff23af489c1d076c4f6aba448a0`. The next continuation must refresh
+release/tag, PR/CI, topology and the ledger, inspect active/verified/held work
+before pending rows, and keep one explicitly owned recovery or fresh
+current-master A07 preparation slice live. A fresh candidate, identity/no-
+credit canary, holdout rebind and protocol review are required before any
+separately authorized screening. Never stop at this post-merge status, an
+empty pending queue, a skipped check or process evidence.
+
+## Historical checkpoint — 66e0b7e (post-merge reconciliation; no-credit; superseded by eef7e1a)
 
 PR #306 merged the reviewed process slice from head
 `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as

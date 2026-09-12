@@ -17,16 +17,18 @@ ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
 Current post-merge checkpoint (2026-09-11, refresh before use):
-`origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`; PR #306 merged
-reviewed head `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` from base `dc031527`.
+`origin/master=eef7e1a7400c84ec35be33a58914ad07da7fa376`; PR #307 merged
+reviewed head `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` from base `66e0b7e`.
 Its exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
-GitGuardian checks passed; merge-SHA Documentation `34658963096`, Security
-Audit `34658963070` and Rust CI `34658963059` passed for applicable scope.
+GitGuardian checks passed; merge-SHA Documentation `34660366526`, Security
+Audit `34660366986` and Rust CI `34660366735` passed for applicable scope;
+CI Scope `103461414969` and Evidence Gates `103461446382` also passed.
 Product/Rust/performance/release rows were scope-skipped and remain non-proof.
 The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The `dc031527`
-candidate, canary and protocol packet are candidate-base/no-credit and must
-not be reused; the owned process branch/worktree was clean and removed.
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The `66e0b7e`
+process checkpoint and all earlier candidate, canary and protocol packets are
+candidate-base/no-credit and must not be reused; the owned process branch is
+being reconciled.
 
 Next action: refresh source, release/tag, PR/CI, topology and ledger; inspect
 active/implemented/verified/held rows before pending; then keep one explicitly
@@ -34,6 +36,11 @@ owned recovery or fresh current-master A07 preparation slice live. For A07,
 fresh identity, sibling-free no-credit canary, six-holdout/two-condition
 rebind and isolated protocol `PASS` are required before separately authorized
 screening. Never stop at an empty queue, skipped check or process evidence.
+
+Historical post-merge checkpoint (2026-09-11, superseded by `eef7e1a`;
+refresh before using only as history): `origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`; PR #306
+merged the reviewed pointer slice from base `dc031527` and left all product
+and authority state unchanged.
 
 Historical candidate-bound checkpoint (2026-09-11, superseded by `66e0b7e`;
 refresh before using only as history): `origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685`; PR #305

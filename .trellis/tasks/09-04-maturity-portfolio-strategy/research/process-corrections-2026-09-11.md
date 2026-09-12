@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`.
+`origin/master=eef7e1a7400c84ec35be33a58914ad07da7fa376`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,21 +10,21 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, post-merge no-credit)
+## Current correction checkpoint — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, post-merge no-credit)
 
-- PR #306 merged the reviewed process slice from head
-  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
-  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+- PR #307 merged the reviewed process slice from head
+  `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
+  `eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation,
   CI Scope, Security Scope, Evidence Gates and GitGuardian passed. Merge-SHA
-  Documentation `34658963096`, Security Audit `34658963070` and Rust CI
-  `34658963059` passed for applicable scope; CI Scope `103457282547` and
-  Evidence Gates `103457314567` succeeded. Product, Rust, performance and
+  Documentation `34660366526`, Security Audit `34660366986` and Rust CI
+  `34660366735` passed for applicable scope; CI Scope `103461414969` and
+  Evidence Gates `103461446382` succeeded. Product, Rust, performance and
   release rows were scope-skipped and remain non-proof.
 - The revision-pinned ledger is unchanged at `items=32; ready_pending=0;
   unfinished=5; held=3`: A07 active, W03 verified, R01/W02/F01 held. The
-  `dc031527` candidate/canary/packet and `PASS_NO_CREDIT` protocol result are
-  candidate-base/no-credit after the source advance. The owned branch/worktree
-  was verified clean and removed; unknown/foreign dirty work, stale
+  `66e0b7e` process checkpoint and all earlier candidate/canary/packet/protocol
+  artifacts are candidate-base/no-credit after the source advance. The owned
+  branch/worktree is being reconciled; unknown/foreign dirty work, stale
   registrations and unfavorable evidence remain preserved. No product,
   threshold, screening, allocation, acceptance, release, deployment,
   publication or invitation authority changed.
@@ -35,6 +35,13 @@ protection changes or a CI-infrastructure change.
   repeat identity, no-credit canary, six-holdout/two-condition rebind and
   isolated protocol `PASS` before separately authorized screening. A process
   merge or empty queue is never goal completion.
+
+## Historical correction checkpoint — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, post-merge no-credit; superseded by eef7e1a)
+
+PR #306 merged the reviewed process reconciliation at `66e0b7e`; applicable
+exact-head and merge-SHA checks passed. It classified the `dc031527` candidate
+and packet as candidate-base/no-credit and left the 32/0/5/3 ledger and all
+authority holds unchanged.
 
 ## Historical correction checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit; superseded by 66e0b7e)
 
