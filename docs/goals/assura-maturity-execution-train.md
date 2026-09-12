@@ -31,7 +31,36 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — 20256c1 (post-merge reconciliation; A07 packet candidate-base/no-credit)
+## Latest observed integration — PR #315 — 2d512c1 (2026-09-12; refresh required)
+
+PR #315 merged the reviewed 20256 post-merge reconciliation from head
+`964f15de3e81430d499e1b9e7c861857dff0eebc` on base
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6` as
+`2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
+`6c400e42834b86a7ba2853e554386f69afa27848`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. The
+merge-SHA Documentation (`34676984403`), Security Audit (`34676984409`) and
+Rust CI (`34676984395`) workflows passed, including CI Scope
+(`103508475702`) and Evidence Gates (`103508495744`); product, Rust,
+performance and release rows were scope-skipped and remain non-proof.
+
+This is the latest observed integration, not a live source claim. On every
+continuation fetch `origin/master` again, rerun the revision-pinned ledger and
+topology audit, and use the fetched SHA as the only current route. The ledger
+remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+verified, R01/W02/F01 held. The A07 candidate/packet remains no-credit and no
+authority state changed; preserve unknown/user-owned topology, unfavorable
+evidence and the held VPS lane.
+
+Next action after refresh: keep A07 ahead of empty ready-pending rows. If
+no-credit preparation is authorized, create one clean owned exact-toolchain
+candidate from the fetched source, then run identity, sibling-free canary,
+current holdout/manifest rebind and isolated protocol review in order. Any
+public update still needs independent review, applicable gates, current-master
+integration and merge-SHA observation. Never reuse candidate-base metadata or
+infer product success from process metadata or skipped checks.
+
+## Historical checkpoint — 20256c1 (post-merge reconciliation; superseded by 2d512c1)
 
 PR #314 merged the reviewed e1c9 post-merge reconciliation from head
 `c458ef3f9843848d10fabb7ba2ce32b5409d0e73` on base

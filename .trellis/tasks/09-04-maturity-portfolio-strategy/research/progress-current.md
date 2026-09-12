@@ -1,6 +1,28 @@
 # Current maturity train checkpoint
 
-## Iteration 171 — 2026-09-12 — PR #314 post-merge reconciliation (no-credit)
+## Iteration 172 — 2026-09-12 — PR #315 merge observation (as-of; no-credit)
+
+- Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation;
+  the reviewed `964f15d` slice is merged as `2d51296d` with tree
+  `6c400e42`. Exact-head Documentation Scope, CI Scope, Evidence Gates,
+  Security Scope and GitGuardian passed. Merge-SHA Documentation
+  `34676984403`, Security Audit `34676984409` and Rust CI `34676984395`
+  passed, including CI Scope `103508475702` and Evidence Gates `103508495744`;
+  product, Rust, performance and release jobs were scope-skipped.
+- This is an as-of observation, not a live source pointer. Refresh
+  `origin/master`, release/tag, PR/CI, topology and the revision-pinned ledger
+  before the next phase. The ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+  verified, and R01/W02/F01 held; the A07 packet remains candidate-base/no-
+  credit and all authority flags remain false.
+- The `docs/a07-postmerge-20256c1` worktree/branch was clean, tree-equal and
+  removed after merge; merged older A07 branches were also closed. Preserve
+  unknown/foreign/stale topology and unfavorable evidence. If no-credit A07
+  preparation is authorized after refresh, use one clean owned candidate and
+  repeat identity, sibling-free canary, holdout/manifest rebind and isolated
+  protocol review in order.
+
+## Historical Iteration 171 — 2026-09-12 — PR #314 post-merge reconciliation (no-credit; superseded by 2d512c1)
 
 - Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation
   in clean checkout `/private/tmp/assura-a07-postmerge-20256c1` on

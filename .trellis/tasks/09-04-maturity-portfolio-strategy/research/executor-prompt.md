@@ -16,7 +16,29 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current post-merge checkpoint (2026-09-12, refresh before use):
+Latest observed post-merge integration (PR #315, 2026-09-12; refresh required):
+`origin/master=2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
+`6c400e42834b86a7ba2853e554386f69afa27848`; PR #315 merged reviewed head
+`964f15de3e81430d499e1b9e7c861857dff0eebc` from base
+`20256c132b208bdbce5637d693c4ff8c4b03b5e6`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
+Documentation (`34676984403`), Security Audit (`34676984409`) and Rust CI
+(`34676984395`) passed, including CI Scope (`103508475702`) and Evidence Gates
+(`103508495744`); product/Rust/performance/release jobs were scope-skipped and
+remain non-proof.
+
+This is an as-of observation, not a live source claim. Fetch `origin/master`,
+release/tag, PR/CI, topology and the ledger before routing the next phase. The
+ledger remains `items=32; ready_pending=0; unfinished=5; held=3`; A07 remains
+active and candidate-base/no-credit, while W03 is verified and R01/W02/F01
+remain held. Preserve unknown/foreign/stale topology and unfavorable evidence.
+
+After refresh, if no-credit A07 preparation is authorized, create one clean
+owned exact-toolchain candidate from the fetched source and run identity,
+sibling-free canary, current holdout/manifest rebind and isolated protocol
+review in order before any separately authorized screening.
+
+Historical post-merge checkpoint (2026-09-12, superseded by 2d512c1):
 `origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree
 `a90744735e7a0b157f41a48a0e78ca7665403efb`; PR #314 merged reviewed head
 `c458ef3f9843848d10fabb7ba2ce32b5409d0e73` from base
