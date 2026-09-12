@@ -47,6 +47,7 @@ Read the selected `SKILL.md` before applying it. Paths below are repo-relative.
 
 | Work | Entry point |
 | --- | --- |
+| Start the compact feedback/performance plan | [.agents/skills/custom/assura-feedback-execution/SKILL.md](.agents/skills/custom/assura-feedback-execution/SKILL.md) |
 | Resume or orchestrate a goal/Trellis backlog | [.agents/skills/assura-goal-execution/SKILL.md](.agents/skills/assura-goal-execution/SKILL.md) |
 | Revalidate an older goal or scope | [.agents/skills/assura-goal-validation/SKILL.md](.agents/skills/assura-goal-validation/SKILL.md) |
 | Session setup without injected context | [.agents/skills/trellis-start/SKILL.md](.agents/skills/trellis-start/SKILL.md) |

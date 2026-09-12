@@ -1,0 +1,29 @@
+{
+  "id": "compact-feedback-plan",
+  "name": "compact-feedback-plan",
+  "title": "Compact feedback execution plan",
+  "description": "Planning only: tiny configurable trajectory statistics, cached or asynchronous collection, performance repairs, and a single execution entrypoint. Product implementation waits for explicit invocation.",
+  "status": "planning",
+  "dev_type": "docs",
+  "scope": "compact-feedback-planning",
+  "package": null,
+  "priority": "P1",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-09-12",
+  "completedAt": null,
+  "branch": "codex/compact-feedback-plan",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".agents/skills/custom/assura-feedback-execution/SKILL.md",
+    "AGENTS.md"
+  ],
+  "notes": "Planning complete only after review. CF01-CF04 remain pending; explicit skill invocation starts execution. Card status lives only in skill references/backlog.md.",
+  "meta": {}
+}
