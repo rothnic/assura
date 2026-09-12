@@ -41,7 +41,7 @@ pub struct AgentNudgeOptions {
     pub reference_limit: usize,
     /// Duration for suppressing identical event messages.
     pub cooldown_seconds: u64,
-    /// Explicit delivery mode; inspection is the only CF02 trajectory path.
+    /// Explicit delivery mode; inspection is the on-demand trajectory path.
     pub delivery: AgentNudgeDelivery,
     /// Output format.
     pub format: OutputFormat,
@@ -252,7 +252,7 @@ fn build_agent_nudge(
 
     let mut feedback_status = feedback_config
         .as_ref()
-        .map(agent_nudge_delivery::inspect_status);
+        .map(|config| agent_nudge_delivery::inspect_status(&project_path, config));
     if options.delivery == AgentNudgeDelivery::Automatic {
         if let Some(config) = feedback_config.as_ref() {
             if !nudges.iter().any(|nudge| nudge.severity == "critical")

@@ -44,6 +44,10 @@ impl TrajectorySnapshot {
         now.saturating_sub(self.captured_at).max(0)
     }
 
+    pub(super) fn captured_at(&self) -> i64 {
+        self.captured_at
+    }
+
     pub(super) fn has_pending_work(&self) -> bool {
         let Some(pending) = &self.pending else {
             return false;
@@ -185,15 +189,7 @@ fn bound_line(value: String, max_bytes: usize) -> String {
     if value.len() <= max_bytes {
         return value;
     }
-    let mut bounded = String::new();
-    for character in value.chars() {
-        if bounded.len() + character.len_utf8() + 3 > max_bytes {
-            break;
-        }
-        bounded.push(character);
-    }
-    bounded.push_str("...");
-    bounded
+    String::new()
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

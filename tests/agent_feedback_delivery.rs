@@ -88,6 +88,20 @@ fn automatic_delivery_reads_warm_snapshot_and_respects_periodic_line_cap() {
         .find(|item| item["category"] == "trajectory")
         .expect("trajectory line");
     assert!(line["message"].as_str().unwrap().len() <= 256);
+
+    let inspected = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ],
+    ));
+    assert_eq!(inspected["feedback"]["messages_last_hour"], 1);
 }
 
 #[test]

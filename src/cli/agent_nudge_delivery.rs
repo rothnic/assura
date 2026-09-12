@@ -174,7 +174,7 @@ pub(super) fn automatic(
     let messages = state.sends.len();
     let bytes = state.sends.iter().map(|send| send.bytes).sum::<usize>();
     let pending = snapshot.has_pending_work();
-    update_pending_episode(&mut state, pending, now, config);
+    update_pending_episode(&mut state, pending, snapshot.captured_at(), config);
     let selection = match config.mode {
         AgentFeedbackMode::Periodic => Some(SignalSelection {
             key: "periodic".to_string(),
@@ -269,15 +269,24 @@ fn result(
     }
 }
 
-pub(super) fn inspect_status(config: &AgentFeedbackConfig) -> DeliveryStatus {
+pub(super) fn inspect_status(project_root: &Path, config: &AgentFeedbackConfig) -> DeliveryStatus {
+    let state = read_state(&state_path(project_root));
+    let current = now();
+    let (messages_last_hour, bytes_last_hour) = state
+        .sends
+        .iter()
+        .filter(|send| current.saturating_sub(send.at) < HOUR_SECONDS)
+        .fold((0usize, 0usize), |(messages, bytes), send| {
+            (messages + 1, bytes.saturating_add(send.bytes))
+        });
     DeliveryStatus {
         configured: true,
         mode: config.mode.as_str(),
         snapshot: "explicit_inspect",
         refresh: "not_requested",
         reason: "explicit_inspect",
-        messages_last_hour: 0,
-        bytes_last_hour: 0,
+        messages_last_hour,
+        bytes_last_hour,
         effective: EffectiveDeliveryConfig::from(config),
     }
 }
@@ -285,7 +294,7 @@ pub(super) fn inspect_status(config: &AgentFeedbackConfig) -> DeliveryStatus {
 fn update_pending_episode(
     state: &mut DeliveryState,
     pending: bool,
-    now: i64,
+    observed_at: i64,
     config: &AgentFeedbackConfig,
 ) {
     let clear_after = config
@@ -295,10 +304,10 @@ fn update_pending_episode(
         .clear_after_clean_seconds as i64;
     if pending {
         state.clean_since = None;
-        state.first_pending_at.get_or_insert(now);
+        state.first_pending_at.get_or_insert(observed_at);
     } else if state.first_pending_at.is_some() {
-        let clean_since = state.clean_since.get_or_insert(now);
-        if now.saturating_sub(*clean_since) >= clear_after {
+        let clean_since = state.clean_since.get_or_insert(observed_at);
+        if observed_at.saturating_sub(*clean_since) >= clear_after {
             state.first_pending_at = None;
             state.clean_since = None;
             state.last_signal = None;
@@ -365,7 +374,9 @@ fn threshold_selection(
                         reminder: true,
                     });
                 }
-            } else if state.last_signal.as_deref() == Some("coordination") {
+            } else if only_coordination < signals.coordination.clear_below_only_coordination_commits
+                && state.last_signal.as_deref() == Some("coordination")
+            {
                 state.last_signal = None;
                 state.reminders_sent = 0;
             }
@@ -383,26 +394,6 @@ fn threshold_selection(
                         reminder: false,
                     });
                 }
-            } else if state
-                .last_signal
-                .as_deref()
-                .is_some_and(|value| value.starts_with("patch:"))
-            {
-                state.last_signal = None;
-                state.reminders_sent = 0;
-            }
-        }
-    }
-    if signals.coordination.enabled {
-        if let Some(only) = snapshot.coordination_only_commits(signals.coordination.commits) {
-            if only >= signals.coordination.min_only_coordination_commits {
-                let key = format!("coordination:{only}");
-                if state.last_signal.as_deref() != Some(key.as_str()) {
-                    return Some(SignalSelection {
-                        key,
-                        reminder: false,
-                    });
-                }
                 if config.reminder_seconds > 0
                     && state.reminders_sent < config.max_reminders_per_episode
                     && state.last_sent_at.is_some_and(|last| {
@@ -414,6 +405,14 @@ fn threshold_selection(
                         reminder: true,
                     });
                 }
+            } else if lines < signals.patch_size.clear_below_changed_lines
+                && state
+                    .last_signal
+                    .as_deref()
+                    .is_some_and(|value| value.starts_with("patch:"))
+            {
+                state.last_signal = None;
+                state.reminders_sent = 0;
             }
         }
     }
