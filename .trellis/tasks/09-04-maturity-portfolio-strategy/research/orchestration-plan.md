@@ -22,7 +22,35 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit)
+## Current route — `origin/master=9c1b68a` (2026-09-12 post-merge candidate-bound no-credit)
+
+- PR #309 merged the reviewed process/evidence slice from
+  `35faaeae48b1155aafab4415bd5bdfba19588933` as
+  `9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` with tree
+  `3a90f6a5b055f17f20fb564481c9072bb4652e86`. Applicable merge-SHA
+  Documentation (`34665394575`), Security Audit (`34665394527`) and Rust CI
+  (`34665394542`, including CI Scope and Evidence Gates) passed; skipped
+  product/performance/release rows remain non-proof. The refreshed ledger is
+  `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+  verified, R01/W02/F01 held).
+- The 3e67 candidate is candidate-base/no-credit. The fresh owned 9c1
+  candidate uses exact Rust/Cargo `1.94.1`, binary/shim
+  `5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`, and
+  passing login identity plus wrong-target/wrong-root controls. An empty
+  fixture evaluator failure is retained as unfavorable evidence; seeded
+  source-scaffold retries for both conditions pass all seven dimensions with
+  zero critical failures. The new redacted canary summary is
+  `screening/canary-2026-09-12-current-9c1.json`.
+- A fresh six-holdout/two-condition/30-cell packet is bound to 9c1 and its
+  adapted validator is `valid=true`; scoped review corrected a freeze/canary
+  status mismatch and stale pending-review timestamp, and isolated protocol
+  rereview is `PASS_NO_CREDIT`.
+  Keep screening/allocation/credit/acceptance false. The VPS lane remains held
+  because `vps-dev` is unresolved and `vps` is at 95% disk with nightly rather
+  than pinned Rust/Cargo. Publish a redacted process pointer through review and
+  gates, merge, observe post-merge workflows and refresh/rebuild before screening.
+
+## Historical route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit; superseded by `9c1b68a`)
 
 - Reset evidence is current at source
   `3e67d5fe123c6ebcf3ac05617966919151e44868`, tree

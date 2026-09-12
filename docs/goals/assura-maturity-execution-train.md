@@ -30,7 +30,43 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — 3e67d5f (candidate-bound canary; no-credit)
+## Current checkpoint — 9c1b68a (post-merge candidate-bound canary; no-credit)
+
+PR #309 merged the reviewed process/evidence reconciliation from head
+`35faaeae48b1155aafab4415bd5bdfba19588933` as
+`9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` with tree
+`3a90f6a5b055f17f20fb564481c9072bb4652e86`. Its applicable exact-head checks
+and merge-SHA Documentation (`34665394575`), Security Audit (`34665394527`)
+and Rust CI (`34665394542`) workflows passed; scope-skipped product,
+performance and release rows remain non-proof. The ledger at this source is
+still `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
+verified, R01/W02/F01 held.
+
+The prior 3e67 candidate and packet are now candidate-base/no-credit. A fresh
+owned candidate at `/private/tmp/assura-train-postmerge-9c1` uses exact
+Rust/Cargo `1.94.1`, reports version `0.4.0`, and hashes to
+`5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`; login
+identity passes and wrong-target/wrong-root controls reject. An initial empty
+fixture attempt failed the Rust preservation/native evaluator and is retained
+as unfavorable evidence. Fresh seeded-scaffold, sibling-free retries for both
+conditions pass all seven evaluator dimensions with zero critical failures,
+expected negative policy rejection, native tests and unchanged source hashes.
+The new private packet has six holdouts, two conditions and 30 reserved cells;
+its adapted validator is `valid=true`, and scoped independent metadata protocol
+review is `PASS_NO_CREDIT` in this checkpoint. Screening, allocation, credit and
+acceptance remain false. The final private review artifact was written at
+`2026-09-12T02:30:34Z` with SHA-256
+`55fe84c16eea584ac056209aa51ebaff051cdf70af7bffb695a1207897af81ef`.
+
+The VPS efficiency lane remains held: `vps-dev` is unresolved; configured
+`vps` has 95% root usage, nightly Rust/Cargo rather than the pinned toolchain,
+and unrelated activity. Remote output cannot replace hosted/platform proof.
+Next action is to publish only a redacted evidence pointer through independent
+review and applicable gates, merge at current master, observe merge-SHA
+workflows, then refresh and rebuild again before any separately authorized
+screening. A canary or protocol pass never closes A07.
+
+## Historical checkpoint — 3e67d5f (candidate-bound canary; no-credit; superseded by `9c1b68a`)
 
 The reset fetched `origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`
 with tree `1b3b2c130a294b1020f0c63d84df120434bebf42`. The revision-pinned
