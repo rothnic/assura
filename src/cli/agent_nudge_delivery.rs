@@ -457,6 +457,8 @@ fn request_refresh(
         if stale {
             let _ = fs::remove_file(&lock);
         } else {
+            let queued = lock.with_extension("queued");
+            let _ = OpenOptions::new().write(true).create_new(true).open(queued);
             return "in_flight";
         }
     }
@@ -510,6 +512,12 @@ fn request_refresh(
             "ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS",
             config.collection.timeout_ms.to_string(),
         )
+        .env(
+            "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
+            now_millis()
+                .saturating_add(config.collection.timeout_ms as i64 * 1_000)
+                .to_string(),
+        )
         .env_remove("ASSURA_AGENT_LOG")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
@@ -525,7 +533,34 @@ fn request_refresh(
 /// Release a refresh lease when the short-lived inspect child exits.
 pub(super) fn finish_refresh() {
     if let Some(path) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") {
-        let _ = fs::remove_file(path);
+        let path = PathBuf::from(path);
+        let queued = path.with_extension("queued");
+        let _ = fs::remove_file(&path);
+        if fs::remove_file(&queued).is_ok()
+            && OpenOptions::new()
+                .write(true)
+                .create_new(true)
+                .open(&path)
+                .is_ok()
+        {
+            if let Ok(executable) = std::env::current_exe() {
+                let args = std::env::args_os().skip(1).collect::<Vec<_>>();
+                if Command::new(executable)
+                    .args(args)
+                    .env("ASSURA_FEEDBACK_REFRESH_LOCK", &path)
+                    .env_remove("ASSURA_AGENT_LOG")
+                    .stdin(Stdio::null())
+                    .stdout(Stdio::null())
+                    .stderr(Stdio::null())
+                    .spawn()
+                    .is_err()
+                {
+                    let _ = fs::remove_file(&path);
+                }
+            } else {
+                let _ = fs::remove_file(&path);
+            }
+        }
     }
 }
 

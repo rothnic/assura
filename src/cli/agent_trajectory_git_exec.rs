@@ -29,11 +29,27 @@ pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutpu
 }
 
 fn refresh_timeout() -> Duration {
-    refresh_timeout_from(
+    let configured = refresh_timeout_from(
         std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
             .ok()
             .as_deref(),
-    )
+    );
+    let Some(deadline) = std::env::var("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS")
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+    else {
+        return configured;
+    };
+    let remaining = deadline.saturating_sub(now_millis());
+    configured.min(Duration::from_millis(remaining.max(1) as u64))
+}
+
+fn now_millis() -> i64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)
+        .unwrap_or_default()
 }
 
 fn refresh_timeout_from(value: Option<&str>) -> Duration {
