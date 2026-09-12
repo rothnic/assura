@@ -205,7 +205,7 @@ impl ContentSession {
             "safe-fixes" => to_value(safe_fixes(&self.context)),
             "search" => {
                 let text = request.required("text")?;
-                to_value(search(&self.context, text))
+                to_value(search(&self.context, text, request.limit.unwrap_or(20)))
             }
             other => Err(ContentQueryError::configuration(format!(
                 "unsupported session request type: {other}"

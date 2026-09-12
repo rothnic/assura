@@ -6,7 +6,7 @@ use super::output::{SearchMatchOutput, SearchOutput};
 use crate::intelligence::{FactId, ProjectFact, Resource, SearchChunk};
 use std::collections::BTreeMap;
 
-pub(super) fn search(context: &QueryContext, query: &str) -> SearchOutput {
+pub(super) fn search(context: &QueryContext, query: &str, limit: usize) -> SearchOutput {
     let resources = resources_by_id(context.store.facts());
     let mut matches = context
         .store
@@ -23,10 +23,13 @@ pub(super) fn search(context: &QueryContext, query: &str) -> SearchOutput {
             .total_cmp(&left.score)
             .then_with(|| left.source_id.cmp(&right.source_id))
     });
+    let omitted = matches.len().saturating_sub(limit);
+    matches.truncate(limit);
     SearchOutput {
         query: query.to_string(),
         mode: "modeled",
         fallback_used: false,
+        omitted,
         matches,
     }
 }

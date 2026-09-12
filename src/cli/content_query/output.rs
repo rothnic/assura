@@ -198,6 +198,7 @@ pub(super) struct SearchOutput {
     pub(super) query: String,
     pub(super) mode: &'static str,
     pub(super) fallback_used: bool,
+    pub(super) omitted: usize,
     pub(super) matches: Vec<SearchMatchOutput>,
 }
 

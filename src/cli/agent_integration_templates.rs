@@ -29,6 +29,7 @@ EVENTS = {{
     "Stop": "idle",
 }}
 PATH_KEYS = {{"file_path", "filePath", "path"}}
+MAX_CONTEXT_BYTES = 256
 
 
 def project_root(payload):
@@ -68,17 +69,22 @@ def compact_context(payload):
     summary = payload.get("summary") or {{}}
     if not summary.get("should_inject"):
         return ""
-    lines = ["<assura-feedback>", f"Assura {{payload.get('event', 'event')}} feedback:"]
-    for item in (payload.get("nudges") or [])[:5]:
+    items = payload.get("nudges") or []
+    item = next((item for item in items if item.get("severity") == "critical"), None)
+    item = item or next((item for item in items if item.get("severity") == "high"), None)
+    item = item or (items[0] if items else None)
+    line = f"assura: event={{payload.get('event', 'event')}}"
+    if item:
         path = item.get("path") or "project"
         rule = item.get("rule") or item.get("category") or "signal"
-        lines.append(f"- {{path}} [{{rule}}] {{item.get('message', '')}}")
-    omitted = summary.get("omitted_count") or 0
-    if omitted:
-        lines.append(f"- {{omitted}} additional finding(s) omitted")
-    lines.append(f"Next: {{summary.get('suggested_command', 'assura review .')}}")
-    lines.append("</assura-feedback>")
-    return "\n".join(lines)
+        line += f"; [{{rule}}] {{path}}: {{item.get('message', '')}}"
+    context = "\n".join(["<assura-feedback>", line, "</assura-feedback>"])
+    if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
+        return context
+    suffix = "\n...\n</assura-feedback>"
+    remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
+    prefix = context.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")
+    return prefix + suffix
 
 
 def main():
@@ -146,11 +152,23 @@ function pathsFrom(value, found = new Set()) {{
 
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
-  const lines = ["<assura-feedback>", `Assura ${{payload.event}} feedback:`]
-  for (const item of (payload.nudges ?? []).slice(0, 5)) lines.push(`- ${{item.path ?? "project"}} [${{item.rule ?? item.category ?? "signal"}}] ${{item.message ?? ""}}`)
-  if (payload.summary.omitted_count) lines.push(`- ${{payload.summary.omitted_count}} additional finding(s) omitted`)
-  lines.push(`Next: ${{payload.summary.suggested_command ?? "assura review ."}}`, "</assura-feedback>")
-  return lines.join("\n")
+  const items = payload.nudges ?? []
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  let line = `assura: event=${{payload.event ?? "event"}}`
+  if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+}}
+
+function bounded(value) {{
+  const encoder = new TextEncoder()
+  if (encoder.encode(value).length <= 256) return value
+  const suffix = "\n...\n</assura-feedback>"
+  let body = ""
+  for (const character of value) {{
+    if (encoder.encode(body + character + suffix).length > 256) break
+    body += character
+  }}
+  return body + suffix
 }}
 
 async function nudge(directory, event, sessionID, args) {{
@@ -197,11 +215,23 @@ function pathsFrom(value, found = new Set()) {{
 
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
-  const lines = ["<assura-feedback>", `Assura ${{payload.event}} feedback:`]
-  for (const item of (payload.nudges ?? []).slice(0, 5)) lines.push(`- ${{item.path ?? "project"}} [${{item.rule ?? item.category ?? "signal"}}] ${{item.message ?? ""}}`)
-  if (payload.summary.omitted_count) lines.push(`- ${{payload.summary.omitted_count}} additional finding(s) omitted`)
-  lines.push(`Next: ${{payload.summary.suggested_command ?? "assura review ."}}`, "</assura-feedback>")
-  return lines.join("\n")
+  const items = payload.nudges ?? []
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  let line = `assura: event=${{payload.event ?? "event"}}`
+  if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+}}
+
+function bounded(value) {{
+  const encoder = new TextEncoder()
+  if (encoder.encode(value).length <= 256) return value
+  const suffix = "\n...\n</assura-feedback>"
+  let body = ""
+  for (const character of value) {{
+    if (encoder.encode(body + character + suffix).length > 256) break
+    body += character
+  }}
+  return body + suffix
 }}
 
 export default function (pi) {{

@@ -122,7 +122,9 @@ printf '%s\n' "$ledger_json" | jq -r '
   | ["SUMMARY",
      ("items=" + (($items | length) | tostring)),
      ("ready_pending=" + (($ready | length) | tostring)),
-     ("unfinished=" + (($items | map(select(.state == "active" or .state == "implemented" or .state == "verified" or .state == "blocked")) | length) | tostring)),
+     ("nonterminal=" + (($items | map(select(.state != "done" and .state != "not_needed")) | length) | tostring)),
+     ("done=" + (($items | map(select(.state == "done")) | length) | tostring)),
+     ("not_needed=" + (($items | map(select(.state == "not_needed")) | length) | tostring)),
      ("held=" + (($items | map(select(.state == "blocked")) | length) | tostring))]
   | @tsv
 '

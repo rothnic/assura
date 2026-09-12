@@ -51,6 +51,10 @@ checkpoint:
   context_level: <universal|goal|card|special|private|protocol>
 ```
 
+Checkpoint writes are conditional: identical source/tree, ledger, topology and
+policy inputs reuse the prior as-of record. Do not create a process-only or
+checkpoint-only commit merely because a merge SHA or clock observation changed.
+
 The `source_sha`, checkout and command environment are identity fences. If any
 one differs from the claimed proof, classify the result as invalid and rerun
 from the owned checkout. Keep historical and candidate-base evidence labeled

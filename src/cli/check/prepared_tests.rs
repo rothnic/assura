@@ -205,3 +205,59 @@ structure:
         .iter()
         .any(|violation| violation.rule == "custom:source_test_pair"));
 }
+
+#[test]
+fn prepared_changed_path_batch_shares_one_cross_path_fallback() {
+    let temp = tempfile::tempdir().unwrap();
+    fs::create_dir_all(temp.path().join(".assura")).unwrap();
+    fs::create_dir_all(temp.path().join("src")).unwrap();
+    fs::create_dir_all(temp.path().join("tests")).unwrap();
+    fs::write(
+        temp.path().join(".assura/config.yml"),
+        r#"
+extensions:
+  custom_constraints:
+    - id: source_test_pair
+      type: paired_file_exists
+      source: "src/*.ts"
+      target: "tests/{stem}_test.rs"
+structure:
+  ./:
+    files:
+      allow_extra: true
+    directories:
+      allow_extra: true
+"#,
+    )
+    .unwrap();
+    for index in 0..5 {
+        fs::write(
+            temp.path()
+                .join("src")
+                .join(format!("new-source-{index}.ts")),
+            "export {};\n",
+        )
+        .unwrap();
+    }
+
+    let prepared =
+        PreparedStructureCheck::load_for_path(Some(temp.path().to_path_buf()), None, false)
+            .unwrap();
+    let paths = (0..5)
+        .map(|index| {
+            temp.path()
+                .join("src")
+                .join(format!("new-source-{index}.ts"))
+        })
+        .collect();
+    let batch = prepared.check_changed_paths(paths).unwrap();
+
+    assert_eq!(batch.requested_paths, 5);
+    assert_eq!(batch.reports.len(), 1);
+    assert_eq!(batch.full_project_fallbacks, 1);
+    assert_eq!(batch.coverage, "full_project");
+    assert!(batch.reports[0]
+        .violations
+        .iter()
+        .any(|violation| violation.rule == "custom:source_test_pair"));
+}

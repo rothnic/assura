@@ -1,7 +1,8 @@
 # Compact feedback contract
 
-Status: planned; no product implementation started. This replaces the earlier
-2 KiB routine-nudge proposal. Explicit reports remain available on demand.
+Status: active execution; CF01 is implemented on the current candidate and
+CF02-CF04 remain pending. This replaces the earlier 2 KiB routine-nudge
+proposal. Explicit reports remain available on demand.
 Product semantics are independent of Trellis and any agent host.
 
 Index: [output](#output), [controls](#controls), [facts](#facts),

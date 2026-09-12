@@ -28,6 +28,20 @@ pub struct PreparedStructureCheck {
     compiled: CompiledStructureConfig,
 }
 
+/// Results for one bounded changed-path validation batch.
+///
+/// A repository-wide policy is represented by one full-project report and an
+/// explicit fallback count instead of repeating the same expensive report for
+/// every changed path.
+#[cfg(feature = "full-cli")]
+#[derive(Debug)]
+pub(crate) struct PreparedChangedPathsReport {
+    pub(crate) reports: Vec<StructureCheckReport>,
+    pub(crate) requested_paths: usize,
+    pub(crate) full_project_fallbacks: usize,
+    pub(crate) coverage: &'static str,
+}
+
 impl PreparedStructureCheck {
     /// Load and compile the configuration discovered for a checked path.
     pub fn load_for_path(
@@ -96,6 +110,65 @@ impl PreparedStructureCheck {
             return self.check_path(self.project_root.clone());
         }
 
+        let mut checker = StructureChecker::from_compiled(
+            self.project_root.clone(),
+            &self.compiled,
+            self.fail_fast,
+        );
+        self.check_changed_path_with_checker(path, &mut checker)
+    }
+
+    /// Validate a bounded batch of changed paths while reusing one checker.
+    ///
+    /// Cross-path policies intentionally produce one authoritative
+    /// full-project report for the batch. The returned coverage and fallback
+    /// count make that reduction observable to callers.
+    #[cfg(feature = "full-cli")]
+    pub(crate) fn check_changed_paths(
+        &self,
+        paths: Vec<PathBuf>,
+    ) -> Result<PreparedChangedPathsReport, CheckError> {
+        let requested_paths = paths.len();
+        if requested_paths == 0 {
+            return Ok(PreparedChangedPathsReport {
+                reports: Vec::new(),
+                requested_paths,
+                full_project_fallbacks: 0,
+                coverage: "none",
+            });
+        }
+
+        if !self.incremental_path_safe {
+            return Ok(PreparedChangedPathsReport {
+                reports: vec![self.check_path(self.project_root.clone())?],
+                requested_paths,
+                full_project_fallbacks: 1,
+                coverage: "full_project",
+            });
+        }
+
+        let mut checker = StructureChecker::from_compiled(
+            self.project_root.clone(),
+            &self.compiled,
+            self.fail_fast,
+        );
+        let mut reports = Vec::with_capacity(requested_paths);
+        for path in paths {
+            reports.push(self.check_changed_path_with_checker(path, &mut checker)?);
+        }
+        Ok(PreparedChangedPathsReport {
+            reports,
+            requested_paths,
+            full_project_fallbacks: 0,
+            coverage: "changed_paths",
+        })
+    }
+
+    fn check_changed_path_with_checker(
+        &self,
+        path: PathBuf,
+        checker: &mut StructureChecker,
+    ) -> Result<StructureCheckReport, CheckError> {
         let checked_path = self.resolve_changed_path(path)?;
         if !checked_path.starts_with(&self.project_root) {
             return Err(CheckError::OutsideProject {
@@ -114,11 +187,6 @@ impl PreparedStructureCheck {
             violations: Vec::new(),
         };
 
-        let mut checker = StructureChecker::from_compiled(
-            self.project_root.clone(),
-            &self.compiled,
-            self.fail_fast,
-        );
         checker.validate_configured_structure(&mut report);
         checker.validate_one_changed_path(&checked_path, &mut report);
         report.sort_violations_staged();
