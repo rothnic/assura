@@ -363,6 +363,9 @@ fn inspect_at(
         &cache_read,
         config,
     );
+    if super::agent_nudge_delivery::refresh_deadline_expired() {
+        return Err("trajectory refresh deadline exceeded".to_string());
+    }
     if let Err(error) = snapshot::write(&cache_key, &snapshot) {
         snapshot.cache = CacheInfo {
             status: "refreshed".to_string(),

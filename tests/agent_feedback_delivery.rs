@@ -3,6 +3,7 @@ use std::fs;
 use std::process::{Command, Output};
 use std::thread;
 use std::time::Duration;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tempfile::TempDir;
 
 fn bin() -> &'static str {
@@ -184,6 +185,22 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
     let first_json: Value = serde_json::from_slice(&first.stdout).expect("cold wrapper JSON");
     assert_eq!(first_json["feedback"]["refresh"], "scheduled");
 
+    let queued = Command::new("sh")
+        .arg(&wrapper)
+        .current_dir(root.path())
+        .env("ASSURA_BIN", bin())
+        .env("ASSURA_AGENT_MODE", "nudge")
+        .env("ASSURA_AGENT_EVENT", "after-tool")
+        .env("ASSURA_AGENT_LOG", "0")
+        .output()
+        .expect("queued wrapper runs");
+    assert!(queued.status.success());
+    let queued_json: Value = serde_json::from_slice(&queued.stdout).expect("queued wrapper JSON");
+    assert!(matches!(
+        queued_json["feedback"]["refresh"].as_str(),
+        Some("in_flight" | "queued" | "cooldown" | "debounced" | "scheduled")
+    ));
+
     let cache_dir = root.path().join(".git/assura/trajectory");
     for _ in 0..100 {
         if cache_dir.is_dir()
@@ -221,6 +238,35 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
         .unwrap()
         .iter()
         .any(|item| item["category"] == "trajectory"));
+}
+
+#[test]
+fn expired_refresh_does_not_publish_a_snapshot() {
+    let root = fixture("");
+    let path = root.path().to_str().unwrap();
+    let deadline = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .expect("clock")
+        .as_millis()
+        .saturating_sub(1)
+        .to_string();
+    let output = Command::new(bin())
+        .args([
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ])
+        .current_dir(root.path())
+        .env("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS", deadline)
+        .output()
+        .expect("expired inspect runs");
+    assert!(!output.status.success());
+    let cache_dir = root.path().join(".git/assura/trajectory");
+    assert!(!cache_dir.exists() || fs::read_dir(cache_dir).unwrap().next().is_none());
 }
 
 #[test]
