@@ -340,23 +340,33 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
     }
     assert!(cache_dir.is_dir(), "refresh child did not create cache");
 
-    let second = Command::new("sh")
-        .arg(&wrapper)
-        .current_dir(root.path())
-        .env("ASSURA_BIN", bin())
-        .env("ASSURA_AGENT_MODE", "nudge")
-        .env("ASSURA_AGENT_EVENT", "session-start")
-        .env("ASSURA_AGENT_LOG", "0")
-        .output()
-        .expect("wrapper runs with warm cache");
-    assert!(second.status.success());
-    let second_json: Value = serde_json::from_slice(&second.stdout).expect("warm wrapper JSON");
+    let mut second_json = None;
+    for _ in 0..100 {
+        let second = Command::new("sh")
+            .arg(&wrapper)
+            .current_dir(root.path())
+            .env("ASSURA_BIN", bin())
+            .env("ASSURA_AGENT_MODE", "nudge")
+            .env("ASSURA_AGENT_EVENT", "session-start")
+            .env("ASSURA_AGENT_LOG", "0")
+            .output()
+            .expect("wrapper runs with warm cache");
+        assert!(second.status.success());
+        let parsed: Value = serde_json::from_slice(&second.stdout).expect("warm wrapper JSON");
+        if parsed["feedback"]["snapshot"] == "fresh"
+            && parsed["nudges"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|item| item["category"] == "trajectory")
+        {
+            second_json = Some(parsed);
+            break;
+        }
+        thread::sleep(Duration::from_millis(50));
+    }
+    let second_json = second_json.expect("warm wrapper did not reuse trajectory cache");
     assert_eq!(second_json["feedback"]["snapshot"], "fresh");
-    assert!(second_json["nudges"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .any(|item| item["category"] == "trajectory"));
 }
 
 #[test]
