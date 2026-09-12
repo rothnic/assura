@@ -166,7 +166,7 @@ pub(super) fn path_string(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
 }
 
-fn severity_rank(severity: &str) -> Option<u8> {
+pub(super) fn severity_rank(severity: &str) -> Option<u8> {
     match severity.to_ascii_lowercase().as_str() {
         "low" => Some(1),
         "medium" => Some(2),

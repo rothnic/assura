@@ -19,7 +19,8 @@ generated host bundles, integration tests and performance tooling.
 
 ## Global constraints
 
-- Planning only until explicit start; no product implementation has begun.
+- Execution is active after the explicit start; CF01 owns the first product
+  candidate and CF02-CF04 remain gated on its terminal result.
 - Routine injection: one line, <=256 UTF-8 bytes including wrapper, default
   spacing 600 seconds, <=4 messages and <=1024 bytes per rolling hour.
 - Configurable entry/clear thresholds, material steps, bounded reminders,
@@ -47,7 +48,7 @@ opening another. Independent review/validation can overlap.
 
 | Card | Outcome | Depends on | State | Candidate / result |
 | --- | --- | --- | --- | --- |
-| CF01 | Cheap, bounded existing feedback and convergent instructions | None | pending | Not started |
+| CF01 | Cheap, bounded existing feedback and convergent instructions | None | active | `goal/compact-feedback-execution`; independent review recheck pending |
 | CF02 | Cached Git trajectory facts with honest coverage | CF01 | pending | Not started |
 | CF03 | Configurable one-line scheduling and async host delivery | CF02 | pending | Not started |
 | CF04 | Performance evidence, project trial and instruction handoff | CF03 | pending | Not started |

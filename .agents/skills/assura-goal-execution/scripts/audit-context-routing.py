@@ -40,6 +40,8 @@ REQUIRED_TASK_FILES = (
 )
 MARKDOWN_LINK = re.compile(r"\[[^\]]+\]\(([^)]+)\)")
 DESCRIPTION = re.compile(r"^description:\s*(.+?)\s*$", re.MULTILINE)
+TERMINAL_CARD_STATES = {"done", "not_needed"}
+OWNED_SCOPE_FIELDS = ("owner", "handle", "next_action", "closure")
 
 
 def emit(kind: str, *fields: object) -> None:
@@ -93,6 +95,25 @@ def checkpoint_errors(checkpoint: str) -> list[str]:
     ]
     if len(ledger_rows) > 1:
         errors.append("checkpoint duplicates a full ledger")
+    return errors
+
+
+def product_terminal(cards: list[dict[str, str]]) -> bool:
+    """Return whether every declared product card has a terminal outcome."""
+    return all(card.get("state") in TERMINAL_CARD_STATES for card in cards)
+
+
+def owned_scope_errors(topology: list[dict[str, str]]) -> list[str]:
+    """Reject abandoned owned records without changing foreign/unknown data."""
+    errors: list[str] = []
+    for record in topology:
+        if record.get("scope") != "owned":
+            continue
+        missing = [field for field in OWNED_SCOPE_FIELDS if not record.get(field)]
+        if missing:
+            errors.append(
+                f"{record.get('name', 'candidate')}: missing {','.join(missing)}"
+            )
     return errors
 
 

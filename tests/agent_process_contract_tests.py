@@ -47,27 +47,6 @@ def import_context_audit() -> Any:
     return module
 
 
-def product_terminal(cards: list[dict[str, str]]) -> bool:
-    return all(card["state"] in {"done", "not_needed"} for card in cards)
-
-
-def audit_owned_scope(topology: list[dict[str, str]]) -> tuple[list[str], list[dict[str, str]]]:
-    errors = []
-    for record in topology:
-        if record.get("scope") != "owned":
-            continue
-        missing = [
-            field
-            for field in ("owner", "handle", "next_action", "closure")
-            if not record.get(field)
-        ]
-        if missing:
-            errors.append(f"{record.get('name', 'candidate')}: missing {','.join(missing)}")
-    # Reporting an abandoned owned record must not mutate or delete foreign or
-    # unknown topology; callers decide whether to archive after repair proof.
-    return errors, list(topology)
-
-
 def test_idempotent_reconciliation_and_outcome_accounting() -> None:
     before_head = command("git", "rev-parse", "HEAD")
     before_status = command("git", "status", "--porcelain")
@@ -98,15 +77,16 @@ def test_idempotent_reconciliation_and_outcome_accounting() -> None:
 
 def test_process_observations_do_not_promote_product_acceptance() -> None:
     cards = [{"id": record[1], "state": record[2]} for record in records(ledger_snapshot(), "CARD")]
-    assert not product_terminal(cards)
+    audit = import_context_audit()
+    assert not audit.product_terminal(cards)
     for observation in ("process-only-merge", "external-hold", "reviewer-restriction"):
         checkpoint = {"observation": observation, "cards": cards}
         assert checkpoint["cards"] == cards
-        assert not product_terminal(checkpoint["cards"])
+        assert not audit.product_terminal(checkpoint["cards"])
 
     parent = {"id": "CF01", "state": "pending", "reviewer_restriction": "review-only"}
     assert parent["state"] == "pending"
-    assert not product_terminal([parent])
+    assert not audit.product_terminal([parent])
 
 
 def test_context_contract_and_owned_scope_preserve_unknown_topology() -> None:
@@ -144,10 +124,12 @@ def test_context_contract_and_owned_scope_preserve_unknown_topology() -> None:
         {"scope": "foreign", "name": "foreign/dirty", "owner": "other"},
         {"scope": "unknown", "name": "/private/tmp/unreadable", "owner": "unknown"},
     ]
-    errors, preserved = audit_owned_scope(topology)
+    errors = audit.owned_scope_errors(topology)
     assert errors and "goal/abandoned" in errors[0]
-    assert preserved == topology
-    assert {record["scope"] for record in preserved} == {"owned", "foreign", "unknown"}
+    # The production audit is read-only; the input fixture remains intact and
+    # foreign/unknown records are still present for the caller to preserve.
+    assert topology[1]["scope"] == "foreign"
+    assert topology[2]["scope"] == "unknown"
 
 
 def main() -> int:

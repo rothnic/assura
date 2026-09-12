@@ -979,6 +979,10 @@ fn agent_nudge_after_tool_reports_bounded_changed_path_findings() {
     assert_eq!(nudge["summary"]["omitted_count"], 1);
     assert_eq!(nudge["reference_contexts"].as_array().unwrap().len(), 0);
     assert_eq!(nudge["changed_path_checks"].as_array().unwrap().len(), 1);
+    assert_eq!(nudge["changed_path_batch"]["requested_paths"], 2);
+    assert_eq!(nudge["changed_path_batch"]["checked_paths"], 1);
+    assert_eq!(nudge["changed_path_batch"]["unknown_paths"], 1);
+    assert_eq!(nudge["changed_path_batch"]["coverage"], "partial");
     assert_eq!(nudge["changed_path_checks"][0]["path"], "src/BadName.rs");
     assert_eq!(nudge["nudges"][0]["category"], "structure");
     assert_eq!(nudge["nudges"][0]["rule"], "file_naming");
@@ -991,6 +995,39 @@ fn agent_nudge_after_tool_reports_bounded_changed_path_findings() {
         .as_str()
         .expect("suggested command")
         .contains("--agent codex"));
+}
+
+#[test]
+fn agent_nudge_preserves_a_later_critical_finding_across_changed_paths() {
+    let project = tempfile::tempdir().expect("temp project");
+    copy_dir(
+        Path::new("tests/fixtures/real-project-agentic-feedback/invalid"),
+        project.path(),
+    );
+    let path = project.path().to_str().expect("fixture path");
+
+    let nudge = agent_json(&[
+        "nudge",
+        path,
+        "--event",
+        "after-tool",
+        "--changed",
+        "apps/web/src/BadName.tsx",
+        "--changed",
+        "draft-plan.md",
+        "--min-severity",
+        "medium",
+        "--max-issues",
+        "1",
+    ]);
+
+    assert_eq!(nudge["summary"]["nudge_count"], 1);
+    assert_eq!(nudge["nudges"][0]["severity"], "critical");
+    assert_eq!(nudge["nudges"][0]["path"], "draft-plan.md");
+    assert_eq!(nudge["nudges"][0]["rule"], "unexpected_file");
+    assert_eq!(nudge["changed_path_batch"]["requested_paths"], 2);
+    assert_eq!(nudge["changed_path_batch"]["checked_paths"], 2);
+    assert!(nudge["summary"]["omitted_count"].as_u64().unwrap() > 0);
 }
 
 #[test]

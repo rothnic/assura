@@ -1,7 +1,8 @@
 # Compact feedback execution plan
 
-Planning only: the user requested organization and a start command. Product
-implementation waits for explicit invocation.
+Execution is active after the user's explicit merge invocation. CF01 owns the
+current product candidate; CF02-CF04 remain pending until their prerequisites
+and acceptance evidence are terminal.
 
 Create the discoverable `assura-feedback-execution` skill and bounded backlog
 for tiny configurable statistics, cached/asynchronous collection, existing
@@ -13,9 +14,9 @@ and [backlog](../../../.agents/skills/custom/assura-feedback-execution/reference
 The [execution contract](../../../.agents/skills/custom/assura-feedback-execution/references/execution.md)
 defines start, scope, review, authority and closure.
 
-Planning acceptance: references exist, entrypoint is discoverable, byte/cadence/
-threshold/async contracts are concrete, cards have observable acceptance, and
-no product implementation or execution session has started.
+Planning acceptance was satisfied before execution. Product implementation and
+the existing planning task are now being advanced through the single CF01-CF04
+candidate sequence; card statuses remain only in the skill backlog.
 
 Do not duplicate CF01–CF04 status here or in another task queue.
 
