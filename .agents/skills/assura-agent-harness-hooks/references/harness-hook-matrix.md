@@ -14,7 +14,6 @@ payload shape is verified.
 | `file-read` | Harness can observe high-value file reads | Pass read path as `--changed`; inject only path-specific structure/content/reference context. |
 | `idle` | Prompt submit, idle review, or periodic check | Record baseline state; inject only when queued context is worth interrupting. |
 | `recovery` | Failed tool, stale daemon, or context repair | Prefer compact daemon/project recovery instructions. |
-| `automatic delivery` | Cached trajectory delivery requested by an adapter | Use the shared Rust delivery path; emit one bounded line or remain quiet, and keep refresh/lifecycle gaps explicit. |
 
 ## Distribution and Versioning Model
 

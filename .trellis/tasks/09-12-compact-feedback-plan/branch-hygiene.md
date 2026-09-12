@@ -120,3 +120,9 @@ excluded from the candidate net diff: owner unknown/foreign; handle
 additional `SKILL.md` and `references/harness-hook-matrix.md` edits. The next
 action is owner review before any reapplication; restore with
 `git stash apply 8205a4a92167ece55276da24cd17b1576ed62fe2`.
+
+During CF03, a foreign harness-contract overlay was briefly committed as
+`0e815a9`; it is excluded from this candidate and remains recoverable from
+that commit. Owner unknown/foreign; next action is owner review; restore with
+`git show 0e815a9 -- .agents/skills/assura-agent-harness-hooks` (or apply the
+existing preserved stash for the same owner work).

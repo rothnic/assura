@@ -28,9 +28,6 @@ adapters.
 5. **Preserve the shared contract**: Keep validation in
    `assura agent nudge` and `assura check --format agent`; adapters only bridge
    harness protocol, changed-path detection, and context injection.
-   CF03 automatic delivery stays in this shared Rust path: adapters consume
-   cached bounded facts, while explicit inspect owns refresh and host lifecycle
-   proof remains separately stated in the matrix.
 6. **Update lifecycle behavior**: If generated hook bundles or adapters are
    managed by Assura, install/update should refresh managed stale files and
    doctor/status should warn or fail clearly on drift.
