@@ -3,7 +3,7 @@
   "name": "compact-feedback-plan",
   "title": "Compact feedback execution plan",
   "description": "Planning only: tiny configurable trajectory statistics, cached or asynchronous collection, performance repairs, and a single execution entrypoint with idempotent reconciliation, outcome accounting, compact context and owned cleanup guardrails. Product implementation waits for explicit invocation.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": "docs",
   "scope": "compact-feedback-planning",
   "package": null,

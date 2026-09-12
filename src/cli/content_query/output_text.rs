@@ -192,8 +192,9 @@ impl TextRender for SafeFixesOutput {
 impl TextRender for SearchOutput {
     fn render_text(&self) -> String {
         let mut lines = vec![format!(
-            "Search matches: {} mode={} fallback={}",
+            "Search matches: {} omitted={} mode={} fallback={}",
             self.matches.len(),
+            self.omitted,
             self.mode,
             self.fallback_used
         )];

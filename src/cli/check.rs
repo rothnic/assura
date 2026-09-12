@@ -101,6 +101,7 @@ use ls_fast_plan::FastScope;
 pub use markdown_fix::{run_markdown_fix, MarkdownFixRule};
 #[cfg(feature = "yaml-config")]
 pub use markdown_fix_report::MarkdownFixReport;
+pub(crate) use prepared::PreparedChangedPathsReport;
 #[cfg(feature = "yaml-config")]
 pub use prepared::PreparedStructureCheck;
 #[cfg(feature = "yaml-config")]

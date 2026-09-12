@@ -30,7 +30,7 @@ pub(super) fn agent_query(
         }
         QueryArg::KeywordSearch => {
             let text = required_arg(request.text, "text", request.query)?;
-            to_response(search(context, text))?
+            to_response(search(context, text, request.limit))?
         }
         QueryArg::SemanticCandidates => {
             let text = required_arg(request.text, "text", request.query)?;

@@ -83,7 +83,7 @@ pub(super) fn context_pack(
 
     let search = match request.text {
         Some(text) => {
-            let mut search = search(context, text);
+            let mut search = search(context, text, usize::MAX);
             bounds.truncate("search.matches", &mut search.matches);
             Some(search)
         }

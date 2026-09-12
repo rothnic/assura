@@ -133,7 +133,7 @@ fn run_content_command(
             } else if fallback_raw {
                 modeled_with_raw_fallback(&context, &query, limit)
             } else {
-                search(&context, &query)
+                search(&context, &query, limit)
             };
             render(output, format)
         }

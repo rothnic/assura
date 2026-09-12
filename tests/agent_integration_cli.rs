@@ -198,6 +198,7 @@ fn codex_post_tool_event_injects_bounded_assura_context() {
         .as_str()
         .expect("Codex additional context");
     assert_eq!(output["hookSpecificOutput"]["hookEventName"], "PostToolUse");
+    assert!(context.len() <= 256);
     assert!(context.contains("<assura-feedback>"));
     assert!(context.contains("src/BadName.rs"));
 }
@@ -210,6 +211,7 @@ fn claude_pre_tool_event_injects_bounded_assura_context() {
         .as_str()
         .expect("Claude additional context");
     assert_eq!(output["hookSpecificOutput"]["hookEventName"], "PreToolUse");
+    assert!(context.len() <= 256);
     assert!(context.contains("<assura-feedback>"));
     assert!(context.contains("src/BadName.rs"));
 }
@@ -237,6 +239,7 @@ console.log(JSON.stringify(output));
 "#,
     );
     let context = output["output"].as_str().expect("OpenCode tool output");
+    assert!(context.len() <= 256);
     assert!(context.contains("<assura-feedback>"));
     assert!(context.contains("src/BadName.rs"));
 }
@@ -281,6 +284,7 @@ console.log(JSON.stringify(output));
     let context = content.last().unwrap()["text"]
         .as_str()
         .expect("Pi context");
+    assert!(context.len() <= 256);
     assert!(context.contains("<assura-feedback>"));
     assert!(context.contains("src/BadName.rs"));
 }

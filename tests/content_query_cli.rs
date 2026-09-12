@@ -695,3 +695,54 @@ fn content_query_agent_query_wraps_shared_contracts() {
         );
     }
 }
+
+#[test]
+fn keyword_search_respects_limit() {
+    let one = json_output(run_content(&[
+        "agent-query",
+        "keyword-search",
+        "tests/fixtures/content_runtime/valid",
+        "--text",
+        "Portable",
+        "--limit",
+        "1",
+        "--format",
+        "json",
+    ]));
+    assert_eq!(one["response"]["matches"].as_array().unwrap().len(), 1);
+    assert!(one["response"]["omitted"].as_u64().unwrap() > 0);
+
+    let zero = json_output(run_content(&[
+        "agent-query",
+        "keyword-search",
+        "tests/fixtures/content_runtime/valid",
+        "--text",
+        "Portable",
+        "--limit",
+        "0",
+        "--format",
+        "json",
+    ]));
+    assert!(zero["response"]["matches"]
+        .as_array()
+        .expect("zero-limit matches array")
+        .is_empty());
+    assert!(zero["response"]["omitted"].as_u64().unwrap() > 0);
+
+    let large = json_output(run_content(&[
+        "agent-query",
+        "keyword-search",
+        "tests/fixtures/content_runtime/valid",
+        "--text",
+        "Portable",
+        "--limit",
+        "1000",
+        "--format",
+        "json",
+    ]));
+    assert!(large["response"]["matches"].as_array().unwrap().len() > 1);
+    assert_eq!(large["response"]["omitted"], 0);
+
+    let encoded = serde_json::to_vec(&one).expect("search output serializes");
+    serde_json::from_slice::<Value>(&encoded).expect("search output remains valid JSON");
+}

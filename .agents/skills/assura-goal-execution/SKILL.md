@@ -8,6 +8,10 @@ description: "Resume Assura goals and Trellis backlogs with layered context rout
 Use for goals in `docs/goals/` and canonical execution tasks in `.trellis/tasks/`.
 The latest user scope controls whether this session executes product work or
 only improves its process. Do not substitute a process PR for product acceptance.
+For the compact feedback/performance train, route implementation through
+`.agents/skills/custom/assura-feedback-execution/SKILL.md`; keep its CF01
+process correction bounded and do not repeat instruction-reconciliation cycles
+when the source, ledger and topology inputs are unchanged.
 
 ## Start
 

@@ -114,7 +114,11 @@ pub enum AgentCommands {
         min_severity: String,
         #[arg(long, default_value_t = 5)]
         max_issues: usize,
-        #[arg(long, default_value_t = 20)]
+        #[arg(
+            long,
+            default_value_t = 0,
+            help = "Inspect up to this many repository-reference edges per changed path; 0 keeps feedback demand-driven"
+        )]
         reference_limit: usize,
         #[arg(
             long,

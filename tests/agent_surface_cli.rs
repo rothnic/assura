@@ -767,10 +767,13 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
         .as_str()
         .expect("additional context");
     assert!(context.contains("<assura-nudge>"));
-    assert!(context.contains("Intent: edit"));
-    assert!(context.contains("Git delta: 1 changed since previous hook/message"));
+    assert!(context.len() <= 256);
+    assert!(context.contains("intent=edit"));
+    assert!(context.contains("delta=1"));
     assert!(context.contains("src/BadName.rs"));
     assert!(context.contains("file_naming"));
+    assert!(!context.contains("Log:"));
+    assert!(!context.contains("State:"));
 
     let log_text = fs::read_to_string(project.path().join(".assura/agent-sessions/nudges.jsonl"))
         .expect("nudge log");
@@ -822,9 +825,9 @@ fn codex_hook_bounds_utf8_context_for_many_long_findings() {
         .as_str()
         .expect("additional context");
     // Rust string length is UTF-8 byte length, matching the hook's byte cap.
-    assert!(context.len() <= 2 * 1024);
+    assert!(context.len() <= 256);
     assert!(context.is_char_boundary(context.len()));
-    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(!context.contains("Output truncated at 2 KiB"));
     assert!(context.contains("performance_no_slower"));
     assert!(context.ends_with("</assura-nudge>"));
 }
@@ -883,9 +886,9 @@ print(json.dumps({"context": context}))
 
     let rendered: Value = serde_json::from_slice(&output.stdout).expect("formatter emits JSON");
     let context = rendered["context"].as_str().expect("formatted context");
-    assert!(context.len() <= 2 * 1024);
+    assert!(context.len() <= 256);
     assert!(context.contains("critical_rule"));
-    assert!(context.contains("Output truncated at 2 KiB"));
+    assert!(!context.contains("Output truncated at 2 KiB"));
     assert!(context.ends_with("</assura-nudge>"));
 }
 
@@ -940,10 +943,11 @@ fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
     let context = hook_output["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .expect("additional context");
-    assert!(context.contains("Intent: git_commit"));
-    assert!(context.contains("Git delta: 0 changed since previous hook/message"));
-    assert!(context.contains("Git intent: detected git_commit"));
-    assert!(context.contains("Summary: 0 nudge(s)"));
+    assert!(context.len() <= 256);
+    assert!(context.contains("intent=git_commit"));
+    assert!(context.contains("delta=0"));
+    assert!(!context.contains("Git intent:"));
+    assert!(!context.contains("Summary:"));
 }
 
 #[test]

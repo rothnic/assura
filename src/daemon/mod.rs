@@ -5,7 +5,9 @@
 //! integrations can call without reimplementing project freshness or
 //! repository-reference lookups.
 
-use crate::cli::check::{CheckError, PreparedStructureCheck, StructureCheckReport};
+use crate::cli::check::{
+    CheckError, PreparedChangedPathsReport, PreparedStructureCheck, StructureCheckReport,
+};
 use crate::cli::content_query::context::{ContentQueryError, QueryContext};
 use crate::intelligence::{resource_id, RepositoryReferenceEdge};
 use std::fs;
@@ -72,7 +74,8 @@ pub struct LocalDaemonCore {
     requested_path: PathBuf,
     requested_config: Option<PathBuf>,
     prepared: PreparedStructureCheck,
-    context: QueryContext,
+    context: Option<QueryContext>,
+    references_enabled: bool,
     fingerprint: ProjectFingerprint,
     config_hash: u64,
     generation: u64,
@@ -83,17 +86,45 @@ pub struct LocalDaemonCore {
 impl LocalDaemonCore {
     /// Load warm project state for a path and optional Assura config.
     pub fn load(path: PathBuf, config: Option<PathBuf>) -> Result<Self, DaemonCoreError> {
+        Self::load_with_references(path, config, true)
+    }
+
+    /// Load feedback state without constructing the content/reference graph
+    /// unless repository-reference context was requested by the caller.
+    pub(crate) fn load_for_feedback(
+        path: PathBuf,
+        config: Option<PathBuf>,
+        references_enabled: bool,
+    ) -> Result<Self, DaemonCoreError> {
+        Self::load_with_references(path, config, references_enabled)
+    }
+
+    fn load_with_references(
+        path: PathBuf,
+        config: Option<PathBuf>,
+        references_enabled: bool,
+    ) -> Result<Self, DaemonCoreError> {
         let prepared =
             PreparedStructureCheck::load_for_path(Some(path.clone()), config.clone(), false)?;
-        let context =
-            QueryContext::load_for_path(path.clone(), config.clone(), false, false, true)?;
-        let fingerprint = ProjectFingerprint::capture(&context.project_root)?;
-        let config_hash = file_hash(&context.config_path)?;
+        let context = if references_enabled {
+            Some(QueryContext::load_for_path(
+                path.clone(),
+                config.clone(),
+                false,
+                false,
+                true,
+            )?)
+        } else {
+            None
+        };
+        let fingerprint = ProjectFingerprint::capture(prepared.project_root())?;
+        let config_hash = file_hash(prepared.config_path())?;
         Ok(Self {
             requested_path: path,
             requested_config: config,
             prepared,
             context,
+            references_enabled,
             fingerprint,
             config_hash,
             generation: 1,
@@ -104,13 +135,15 @@ impl LocalDaemonCore {
 
     /// Return current daemon/session health metadata.
     pub fn health(&self) -> DaemonHealth {
+        let project_root = self.project_root().to_path_buf();
+        let config_path = self.config_path().to_path_buf();
         DaemonHealth {
             state: self.state,
             reason: self.reason.clone(),
-            project_root: self.context.project_root.clone(),
-            config_path: self.context.config_path.clone(),
+            project_root: project_root.clone(),
+            config_path,
             generation: self.generation,
-            runtime_paths: DaemonRuntimePaths::for_project(&self.context.project_root),
+            runtime_paths: DaemonRuntimePaths::for_project(&project_root),
             fallback_command: self.fallback_command(),
         }
     }
@@ -118,13 +151,15 @@ impl LocalDaemonCore {
     /// Return an observable warming response for clients before starting a
     /// long rebuild.
     pub fn warming_health(&self, reason: impl Into<String>) -> DaemonHealth {
+        let project_root = self.project_root().to_path_buf();
+        let config_path = self.config_path().to_path_buf();
         DaemonHealth {
             state: DaemonHealthState::Warming,
             reason: reason.into(),
-            project_root: self.context.project_root.clone(),
-            config_path: self.context.config_path.clone(),
+            project_root: project_root.clone(),
+            config_path,
             generation: self.generation,
-            runtime_paths: DaemonRuntimePaths::for_project(&self.context.project_root),
+            runtime_paths: DaemonRuntimePaths::for_project(&project_root),
             fallback_command: self.fallback_command(),
         }
     }
@@ -146,15 +181,19 @@ impl LocalDaemonCore {
             self.requested_config.clone(),
             false,
         )?;
-        self.context = QueryContext::load_for_path(
-            self.requested_path.clone(),
-            self.requested_config.clone(),
-            false,
-            false,
-            true,
-        )?;
-        self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
-        self.config_hash = file_hash(&self.context.config_path)?;
+        self.context = if self.references_enabled {
+            Some(QueryContext::load_for_path(
+                self.requested_path.clone(),
+                self.requested_config.clone(),
+                false,
+                false,
+                true,
+            )?)
+        } else {
+            None
+        };
+        self.fingerprint = ProjectFingerprint::capture(self.prepared.project_root())?;
+        self.config_hash = file_hash(self.prepared.config_path())?;
         self.generation += 1;
         self.state = DaemonHealthState::Running;
         self.reason = "project state refreshed".to_string();
@@ -179,6 +218,18 @@ impl LocalDaemonCore {
         Ok(self.prepared.check_changed_path(path)?)
     }
 
+    /// Validate one bounded batch of changed paths against prepared structure
+    /// rules and expose whether a full-project fallback was shared.
+    pub(crate) fn check_changed_paths(
+        &mut self,
+        paths: Vec<PathBuf>,
+    ) -> Result<PreparedChangedPathsReport, DaemonCoreError> {
+        self.ensure_config_fresh()?;
+        self.state = DaemonHealthState::Running;
+        self.reason = "project state is current for changed-path validation".to_string();
+        Ok(self.prepared.check_changed_paths(paths)?)
+    }
+
     /// Return outbound repository references from a changed source path.
     pub fn changed_source_references(
         &mut self,
@@ -187,10 +238,10 @@ impl LocalDaemonCore {
     ) -> Result<DaemonAffectedReferences, DaemonCoreError> {
         self.ensure_fresh()?;
         let rel_path = self.normalize_project_path(path);
-        let all_references = self
-            .context
-            .store
-            .repository_references_from_path(&rel_path);
+        let context = self.context.as_ref().ok_or_else(|| {
+            DaemonCoreError::Content("repository-reference context was not loaded".to_string())
+        })?;
+        let all_references = context.store.repository_references_from_path(&rel_path);
         Ok(self.reference_response("source", rel_path, all_references, limit))
     }
 
@@ -204,7 +255,10 @@ impl LocalDaemonCore {
         let rel_path = self.normalize_project_path(path);
         self.ensure_target_feedback_fresh_or_degraded(&rel_path)?;
         let target_id = resource_id(&rel_path);
-        let all_references = self.context.store.repository_references_to(&target_id);
+        let context = self.context.as_ref().ok_or_else(|| {
+            DaemonCoreError::Content("repository-reference context was not loaded".to_string())
+        })?;
+        let all_references = context.store.repository_references_to(&target_id);
         Ok(self.reference_response("target", rel_path, all_references, limit))
     }
 
@@ -221,7 +275,10 @@ impl LocalDaemonCore {
         let new_path = self.normalize_project_path(new_path);
         self.ensure_target_feedback_fresh_or_degraded(&previous_path)?;
         let target_id = resource_id(&previous_path);
-        let all_references = self.context.store.repository_references_to(&target_id);
+        let context = self.context.as_ref().ok_or_else(|| {
+            DaemonCoreError::Content("repository-reference context was not loaded".to_string())
+        })?;
+        let all_references = context.store.repository_references_to(&target_id);
         let bounds = response_bounds(all_references.len(), limit);
         let references = all_references
             .into_iter()
@@ -240,7 +297,7 @@ impl LocalDaemonCore {
     fn ensure_fresh(&mut self) -> Result<(), DaemonCoreError> {
         self.ensure_config_fresh()?;
 
-        let latest = ProjectFingerprint::capture(&self.context.project_root)?;
+        let latest = ProjectFingerprint::capture(self.prepared.project_root())?;
         if latest == self.fingerprint {
             self.state = DaemonHealthState::Running;
             self.reason = "project state is current".to_string();
@@ -252,7 +309,7 @@ impl LocalDaemonCore {
     }
 
     fn ensure_config_fresh(&mut self) -> Result<(), DaemonCoreError> {
-        match file_hash(&self.context.config_path) {
+        match file_hash(self.config_path()) {
             Ok(hash) if hash == self.config_hash => Ok(()),
             Ok(_) => self.stale_config(
                 "configuration changed; refresh required before daemon results are trusted",
@@ -270,7 +327,7 @@ impl LocalDaemonCore {
     }
 
     fn mark_degraded_if_project_changed(&mut self) -> Result<(), DaemonCoreError> {
-        let latest = ProjectFingerprint::capture(&self.context.project_root)?;
+        let latest = ProjectFingerprint::capture(self.prepared.project_root())?;
         if latest == self.fingerprint {
             self.state = DaemonHealthState::Running;
             self.reason = "project state is current".to_string();
@@ -286,7 +343,7 @@ impl LocalDaemonCore {
         &mut self,
         rel_path: &Path,
     ) -> Result<(), DaemonCoreError> {
-        if self.context.project_root.join(rel_path).exists() {
+        if self.project_root().join(rel_path).exists() {
             self.ensure_fresh()?;
         } else {
             self.state = DaemonHealthState::Degraded;
@@ -298,12 +355,26 @@ impl LocalDaemonCore {
 
     fn normalize_project_path(&self, path: PathBuf) -> PathBuf {
         if path.is_absolute() {
-            path.strip_prefix(&self.context.project_root)
+            path.strip_prefix(self.project_root())
                 .map(Path::to_path_buf)
                 .unwrap_or(path)
         } else {
             path
         }
+    }
+
+    fn project_root(&self) -> &Path {
+        self.context
+            .as_ref()
+            .map(|context| context.project_root.as_path())
+            .unwrap_or_else(|| self.prepared.project_root())
+    }
+
+    fn config_path(&self) -> &Path {
+        self.context
+            .as_ref()
+            .map(|context| context.config_path.as_path())
+            .unwrap_or_else(|| self.prepared.config_path())
     }
 
     fn reference_response(

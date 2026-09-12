@@ -52,9 +52,12 @@ Primary check feedback options:
   merge, rebase, push, reset, clean, checkout, switch, pull, or stash is
   detected against a dirty worktree, or when the changed-path delta is large
   enough to warrant interruption.
-- Codex post-tool context must include the hook event, tool name, detected tool
-  intent, changed-path delta since the previous hook/message, dirty-path count,
-  nudge summary, and log/state file locations.
+- Codex post-tool context is routine-silent unless the existing injection
+  predicate fires. When injected, it is one deterministic line inside an
+  `<assura-nudge>` block, <=256 UTF-8 bytes including the wrapper, and carries
+  the event, tool, intent, changed-path delta, dirty-path count, and at most one
+  selected finding. Audit log/state locations remain in explicit output and
+  are not repeated in routine context.
 - The Assura release installer installs the Rust CLI only. The npm package may
   provide library helpers for wrappers, but it must not publish separate
   feedback CLI binaries.
@@ -120,6 +123,8 @@ Primary check feedback options:
   delta detection, verify high-risk Git intent injection, and assert
   `.assura/agent-sessions/nudges.jsonl` plus
   `.assura/agent-sessions/codex-hook-state.jsonl` audit records.
+- Delivery tests must assert the routine context byte ceiling, valid UTF-8,
+  one selected finding, and omission of repeated log/state metadata.
 - Packaging smoke with `npm pack --dry-run` must not expose package executable
   binaries.
 

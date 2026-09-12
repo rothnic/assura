@@ -12,6 +12,10 @@ OpenCode, Claude, Pi, OpenClaw, or another coding-agent harness.
 - Harness integrations are delivery adapters. They translate harness events
   into Assura events, call the Assura binary, and return or log the resulting
   compact context.
+- Routine automatic context is default-silent or one deterministic selected
+  line, <=256 UTF-8 bytes including its wrapper. Detailed payloads, log/state
+  paths, omitted counts and provenance remain available through explicit
+  reports rather than repeated host context.
 
 ## Distribution Layers
 

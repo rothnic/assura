@@ -19,6 +19,8 @@ action without changing card acceptance or authority.
 3. Record the route in the authoritative card evidence: owner/session,
    source SHA, worktree/branch, phase, proof and exact triggering observation.
    A status observation without a route is not a checkpoint.
+   Repeating that observation with identical inputs must be byte-stable and
+   must not create a candidate, evidence or checkpoint-only commit.
 
 ## Command identity fence
 

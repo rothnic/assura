@@ -19,6 +19,9 @@ from typing import Optional
 
 MAX_AGENTS_LINES = 140
 MAX_DESCRIPTION_CHARS = 180
+MAX_CHECKPOINT_BYTES = 1024
+MIN_CHECKPOINT_BULLETS = 3
+MAX_CHECKPOINT_BULLETS = 6
 SKILL_RELATIVE = Path(".agents/skills/assura-goal-execution/SKILL.md")
 REQUIRED_REFERENCES = (
     "references/context-routing.md",
@@ -75,6 +78,24 @@ def check_markdown_links(markdown_file: Path) -> int:
     return failures
 
 
+def checkpoint_errors(checkpoint: str) -> list[str]:
+    """Return bounded-context violations without interpreting product state."""
+    errors: list[str] = []
+    if len(checkpoint.encode("utf-8")) > MAX_CHECKPOINT_BYTES:
+        errors.append("checkpoint exceeds configured byte cap")
+    bullets = [line for line in checkpoint.splitlines() if line.startswith("- ")]
+    if not MIN_CHECKPOINT_BULLETS <= len(bullets) <= MAX_CHECKPOINT_BULLETS:
+        errors.append("checkpoint must contain 3-6 bullets")
+    ledger_rows = [
+        line
+        for line in checkpoint.splitlines()
+        if line.startswith("CARD\t") or line.startswith("| CARD |")
+    ]
+    if len(ledger_rows) > 1:
+        errors.append("checkpoint duplicates a full ledger")
+    return errors
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("repository", type=Path)
@@ -82,6 +103,11 @@ def main() -> int:
         "task_relative_path",
         nargs="?",
         default=".trellis/tasks/09-04-maturity-portfolio-strategy",
+    )
+    parser.add_argument(
+        "--checkpoint-file",
+        type=Path,
+        help="also validate one compact 3-6 bullet checkpoint",
     )
     args = parser.parse_args()
 
@@ -95,6 +121,22 @@ def main() -> int:
     emit("ROOT", repo_root, "PASS")
     failures = 0
     checks = 0
+
+    if args.checkpoint_file is not None:
+        try:
+            checkpoint = args.checkpoint_file.read_text(encoding="utf-8")
+        except OSError as error:
+            emit("CHECKPOINT", args.checkpoint_file, "FAIL")
+            print(f"context-routing audit: cannot read checkpoint: {error}", file=sys.stderr)
+            failures += 1
+        else:
+            errors = checkpoint_errors(checkpoint)
+            result = "PASS" if not errors else "FAIL"
+            emit("CHECKPOINT", args.checkpoint_file, result)
+            for error in errors:
+                emit("CHECKPOINT_ERROR", error)
+            failures += bool(errors)
+        checks += 1
 
     agents_file = repo_root / "AGENTS.md"
     skill_file = repo_root / SKILL_RELATIVE

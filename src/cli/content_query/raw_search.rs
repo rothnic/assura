@@ -22,12 +22,14 @@ pub(super) fn raw_search(context: &QueryContext, query: &str, limit: usize) -> S
             .then_with(|| left.line.cmp(&right.line))
             .then_with(|| left.column.cmp(&right.column))
     });
+    let omitted = matches.len().saturating_sub(limit);
     matches.truncate(limit);
 
     SearchOutput {
         query: query.to_string(),
         mode: "raw",
         fallback_used: false,
+        omitted,
         matches,
     }
 }
@@ -37,8 +39,10 @@ pub(super) fn modeled_with_raw_fallback(
     query: &str,
     limit: usize,
 ) -> SearchOutput {
-    let mut modeled = super::keyword::search(context, query);
+    let mut modeled = super::keyword::search(context, query, usize::MAX);
     if !modeled.matches.is_empty() {
+        modeled.omitted = modeled.matches.len().saturating_sub(limit);
+        modeled.matches.truncate(limit);
         return modeled;
     }
 

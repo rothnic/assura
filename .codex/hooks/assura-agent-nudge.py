@@ -23,8 +23,8 @@ from typing import Any
 
 STATE_SCHEMA = "assura.codex-hook-state.v1"
 STATE_FILE = "codex-hook-state.jsonl"
-MAX_CONTEXT_NUDGES = 5
-MAX_CONTEXT_BYTES = 2 * 1024
+MAX_CONTEXT_NUDGES = 1
+MAX_CONTEXT_BYTES = 256
 MAX_CHANGED_PATHS = 20
 DEFAULT_MIN_SEVERITY = "medium"
 GIT_WRITE_INTENTS = {
@@ -313,49 +313,23 @@ def wrapper_command(wrapper: Path) -> list[str]:
 
 
 def compact_context(payload: dict[str, Any], meta: dict[str, Any]) -> str:
-    summary = payload.get("summary", {})
-    lines = [
-        "<assura-nudge>",
-        f"Hook: {meta.get('hook_event_name', 'unknown')}",
-        f"Event: {payload.get('event', 'unknown')}",
-        f"Tool: {meta.get('tool_name') or '-'}",
-        f"Intent: {meta.get('intent') or 'tool'}",
-        (
-            "Git delta: "
-            f"{meta.get('changed_since_previous_count', 0)} changed since previous "
-            f"hook/message, {meta.get('dirty_path_count', 0)} dirty path(s)"
-        ),
-        (
-            "Summary: "
-            f"{summary.get('nudge_count', 0)} nudge(s), "
-            f"{summary.get('changed_path_count', 0)} checked changed path(s)"
-        ),
-    ]
-    if meta.get("git_intent"):
-        lines.append(
-            "Git intent: detected "
-            f"{meta.get('intent')} while the workspace has "
-            f"{meta.get('dirty_path_count', 0)} dirty path(s)."
-        )
-    for nudge in prioritized_nudges(payload.get("nudges", [])):
-        severity = nudge.get("severity", "unknown")
-        category = nudge.get("category", "unknown")
-        path = nudge.get("path") or "-"
-        rule = nudge.get("rule") or "-"
+    event = payload.get("event", "unknown")
+    tool = meta.get("tool_name") or "-"
+    intent = meta.get("intent") or "tool"
+    delta = meta.get("changed_since_previous_count", 0)
+    dirty = meta.get("dirty_path_count", 0)
+    line = f"assura: event={event} tool={tool} intent={intent} delta={delta} dirty={dirty}"
+    selected = prioritized_nudges(payload.get("nudges", []))
+    if selected:
+        nudge = selected[0]
+        path = nudge.get("path") or "project"
+        rule = nudge.get("rule") or nudge.get("category") or "signal"
         message = nudge.get("message") or ""
-        command = nudge.get("suggested_command") or summary.get("suggested_command") or ""
-        lines.append(f"- {severity} {category} {path} {rule}: {message}")
-        if command:
-            lines.append(f"  next: {command}")
+        line += f"; [{rule}] {path}: {message}"
     changed_paths = meta.get("changed_since_previous") or []
-    if changed_paths and not payload.get("nudges"):
-        lines.append("Changed since previous hook/message:")
-        for path in changed_paths[:MAX_CONTEXT_NUDGES]:
-            lines.append(f"- {path}")
-    lines.append("Log: .assura/agent-sessions/nudges.jsonl")
-    lines.append("State: .assura/agent-sessions/codex-hook-state.jsonl")
-    lines.append("</assura-nudge>")
-    return bounded_context(lines)
+    if changed_paths and not selected:
+        line += f"; changed={changed_paths[0]}"
+    return bounded_context(["<assura-nudge>", line, "</assura-nudge>"])
 
 
 def prioritized_nudges(nudges: list[dict[str, Any]]) -> list[dict[str, Any]]:
@@ -386,10 +360,7 @@ def bounded_context(lines: list[str]) -> str:
     context = "\n".join(lines)
     if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
         return context
-    suffix = (
-        "\nOutput truncated at 2 KiB; full payload: "
-        ".assura/agent-sessions/nudges.jsonl\n</assura-nudge>"
-    )
+    suffix = "\n...\n</assura-nudge>"
     body = "\n".join(lines[:-1])
     remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
     prefix = body.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")

@@ -32,6 +32,10 @@ it current.
 5. After integration, fetch again, record the PR merge SHA, rerun the ledger and
    topology audit, and reconcile the canonical checkpoint before handoff.
 
+If source, ledger, topology and policy inputs are unchanged, reuse the same
+as-of checkpoint and create no evidence-only commit. A changed pointer alone
+is a refresh trigger, not a reason to rewrite unchanged reconciliation text.
+
 ## Squash-merge proof
 
 A squash merge creates a new commit, so the original candidate head need not be

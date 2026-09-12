@@ -70,10 +70,15 @@ fn build_agent_nudge(
     let agent_fallback_command = suggested_command(&project_path, options.agent);
     let mut nudges = Vec::new();
     let mut changed_path_checks = Vec::new();
+    let mut changed_path_batch = ChangedPathBatch::not_run();
     let mut reference_contexts = Vec::new();
     let mut omitted = 0usize;
 
-    let mut core = match LocalDaemonCore::load(project_path.clone(), config.clone()) {
+    let mut core = match LocalDaemonCore::load_for_feedback(
+        project_path.clone(),
+        config.clone(),
+        options.reference_limit > 0,
+    ) {
         Ok(core) => Some(core),
         Err(error) => {
             let config_path = config.unwrap_or_else(|| project_path.join(".assura/config.yml"));
@@ -105,13 +110,26 @@ fn build_agent_nudge(
     if let Some(core) = core.as_mut() {
         if options.event != AgentNudgeEvent::SessionStart {
             let changed_path_limit = options.max_issues.max(1);
+            let changed_paths = options
+                .changed_paths
+                .iter()
+                .take(changed_path_limit)
+                .cloned()
+                .collect::<Vec<_>>();
             omitted += options
                 .changed_paths
                 .len()
-                .saturating_sub(changed_path_limit);
-            for changed_path in options.changed_paths.iter().take(changed_path_limit) {
-                match core.check_changed_path(changed_path.clone()) {
-                    Ok(report) => {
+                .saturating_sub(changed_paths.len());
+
+            match core.check_changed_paths(changed_paths.clone()) {
+                Ok(batch) => {
+                    changed_path_batch = ChangedPathBatch {
+                        requested_paths: batch.requested_paths,
+                        checked_paths: batch.reports.len(),
+                        full_project_fallbacks: batch.full_project_fallbacks,
+                        coverage: batch.coverage,
+                    };
+                    for report in batch.reports {
                         changed_path_checks.push(ChangedPathCheck::from_report(&report));
                         let mut findings = finding_nudges(
                             &report,
@@ -123,14 +141,21 @@ fn build_agent_nudge(
                         omitted += report.violations.len().saturating_sub(findings.shown_count);
                         nudges.append(&mut findings.nudges);
                     }
-                    Err(error) => nudges.push(NudgeItem::daemon_error(
-                        "daemon_changed_path",
-                        changed_path,
-                        &error.to_string(),
-                        &core.health(),
-                    )),
                 }
+                Err(error) => {
+                    changed_path_batch.coverage = "error";
+                    if let Some(changed_path) = changed_paths.first() {
+                        nudges.push(NudgeItem::daemon_error(
+                            "daemon_changed_path",
+                            changed_path,
+                            &error.to_string(),
+                            &core.health(),
+                        ));
+                    }
+                }
+            }
 
+            for changed_path in &changed_paths {
                 if options.reference_limit > 0 {
                     if let Ok(context) = core
                         .changed_source_references(changed_path.clone(), options.reference_limit)
@@ -221,6 +246,7 @@ fn build_agent_nudge(
             affected_rules,
             suggested_command: agent_fallback_command,
         },
+        changed_path_batch,
         changed_path_checks,
         reference_contexts,
         nudges,
@@ -302,6 +328,7 @@ struct AgentNudgeOutput {
     cache_policy: CachePolicy,
     daemon: DaemonNudgeHealth,
     summary: NudgeSummary,
+    changed_path_batch: ChangedPathBatch,
     changed_path_checks: Vec<ChangedPathCheck>,
     reference_contexts: Vec<ReferenceContext>,
     nudges: Vec<NudgeItem>,
@@ -332,6 +359,25 @@ struct NudgeSummary {
     affected_paths: Vec<String>,
     affected_rules: Vec<String>,
     suggested_command: String,
+}
+
+#[derive(Debug, Serialize)]
+struct ChangedPathBatch {
+    requested_paths: usize,
+    checked_paths: usize,
+    full_project_fallbacks: usize,
+    coverage: &'static str,
+}
+
+impl ChangedPathBatch {
+    fn not_run() -> Self {
+        Self {
+            requested_paths: 0,
+            checked_paths: 0,
+            full_project_fallbacks: 0,
+            coverage: "not_run",
+        }
+    }
 }
 
 #[derive(Debug, Serialize)]
