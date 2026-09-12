@@ -88,3 +88,21 @@ and Security Audit run `34713601129` all passed for the merge SHA. The clean
 CF02 worktree and local/remote candidate branch were then removed. Owner is
 Nick/Codex; next action is CF03 implementation. Restore the archived candidate
 with `git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30dddd583`.
+
+## CF03 ownership checkpoint
+
+CF03 remains one owned candidate at `/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03`,
+branch `goal/compact-feedback-cf03`, based on CF02 merge `9383acc2fd9a47d63553fd32768aef7428c7b34c`.
+The product candidate is Nick/Codex-owned; commits `3e82ea8` and `0f78e42`
+implement the bounded automatic delivery contract, `3148110` scopes its
+delivery state to the canonical worktree, and `aaabba4` excludes the foreign
+note from the net candidate diff. The exact current tip is retained until
+CF03 review and merge gates finish.
+
+An unrelated harness-matrix note was observed in the shared candidate while
+another validation owner was active. It is deliberately excluded from the
+candidate net diff and preserved as foreign work: owner unknown/foreign;
+handle `stash@{0}` / `389641009075d6eec126adc6a9fca8a225a37f23`; next action is
+owner review before any reapplication; restore with
+`git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
+No unknown or foreign source was deleted.
