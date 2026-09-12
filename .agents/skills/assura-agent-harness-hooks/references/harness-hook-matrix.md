@@ -149,6 +149,13 @@ say so; do not promote it to supported until an adapter or proof test exists.
 - Proof: `pi_tool_result_event_appends_bounded_assura_context`
 - Gaps: project trust remains host-owned; no dedicated recovery event is claimed
 
+### Shared automatic feedback - 2026-09-12
+
+- Source: Assura `agent nudge` delivery contract and generated adapter tests
+- Surface: cached Git trajectory facts are shared through the repository Git common directory; delivery state and hourly budgets are scoped per canonical worktree
+- Delivery: Codex, OpenCode, Claude, and Pi adapters call the shared Rust `--delivery automatic` path; automatic output is one bounded line or quiet
+- Gaps: host worker survival/trust and native lifecycle receipt remain host-owned; actual installed-hook and equivalent LS-Lint performance evidence belongs to CF04
+
 ## Drift Policy
 
 - Managed files contain the Assura managed marker and may be refreshed by

@@ -2,6 +2,7 @@ use serde_json::Value;
 use sha2::{Digest, Sha256};
 use std::fs;
 use std::process::{Command, Output};
+use std::sync::{Arc, Barrier};
 use std::thread;
 use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -130,6 +131,123 @@ fn automatic_delivery_is_silent_when_feedback_is_not_configured() {
         .unwrap()
         .iter()
         .any(|item| item["category"] == "trajectory"));
+}
+
+#[test]
+fn automatic_delivery_keeps_hourly_message_budget_after_process_restart() {
+    let root = fixture("");
+    fs::write(
+        root.path().join(".assura/config.yml"),
+        "structure: {}\nagent_feedback:\n  mode: periodic\n  periodic_seconds: 1\n  min_interval_seconds: 1\n  max_messages_per_hour: 1\n  max_bytes_per_hour: 1024\n",
+    )
+    .expect("budget config");
+    let path = root.path().to_str().unwrap();
+    let _ = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ],
+    ));
+    let first = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ],
+    ));
+    assert!(first["nudges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|item| item["category"] == "trajectory"));
+    thread::sleep(Duration::from_millis(1_100));
+    let second = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ],
+    ));
+    assert_eq!(second["feedback"]["reason"], "hourly_message_budget");
+    assert!(!second["nudges"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|item| item["category"] == "trajectory"));
+}
+
+#[test]
+fn concurrent_automatic_delivery_shares_one_message_budget() {
+    let root = fixture("");
+    fs::write(
+        root.path().join(".assura/config.yml"),
+        "structure: {}\nagent_feedback:\n  mode: periodic\n  periodic_seconds: 1\n  min_interval_seconds: 1\n  max_messages_per_hour: 1\n  max_bytes_per_hour: 1024\n",
+    )
+    .expect("budget config");
+    let path = root.path().to_str().unwrap();
+    let _ = json(run(
+        &root,
+        &[
+            "agent",
+            "nudge",
+            path,
+            "--delivery",
+            "inspect",
+            "--format",
+            "json",
+        ],
+    ));
+    let barrier = Arc::new(Barrier::new(3));
+    let outputs = (0..2)
+        .map(|_| {
+            let barrier = Arc::clone(&barrier);
+            let project = root.path().to_path_buf();
+            thread::spawn(move || {
+                barrier.wait();
+                let output = Command::new(bin())
+                    .args([
+                        "agent",
+                        "nudge",
+                        project.to_str().unwrap(),
+                        "--delivery",
+                        "automatic",
+                        "--format",
+                        "json",
+                    ])
+                    .current_dir(&project)
+                    .output()
+                    .expect("concurrent automatic delivery runs");
+                json(output)
+            })
+        })
+        .collect::<Vec<_>>();
+    barrier.wait();
+    let outputs = outputs
+        .into_iter()
+        .map(|handle| handle.join().expect("delivery thread joins"))
+        .collect::<Vec<_>>();
+    let delivered = outputs
+        .iter()
+        .flat_map(|output| output["nudges"].as_array().into_iter().flatten())
+        .filter(|item| item["category"] == "trajectory")
+        .count();
+    assert_eq!(delivered, 1);
 }
 
 #[test]
