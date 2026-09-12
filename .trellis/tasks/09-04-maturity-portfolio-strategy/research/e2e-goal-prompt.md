@@ -19,26 +19,38 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current post-merge route — PR #311 — 2026-09-12 UTC (`origin/master=dcf2a9e`, as-of)
+## Current candidate-bound route — PR #312 — 2026-09-12 UTC (`origin/master=a6ed20f`, as-of)
 
-PR #311 merged the reviewed 36e5 process slice from head
-`6602ac86058a74bcb2ddd2aecf07df259853f235` as
-`dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`. Exact-head Documentation Scope,
-CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
-Documentation `34670911182`, Security Audit `34670911121` and Rust CI
-`34670911124` passed for applicable scope. Scope-skipped product, Rust,
-performance and release rows remain non-proof.
+PR #312 merged the reviewed dcf2 process slice from head
+`f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
+`a6ed20f532d93f830099e9095798a09515fead0b` with tree
+`bd399cd480dc7a31630740718dd8248a0c77bef5`. Applicable exact-head and
+merge-SHA Documentation, CI Scope, Evidence Gates, Security Scope and
+GitGuardian checks passed; scope-skipped product, Rust, performance and
+release rows remain non-proof.
 
 The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with A07
-active, W03 verified and R01/W02/F01 held. The 36e5 candidate/packet are now
-candidate-base/no-credit after this source advance; their protocol
-`PASS_NO_CREDIT` is historical evidence only. Refresh source/release/tag,
-PR/CI, topology and ledger before selecting the next phase. Keep one named
-owner and one live recovery or preparation action; for A07 build a fresh
-current-master candidate, then run identity, no-credit canary, six-holdout/
-two-condition rebind and isolated protocol `PASS` before any separately
-authorized screening. Do not stop at an empty queue, process merge or metadata
-pass.
+active, W03 verified and R01/W02/F01 held. A fresh exact Rust/Cargo `1.94.1`
+candidate passed identity/help and wrong-target/wrong-root controls; two
+sibling-free source-only canaries and post-exit full evaluators exit `0` with
+all seven dimensions passing and zero critical failures. The packet has six
+unique holdouts, exactly two stable conditions and 30 reserved cells; persisted
+validation is `valid=true`, exit `0`, protocol `PASS_NO_CREDIT`.
+
+Independent protocol rereview resolved `A07-A6ED-VALIDATOR-001`,
+`A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`. The coordinator
+recorded an immutable pre/post hash finalization; no screening, allocation,
+credit, product acceptance, release, deployment, publication, invitation or
+protection authority exists. The packet-coherence reference now makes this
+two-phase review/disposition fence explicit.
+
+Next action: reconcile the goal/skill/evidence changes in one reviewed
+current-base process slice, run applicable gates, integrate only reviewed
+current-master work, observe merge-SHA workflows, and refresh source/release/
+tag/PR/CI/topology and ledger. If source advances, classify this packet
+candidate-base/no-credit and rebuild. Do not stop at an empty queue or process
+metadata, and do not start screening without separate authority and the full
+A07 acceptance contract.
 
 ## Historical post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, as-of; superseded by eef7e1a)
 

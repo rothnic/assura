@@ -1,5 +1,48 @@
 # Current maturity train checkpoint
 
+## Iteration 169 — 2026-09-12 — current-master A07 packet disposition (no-credit)
+
+- Owner/phase: `/root` / candidate-bound packet coherence and protocol
+  disposition in clean checkout `/private/tmp/assura-a07-current-a6ed` on
+  `goal/a07-current-a6ed`.
+- Source is `origin/master=a6ed20f532d93f830099e9095798a09515fead0b` with tree
+  `bd399cd480dc7a31630740718dd8248a0c77bef5`. Workflow gate is `Ready: yes`;
+  context routing remains `57 checks/0 failures`; ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+  verified, and R01/W02/F01 held. Fetch again before any later phase.
+- Exact `cargo +1.94.1 build --release` exited `0`; Assura `0.4.0` candidate
+  and login-shell shim both hash to
+  `1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`.
+  Login-shell identity, command-help, wrong-target and wrong-root controls
+  pass/reject as intended.
+- Fresh sibling-free source-only conditions A and B each completed with child
+  exit `0`; post-exit evaluators exited `0`, covered all seven dimensions and
+  reported zero critical failures. The private packet has six unique holdouts,
+  exactly two stable conditions and 30 reserved cells. Persisted packet
+  validation is `valid=true`, exit `0`, six handles, 30 cells, two conditions,
+  and `protocol_status=PASS_NO_CREDIT`.
+- Independent protocol rereview returned `PASS_NO_CREDIT` and resolved
+  `A07-A6ED-VALIDATOR-001` (missing persisted validator reference),
+  `A07-A6ED-REVIEW-TIME-002` (stale review timestamp), and
+  `A07-A6ED-CANARY-STATE-003` (freeze/canary status mismatch). The coordinator
+  recorded immutable pre/post hash maps in the finalization record. Review SHA
+  is `b0e4949d6e6ac742d776aac4770d5b32150bec17e70bdcdd4df59ebeee7fca9f`;
+  finalization SHA is
+  `f039b72ace76af33b252d59407de2ad2e44843abcf65d55537353a80c797609a`.
+- This is still no-credit preparation: screening, allocation, credit,
+  acceptance, release, deployment, publication, invitation and protection
+  authority are false. Raw evaluator/fixture/transcript material remains
+  private; ambient skill-metadata and generated-hook verifier limitations
+  remain explicit. The VPS lane remains held by unresolved alias, disk and
+  toolchain/job conditions.
+- Next action: commit this goal/skill/evidence reconciliation, obtain an
+  independent public process review and applicable gates, then integrate only
+  if the branch is current-master and all checks are resolved. After merge,
+  observe configured merge-SHA workflows, refresh source/ledger/topology, and
+  classify this packet candidate-base/no-credit if the source advances. Do not
+  start screening from canary or protocol metadata without separate authority
+  and the full A07 acceptance contract.
+
 ## Iteration 167 — 2026-09-11 — PR #307 post-merge reconciliation (no-credit)
 
 - Owner/phase: `/root` / current-source post-merge reconciliation. PR #307

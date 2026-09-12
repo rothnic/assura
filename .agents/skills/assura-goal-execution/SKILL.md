@@ -70,6 +70,11 @@ only improves its process. Do not substitute a process PR for product acceptance
    output with the review record. Run the companion distinct-identity control
    [`scripts/test-validate-a07-packet.py`](scripts/test-validate-a07-packet.py)
    so a binary/shim hash mismatch has an explicit valid/invalid test.
+   Load [candidate-bound packet coherence](references/packet-coherence.md)
+   when constructing, correcting, reviewing or reconciling a packet. Require
+   an immutable pre-verdict role/hash map, a coordinator-owned post-verdict
+   finalization map, and cross-record status/timestamp/reference assertions;
+   a printed validator or a plausible-but-stale dependent record is not proof.
 7. Use [layered context routing](references/context-routing.md) after
    compaction and at phase transitions. Record the current phase and exact next
    action in the selected card's evidence before/after major phases. A task

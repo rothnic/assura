@@ -1,47 +1,48 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`.
+`origin/master=a6ed20f532d93f830099e9095798a09515fead0b`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
 [`execution-control-plane.md`](../../../../.agents/skills/assura-goal-execution/references/execution-control-plane.md).
-This record is a process and evidence route; it does not close A07, grant
+Load the candidate-bound [packet-coherence reference](../../../../.agents/skills/assura-goal-execution/references/packet-coherence.md)
+for any construction, correction, review or verdict transition. This record
+is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — dcf2a9e — 2026-09-12 UTC (no-credit)
+## Current correction checkpoint — a6ed20f — 2026-09-12 UTC (no-credit)
 
-PR #311 merged the reviewed 36e5 public process/evidence slice from head
-`6602ac86058a74bcb2ddd2aecf07df259853f235` as
-`dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` with tree
-`45c4980c37c28e01e95e08c740b92fbcb2aa7c8b`. Exact-head Documentation Scope,
-CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA
-Documentation, Security Audit and Rust CI workflows passed; scope-skipped
-product, performance and release rows remain non-proof. The refreshed ledger
-remains `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
-verified, R01/W02/F01 held).
+PR #312 merged the reviewed dcf2 public process/evidence slice from head
+`f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
+`a6ed20f532d93f830099e9095798a09515fead0b` with tree
+`bd399cd480dc7a31630740718dd8248a0c77bef5`. Applicable exact-head and
+merge-SHA Documentation, CI Scope, Evidence Gates, Security Scope and
+GitGuardian checks passed; scope-skipped product, performance and release rows
+remain non-proof. The ledger is `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held).
 
-The 36e5 candidate/packet are candidate-base/no-credit after this source
-advance. Their exact identity, seeded A/B canaries, full evaluators, packet
-validator `valid=true`, and isolated protocol `PASS_NO_CREDIT` remain
-preserved historical evidence. The prior empty-fixture failure and final
-construction-digest correction remain unfavorable/auditable records. No
-current dcf2 candidate exists; screening, allocation, credit and acceptance
-remain false. No product, threshold, release, deployment, publication or
-invitation authority changed.
+The owned candidate in `/private/tmp/assura-a07-current-a6ed` passed exact
+Rust/Cargo `1.94.1` build and identity controls. Two sibling-free source-only
+canaries and full seven-dimension post-exit evaluators pass with child and
+evaluator exit `0` and zero critical failures. The current private packet has
+six unique holdouts, two stable conditions and 30 reserved cells; persisted
+validation is `valid=true`, exit `0`, protocol `PASS_NO_CREDIT`.
 
-Correction in this continuation: merging the reviewed process pointer advanced
-the source again, so the 36e5 packet cannot be reused for screening. The next
-sequence must refresh source/ledger/topology, build a fresh exact-toolchain
-candidate, rerun identity and seeded no-credit canaries, rebind all six
-holdouts/two conditions and obtain isolated protocol `PASS`. The VPS lane
-remains held by unresolved `vps-dev`, configured `vps` at 95% root usage and
-toolchain mismatch. A process merge or protocol pass does not close A07.
+Independent protocol rereview resolved `A07-A6ED-VALIDATOR-001`,
+`A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`. The coordinator
+applied the no-credit disposition only after rereview and recorded immutable
+pre/post artifact hashes. Screening, allocation, credit, acceptance, release,
+deployment, publication, invitation and protection authority remain false;
+raw evaluator/fixture/transcript evidence remains private. The VPS lane stays
+held by unresolved alias, disk/toolchain pressure and unrelated jobs.
 
-Next action: execute that fresh current-master candidate sequence before any
-separately authorized screening; preserve all historical no-credit and
-unfavorable evidence.
+Next action: commit and independently review this goal/skill/evidence
+reconciliation, run applicable gates, integrate only reviewed current-master
+work, observe merge-SHA workflows, then refresh source/ledger/topology. If
+source advances, classify this packet candidate-base/no-credit and rebuild;
+preserve every correction and unfavorable result.
 
 ## Historical correction checkpoint — 3e67d5f — 2026-09-12 UTC (no-credit; superseded by `9c1b68a`)
 

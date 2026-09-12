@@ -22,30 +22,35 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=dcf2a9e` (2026-09-12 post-merge process reconciliation; no-credit)
+## Current route — `origin/master=a6ed20f` (2026-09-12 candidate-bound disposition; no-credit)
 
-- PR #311 merged the reviewed 36e5 process/evidence slice from head
-  `6602ac86058a74bcb2ddd2aecf07df259853f235` as
-  `dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` with tree
-  `45c4980c37c28e01e95e08c740b92fbcb2aa7c8b`. Exact-head Documentation
-  Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus
-  merge-SHA Documentation (`34670911182`), Security Audit (`34670911121`)
-  and Rust CI (`34670911124`) passed; skipped product/performance/release
-  rows remain non-proof. The refreshed ledger is
-  `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
-  verified, R01/W02/F01 held).
-- The 36e5 candidate and packet are candidate-base/no-credit after this source
-  advance. Their exact identity, seeded A/B canaries, full evaluators, packet
-  validator `valid=true`, and isolated protocol `PASS_NO_CREDIT` remain
-  preserved historical evidence; no current dcf2 candidate exists. Keep
-  screening/allocation/credit/acceptance false.
-- The VPS lane remains held because `vps-dev` is unresolved and `vps` is at
-  95% disk with nightly rather than pinned Rust/Cargo. Refresh
-  source/ledger/topology, build a fresh exact-toolchain candidate at current
-  master, rerun identity and seeded no-credit canaries, rebind the six-holdout
-  packet/two conditions and obtain isolated protocol `PASS` before any
-  separately authorized screening. A process merge or protocol pass never
-  closes A07 or grants product/authority state.
+- PR #312 merged the reviewed dcf2 process slice from head
+  `f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
+  `a6ed20f532d93f830099e9095798a09515fead0b` with tree
+  `bd399cd480dc7a31630740718dd8248a0c77bef5`. Applicable exact-head and
+  merge-SHA Documentation, CI Scope, Evidence Gates, Security and GitGuardian
+  checks passed; scope-skipped product/performance/release rows remain
+  non-proof. Ledger: `items=32; ready_pending=0; unfinished=5; held=3`
+  (A07 active, W03 verified, R01/W02/F01 held).
+- `/root` owns a clean exact-toolchain candidate in
+  `/private/tmp/assura-a07-current-a6ed` on `goal/a07-current-a6ed`. Build,
+  command-help, login-shell identity, wrong-target and wrong-root controls
+  pass/reject as intended; candidate/shim SHA is
+  `1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`.
+- Fresh sibling-free A/B canaries and post-exit full evaluators both exit `0`
+  with all seven dimensions passing and zero critical failures. The packet has
+  six unique holdouts, two stable conditions and 30 reserved cells; persisted
+  validation is valid/exit-0 and protocol `PASS_NO_CREDIT`. The isolated
+  rereview resolved `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and
+  `A07-A6ED-CANARY-STATE-003`; coordinator pre/post hash finalization is
+  recorded. This remains metadata preparation only.
+- Next action: commit and independently review this goal/skill/evidence
+  reconciliation, run applicable gates, integrate only reviewed current-master
+  work, observe configured merge-SHA workflows, and refresh source/ledger/
+  topology. If source advances, classify the packet candidate-base/no-credit
+  and rebuild. Keep screening/allocation/credit/acceptance false; the VPS lane
+  remains held by unresolved alias, disk pressure, toolchain mismatch and
+  unrelated jobs.
 
 ## Historical route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit; superseded by `9c1b68a`)
 
