@@ -1,8 +1,9 @@
 # Compact feedback execution plan
 
-Execution is active after the user's explicit merge invocation. CF01 owns the
-current product candidate; CF02-CF04 remain pending until their prerequisites
-and acceptance evidence are terminal.
+Execution is active after the user's explicit merge invocation. CF01 is merged
+and verified on `origin/master`; CF02 owns the current product candidate, and
+CF03-CF04 remain pending until their prerequisites and acceptance evidence are
+terminal.
 
 Create the discoverable `assura-feedback-execution` skill and bounded backlog
 for tiny configurable statistics, cached/asynchronous collection, existing

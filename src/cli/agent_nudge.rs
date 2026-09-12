@@ -7,7 +7,8 @@ mod helpers;
 #[path = "agent_nudge_log.rs"]
 mod log;
 
-use super::{AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
+use super::{AgentNudgeDelivery, AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
+use crate::cli::agent_trajectory::TrajectorySnapshot;
 use crate::cli::check::{StructureCheckReport, StructureViolation};
 use crate::daemon::{DaemonAffectedReferences, DaemonHealth, LocalDaemonCore};
 use cooldown::CachePolicy;
@@ -39,6 +40,8 @@ pub struct AgentNudgeOptions {
     pub reference_limit: usize,
     /// Duration for suppressing identical event messages.
     pub cooldown_seconds: u64,
+    /// Explicit delivery mode; inspection is the only CF02 trajectory path.
+    pub delivery: AgentNudgeDelivery,
     /// Output format.
     pub format: OutputFormat,
 }
@@ -67,6 +70,11 @@ fn build_agent_nudge(
     let project_path = match options.path.clone() {
         Some(path) => path,
         None => std::env::current_dir().map_err(|error| error.to_string())?,
+    };
+    let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
+        Some(crate::cli::agent_trajectory::inspect(&project_path)?)
+    } else {
+        None
     };
     let policy_generation = cooldown::policy_generation(&project_path, config.as_deref());
     let agent_fallback_command = suggested_command(&project_path, options.agent);
@@ -256,6 +264,7 @@ fn build_agent_nudge(
     let project_root_for_log = health.project_root.clone();
     let output = AgentNudgeOutput {
         schema: "assura.agent-nudge.v1",
+        delivery: options.delivery.as_str(),
         target_agent: agent_name(options.agent),
         event,
         event_policy: event_policy(options.event, !options.changed_paths.is_empty()),
@@ -290,6 +299,7 @@ fn build_agent_nudge(
         changed_path_batch,
         changed_path_checks,
         reference_contexts,
+        trajectory,
         nudges,
     };
     Ok(RenderedNudge {
@@ -371,6 +381,7 @@ fn push_reference_context(
 #[derive(Debug, Serialize)]
 struct AgentNudgeOutput {
     schema: &'static str,
+    delivery: &'static str,
     target_agent: &'static str,
     event: &'static str,
     event_policy: EventPolicy,
@@ -380,6 +391,8 @@ struct AgentNudgeOutput {
     changed_path_batch: ChangedPathBatch,
     changed_path_checks: Vec<ChangedPathCheck>,
     reference_contexts: Vec<ReferenceContext>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    trajectory: Option<TrajectorySnapshot>,
     nudges: Vec<NudgeItem>,
 }
 
@@ -572,11 +585,20 @@ impl AgentNudgeOutput {
     fn render_text(&self) -> String {
         let mut lines = vec![
             format!("Assura nudge: {}", self.event),
+            format!("delivery={}", self.delivery),
             format!("target_agent={}", self.target_agent),
             format!("daemon_state={}", self.daemon.state),
             format!("should_inject={}", self.summary.should_inject),
             format!("suggested_command={}", self.summary.suggested_command),
         ];
+        if let Some(trajectory) = &self.trajectory {
+            lines.push(format!(
+                "trajectory coverage={} snapshot={} integration_ref={}",
+                trajectory.coverage,
+                trajectory.freshness.snapshot,
+                trajectory.freshness.integration_ref
+            ));
+        }
         for nudge in &self.nudges {
             lines.push(format!(
                 "- {} {} {}",

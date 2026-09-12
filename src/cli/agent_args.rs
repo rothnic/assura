@@ -126,6 +126,13 @@ pub enum AgentCommands {
             help = "Suppress identical event messages for this many seconds; use 0 to disable"
         )]
         cooldown_seconds: u64,
+        #[arg(
+            long,
+            value_enum,
+            default_value = "automatic",
+            help = "Use the existing nudge path or explicitly inspect cached Git trajectory facts"
+        )]
+        delivery: AgentNudgeDelivery,
         #[arg(short, long, value_enum, default_value = "json")]
         format: OutputFormat,
     },
@@ -331,4 +338,23 @@ pub enum AgentNudgeTarget {
     Claude,
     /// Pi agent hook wrapper.
     Pi,
+}
+
+/// Delivery mode for the shared nudge command.
+#[derive(Copy, Clone, Debug, PartialEq, Eq, ValueEnum)]
+pub enum AgentNudgeDelivery {
+    /// Preserve the existing bounded event-aware nudge behavior.
+    Automatic,
+    /// Collect and display bounded Git trajectory facts on demand.
+    Inspect,
+}
+
+impl AgentNudgeDelivery {
+    /// Stable output label for the selected delivery mode.
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Automatic => "automatic",
+            Self::Inspect => "inspect",
+        }
+    }
 }

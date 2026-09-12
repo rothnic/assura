@@ -32,6 +32,8 @@ mod agent_onboarding_templates;
 #[cfg(feature = "full-cli")]
 mod agent_query_args;
 #[cfg(feature = "full-cli")]
+mod agent_trajectory;
+#[cfg(feature = "full-cli")]
 pub mod args;
 #[cfg(feature = "full-cli")]
 mod cache_management;
@@ -98,8 +100,8 @@ pub use agent_args::AgentCommands;
 #[cfg(feature = "full-cli")]
 pub use agent_args::{
     AgentContentTemplate, AgentIntegrationCommands, AgentIntegrationLifecycleArgs,
-    AgentIntegrationStatusArgs, AgentIntegrationTarget, AgentNudgeEvent, AgentNudgeTarget,
-    AgentOnboardingTarget,
+    AgentIntegrationStatusArgs, AgentIntegrationTarget, AgentNudgeDelivery, AgentNudgeEvent,
+    AgentNudgeTarget, AgentOnboardingTarget,
 };
 #[cfg(feature = "full-cli")]
 pub use agent_query_args::AgentQueryArg;
