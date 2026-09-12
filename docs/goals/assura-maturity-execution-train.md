@@ -38,16 +38,16 @@ continues; a card-level hold is not a whole-goal block. Every continuation
 must end with a live handle or one explicit next action, and the runtime goal
 stays active until authorized scope is accepted and owned topology is terminal.
 
-## Latest observed integration — PR #317 — a1d387f (2026-09-12; refresh required)
+## Latest observed integration — PR #318 — 3c01e65 (2026-09-12; refresh required)
 
-PR #317 merged the reviewed checkout-pointer closure from head
-`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
-`2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
-`a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
-`9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head Documentation Scope,
+PR #318 merged the reviewed current-source continuation-route correction from
+head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
+`a1d387f736d52e19ee0037bcd2e62146a21147d8` as
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+`4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`. Exact-head Documentation Scope,
 CI Scope, Evidence Gates, Security Scope and GitGuardian passed. The
-merge-SHA Documentation (`34678359451`), Security Audit (`34678359480`) and
-Rust CI (`34678359434`) workflows passed; product, Rust, performance and
+merge-SHA Documentation (`34679613211`), Security Audit (`34679613203`) and
+Rust CI (`34679613179`) workflows passed; product, Rust, performance and
 release rows were scope-skipped and remain non-proof.
 
 This is the latest observed integration, not a live source claim. On every
@@ -56,13 +56,14 @@ topology audit, and use the fetched SHA as the only current route. The ledger
 refresh at this source is `items=32; ready_pending=0; unfinished=5; held=3`:
 A07 active, W03 verified, R01/W02/F01 held. The reset found no
 `origin/release` head; remote tags `v0.1.0`, `v0.2.0` and `v0.3.0` do not point
-at this head. The report/strict topology summary was
+at this head. The report/strict topology summary before the owned closure
+worktree was
 `base=origin/master worktrees=55 dirty=2 prunable=3 unreadable=1
 goal_branches=13 unmerged_goal=9`; unknown root dirt, the foreign dirty
 worktree and stale registrations remain outside ownership.
 
 Next action after refresh: keep A07 ahead of empty ready-pending rows and keep
-the goal active. No live A07 candidate exists at `a1d387f`; confirm explicit
+the goal active. No live A07 candidate exists at `3c01e65`; confirm explicit
 no-credit preparation authority before creating one clean exact-toolchain
 candidate and running identity, sibling-free canary, current holdout/manifest
 rebind and isolated protocol review in order. Without that authority, continue

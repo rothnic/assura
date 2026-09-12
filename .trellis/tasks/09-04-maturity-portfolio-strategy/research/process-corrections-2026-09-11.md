@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=a1d387f736d52e19ee0037bcd2e62146a21147d8`.
+`origin/master=3c01e65ab609e40b4cdb9d53d4337577899d5a29`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,20 +12,20 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed correction checkpoint — PR #317 / a1d387f — 2026-09-12 UTC (refresh required; no-credit)
+## Latest observed correction checkpoint — PR #318 / 3c01e65 — 2026-09-12 UTC (refresh required; no-credit)
 
-PR #317 merged the reviewed checkout-pointer closure from head
-`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` on base
-`2760ec6e1121ce0b56e20e29da191ccc17bd44d6` as
-`a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
-`9e64c20bebe24e2527238c206ea38f0e2245332c`. Exact-head applicable checks
-and merge-SHA Documentation `34678359451`, Security Audit `34678359480` and
-Rust CI `34678359434` passed; scope-skipped rows remain non-proof. Ledger is
+PR #318 merged the reviewed current-source continuation-route correction from
+head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
+`a1d387f736d52e19ee0037bcd2e62146a21147d8` as
+`3c01e65ab609e40b4cdb9d53d4337577899d5a29` with tree
+`4a43a34a90f82a3b504b934c8ce90fa3e1c40e47`. Exact-head applicable checks
+and merge-SHA Documentation `34679613211`, Security Audit `34679613203` and
+Rust CI `34679613179` passed; scope-skipped rows remain non-proof. Ledger is
 `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
 R01/W02/F01 held).
 
 This is an as-of observation, not a live pointer. The reset found no
-`origin/release` head and no release tag at `a1d387f`; refresh source,
+`origin/release` head and no release tag at `3c01e65`; refresh source,
 release/tag, PR/CI, topology and ledger before the next phase. Preserve
 candidate-base/no-credit evidence, unfavorable results, unknown topology and
 the VPS hold. No live A07 candidate exists. If explicit no-credit preparation
