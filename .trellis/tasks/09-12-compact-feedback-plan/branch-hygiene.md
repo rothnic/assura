@@ -95,10 +95,16 @@ CF03 remains one owned candidate at
 `/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03-final`, branch
 `goal/compact-feedback-cf03`, based on CF02 merge
 `9383acc2fd9a47d63553fd32768aef7428c7b34c`. The product candidate is
-Nick/Codex-owned and currently contains implementation tip `c1f0a94`, followed
-by ownership-only record `5a813929f020f716a802552d5406fa0b195239e4`; the
-watchdog and owner-liveness corrections are retained until CF03 review and
-merge gates finish.
+Nick/Codex-owned and currently contains candidate tip
+`bec50c14c6940a7e2ea437be362ed7f55158f4c0`; the watchdog and owner-liveness
+corrections are retained until CF03 review and merge gates finish.
+
+The stale checkout at `5a813929f020f716a802552d5406fa0b195239e4` is archived
+as `archive/2026-09-12/compact-feedback-cf03-stale-5a81392`; restore with
+`git branch archive/2026-09-12/compact-feedback-cf03-stale-5a81392 5a813929f020f716a802552d5406fa0b195239e4`.
+Its later unknown overlay is preserved in stash
+`c4467d9e58593079e933534686d76a0d7df7d511`; owner unknown/foreign, next
+action owner review, restore with `git stash apply c4467d9e58593079e933534686d76a0d7df7d511`.
 
 The duplicate writer task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` was
 interrupted and archived after it was found editing the same candidate. Its
