@@ -1,7 +1,11 @@
 # Execution recovery plan
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
-## Current recovery route — a6ed20f — 2026-09-12 UTC (candidate-bound protocol disposition; no-credit)
+## Current recovery route — e1c9b78 — 2026-09-12 UTC (post-merge; A07 candidate-base/no-credit)
+PR #313 merged reviewed head `a134fc6815fc76730926d9f8ded57f16a8740e74` on base `a6ed20f532d93f830099e9095798a09515fead0b` as `e1c9b78216b5736abd24fbd165ed7e1e383b1744` (tree `9d57888eec65d892dcc2a65b829369dd90278637`); exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation `34675049056`, Security Audit `34675049038` and Rust CI `34675049055` passed, including CI Scope `103503298569` and Evidence Gates `103503318127`. Scope-skipped product/Rust/performance/release rows remain non-proof. Ledger remains `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held).
+The clean owned a6ed branch/worktree was verified ancestor-reachable and removed; its candidate, canaries, packet, validator and isolated `PASS_NO_CREDIT` review are candidate-base/no-credit, with immutable reviewer/finalization evidence retained. Unknown/foreign/stale topology, unfavorable evidence and the held VPS lane remain preserved.
+Next: refresh release/tag, PR/CI, topology and ledger at `e1c9b78`; keep A07 ahead of empty pending rows. If no-credit preparation remains authorized, create one fresh exact-toolchain candidate in one clean owned worktree, then run identity, sibling-free canary, current holdout/manifest rebind and isolated protocol review in order. Process metadata, protocol pass and skipped checks never grant screening, allocation, credit or acceptance authority.
+## Historical recovery route — a6ed20f — 2026-09-12 UTC (candidate-bound protocol disposition; superseded by e1c9b78)
 PR #312 merged the reviewed dcf2 process evidence at `a6ed20f532d93f830099e9095798a09515fead0b` (tree `bd399cd480dc7a31630740718dd8248a0c77bef5`); exact-head applicable Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation `34671630183`, Security Audit `34671630154` and Rust CI `34671630166` passed. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held).
 The owned candidate in `/private/tmp/assura-a07-current-a6ed` is built with exact Rust/Cargo `1.94.1`; identity controls pass/reject, and its binary/shim SHA is `1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`. Fresh sibling-free A/B canaries and post-exit full evaluators exit `0` with all seven dimensions passing and zero critical failures. The private packet has six unique holdouts, two stable conditions and 30 reserved cells; persisted validation is `valid=true`, exit `0`, and `protocol_status=PASS_NO_CREDIT`.
 Independent protocol rereview resolved `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`; coordinator finalization records pre/post hashes. Screening, allocation, credit, acceptance, release, deployment, publication, invitation and protection authority remain false. Raw evaluator/fixture/transcript evidence stays private. VPS remains held by unresolved `vps-dev`, configured-host disk/toolchain pressure and unrelated jobs.
@@ -67,9 +71,7 @@ rebind and isolated protocol `PASS` gates in order. If screening is not
 authorized, continue the smallest independently authorized held recovery
 slice. Keep the goal active and close only exact clean owned branches/worktrees
 after post-merge proof.
-
 ## Historical source reconciliation — 2026-09-11 UTC (`origin/master=24a1966`, superseded by `453a32a`)
-
 The latest reset fetched
 `origin/master=24a1966a55eb3ec184190c565f2715ee5daa7801` with tree
 `57cfe8e7f437fc15f4fc8fdeff807c0eb9214c00`; refresh it before the next phase.
@@ -93,9 +95,7 @@ protocol `PASS` before any separately authorized screening. If that route is
 not authorized, continue the held R01 recovery or another independent
 authorized slice. Keep the goal active and close only exact clean owned
 branches/worktrees after post-merge proof.
-
 ## Historical source reconciliation — 2026-09-11 UTC (`origin/master=0dff804`, superseded by `24a1966`)
-
 The latest reset fetched
 `origin/master=0dff804421c7563b08773eb75d9327fd0194db56`; refresh it before
 the next phase. PR #300 merged the reviewed current-checkpoint reconciliation
@@ -122,9 +122,7 @@ rebind the six holdouts and two-condition manifest and obtain isolated protocol
 authorized, continue the held R01 recovery or another explicitly authorized
 slice. Observe configured push-triggered workflows at every merge SHA and
 close only the exact clean owned branch/worktree.
-
 ## Historical status snapshot — `origin/master=651ef31` (superseded by `0dff804`)
-
 Status: active continuation route, 2026-09-11 UTC. The latest refresh resolved
 the current source to
 `origin/master=651ef31ea4d609a83c59af2a458f4313db91c9c3`; this pointer is an

@@ -22,7 +22,38 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=a6ed20f` (2026-09-12 candidate-bound disposition; no-credit)
+## Current route — `origin/master=e1c9b78` (2026-09-12 post-merge reconciliation; A07 candidate-base/no-credit)
+
+- PR #313 merged the reviewed packet-coherence process slice from head
+  `a134fc6815fc76730926d9f8ded57f16a8740e74` on base
+  `a6ed20f532d93f830099e9095798a09515fead0b` as
+  `e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+  `9d57888eec65d892dcc2a65b829369dd90278637`. Exact-head Documentation
+  Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian passed;
+  merge-SHA Documentation `34675049056`, Security Audit `34675049038` and
+  Rust CI `34675049055` passed, including CI Scope `103503298569` and
+  Evidence Gates `103503318127`. Scope-skipped product, Rust, performance and
+  release rows remain non-proof.
+- The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+  held=3` (A07 active, W03 verified, R01/W02/F01 held). The clean owned
+  `goal/a07-current-a6ed` branch/worktree was verified ancestor-reachable and
+  removed. Its candidate, canaries, six-holdout/two-condition packet,
+  validator and isolated protocol `PASS_NO_CREDIT` are candidate-base/no-credit
+  after the source advance; the reviewer artifact remains immutable.
+- No screening, allocation, credit, acceptance, release, deployment,
+  publication, invitation or protection authority changed. Preserve unknown
+  root dirt, foreign dirty work, stale registrations, unrelated branches and
+  unfavorable evidence. The optional VPS lane remains held by the unresolved
+  alias, disk pressure, toolchain mismatch and unrelated jobs.
+- Next action: refresh release/tag, PR/CI, topology and ledger again before
+  selecting work. Keep A07 ahead of empty pending rows and, if no-credit
+  preparation remains authorized, build a fresh exact-toolchain candidate from
+  `e1c9b78` in one owned clean worktree, then run identity, sibling-free
+  canary, current holdout/manifest rebind and isolated protocol review in
+  order. Any public update still needs independent review, applicable gates,
+  current-master integration and merge-SHA observation.
+
+## Historical route — `origin/master=a6ed20f` (2026-09-12 candidate-bound disposition; superseded by e1c9b78)
 
 - PR #312 merged the reviewed dcf2 process slice from head
   `f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as

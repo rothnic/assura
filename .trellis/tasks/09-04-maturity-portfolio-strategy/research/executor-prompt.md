@@ -16,7 +16,37 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current candidate-bound checkpoint (2026-09-12, refresh before use):
+Current post-merge checkpoint (2026-09-12, refresh before use):
+`origin/master=e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+`9d57888eec65d892dcc2a65b829369dd90278637`; PR #313 merged reviewed head
+`a134fc6815fc76730926d9f8ded57f16a8740e74` from base
+`a6ed20f532d93f830099e9095798a09515fead0b`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
+Documentation (`34675049056`), Security Audit (`34675049038`) and Rust CI
+(`34675049055`) passed, including CI Scope (`103503298569`) and Evidence Gates
+(`103503318127`); product/Rust/performance/release jobs were scope-skipped and
+remain non-proof.
+
+The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The owned a6ed branch
+and worktree were verified clean and ancestor-reachable, then removed. Its
+candidate, canaries, packet, validator and isolated `PASS_NO_CREDIT` review
+are candidate-base/no-credit after the merge; the immutable review and
+coherence corrections remain evidence. No screening, allocation, credit,
+acceptance, release, deployment, publication, invitation or protection
+authority exists. Preserve unknown/foreign/stale topology and unfavorable
+evidence; the optional VPS lane remains held.
+
+Next action: refresh release/tag, PR/CI, topology and the ledger again. Keep
+the active A07 route ahead of empty pending rows; if no-credit preparation is
+authorized, create one fresh exact-toolchain candidate from `e1c9b78` in a
+clean owned worktree and run identity, sibling-free canary, current
+holdout/manifest rebind and isolated protocol review in order. Any process
+update requires independent review, applicable gates, current-master
+integration and merge-SHA observation. Never reuse the a6ed packet or infer
+product success from process metadata or skipped checks.
+
+Historical candidate-bound checkpoint (2026-09-12, superseded by the post-merge source):
 `origin/master=a6ed20f532d93f830099e9095798a09515fead0b` with tree
 `bd399cd480dc7a31630740718dd8248a0c77bef5`; PR #312 merged reviewed head
 `f43d1a0cc6cd868a78d4f68dbc97a52a90476abb`.
