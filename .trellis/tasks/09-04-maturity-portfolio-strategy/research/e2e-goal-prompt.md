@@ -19,26 +19,26 @@ reference only when that phase requires it.
 
 ## Direction review
 
-## Current post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, as-of)
+## Current post-merge route — PR #311 — 2026-09-12 UTC (`origin/master=dcf2a9e`, as-of)
 
-PR #307 merged the reviewed process slice from head
-`9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
-`eef7e1a7400c84ec35be33a58914ad07da7fa376`. Exact-head Documentation,
-CI Scope, Security Scope, Evidence Gates and GitGuardian passed; merge-SHA
-Documentation `34660366526`, Security Audit `34660366986` and Rust CI
-`34660366735` passed for applicable scope. Scope-skipped product, Rust,
+PR #311 merged the reviewed 36e5 process slice from head
+`6602ac86058a74bcb2ddd2aecf07df259853f235` as
+`dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34670911182`, Security Audit `34670911121` and Rust CI
+`34670911124` passed for applicable scope. Scope-skipped product, Rust,
 performance and release rows remain non-proof.
 
 The ledger remains `items=32; ready_pending=0; unfinished=5; held=3` with A07
-active, W03 verified and R01/W02/F01 held. The `66e0b7e` process checkpoint and
-all earlier candidate/canary/protocol packets are candidate-base/no-credit
-after this source advance; the owned process branch/worktree is being
-reconciled. Refresh source/release/tag, PR/CI,
-topology and ledger before selecting the next phase. Keep one named owner and
-one live recovery or preparation action; for A07 rebuild at current master,
-then run identity, no-credit canary, six-holdout/two-condition rebind and
-isolated protocol `PASS` before any separately authorized screening. Do not
-stop at an empty queue, process merge or metadata pass.
+active, W03 verified and R01/W02/F01 held. The 36e5 candidate/packet are now
+candidate-base/no-credit after this source advance; their protocol
+`PASS_NO_CREDIT` is historical evidence only. Refresh source/release/tag,
+PR/CI, topology and ledger before selecting the next phase. Keep one named
+owner and one live recovery or preparation action; for A07 build a fresh
+current-master candidate, then run identity, no-credit canary, six-holdout/
+two-condition rebind and isolated protocol `PASS` before any separately
+authorized screening. Do not stop at an empty queue, process merge or metadata
+pass.
 
 ## Historical post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, as-of; superseded by eef7e1a)
 

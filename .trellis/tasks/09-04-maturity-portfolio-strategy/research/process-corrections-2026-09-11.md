@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=36e5a84024b1680b887bd789ed89ec8a0490f30f`.
+`origin/master=dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,50 +10,38 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — 36e5a840 — 2026-09-12 UTC (no-credit)
+## Current correction checkpoint — dcf2a9e — 2026-09-12 UTC (no-credit)
 
-PR #310 merged the reviewed public process/evidence slice at
-`36e5a84024b1680b887bd789ed89ec8a0490f30f` with tree
-`292936709bd59a9f87531e7b0fb5d77826eb8751`. Exact-head Documentation, CI
-Scope, Evidence Gates, Security Scope and GitGuardian plus applicable
-merge-SHA Documentation, Security Audit and Rust CI workflows passed;
-scope-skipped product, performance and release rows remain non-proof. The
-refreshed ledger remains `items=32; ready_pending=0; unfinished=5; held=3`
-(A07 active, W03 verified, R01/W02/F01 held).
+PR #311 merged the reviewed 36e5 public process/evidence slice from head
+`6602ac86058a74bcb2ddd2aecf07df259853f235` as
+`dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` with tree
+`45c4980c37c28e01e95e08c740b92fbcb2aa7c8b`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA
+Documentation, Security Audit and Rust CI workflows passed; scope-skipped
+product, performance and release rows remain non-proof. The refreshed ledger
+remains `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
+verified, R01/W02/F01 held).
 
-The 9c1 candidate/packet are candidate-base/no-credit. A fresh exact-toolchain
-candidate at `/private/tmp/assura-train-postmerge-36e5` has binary/shim
-`7144ed4b77096daf6efe3419bf14a7df59bab5adc33e48444390a618344be87d`; identity
-and both negative controls pass/reject. Fresh seeded, sibling-free A/B retries
-pass all seven dimensions, expected negative policy rejection, native tests and
-preservation hashes; their redacted summary is
-`screening/canary-2026-09-12-current-36e5.json`. The prior empty-fixture
-failure remains preserved as unfavorable evidence, not overwritten.
-
-The fresh private packet has six unique holdouts, two conditions and 30
-reserved cells; adapted validation is `valid=true` with zero errors and the
-isolated protocol rereview is `PASS_NO_CREDIT`. The final reviewer artifact is
-`screening/protocol-review-2026-09-12-current-36e5-r1.json`, timestamped
-`2026-09-12T03:26:10Z`, SHA-256
-`a5e51d32930603645e582bb8ef00ea559568d96d59fca1d3c30a7764745fd4e8`. No
-screening, allocation, credit, acceptance, release, deployment, publication or
+The 36e5 candidate/packet are candidate-base/no-credit after this source
+advance. Their exact identity, seeded A/B canaries, full evaluators, packet
+validator `valid=true`, and isolated protocol `PASS_NO_CREDIT` remain
+preserved historical evidence. The prior empty-fixture failure and final
+construction-digest correction remain unfavorable/auditable records. No
+current dcf2 candidate exists; screening, allocation, credit and acceptance
+remain false. No product, threshold, release, deployment, publication or
 invitation authority changed.
-The VPS lane remains held: `vps-dev` is unresolved and configured `vps` has
-95% root usage plus nightly rather than pinned Rust/Cargo.
 
-Corrections in this continuation: the source advanced after the 9c1 protocol
-pass, so all current A07 evidence had to be rebound to 36e5 and rerun rather
-than reused. The packet review then corrected a stale pending-review timestamp,
-superseded construction provenance, a freeze/canary status mismatch and the
-final construction digest binding before returning `PASS_NO_CREDIT`. The
-seeded source scaffold and exact candidate identity are explicitly recorded;
-the packet remains no-credit pending a later separately authorized screening
-decision.
+Correction in this continuation: merging the reviewed process pointer advanced
+the source again, so the 36e5 packet cannot be reused for screening. The next
+sequence must refresh source/ledger/topology, build a fresh exact-toolchain
+candidate, rerun identity and seeded no-credit canaries, rebind all six
+holdouts/two conditions and obtain isolated protocol `PASS`. The VPS lane
+remains held by unresolved `vps-dev`, configured `vps` at 95% root usage and
+toolchain mismatch. A process merge or protocol pass does not close A07.
 
-Next action: publish only a redacted pointer through independent review and
-applicable gates, merge at current master, observe merge-SHA workflows, then
-refresh and rebuild before screening. The protocol pass does not close A07 or
-authorize screening.
+Next action: execute that fresh current-master candidate sequence before any
+separately authorized screening; preserve all historical no-credit and
+unfavorable evidence.
 
 ## Historical correction checkpoint — 3e67d5f — 2026-09-12 UTC (no-credit; superseded by `9c1b68a`)
 

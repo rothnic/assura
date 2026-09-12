@@ -22,36 +22,30 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=36e5a840` (2026-09-12 post-merge candidate-bound no-credit)
+## Current route — `origin/master=dcf2a9e` (2026-09-12 post-merge process reconciliation; no-credit)
 
-- PR #310 merged the reviewed process/evidence slice at
-  `36e5a84024b1680b887bd789ed89ec8a0490f30f` with tree
-  `292936709bd59a9f87531e7b0fb5d77826eb8751`. Exact-head Documentation,
-  CI Scope, Evidence Gates, Security Scope and GitGuardian plus applicable
-  merge-SHA Documentation (`34668192073`), Security Audit (`34668192076`) and
-  Rust CI (`34668192074`) passed; skipped product/performance/release rows
-  remain non-proof. The refreshed ledger is
+- PR #311 merged the reviewed 36e5 process/evidence slice from head
+  `6602ac86058a74bcb2ddd2aecf07df259853f235` as
+  `dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` with tree
+  `45c4980c37c28e01e95e08c740b92fbcb2aa7c8b`. Exact-head Documentation
+  Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus
+  merge-SHA Documentation (`34670911182`), Security Audit (`34670911121`)
+  and Rust CI (`34670911124`) passed; skipped product/performance/release
+  rows remain non-proof. The refreshed ledger is
   `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
   verified, R01/W02/F01 held).
-- The 9c1 candidate is candidate-base/no-credit. Fresh owned checkout
-  `/private/tmp/assura-train-postmerge-36e5` uses exact Rust/Cargo `1.94.1`,
-  binary/shim `7144ed4b77096daf6efe3419bf14a7df59bab5adc33e48444390a618344be87d`,
-  and passing login identity plus wrong-target/wrong-root controls. The prior
-  empty-fixture evaluator failure remains unfavorable evidence; fresh seeded
-  source-only retries for both conditions pass all seven dimensions with zero
-  critical failures. Redacted canary summary:
-  `screening/canary-2026-09-12-current-36e5.json`.
-- A fresh six-holdout/two-condition/30-cell packet is bound to 36e5 and its
-  adapted validator is `valid=true`; isolated protocol rereview is
-  `PASS_NO_CREDIT` after correcting the final construction digest binding. The
-  final reviewer artifact is `screening/protocol-review-2026-09-12-current-36e5-r1.json`
-  at `2026-09-12T03:26:10Z`, SHA-256
-  `a5e51d32930603645e582bb8ef00ea559568d96d59fca1d3c30a7764745fd4e8`.
-  Keep screening/allocation/credit/acceptance false. The VPS lane remains held
-  because `vps-dev` is unresolved and `vps` is at 95% disk with nightly rather
-  than pinned Rust/Cargo. Publish only a redacted process pointer through
-  review and gates, merge, observe post-merge workflows, then refresh/rebuild
-  before screening.
+- The 36e5 candidate and packet are candidate-base/no-credit after this source
+  advance. Their exact identity, seeded A/B canaries, full evaluators, packet
+  validator `valid=true`, and isolated protocol `PASS_NO_CREDIT` remain
+  preserved historical evidence; no current dcf2 candidate exists. Keep
+  screening/allocation/credit/acceptance false.
+- The VPS lane remains held because `vps-dev` is unresolved and `vps` is at
+  95% disk with nightly rather than pinned Rust/Cargo. Refresh
+  source/ledger/topology, build a fresh exact-toolchain candidate at current
+  master, rerun identity and seeded no-credit canaries, rebind the six-holdout
+  packet/two conditions and obtain isolated protocol `PASS` before any
+  separately authorized screening. A process merge or protocol pass never
+  closes A07 or grants product/authority state.
 
 ## Historical route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit; superseded by `9c1b68a`)
 
