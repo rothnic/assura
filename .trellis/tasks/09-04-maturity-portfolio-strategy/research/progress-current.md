@@ -1,5 +1,25 @@
 # Current maturity train checkpoint
 
+## Iteration 168 — 2026-09-12 — current-master A07 candidate preparation (in progress; no-credit)
+
+- Owner/phase: `/root` / fresh current-master A07 candidate identity and
+  canary preparation in clean checkout
+  `/private/tmp/assura-a07-current-a6ed` on branch
+  `goal/a07-current-a6ed`.
+- Source refresh is `origin/master=a6ed20f532d93f830099e9095798a09515fead0b`
+  with tree `bd399cd480dc7a31630740718dd8248a0c77bef5`. The Trellis workflow
+  gate is `Ready: yes`; context routing is `57 checks/0 failures`; the
+  revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
+  held=3` with A07 active, W03 verified, and R01/W02/F01 held.
+- Historical 36e5 candidate/packet evidence remains candidate-base/no-credit
+  and will not be reused. This slice will prove exact Rust/Cargo `1.94.1`
+  identity, then run fresh sibling-free source-only no-credit canaries before
+  any holdout rebind or protocol review. Screening, allocation, credit and
+  acceptance remain false.
+- Next action: run one serialized `cargo +1.94.1 build --release`, capture
+  source/tree/version/binary identity and wrong-target/wrong-root controls,
+  then launch the two declared canary conditions with the fixed candidate.
+
 ## Iteration 167 — 2026-09-11 — PR #307 post-merge reconciliation (no-credit)
 
 - Owner/phase: `/root` / current-source post-merge reconciliation. PR #307
