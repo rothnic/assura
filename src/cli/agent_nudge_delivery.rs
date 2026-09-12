@@ -13,6 +13,8 @@ const STATE_SCHEMA: &str = "assura.agent-feedback-delivery.v1";
 const HOUR_SECONDS: i64 = 3_600;
 const MAX_STATE_SENDS: usize = 64;
 const MAX_STATE_BYTES: u64 = 64 * 1024;
+const ROUTINE_WRAPPER_BYTES: usize = "<assura-feedback>\n\n</assura-feedback>".len();
+const REFRESH_TOKEN_ENV: &str = "ASSURA_FEEDBACK_REFRESH_TOKEN";
 
 /// Effective automatic feedback settings exposed by inspect output.
 #[derive(Debug, Serialize)]
@@ -207,14 +209,15 @@ pub(super) fn automatic(
         } else {
             let candidate = snapshot.compact_line_for(
                 state.first_pending_at,
-                usize::from(config.max_bytes),
+                usize::from(config.max_bytes).saturating_sub(ROUTINE_WRAPPER_BYTES),
                 &config.trajectory.metrics,
             );
+            let emitted_bytes = candidate.len().saturating_add(ROUTINE_WRAPPER_BYTES);
             if candidate.is_empty() {
                 reason = "line_unavailable";
-            } else if candidate.len() > usize::from(config.max_bytes) {
+            } else if emitted_bytes > usize::from(config.max_bytes) {
                 reason = "line_exceeds_byte_budget";
-            } else if bytes.saturating_add(candidate.len()) > config.max_bytes_per_hour as usize {
+            } else if bytes.saturating_add(emitted_bytes) > config.max_bytes_per_hour as usize {
                 reason = "hourly_byte_budget";
             } else {
                 state.last_sent_at = Some(now);
@@ -224,7 +227,7 @@ pub(super) fn automatic(
                 }
                 state.sends.push(SendRecord {
                     at: now,
-                    bytes: candidate.len(),
+                    bytes: emitted_bytes,
                     reminder: selection.reminder,
                 });
                 line = Some(candidate);
@@ -496,6 +499,16 @@ fn request_refresh(
     {
         return "in_flight";
     }
+    let token = format!("{}:{}", std::process::id(), now_millis());
+    if fs::write(&lock, &token).is_err() {
+        let _ = fs::remove_file(&lock);
+        return "unavailable";
+    }
+    let token = format!("{}:{}", std::process::id(), now_millis());
+    if fs::write(&lock, &token).is_err() {
+        let _ = fs::remove_file(&lock);
+        return "unavailable";
+    }
     state.last_refresh_at = Some(now);
     state.last_refresh_at_ms = Some(now_millis());
     state.last_refresh_event = Some(event.to_string());
@@ -521,6 +534,7 @@ fn request_refresh(
             "json",
         ])
         .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
+        .env(REFRESH_TOKEN_ENV, &token)
         .env(
             "ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS",
             config.collection.timeout_ms.to_string(),
@@ -550,7 +564,7 @@ pub(super) fn finish_refresh() {
         let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
             return;
         };
-        if !refresh_lease_owned(&path, &token) {
+        if !refresh_lease_owned_or_released(&path, &token) {
             return;
         }
         let queued = path.with_extension("queued");
@@ -601,10 +615,12 @@ pub(super) fn finish_refresh() {
     }
 }
 
-fn refresh_lease_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
-    fs::read_to_string(path)
-        .map(|current| current == token.to_string_lossy())
-        .unwrap_or(false)
+fn refresh_lease_owned_or_released(path: &Path, token: &std::ffi::OsStr) -> bool {
+    match fs::read_to_string(path) {
+        Ok(current) => current == token.to_string_lossy(),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => true,
+        Err(_) => false,
+    }
 }
 
 pub(super) fn refresh_deadline_expired() -> bool {
@@ -621,7 +637,7 @@ pub(super) fn now() -> i64 {
         .unwrap_or_default()
 }
 
-fn now_millis() -> i64 {
+pub(super) fn now_millis() -> i64 {
     SystemTime::now()
         .duration_since(UNIX_EPOCH)
         .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)

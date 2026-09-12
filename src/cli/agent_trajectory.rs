@@ -367,6 +367,21 @@ fn inspect_at(
         }
     }
 
+    let Some(_refresh_lease) = snapshot::acquire_refresh(&cache_key) else {
+        if let Some(mut cached) = cache_read.snapshot {
+            cached.freshness = Freshness {
+                snapshot: "refresh_in_flight".to_string(),
+                integration_ref: "unchanged_local".to_string(),
+            };
+            cached.cache = CacheInfo {
+                status: "stale".to_string(),
+                source: "refresh_in_flight".to_string(),
+            };
+            return Ok(cached);
+        }
+        return Err("trajectory refresh already in flight".to_string());
+    };
+
     let collection = git::collect(&input, now);
     let cache_source = if cache_read.snapshot.is_some() {
         "stale"

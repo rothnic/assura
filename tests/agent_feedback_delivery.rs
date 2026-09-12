@@ -405,6 +405,7 @@ fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
         ])
         .current_dir(root.path())
         .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
+        .env("ASSURA_FEEDBACK_REFRESH_TOKEN", "active")
         .env("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS", "2000")
         .output()
         .expect("release inspect runs");
