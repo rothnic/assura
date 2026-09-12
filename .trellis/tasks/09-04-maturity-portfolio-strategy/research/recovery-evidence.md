@@ -1,11 +1,38 @@
 # Recovery process verification
 
-Date: 2026-09-11. Scope: process artifacts, agent instructions and validation
+Date: 2026-09-12. Scope: process artifacts, agent instructions and validation
 routing only. Product acceptance is unchanged; no card is promoted by this
 file. The historical recovery record is preserved in
 [recovery-history-2026-09-11.md](recovery-history-2026-09-11.md).
 
-## Current post-merge reconciliation — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`)
+## Current post-merge reconciliation — PR #322 — 2026-09-12 UTC (`origin/master=600e9cd`)
+
+- PR #322 merged the reviewed route correction from head
+  `686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
+  `3834b1b0647983475f9489da42c9c001b1484a56` as
+  `600e9cd7fa77d2ea55664cae201d5db45fac6a3c` with tree
+  `685ca988d88c1045503bc24eb6e4f2bbbb1b1a5a`. Independent rereview returned
+  PASS and resolved `TRAIN-ROUTE-3834-002`, the stale PR #307 A07 binding
+  reference. Exact-head Evidence Gates, CI Scope, Documentation Scope,
+  Security Scope and GitGuardian passed; merge-SHA Documentation `34683313454`,
+  Security Audit `34683313445` and Rust CI `34683313452` passed, including
+  Evidence Gates job `103525808073`. Scope-skipped product, Rust, performance
+  and release rows remain non-proof.
+- The ledger remains `items=32; ready_pending=0; unfinished=4; held=2` with
+  A07 active/no-credit and no live candidate, W03 verified with publication
+  held, R01 `not_needed` under H01, and W02/F01 externally held. PR #321,
+  PR #307 and earlier candidate/packet artifacts are historical
+  candidate-base/no-credit. No product or authority state changed.
+
+Next action: refresh source/release/tag/PR/CI/topology and the ledger before a
+new phase. If A07 preparation is authorized, rebuild a candidate at `600e9cd`,
+rerun identity and no-credit canary gates, rebind the six holdouts and exactly-
+two-condition manifest, and obtain a scoped isolated protocol `PASS`; otherwise
+continue an independently authorized held recovery slice. Keep the goal active
+and never infer product success from process, canary, protocol, skipped or
+zero-test evidence.
+
+## Historical post-merge reconciliation — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`; superseded by PR #322)
 
 - PR #307 merged the reviewed process route from head
   `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as

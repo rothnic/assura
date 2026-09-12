@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=3834b1b0647983475f9489da42c9c001b1484a56`.
+`origin/master=600e9cd7fa77d2ea55664cae201d5db45fac6a3c`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,30 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed route correction — `3834b1b` — 2026-09-12 UTC (PR #321; current source)
+## Latest observed route correction — `600e9cd` — 2026-09-12 UTC (PR #322; current source)
+
+The independent rereview found `TRAIN-ROUTE-3834-002`: the A07 binding plan
+still called the PR #307/`eef7e1a` source current and could bind a fresh
+candidate to stale process evidence. PR #322 merged the correction from head
+`686adc4bddd87b5eab48e8f7fedd66f926adcf8b` on base
+`3834b1b0647983475f9489da42c9c001b1484a56` as
+`600e9cd7fa77d2ea55664cae201d5db45fac6a3c` with tree
+`685ca988d88c1045503bc24eb6e4f2bbbb1b1a5a`. Independent rereview returned
+PASS for the exact candidate. Exact-head Evidence Gates, CI Scope,
+Documentation Scope, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34683313454`, Security Audit `34683313445` and Rust CI
+`34683313452` passed, including Evidence Gates job `103525808073`; scope-skipped
+rows remain non-proof.
+
+All live route copies now use `600e9cd`; PR #321 and earlier source pointers
+are historical. The refreshed ledger is `items=32; ready_pending=0; unfinished=4;
+held=2`; R01 remains `not_needed` under H01, A07 remains active/no-credit with
+no live candidate, W02/F01 remain externally held and W03 publication remains
+separately authorized. No product, threshold, screening, allocation, credit,
+acceptance, release, deployment, publication, invitation or protection state
+changed.
+
+## Historical route correction — `3834b1b` — 2026-09-12 UTC (PR #321; superseded by PR #322)
 
 The independent route audit found `TRAIN-ROUTE-3834-001`: task, goal and
 supporting route copies still named PR #320/`38626e0` after `origin/master`
