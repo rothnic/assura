@@ -269,7 +269,10 @@ pub(super) fn wrapper_script(agent: AgentIntegrationTarget, project_root: &Path)
 # {MANAGED_MARKER}
 set -eu
 
-PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-{project_root}}}"
+PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-}}"
+if [ -z "$PROJECT_ROOT" ]; then
+  PROJECT_ROOT={project_root}
+fi
 MODE="${{ASSURA_AGENT_MODE:-nudge}}"
 EVENT="${{ASSURA_AGENT_EVENT:-session-start}}"
 ASSURA_BIN="${{ASSURA_BIN:-assura}}"

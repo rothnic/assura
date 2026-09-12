@@ -68,6 +68,11 @@ fn validate_agent_feedback(config: Option<&AgentFeedbackConfig>) -> Result<(), S
         config.periodic_seconds,
         config.collection.min_refresh_seconds,
         config.collection.stale_after_seconds,
+        config
+            .trajectory
+            .signals
+            .unintegrated
+            .clear_after_clean_seconds,
     ]
     .into_iter()
     .any(|value| value > i64::MAX as u64)
