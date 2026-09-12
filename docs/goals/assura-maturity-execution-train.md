@@ -30,7 +30,50 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — eef7e1a (post-merge reconciliation; no-credit)
+## Current checkpoint — 3e67d5f (candidate-bound canary; no-credit)
+
+The reset fetched `origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`
+with tree `1b3b2c130a294b1020f0c63d84df120434bebf42`. The revision-pinned
+ledger is `items=32; ready_pending=0; unfinished=5; held=3`: A07 is active,
+W03 is verified, and R01/W02/F01 remain held. Root unknown dirt, a foreign
+dirty worktree, unreadable/prunable registrations, historical branches and
+unfavorable evidence remain outside this goal's ownership.
+
+The owned candidate checkout is `/private/tmp/assura-train-current-3e67`,
+built with exact Rust/Cargo `1.94.1`. Candidate reports version `0.4.0`;
+binary and login-shell shim SHA-256 are both
+`bbb244635770c44862db1becfab5ae46c107c904821baec303bcc52ae6bd05fa`.
+Login-shell identity passes, while deliberate wrong-target and wrong-root
+controls reject. The first condition attempt is retained as unfavorable
+identity-mismatch evidence after a stale `ZDOTDIR` was found and corrected;
+the corrected current runner is the only one used for the following results.
+
+Two fresh sibling-free source-only fixtures then completed the fixed one-shot
+initializer with exit `0`; post-exit evaluators pass all seven declared
+dimensions with zero critical failures, expected negative policy rejection,
+and a collected native test. The private current packet at
+`/private/tmp/assura-a07-private-3e67` has six unique holdouts, exactly two
+conditions and 30 reserved cells; the adapted metadata validator reports
+`valid=true` with zero errors. Its canary summary is
+`screening/canary-2026-09-12-current-3e67.json` and all allocation, screening,
+credit and acceptance flags remain false. Independent metadata-only protocol
+review is `PASS_NO_CREDIT` for the corrected packet; this makes the matrix
+protocol-ready only, not screened or accepted. A subsequent process merge will
+make this candidate candidate-base/no-credit again.
+
+The optional VPS lane remains held: `vps-dev` is unresolved, while the
+configured host has a nearly full root volume, unrelated long-running jobs,
+and no exact pinned toolchain. Remote output cannot replace platform or
+hosted proof. No product, threshold, screening, allocation, release,
+deployment, publication, invitation or protection authority changed.
+
+Next action: freeze a concise public evidence update, obtain independent review
+and all applicable gates, merge only at current master, observe merge-SHA
+workflows, then refresh source/ledger/topology and rebuild a post-merge
+candidate before any screening. Never promote a canary or protocol pass to A07
+acceptance; any new finding still requires a scoped correction and rereview.
+
+## Historical checkpoint — eef7e1a (post-merge reconciliation; no-credit; superseded by `3e67d5f`)
 
 PR #307 merged the reviewed post-merge pointer slice from head
 `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as

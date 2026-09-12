@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=eef7e1a7400c84ec35be33a58914ad07da7fa376`.
+`origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,47 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, post-merge no-credit)
+## Current correction checkpoint — 3e67d5f — 2026-09-12 UTC (no-credit)
+
+The reset fetched `origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`
+with tree `1b3b2c130a294b1020f0c63d84df120434bebf42`. The ledger is
+`items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
+R01/W02/F01 held). Unknown root dirt, foreign dirty work, stale/unreadable
+topology registrations, historical branches and unfavorable evidence remain
+preserved outside ownership.
+
+The fresh candidate at `/private/tmp/assura-train-current-3e67` uses exact
+Rust/Cargo `1.94.1`; version `assura 0.4.0`; binary/shim
+`bbb244635770c44862db1becfab5ae46c107c904821baec303bcc52ae6bd05fa`; and
+current public contract digest
+`03e41cc2ae1242e8873b569f49484125521607956fff37ef3a7977a1d2088da3`. Its
+login-shell identity, wrong-target and wrong-root controls pass/reject. A
+stale `ZDOTDIR` first caused an identity mismatch; that receipt is retained as
+unfavorable no-credit evidence, and only the corrected runner was rerun.
+
+The corrected A/B sibling-free source-only canaries both exited `0`; their
+post-exit evaluators pass all seven dimensions with zero critical failures,
+the expected negative policy probe and a collected native test. The current
+private packet `/private/tmp/assura-a07-private-3e67` has six unique holdouts,
+two conditions and 30 reserved cells. The adapted metadata validator is
+`valid=true` with zero errors. The packet's independent metadata protocol
+review is `PASS_NO_CREDIT`; no screening, allocation, credit or acceptance
+state is changed.
+
+Correction applied in this continuation: current records use deliberate
+candidate-specific aliases and identity references rather than blind
+historical substitution; the canary runner's login-shell target is now bound
+to the current shim. The prior mismatch remains auditable. If this process
+checkpoint is merged, all private candidate evidence becomes candidate-base/
+no-credit and must be rebuilt at the post-merge source before screening.
+
+Next action: publish only a redacted evidence pointer through independent review
+and full applicable gates. A finding must name its contract, location, failure
+scenario and smallest verification; fix accepted findings as a delta and
+rereview. Never convert canary/protocol metadata or scope-skipped checks into
+product success.
+
+## Historical correction checkpoint — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`, post-merge no-credit; superseded by `3e67d5f`)
 
 - PR #307 merged the reviewed process slice from head
   `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as

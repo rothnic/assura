@@ -17,7 +17,7 @@
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
-  "next_action": "Refresh origin/master, release/tag, PR/CI, topology and the revision-pinned ledger before the next phase; PR #307 is reconciled at eef7e1a and the 66e0b7e process checkpoint plus dc031527 candidate/packet are candidate-base/no-credit. Inspect active, implemented, verified and held rows before pending rows, then keep one explicitly owned recovery or fresh current-master A07 preparation slice live. If A07 preparation is authorized, rebuild at the refreshed source and repeat identity, sibling-free no-credit canary, six-holdout/two-condition rebind and isolated protocol PASS before any screening decision. Otherwise continue an independently authorized held recovery slice. Observe configured push-triggered workflows at every merge SHA and keep screening/allocation/credit false.",
+  "next_action": "At the current 3e67d5f candidate checkpoint, the corrected A07 packet has independent metadata-only PASS_NO_CREDIT, with six holdouts, two conditions and 30 reserved cells. Freeze the redacted evidence pointers in a reviewed current-base process slice, run all applicable gates, merge only at current master, observe merge-SHA workflows, refresh source/release/tag/PR/CI/topology and the ledger, and rebuild the candidate before screening. Keep screening/allocation/credit/acceptance false and preserve unknown or user-owned topology findings; any new finding needs a concrete correction and scoped rereview.",
   "subtasks": [],
   "children": [],
   "parent": null,
@@ -110,10 +110,27 @@
     "continuation_goal": {
       "status": "active",
       "owner": "/root",
-      "objective": "Drive this canonical maturity task through owned, evidence-bound slices with current-master provenance, independent review, full applicable gates, verified integration and terminal cleanup. At every continuation inspect active, implemented, verified and held work before pending rows; if no card is ready, advance an authorized recovery or preparation slice instead of stopping. Never convert process, evaluator, canary or skipped-check evidence into product success.",
+      "objective": "Orchestrate the Assura maturity execution train from the current canonical task and merged recovery contract at every continuation: refresh origin/master, resolve the revision-pinned ledger, inspect active/implemented/verified candidates and actual owners before pending cards, and drive one explicitly owned card or independent recovery slice through investigation, implementation, validation, independent review, current-base integration, post-merge reconciliation and clean closure. Preserve unknown or user-owned dirt and historical unfavorable evidence; never weaken thresholds, hide failures, treat skipped or zero-test checks as passes, or promote a passing slice to full-card success. Finish only when authorized scope is complete with owned topology terminal, or an externally held action has been independently audited and all other authorized work is exhausted.",
       "source_policy": "Fetch origin/master and rerun the revision-pinned ledger before every phase; embedded SHAs are dated checkpoints only. Load the execution-control-plane reference only for the phase decision that needs its state, checkpoint, gate-budget or closure rules.",
       "current_checkpoint": {
-        "origin_master": "eef7e1a7400c84ec35be33a58914ad07da7fa376",
+        "origin_master": "3e67d5fe123c6ebcf3ac05617966919151e44868",
+        "source_tree": "1b3b2c130a294b1020f0c63d84df120434bebf42",
+        "owner": "/root",
+        "checkout": "/private/tmp/assura-train-current-3e67",
+        "phase": "A07 current-source canary and metadata protocol PASS_NO_CREDIT; public reconciliation",
+        "live_handle": null,
+        "current_evidence": {
+          "source_refresh": "Reset fetched origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868 with tree 1b3b2c130a294b1020f0c63d84df120434bebf42. PR #308 merge-SHA Rust CI 34661551323, Security Audit 34661551305 and Documentation 34661551303 are green for their configured scope; scope-skipped product/performance/release jobs remain non-proof.",
+          "ledger": "Revision-pinned audit at this source: items=32; ready_pending=0; unfinished=5; held=3. A07 is active, W03 verified, and R01/W02/F01 held. No pending card outranks the active A07 route.",
+          "candidate": "Clean owned checkout /private/tmp/assura-train-current-3e67 built with exact Rust/Cargo 1.94.1, version assura 0.4.0, binary/shim bbb244635770c44862db1becfab5ae46c107c904821baec303bcc52ae6bd05fa. Login-shell identity passes; wrong-target and wrong-root controls reject.",
+          "canary": "Corrected current runner completed two fresh sibling-free source-only one-shot conditions (none and agent-project) with initializer exit 0. Post-exit evaluators pass all seven declared dimensions with zero critical failures, expected negative policy rejection and a collected native test. The first stale-ZDOTDIR identity mismatch is retained as unfavorable no-credit evidence.",
+          "holdout_binding": "Private packet /private/tmp/assura-a07-private-3e67 is bound to the current candidate with six unique holdouts, two conditions and 30 reserved cells. The adapted metadata-only validator reports valid=true with zero errors.",
+          "manifest": "Current manifest uses public contract digest 03e41cc2ae1242e8873b569f49484125521607956fff37ef3a7977a1d2088da3, exact candidate/evaluator/prompt/toolchain identities, two explicit input conditions and all 30 cells reserved with allocation and screening false.",
+          "protocol_review": "Independent metadata-only protocol review is PASS_NO_CREDIT for the corrected packet. It inspected only packet metadata/public evaluator summaries and cannot authorize screening, allocation, credit, acceptance, release, deployment, publication or invitations.",
+          "next_action": "Update a redacted evidence pointer through a reviewed current-base process slice, run applicable gates, merge only at current master, observe merge-SHA workflows, refresh source/ledger/topology, and rebuild before screening. Any new finding requires a concrete scoped correction and rereview.",
+          "unfavorable_evidence": "Preserve the stale-login-shell receipt, prior ambient-context limitation, hosted watch-SIGINT failure and all external topology findings; none are converted to green evidence.",
+          "vps": "Optional remote heavy validation remains held: vps-dev is unresolved; configured vps has disk pressure, unrelated jobs and no exact pinned toolchain."
+        },
         "ledger": "items=32; ready_pending=0; unfinished=5; held=3",
         "active": "A07",
         "verified": "W03",
@@ -122,7 +139,7 @@
           "W02",
           "F01"
         ],
-        "current_evidence": {
+        "historical_evidence": {
           "current_source": "PR #307 merged reviewed head 9723a6730ac4cff2c8567035a8cd4f1fe21e25f4 from base 66e0b7e as eef7e1a7400c84ec35be33a58914ad07da7fa376; exact-head Documentation Scope, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, and merge-SHA Documentation 34660366526, Rust CI 34660366735 and Security Audit 34660366986 passed for applicable scope. Rust CI CI Scope 103461414969 and Evidence Gates 103461446382 passed; scope-skipped product, Rust, performance and release rows remain non-proof.",
           "candidate": "The 66e0b7e process checkpoint and dc031527 candidate in /private/tmp/assura-a07-current-reconcile-dc031 are candidate-base/no-credit after PR #307 advanced origin/master to eef7e1a; do not reuse them. Build a fresh exact-toolchain candidate from the refreshed current master before any A07 continuation.",
           "canary": "The dc031527 sibling-free canaries and post-exit full evaluators remain historical no-credit preparation after the 66e0b7e and eef7e1a source advances. A fresh current-master candidate and canary are required; ambient skill metadata and the generated-hook verifier discrepancy remain explicit limitations.",
@@ -182,7 +199,7 @@
         ],
         "latest_correction": "PR #307 merged the reviewed post-merge reconciliation at eef7e1a from head 9723a673; applicable exact-head and merge-SHA checks passed, and scope-skipped rows remain non-proof. The 66e0b7e process checkpoint and dc031527 candidate, canaries, six-holdout/two-condition packet and PASS_NO_CREDIT protocol artifact are now historical candidate-base/no-credit. The owned branch/worktree is being reconciled; a fresh current-master candidate sequence is required before any A07 continuation. No product, threshold, allocation, screening, authority or release state changed."
       },
-      "next_action": "At every continuation fetch origin/master and rerun release/tag, PR/CI, topology and the revision-pinned ledger before using checkpoint evidence. PR #307 is reconciled at eef7e1a and its owned process branch/worktree is being closed. The 66e0b7e process checkpoint and dc031527 candidate, no-credit canary and packet validator are candidate-base/no-credit after the source advance. Inspect active, implemented, verified and held rows before pending rows, then keep one explicitly owned recovery or fresh current-master A07 preparation slice live. If A07 preparation is authorized, rebuild and repeat identity, sibling-free no-credit canary, six-holdout/two-condition rebind and isolated protocol PASS before any screening. Otherwise continue an independently authorized held recovery slice. Observe configured push-triggered workflows at every merge SHA before closing a slice. Never allocate or credit cells from canary or protocol metadata.",
+      "next_action": "At every continuation fetch origin/master and rerun release/tag, PR/CI, topology and the revision-pinned ledger before using checkpoint evidence. The current 3e67d5f candidate has passed identity, corrected sibling-free no-credit canaries and full seven-dimension evaluators; its six-holdout/two-condition packet validates with 30 reserved cells and awaits independent metadata protocol review. Finish that review, correct concrete findings with scoped rereview, then use a reviewed current-base process slice and all applicable gates for any evidence update. Every merge invalidates candidate credit: refresh and rebuild before screening. Never allocate or credit cells from canary or protocol metadata; preserve all unfavorable evidence and authority holds.",
       "success_predicate": "Do not merge or mark a card complete without its observable contract, resolved review findings, applicable local/hosted proof, current-base reachability and clean owned closure. Preserve failures, thresholds, negative controls and no-credit dispositions.",
       "authority_boundaries": [
         "A07 evaluation is separate from implementation and remains zero-credit until its complete protocol, screening, holdout and final acceptance gates pass.",
