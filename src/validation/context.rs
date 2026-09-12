@@ -175,6 +175,11 @@ impl ContextMatcher {
     fn version_matches(range: &str, version: &str) -> bool {
         // Simple version matching: "2.x.." means 2.x and above
         // "..1.x" means up to 1.x
+        if range == version {
+            return true;
+        }
+
+        let version = version.strip_prefix('v').unwrap_or(version);
 
         if range == "*" {
             return true;
@@ -340,6 +345,19 @@ mod tests {
         assert!(ContextMatcher::version_matches("2.x..", "2.1.0"));
         assert!(ContextMatcher::version_matches("..1.x", "1.5.0"));
         assert!(!ContextMatcher::version_matches("..1.x", "2.0.0"));
+    }
+
+    #[test]
+    fn test_v_prefixed_execution_versions_match_existing_ranges() {
+        assert!(ContextMatcher::version_matches("2.0.0..", "v2.1.0"));
+        assert!(ContextMatcher::version_matches("..2.2.0", "v2.1.0"));
+        assert!(ContextMatcher::version_matches("2.1.0", "v2.1.0"));
+        assert!(ContextMatcher::version_matches("2.0.0..2.2.0", "v2.1.0"));
+        assert!(ContextMatcher::version_matches("v2.1.0", "v2.1.0"));
+        assert!(!ContextMatcher::version_matches("v2.1.0", "2.1.0"));
+
+        assert!(!ContextMatcher::version_matches("2.2.0..", "v2.1.0"));
+        assert!(!ContextMatcher::version_matches("..2.0.0", "v2.1.0"));
     }
 
     #[test]
