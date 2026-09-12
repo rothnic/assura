@@ -560,30 +560,20 @@ fn state_path(project_root: &Path) -> PathBuf {
 
 fn identity_path(project_root: &Path) -> PathBuf {
     let marker = project_root.join(".git");
-    let git_dir = if marker.is_dir() {
-        marker
-    } else {
-        let Ok(value) = fs::read_to_string(marker) else {
-            return project_root.to_path_buf();
-        };
-        let Some(value) = value.strip_prefix("gitdir: ").map(str::trim) else {
-            return project_root.to_path_buf();
-        };
-        let path = PathBuf::from(value);
-        if path.is_absolute() {
-            path
-        } else {
-            project_root.join(path)
-        }
+    if marker.is_dir() {
+        return marker;
+    }
+    let Ok(value) = fs::read_to_string(marker) else {
+        return project_root.to_path_buf();
     };
-    if git_dir.file_name().and_then(|name| name.to_str()) == Some(".git") {
-        git_dir
+    let Some(value) = value.strip_prefix("gitdir: ").map(str::trim) else {
+        return project_root.to_path_buf();
+    };
+    let path = PathBuf::from(value);
+    if path.is_absolute() {
+        path
     } else {
-        git_dir
-            .parent()
-            .and_then(Path::parent)
-            .map(Path::to_path_buf)
-            .unwrap_or(git_dir)
+        project_root.join(path)
     }
 }
 
@@ -676,6 +666,7 @@ impl Drop for DeliveryLease {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use tempfile::tempdir;
 
     #[test]
     fn threshold_episode_requires_observed_age_and_clears_after_clean_period() {
@@ -708,5 +699,24 @@ mod tests {
             state.sends.iter().map(|send| send.bytes).sum::<usize>(),
             256
         );
+    }
+
+    #[test]
+    fn linked_worktrees_share_cache_root_but_not_delivery_state() {
+        let root = tempdir().expect("repository root");
+        let common = root.path().join(".git");
+        let linked_git = common.join("worktrees").join("linked");
+        fs::create_dir_all(&linked_git).expect("linked git dir");
+        let linked = root.path().join("linked");
+        fs::create_dir_all(&linked).expect("linked worktree");
+        fs::write(
+            linked.join(".git"),
+            format!("gitdir: {}\n", linked_git.display()),
+        )
+        .expect("worktree marker");
+
+        assert_eq!(feedback_root(root.path()), feedback_root(&linked));
+        assert_ne!(identity_path(root.path()), identity_path(&linked));
+        assert_ne!(state_path(root.path()), state_path(&linked));
     }
 }

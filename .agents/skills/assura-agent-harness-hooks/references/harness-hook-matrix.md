@@ -110,9 +110,9 @@ say so; do not promote it to supported until an adapter or proof test exists.
 - Delivery: automatic mode reads one bounded cached snapshot, stays silent on
   missing/stale/incomplete coverage, and schedules at most one background
   inspect refresh per repository.
-- State: repository-common persisted lease and hourly byte/message budgets are
-  shared across worktrees and process restarts; explicit `--delivery inspect`
-  remains the detailed report.
+- State: cached facts share the repository Git common directory; delivery
+  cadence and hourly budgets are keyed to the canonical worktree identity;
+  explicit `--delivery inspect` remains the detailed report.
 - Proof: `agent_feedback_delivery` plus `agent_surface_cli` and
   `agent_trajectory_cli` integration tests.
 - Gaps: host trust, hook approval, and native lifecycle availability remain
