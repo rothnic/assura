@@ -95,8 +95,8 @@ CF03 remains one owned candidate at
 `/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03-final`, branch
 `goal/compact-feedback-cf03`, based on CF02 merge
 `9383acc2fd9a47d63553fd32768aef7428c7b34c`. The product candidate is
-Nick/Codex-owned and currently ends at `8e406d4890668f91319d5cdd67cfb1364c853011`;
-it is retained until CF03 review and merge gates finish.
+Nick/Codex-owned and currently ends at `f4d0859fd05bcb9b9d7a7420d815013434917176`;
+the latest watchdog change is retained until CF03 review and merge gates finish.
 
 The duplicate writer task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` was
 interrupted and archived after it was found editing the same candidate. Its
