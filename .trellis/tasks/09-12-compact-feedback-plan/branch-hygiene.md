@@ -107,6 +107,13 @@ owner review before any reapplication; restore with
 `git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
 No unknown or foreign source was deleted.
 
+During the final CF03 freeze, another owner reintroduced a foreign harness
+matrix note and an alternate `bound_line` implementation into this shared
+worktree while the current-base gate was starting. They were not reviewed as
+candidate work and were parked intact: owner unknown/foreign; handle
+`stash@{0}` / `f826b855eb7d76bcb4e1fa3d6736d98e54d9aa3e`; next action is owner
+review before reapplication; restore with `git stash apply f826b855eb7d76bcb4e1fa3d6736d98e54d9aa3e`.
+
 A second overlapping harness note was observed later and is also deliberately
 excluded from the candidate net diff: owner unknown/foreign; handle
 `stash@{0}` / `8205a4a92167ece55276da24cd17b1576ed62fe2`; it contains the
