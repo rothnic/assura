@@ -907,7 +907,7 @@ fn process_owner_alive(pid: u32) -> Option<bool> {
     let result = unsafe { GetExitCodeProcess(handle, &mut exit_code) } != 0;
     // SAFETY: handle is the process handle returned by OpenProcess.
     unsafe { CloseHandle(handle) };
-    result.then_some(exit_code == STILL_ACTIVE)
+    result.then_some(exit_code == STILL_ACTIVE as u32)
 }
 
 #[cfg(not(any(unix, windows)))]
