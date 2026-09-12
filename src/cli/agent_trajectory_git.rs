@@ -355,12 +355,12 @@ fn collect_pending(
             )
         })
         .and_then(|value| value.trim().parse::<u64>().ok());
-    let range = merge_base.to_string();
-    if input
+    let same_integration_tree = input
         .integration_ref
         .as_deref()
-        .and_then(|reference| trees_match(repo_root, reference, "HEAD"))
-        == Some(true)
+        .and_then(|reference| trees_match(repo_root, reference, "HEAD"));
+    if same_integration_tree == Some(true)
+        && input.status_files == Some(0)
         && input.untracked_paths.is_empty()
     {
         return Ok(PendingResult {
@@ -370,13 +370,18 @@ fn collect_pending(
             categories: std::array::from_fn(|_| CategoryStats::default()),
         });
     }
+    let diff_base = if same_integration_tree == Some(true) {
+        input.integration_ref.as_deref().unwrap_or(merge_base)
+    } else {
+        merge_base
+    };
     let args = [
         "diff",
         "--no-ext-diff",
         "--no-textconv",
         "--find-renames",
         "--numstat",
-        range.as_str(),
+        diff_base,
         "--",
     ];
     let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES) {

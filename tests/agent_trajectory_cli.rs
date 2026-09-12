@@ -303,6 +303,34 @@ fn merge_and_squash_reconciliation_do_not_create_false_pending_work() {
         retained_branch_snapshot["trajectory"]["pending"]["files"],
         0
     );
+    write(
+        &squashed.path().join("src/base.rs"),
+        "fn base() { /* dirty */ }\n",
+    );
+    fs::remove_file(squashed.path().join("src/remove-me.rs")).expect("delete tracked file");
+    let dirty_retained_branch = inspect(squashed.path());
+    assert_eq!(dirty_retained_branch["trajectory"]["pending"]["files"], 2);
+    assert_eq!(
+        dirty_retained_branch["trajectory"]["pending"]["dirty_files"],
+        2
+    );
+}
+
+#[test]
+fn tracked_dirty_changes_are_not_hidden_by_matching_integration_tree() {
+    let project = fixture();
+    write(
+        &project.path().join("src/base.rs"),
+        "fn base() { /* dirty */ }\n",
+    );
+    fs::remove_file(project.path().join("src/remove-me.rs")).expect("delete tracked file");
+
+    let snapshot = inspect(project.path());
+    assert_eq!(snapshot["trajectory"]["pending"]["commits"], 0);
+    assert_eq!(snapshot["trajectory"]["pending"]["files"], 2);
+    assert!(snapshot["trajectory"]["pending"]["source"]["files"]
+        .as_u64()
+        .is_some_and(|files| files >= 2));
 }
 
 #[test]
