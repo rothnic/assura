@@ -194,6 +194,7 @@ struct PortableConfig {
     collections: HashMap<String, PortableContentCollectionConfig>,
     relations: HashMap<String, PortableContentRelationConfig>,
     code_symbols: HashMap<String, PortableContentCodeSymbolConfig>,
+    #[serde(default)]
     agent_feedback: Option<crate::config::config::AgentFeedbackConfig>,
     exclude: Vec<String>,
 }

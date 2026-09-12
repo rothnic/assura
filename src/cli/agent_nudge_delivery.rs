@@ -3,7 +3,8 @@
 use crate::config::config::{AgentFeedbackConfig, AgentFeedbackMode};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::fs::{self, OpenOptions};
+use std::fs::{self, File, OpenOptions};
+use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::time::{SystemTime, UNIX_EPOCH};
@@ -11,6 +12,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 const STATE_SCHEMA: &str = "assura.agent-feedback-delivery.v1";
 const HOUR_SECONDS: i64 = 3_600;
 const MAX_STATE_SENDS: usize = 64;
+const MAX_STATE_BYTES: u64 = 64 * 1024;
 
 /// Effective automatic feedback settings exposed by inspect output.
 #[derive(Debug, Serialize)]
@@ -58,7 +60,7 @@ pub(super) struct DeliveryResult {
     pub(super) line: Option<String>,
 }
 
-#[derive(Debug, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 struct DeliveryState {
     schema: String,
     first_pending_at: Option<i64>,
@@ -74,7 +76,7 @@ struct DeliveryState {
     sends: Vec<SendRecord>,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 struct SendRecord {
     at: i64,
     bytes: usize,
@@ -174,6 +176,7 @@ pub(super) fn automatic(
         );
     };
     let mut state = read_state(&path);
+    let previous_state = state.clone();
     prune_sends(&mut state, now);
     let messages = state.sends.len();
     let bytes = state.sends.iter().map(|send| send.bytes).sum::<usize>();
@@ -229,7 +232,11 @@ pub(super) fn automatic(
             }
         }
     }
-    let _ = write_state(&path, &state);
+    if write_state(&path, &state).is_err() && line.is_some() {
+        state = previous_state;
+        line = None;
+        reason = "state_write_failed";
+    }
     DeliveryResult {
         status: DeliveryStatus {
             configured: true,
@@ -667,8 +674,7 @@ fn digest(path: &Path) -> String {
 }
 
 fn read_state(path: &Path) -> DeliveryState {
-    fs::read(path)
-        .ok()
+    read_bounded(path)
         .and_then(|bytes| serde_json::from_slice(&bytes).ok())
         .filter(|state: &DeliveryState| state.schema == STATE_SCHEMA)
         .unwrap_or_else(|| DeliveryState {
@@ -679,10 +685,18 @@ fn read_state(path: &Path) -> DeliveryState {
 
 fn state_is_valid(path: &Path) -> bool {
     !path.exists()
-        || fs::read(path)
-            .ok()
+        || read_bounded(path)
             .and_then(|bytes| serde_json::from_slice::<DeliveryState>(&bytes).ok())
             .is_some_and(|state| state.schema == STATE_SCHEMA)
+}
+
+fn read_bounded(path: &Path) -> Option<Vec<u8>> {
+    let file = File::open(path).ok()?;
+    let mut bytes = Vec::new();
+    file.take(MAX_STATE_BYTES.saturating_add(1))
+        .read_to_end(&mut bytes)
+        .ok()?;
+    (bytes.len() as u64 <= MAX_STATE_BYTES).then_some(bytes)
 }
 
 fn write_state(path: &Path, state: &DeliveryState) -> Result<(), String> {
@@ -776,6 +790,14 @@ mod tests {
             state.sends.iter().map(|send| send.bytes).sum::<usize>(),
             256
         );
+    }
+
+    #[test]
+    fn state_reads_are_bounded() {
+        let root = tempdir().expect("state directory");
+        let path = root.path().join("state.json");
+        fs::write(&path, vec![b'x'; (MAX_STATE_BYTES + 1) as usize]).expect("large state");
+        assert!(read_bounded(&path).is_none());
     }
 
     #[test]

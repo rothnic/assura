@@ -62,6 +62,18 @@ fn validate_agent_feedback(config: Option<&AgentFeedbackConfig>) -> Result<(), S
     if config.min_interval_seconds == 0 || config.min_interval_seconds > 86_400 {
         return Err("agent_feedback.min_interval_seconds: expected 1..=86400".to_string());
     }
+    if [
+        config.min_interval_seconds,
+        config.reminder_seconds,
+        config.periodic_seconds,
+        config.collection.min_refresh_seconds,
+        config.collection.stale_after_seconds,
+    ]
+    .into_iter()
+    .any(|value| value > i64::MAX as u64)
+    {
+        return Err("agent_feedback timing values exceed the supported range".to_string());
+    }
     if config.max_messages_per_hour == 0 || config.max_bytes_per_hour == 0 {
         return Err("agent_feedback hourly budgets must be greater than zero".to_string());
     }
@@ -141,6 +153,8 @@ fn validate_agent_feedback(config: Option<&AgentFeedbackConfig>) -> Result<(), S
     if unintegrated.enabled
         && (unintegrated.pending_minutes == 0
             || unintegrated.step_minutes == 0
+            || unintegrated.pending_minutes > i64::MAX as u64 / 60
+            || unintegrated.step_minutes > i64::MAX as u64 / 60
             || unintegrated.clear_after_clean_seconds == 0
             || unintegrated.clear_after_clean_seconds
                 >= unintegrated.pending_minutes.saturating_mul(60))
