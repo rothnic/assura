@@ -552,7 +552,9 @@ fn request_refresh(
             .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
             .map(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
             .unwrap_or(false);
-        if owner_alive == Some(false) || (stale && owner_alive != Some(true)) {
+        if owner_alive == Some(false)
+            || (stale && owner_alive.is_none() && lease_token_is_malformed(&lock))
+        {
             let _ = fs::remove_file(&lock);
         } else {
             let queued = lock.with_extension("queued");
@@ -695,6 +697,7 @@ pub(super) fn finish_refresh() {
 
 /// Bound the whole inspect worker, including config and daemon setup before Git.
 pub(super) fn start_refresh_watchdog() {
+    REFRESH_FINISHED.store(false, Ordering::Release);
     let Some(deadline) = refresh_deadline_millis() else {
         return;
     };
@@ -706,16 +709,15 @@ pub(super) fn start_refresh_watchdog() {
     }
     let remaining = deadline.saturating_sub(now_millis());
     if remaining <= 0 {
-        // The process is about to exit; leave reclamation to owner-liveness
-        // recovery so a replacement lease cannot be deleted by this worker.
-        std::process::exit(1);
+        finish_refresh();
+        return;
     }
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(remaining as u64));
-        if refresh_deadline_expired() {
-            // Reclamation is intentionally deferred to the next requester;
-            // read-then-delete could race with a replacement lease.
-            std::process::exit(1);
+        if refresh_deadline_expired() && !REFRESH_FINISHED.load(Ordering::Acquire) {
+            // Bounded Git children clean themselves up; release or hand off
+            // the lease without an abrupt process exit.
+            finish_refresh();
         }
     });
 }
@@ -910,6 +912,13 @@ pub(super) fn lease_owner_alive(path: &Path) -> Option<bool> {
     let token = fs::read_to_string(path).ok()?;
     let pid = token.split(':').next()?.parse::<u32>().ok()?;
     process_owner_alive(pid)
+}
+
+fn lease_token_is_malformed(path: &Path) -> bool {
+    fs::read_to_string(path)
+        .ok()
+        .and_then(|token| token.split(':').next()?.parse::<u32>().ok())
+        .is_none()
 }
 
 #[cfg(unix)]
