@@ -21,7 +21,9 @@ Four additional local goal worktrees were already exact ancestors of
 `origin/master` and are safe to remove as local registrations: A05 onboarding
 quality (`717de56`), R03 fast rules (`c97acf2`), R03 fresh attribution
 (`e6b6623`), and R03 performance variance (`c8df8cc`). The current CF
-execution worktree is retained. Remote branches are not deleted.
+execution worktree is retained. Historical remote branches are not deleted by
+this audit unless their exact tip is already reachable from the current
+integration ref and the attached worktree is clean.
 
 Owner for this checkpoint is Nick/Codex. The next action for every archived
 entry is “none until explicitly reopened”; all restore handles above preserve
@@ -34,3 +36,23 @@ tracked or unknown source was removed, no remote branch was deleted, and the
 active `goal/compact-feedback-execution` worktree was retained. The local
 topology now has only that active `goal/*` branch; archived refs and the remote
 refs preserve restoration. Disk free space increased from 17 GiB to 50 GiB.
+
+## Execution-train cleanup
+
+CF01 completed through PR #328 at merge commit
+`75992ad4cfcba4efb1cfc8a1d3333208991bba88`. Its candidate tip
+`eff94fd8d856fed163c5b5ff73072bcca2c364c9` is an ancestor of that merge and
+its clean local/remote branch and worktree were removed after all post-merge
+workflows passed. Restore the candidate with
+`git branch goal/compact-feedback-execution eff94fd8d856fed163c5b5ff73072bcca2c364c9`.
+
+The planning-only ref `codex/compact-feedback-plan` was also an exact clean
+ancestor of `origin/master` at `48f18fab7527150b384603ca64cec8b374295842`.
+Its remote/local ref and attached clean worktree were removed after the plan
+was carried into CF01. Restore it with
+`git branch codex/compact-feedback-plan 48f18fab7527150b384603ca64cec8b374295842`.
+CF02 is the sole active execution candidate: owner Nick/Codex, worktree
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf02`, next action
+complete and review the cached trajectory slice. The detached historical
+worktree at `/Users/nroth/.codex/worktrees/2f5f1792-b405-41ee-8885-bbb1ad693526/assura`
+has no branch owner and remains untouched.

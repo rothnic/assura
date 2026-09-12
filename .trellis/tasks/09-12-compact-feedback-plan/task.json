@@ -24,11 +24,10 @@
     ".agents/skills/custom/assura-feedback-execution/SKILL.md",
     "AGENTS.md"
   ],
-  "notes": "Execution started by the explicit merge invocation. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. The current product candidate is on goal/compact-feedback-execution; CF01 is active and CF02-CF04 remain pending. Card status lives only in skill references/backlog.md.",
+  "notes": "Execution started by the explicit merge invocation. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. CF01 is merged and verified by PR #328 at 75992ad4cfcba4efb1cfc8a1d3333208991bba88; CF02 is the current product candidate and CF03-CF04 remain pending. Card status lives only in skill references/backlog.md; branch cleanup and restore handles live in branch-hygiene.md.",
   "meta": {
     "execution_branches": [
-      "codex/compact-feedback-plan",
-      "goal/compact-feedback-execution"
+      "goal/compact-feedback-cf02"
     ]
   }
 }
