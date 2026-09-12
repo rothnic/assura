@@ -16,24 +16,38 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current post-merge checkpoint (2026-09-12, refresh before use):
-`origin/master=dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`; PR #311 merged
-reviewed head `6602ac86058a74bcb2ddd2aecf07df259853f235`.
+Current candidate-bound checkpoint (2026-09-12, refresh before use):
+`origin/master=a6ed20f532d93f830099e9095798a09515fead0b` with tree
+`bd399cd480dc7a31630740718dd8248a0c77bef5`; PR #312 merged reviewed head
+`f43d1a0cc6cd868a78d4f68dbc97a52a90476abb`.
 Its exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope
 and GitGuardian checks passed; merge-SHA Documentation `34670911182`, Security
 Audit `34670911121` and Rust CI `34670911124` passed for applicable scope.
 Product/Rust/performance/release rows were scope-skipped and remain non-proof.
 The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The 36e5 candidate and
-packet are candidate-base/no-credit and must not be reused; the owned process
-branch/worktree is being reconciled.
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The owned candidate
+checkout is `/private/tmp/assura-a07-current-a6ed` on
+`goal/a07-current-a6ed`; its exact Rust/Cargo `1.94.1` identity, command-help,
+login-shell, wrong-target and wrong-root controls pass/reject as intended.
 
-Next action: refresh source, release/tag, PR/CI, topology and ledger; inspect
-active/implemented/verified/held rows before pending; then keep one explicitly
-owned recovery or fresh current-master A07 preparation slice live. For A07,
-fresh identity, sibling-free no-credit canary, six-holdout/two-condition
-rebind and isolated protocol `PASS` are required before separately authorized
-screening. Never stop at an empty queue, skipped check or process evidence.
+The candidate/shim SHA is
+`1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`.
+Fresh sibling-free A/B canaries and post-exit evaluators exit `0` with all
+seven dimensions passing and zero critical failures. The packet has six unique
+holdouts, two stable conditions and 30 reserved cells; persisted validation is
+`valid=true`, exit `0`, protocol `PASS_NO_CREDIT`. Independent rereview
+resolved `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and
+`A07-A6ED-CANARY-STATE-003`, with coordinator pre/post hash finalization.
+No screening, allocation, credit, acceptance, release, deployment,
+publication, invitation or protection authority exists.
+
+Next action: commit this goal/skill/evidence reconciliation, obtain independent
+public process review and applicable gates, integrate only a reviewed
+current-master candidate, observe configured merge-SHA workflows, then refresh
+source/release/tag/PR/CI/topology and ledger. If source advances, classify the
+packet candidate-base/no-credit and rebuild. Never stop at an empty queue,
+skipped check or process evidence, and never start screening from
+canary/protocol metadata without separate authority and the full A07 contract.
 
 Historical post-merge checkpoint (2026-09-11, superseded by `eef7e1a`;
 refresh before using only as history): `origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3`; PR #306

@@ -1,9 +1,11 @@
 # Execution recovery plan
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
-## Current recovery route — dcf2a9e — 2026-09-12 UTC (post-merge process-only no-credit)
-PR #311 merged the reviewed 36e5 process evidence at `dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` (tree `45c4980c37c28e01e95e08c740b92fbcb2aa7c8`); exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation, Security Audit and Rust CI passed. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held); 36e5 is candidate-base/no-credit.
-The 36e5 candidate, seeded A/B evaluators and six-holdout packet remain preserved historical no-credit evidence (`valid=true`, protocol `PASS_NO_CREDIT`); the prior empty-fixture failure and final construction-digest correction remain unfavorable/auditable. No current dcf2 candidate exists, all credit/authority flags remain false, and VPS is held (`vps-dev` unresolved; `vps` 95% root/nightly toolchain). Next: refresh source/ledger/topology, build a fresh exact-toolchain candidate, rerun identity/canaries, rebind and obtain isolated protocol `PASS` before separately authorized screening.
+## Current recovery route — a6ed20f — 2026-09-12 UTC (candidate-bound protocol disposition; no-credit)
+PR #312 merged the reviewed dcf2 process evidence at `a6ed20f532d93f830099e9095798a09515fead0b` (tree `bd399cd480dc7a31630740718dd8248a0c77bef5`); exact-head applicable Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation `34671630183`, Security Audit `34671630154` and Rust CI `34671630166` passed. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held).
+The owned candidate in `/private/tmp/assura-a07-current-a6ed` is built with exact Rust/Cargo `1.94.1`; identity controls pass/reject, and its binary/shim SHA is `1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`. Fresh sibling-free A/B canaries and post-exit full evaluators exit `0` with all seven dimensions passing and zero critical failures. The private packet has six unique holdouts, two stable conditions and 30 reserved cells; persisted validation is `valid=true`, exit `0`, and `protocol_status=PASS_NO_CREDIT`.
+Independent protocol rereview resolved `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`; coordinator finalization records pre/post hashes. Screening, allocation, credit, acceptance, release, deployment, publication, invitation and protection authority remain false. Raw evaluator/fixture/transcript evidence stays private. VPS remains held by unresolved `vps-dev`, configured-host disk/toolchain pressure and unrelated jobs.
+Next: commit this goal/skill/evidence reconciliation, obtain independent public process review and applicable gates, integrate only current-master fully gated work, observe merge-SHA workflows, then refresh source/ledger/topology. If source advances, classify the packet candidate-base/no-credit and rebuild; do not start screening from canary or protocol metadata without separate authority and the full A07 acceptance contract.
 ## Historical recovery route — 3e67d5f — 2026-09-12 UTC (candidate-bound no-credit; superseded by `9c1b68a`)
 Reset source/tree: `3e67d5fe123c6ebcf3ac05617966919151e44868` /
 `1b3b2c130a294b1020f0c63d84df120434bebf42`; ledger
@@ -46,13 +48,11 @@ this source advance; their packet, canary and identity records must not be
 reused. Root unknown dirt, foreign dirty work, stale/prunable registrations
 and unfavorable R01 evidence remain preserved. The merged
 docs/a07-canary-d228 process checkout was verified clean and removed.
-
 Read-only capacity evidence keeps the optional VPS lane held: `vps-dev` is
 not configured or resolvable; `vps` has 16 CPUs, 61 GiB RAM, only 20 GiB free
 of a 339 GiB root volume (95% used), and Rust/Cargo `1.95.0-nightly`. No
 remote heavy job or infrastructure change was performed, and remote Linux
 output cannot replace platform or hosted proof.
-
 The d228472 candidate in `/private/tmp/assura-a07-current-d228` passed exact
 Rust/Cargo `1.94.1` identity, two sibling-free source-only canaries and full
 seven-dimension evaluators with zero critical failures, but it is now

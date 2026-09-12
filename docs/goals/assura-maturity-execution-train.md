@@ -13,6 +13,7 @@ related:
   - ../../.trellis/tasks/09-04-maturity-portfolio-strategy/research/orchestration-plan.md
   - ../../.agents/skills/assura-goal-execution/SKILL.md
   - ../../.agents/skills/assura-goal-execution/references/execution-control-plane.md
+  - ../../.agents/skills/assura-goal-execution/references/packet-coherence.md
 
 ---
 
@@ -30,36 +31,56 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — dcf2a9e (post-merge process reconciliation; no-credit)
+## Current checkpoint — a6ed20f (candidate-bound protocol disposition; no-credit)
 
-PR #311 merged the reviewed 36e5 process/evidence reconciliation from head
-`6602ac86058a74bcb2ddd2aecf07df259853f235` as
-`dcf2a9e97f0e729df4fe5fb79339bf8bade34a13` with tree
-`45c4980c37c28e01e95e08c740b92fbcb2aa7c8b`. Exact-head Documentation Scope,
-CI Scope, Evidence Gates, Security Scope and GitGuardian checks passed; push
-merge-SHA Documentation (`34670911182`), Security Audit (`34670911121`) and
-Rust CI (`34670911124`) also passed. Product, performance and release rows
-were scope-skipped and remain non-proof. The ledger remains
-`items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified,
-R01/W02/F01 held.
+PR #312 merged the reviewed dcf2 process reconciliation from head
+`f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
+`a6ed20f532d93f830099e9095798a09515fead0b` with tree
+`bd399cd480dc7a31630740718dd8248a0c77bef5`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation (`34671630183`), Security Audit (`34671630154`) and Rust CI
+(`34671630166`) passed, including Rust CI CI Scope and Evidence Gates. Product,
+performance and release rows were scope-skipped and remain non-proof. The
+revision-pinned ledger is `items=32; ready_pending=0; unfinished=5; held=3`:
+A07 active, W03 verified, R01/W02/F01 held.
 
-The 36e5 candidate and packet are now candidate-base/no-credit after this
-source advance. Their exact-toolchain identity, seeded A/B canaries, full
-seven-dimension evaluators, validator `valid=true`, and isolated protocol
-`PASS_NO_CREDIT` remain preserved historical evidence; the prior empty-fixture
-failure and final construction-digest correction remain unfavorable/auditable
-records. No current dcf2 candidate or screening credit exists. Screening,
-allocation, credit and acceptance remain false.
+The coordinator owns the clean candidate checkout
+`/private/tmp/assura-a07-current-a6ed` on `goal/a07-current-a6ed`. The exact
+Rust/Cargo `1.94.1` release build exited `0`; Assura `0.4.0` candidate and
+login-shell shim both hash to
+`1129d4498651fce2679264c5f2464931edd77e5e1bc0bcb3b02914ba1f42913c`.
+Candidate identity, command help, login-shell resolution, and deliberate
+wrong-target/wrong-root controls pass or reject as intended.
 
-The VPS efficiency lane remains held: `vps-dev` is unresolved; configured
-`vps` has 95% root usage, nightly Rust/Cargo rather than the pinned toolchain,
-and unrelated activity. Remote output cannot replace hosted/platform proof.
-Next action is to refresh source/ledger/topology, build a fresh exact-toolchain
-candidate at current master, rerun identity and seeded no-credit canaries,
-rebind the holdout packet, and obtain isolated protocol `PASS` before any
-separately authorized screening. A process merge or protocol pass never closes
-A07 or grants screening, allocation, credit, acceptance, release, deployment,
-publication, invitation or protection authority.
+Two fresh sibling-free source-only conditions completed with child exit `0`;
+post-exit evaluators exited `0`, covered all seven declared dimensions, and
+reported zero critical failures. The private packet is bound to six unique
+holdouts (two per stack), exactly two stable conditions and 30 reserved cells.
+Its persisted metadata validator is `valid=true`, `validator_exit=0`,
+`protocol_status=PASS_NO_CREDIT`, with six handles, 30 cells and two
+conditions. The isolated protocol reviewer returned `PASS_NO_CREDIT` after
+correcting `A07-A6ED-VALIDATOR-001` (missing persisted validator reference),
+`A07-A6ED-REVIEW-TIME-002` (stale review timestamp), and
+`A07-A6ED-CANARY-STATE-003` (freeze/canary status mismatch). The coordinator's
+post-verdict finalization records the pre/post hash maps; its review SHA is
+`b0e4949d6e6ac742d776aac4770d5b32150bec17e70bdcdd4df59ebeee7fca9f` and its
+finalization SHA is
+`f039b72ace76af33b252d59407de2ad2e44843abcf65d55537353a80c797609a`.
+
+This remains no-credit preparation: screening, allocation, credit, product
+acceptance, release, deployment, publication, invitation and protection
+authority are all false. Raw evaluator output, fixtures and child transcripts
+remain private; ambient skill metadata and the generated-hook verifier
+discrepancy remain explicit limitations. The VPS lane remains held by the
+unresolved `vps-dev` alias, configured-host disk pressure/toolchain mismatch,
+and unrelated jobs; remote output cannot replace hosted or platform proof.
+
+Next action: reconcile this current packet and layered-process update in one
+reviewed current-base process slice. Before any later phase, fetch and verify
+`origin/master`, release/tag, PR/CI, topology and the revision-pinned ledger;
+if source advances, classify this packet candidate-base/no-credit and rebuild.
+Do not start screening or allocation from canary/protocol metadata without a
+separate explicit authority decision and the complete A07 acceptance contract.
 
 ## Historical checkpoint — 3e67d5f (candidate-bound canary; no-credit; superseded by `9c1b68a`)
 
@@ -298,6 +319,27 @@ Every continuation must make these answers auditable:
   disk, toolchain, and owned-job checks; retain hosted and platform-specific
   gates as final proof.
 
+## Correction-derived controls
+
+The latest A07 rereview is encoded as a reusable packet-coherence fence in
+[`packet-coherence.md`](../../.agents/skills/assura-goal-execution/references/packet-coherence.md):
+
+- before review, freeze an explicit role-to-path/hash map while packet status is
+  `PENDING`, the review timestamp is null, and all authority flags are false;
+- require the reviewer to verify that map without mutating packet state;
+- after a verdict, update dependent statuses, timestamps and references in one
+  coordinator-owned transition, rerun the validator with the exact disposition,
+  and emit a post-verdict hash map linked to the immutable review SHA;
+- treat a missing validator, stale timestamp, contradictory pending/pass prose,
+  stale alias, or hash-map mismatch as a concrete finding that blocks the next
+  transition until corrected and scoped-rereviewed.
+
+This goal also keeps a single active runtime goal and one owned next action.
+Compaction reloads only the universal, goal/phase, selected-card and one
+special-lane layers; it never creates a replacement goal or copies private
+packets into prompts. A process or protocol pass is evidence for its slice,
+not a product-card completion signal.
+
 ## Non-goals and authority boundaries
 
 - Do not weaken thresholds, hide failures, retry an unchanged failing method,
@@ -396,6 +438,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-12 | Iteration 169: refreshed current master at `a6ed20f`, completed the exact-toolchain candidate, identity controls, two sibling-free no-credit canaries, six-holdout/two-condition packet validation and isolated protocol rereview. Corrected findings `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`; coordinator finalization records immutable pre/post hashes. Added the layered packet-coherence reference and reconciled the goal/task/E2E routes. Context level: not exposed; current source, owner, packet disposition and next integration action are summarized in the checkpoint above. | Current candidate worktree and private protocol review/finalization records; context-routing audit 58/0; scoped structure, evidence and docs gates. |
 | 2026-09-12 | PR #311 merged the reviewed 36e5 post-merge process reconciliation as `dcf2a9e` from head `6602ac8`; exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34670911182`), Security Audit (`34670911121`) and Rust CI (`34670911124`) passed. The 36e5 candidate/packet are now candidate-base/no-credit; their protocol `PASS_NO_CREDIT` remains historical evidence and a fresh current-master candidate is required before screening. No product, screening, allocation, credit or authority state changed. | PR #311; current process records; merge-SHA workflow records. |
 | 2026-09-12 | PR #310 merged the reviewed post-merge reconciliation at `36e5a840` from head `c1b489c4`; applicable exact-head Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34668192073`), Security Audit (`34668192076`) and Rust CI (`34668192074`) passed. The 9c1 candidate/packet are now candidate-base/no-credit. A fresh 36e5 candidate passed exact identity controls, seeded source-only A/B canaries and full seven-dimension evaluators; the prior empty-fixture failure remains unfavorable evidence, and the new six-holdout packet passed isolated protocol rereview `PASS_NO_CREDIT` after its final construction digest binding was corrected. No product, screening, allocation, credit or authority state changed. | PR #310; `research/evidence/A07.md`; `research/process-corrections-2026-09-11.md`; fresh private identity/canary/packet/review records. |
 | 2026-09-11 | PR #304 reconciled the reviewed process route at `284e781`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did merge-SHA Documentation (`34651068660`), Rust CI (`34651068675`) and Security Audit (`34651068699`) for applicable scope. The d228472 candidate canary remains explicitly candidate-base/no-credit after this source advance, with its ambient-context limitation and initial structure-placement failure retained. No packet rebind, isolated protocol review, screening, allocation or product acceptance state carried forward. | PR #304; `research/evidence/A07.md`; `research/progress-current.md` Iteration 164; merge-SHA workflow records. |
