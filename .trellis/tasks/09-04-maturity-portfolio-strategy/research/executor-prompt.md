@@ -16,19 +16,17 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Current post-merge checkpoint (2026-09-11, refresh before use):
-`origin/master=eef7e1a7400c84ec35be33a58914ad07da7fa376`; PR #307 merged
-reviewed head `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` from base `66e0b7e`.
-Its exact-head Documentation, CI Scope, Security Scope, Evidence Gates and
-GitGuardian checks passed; merge-SHA Documentation `34660366526`, Security
-Audit `34660366986` and Rust CI `34660366735` passed for applicable scope;
-CI Scope `103461414969` and Evidence Gates `103461446382` also passed.
+Current post-merge checkpoint (2026-09-12, refresh before use):
+`origin/master=dcf2a9e97f0e729df4fe5fb79339bf8bade34a13`; PR #311 merged
+reviewed head `6602ac86058a74bcb2ddd2aecf07df259853f235`.
+Its exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope
+and GitGuardian checks passed; merge-SHA Documentation `34670911182`, Security
+Audit `34670911121` and Rust CI `34670911124` passed for applicable scope.
 Product/Rust/performance/release rows were scope-skipped and remain non-proof.
 The revision-pinned ledger is `items=32; ready_pending=0; unfinished=5;
-held=3` (A07 active, W03 verified, R01/W02/F01 held). The `66e0b7e`
-process checkpoint and all earlier candidate, canary and protocol packets are
-candidate-base/no-credit and must not be reused; the owned process branch is
-being reconciled.
+held=3` (A07 active, W03 verified, R01/W02/F01 held). The 36e5 candidate and
+packet are candidate-base/no-credit and must not be reused; the owned process
+branch/worktree is being reconciled.
 
 Next action: refresh source, release/tag, PR/CI, topology and ledger; inspect
 active/implemented/verified/held rows before pending; then keep one explicitly
