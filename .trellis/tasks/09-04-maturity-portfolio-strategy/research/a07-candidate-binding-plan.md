@@ -3,15 +3,32 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=eef7e1a7400c84ec35be33a58914ad07da7fa376` after PR #307 merged
-the reviewed post-merge reconciliation from base `66e0b7e`. The `66e0b7e`
+`origin/master=3834b1b0647983475f9489da42c9c001b1484a56` (tree
+`703d21c6627ac0575be09d3242091134104bd605`) after PR #321 merged the reviewed
+current-source route reconciliation from base `38626e0`. PR #320, the `eef7e1a`
 process checkpoint and all earlier candidate, canary and protocol packets are
 historical candidate-base/no-credit after that source advance. No screening,
 allocation or acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`)
+## Current post-merge route — PR #321 — 2026-09-12 UTC (`origin/master=3834b1b`)
+
+- PR #321 merged reviewed process artifacts from head
+  `ab5c4b91c95ebeeacc8d34a9ee0a0f02a88f0c3c` on base
+  `38626e0a80fdf7a6a646bac29d810f9097e75686` as
+  `3834b1b0647983475f9489da42c9c001b1484a56`. Exact-head Evidence Gates, CI
+  Scope, Documentation Scope, Security Scope and GitGuardian passed; applicable
+  merge-SHA Documentation `34682178166`, Security Audit `34682178164` and Rust
+  CI `34682178146` passed, including Evidence Gates job `103522728922`. Current
+  merge tree is `703d21c6627ac0575be09d3242091134104bd605`.
+- Before A07 screening or acceptance, refresh source/release/tag, PR/CI,
+  topology and ledger; build a fresh exact-toolchain candidate from `3834b1b`;
+  run identity and sibling-free no-credit canary gates; rebind all six holdouts
+  and exactly two conditions; and obtain isolated protocol `PASS`. This process
+  evidence is preparation only, and screening/allocation/credit remain false.
+
+## Historical post-merge route — PR #307 — 2026-09-11 UTC (`origin/master=eef7e1a`; superseded by PR #321)
 
 - PR #307 merged reviewed process artifacts from head
   `9723a6730ac4cff2c8567035a8cd4f1fe21e25f4` on base `66e0b7e` as
