@@ -116,6 +116,8 @@ fn explicit_inspect_reports_categories_and_reuses_the_snapshot() {
         "fn feature() {\n    println!(\"feature\");\n    println!(\"dirty\");\n}\n",
     );
     write(&project.path().join("scratch.txt"), "untracked\n");
+    git(project.path(), &["config", "diff.external", "false"]);
+    git(project.path(), &["config", "diff.rs.textconv", "false"]);
 
     let first = inspect(project.path());
     let trajectory = &first["trajectory"];
@@ -141,6 +143,9 @@ fn explicit_inspect_reports_categories_and_reuses_the_snapshot() {
             >= 1
     );
     assert!(trajectory["pending"]["source"]["additions"].is_null());
+    assert!(trajectory["pending"]["files"].as_u64().unwrap() >= 6);
+    assert!(trajectory["pending"]["other"]["files"].as_u64().unwrap() >= 1);
+    assert!(trajectory["pending"]["other"]["additions"].is_null());
 
     let second = inspect(project.path());
     assert_eq!(second["trajectory"]["generation"], trajectory["generation"]);
@@ -229,6 +234,33 @@ fn integration_ref_changes_are_not_reported_as_zero_progress() {
 }
 
 #[test]
+fn resolved_integration_ref_changes_refreshes_provenance() {
+    let project = fixture();
+    let master_sha = git(project.path(), &["rev-parse", "master"]);
+    git(
+        project.path(),
+        &["update-ref", "refs/remotes/origin/master", &master_sha],
+    );
+
+    let remote_snapshot = inspect(project.path());
+    assert_eq!(
+        remote_snapshot["trajectory"]["integration"]["resolved_ref"],
+        "origin/master"
+    );
+
+    git(
+        project.path(),
+        &["update-ref", "-d", "refs/remotes/origin/master"],
+    );
+    let local_snapshot = inspect(project.path());
+    assert_eq!(
+        local_snapshot["trajectory"]["integration"]["resolved_ref"],
+        "master"
+    );
+    assert_eq!(local_snapshot["trajectory"]["cache"]["status"], "refreshed");
+}
+
+#[test]
 fn merge_and_squash_reconciliation_do_not_create_false_pending_work() {
     let merged = fixture();
     git(merged.path(), &["switch", "-c", "candidate"]);
@@ -261,6 +293,16 @@ fn merge_and_squash_reconciliation_do_not_create_false_pending_work() {
     let squashed_snapshot = inspect(squashed.path());
     assert_eq!(squashed_snapshot["trajectory"]["pending"]["commits"], 0);
     assert_eq!(squashed_snapshot["trajectory"]["pending"]["files"], 0);
+    git(squashed.path(), &["switch", "squashed-candidate"]);
+    let retained_branch_snapshot = inspect(squashed.path());
+    assert_eq!(
+        retained_branch_snapshot["trajectory"]["pending"]["commits"],
+        0
+    );
+    assert_eq!(
+        retained_branch_snapshot["trajectory"]["pending"]["files"],
+        0
+    );
 }
 
 #[test]
@@ -339,6 +381,20 @@ fn corrupt_snapshot_is_replaced_without_inventing_facts() {
     assert!(repaired["trajectory"]["integrated"]["commits"]
         .as_u64()
         .is_some());
+
+    let schema_mismatch = fs::read_to_string(&cache_file)
+        .expect("read cache")
+        .replace("assura.agent-trajectory.v1", "assura.agent-trajectory.old");
+    fs::write(&cache_file, schema_mismatch).expect("write schema mismatch");
+    let schema_mismatch = inspect(project.path());
+    assert_eq!(
+        schema_mismatch["trajectory"]["cache"]["source"],
+        "schema_mismatch"
+    );
+
+    fs::write(&cache_file, vec![b'x'; 1024 * 1024 + 1]).expect("write oversized cache");
+    let oversized = inspect(project.path());
+    assert_eq!(oversized["trajectory"]["cache"]["source"], "oversized");
 }
 
 #[test]

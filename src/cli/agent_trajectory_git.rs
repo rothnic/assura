@@ -27,7 +27,10 @@ pub(super) struct GitInput {
     pub(super) merge_base: Option<String>,
     pub(super) shallow: bool,
     pub(super) status_truncated: bool,
+    pub(super) status_unavailable: bool,
+    pub(super) status_timed_out: bool,
     pub(super) status_files: Option<u64>,
+    pub(super) untracked_paths: Vec<String>,
     pub(super) status_digest: String,
     pub(super) window: Window,
 }
@@ -146,7 +149,10 @@ pub(super) fn discover(project_root: &Path, now: i64) -> Result<GitInput, String
         merge_base,
         shallow,
         status_truncated: status.truncated,
+        status_unavailable: status.unavailable,
+        status_timed_out: status.timed_out,
         status_files: status.files,
+        untracked_paths: status.untracked_paths,
         status_digest: status.digest,
         window: Window::Minutes(30),
     })
@@ -167,7 +173,10 @@ pub(super) fn unavailable(worktree_root: PathBuf, _now: i64) -> GitInput {
         merge_base: None,
         shallow: false,
         status_truncated: false,
+        status_unavailable: false,
+        status_timed_out: false,
         status_files: None,
+        untracked_paths: Vec::new(),
         status_digest: String::new(),
         window: Window::Minutes(30),
     }
@@ -175,14 +184,19 @@ pub(super) fn unavailable(worktree_root: PathBuf, _now: i64) -> GitInput {
 
 pub(super) fn generation(input: &GitInput, classification_version: &str, now: i64) -> String {
     digest(&format!(
-        "{classification_version}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
+        "{classification_version}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
         input.repo_root.display(),
         input.git_dir.display(),
         input.branch.as_deref().unwrap_or(""),
         input.head_sha.as_deref().unwrap_or(""),
         input.requested_integration_ref,
+        input.integration_ref.as_deref().unwrap_or(""),
         input.integration_sha.as_deref().unwrap_or(""),
         input.status_digest,
+        input.status_truncated,
+        input.status_unavailable,
+        input.status_timed_out,
+        input.status_files.map_or(-1, |files| files as i64),
         input.window.kind(),
         input.window.value(),
         input.window.cache_bucket(now),
@@ -206,6 +220,15 @@ pub(super) fn collect(input: &GitInput, now: i64) -> CollectionResult {
     }
     if input.shallow {
         reasons.push("shallow_history".to_string());
+    }
+    if input.status_truncated {
+        reasons.push("status_output_truncated".to_string());
+    }
+    if input.status_unavailable {
+        reasons.push("status_unavailable".to_string());
+    }
+    if input.status_timed_out {
+        reasons.push("status_timeout".to_string());
     }
 
     let history = input.integration_ref.as_deref().and_then(|reference| {
@@ -254,10 +277,11 @@ pub(super) fn collect_history(
         "log".to_string(),
         "--first-parent".to_string(),
         "--diff-merges=first-parent".to_string(),
+        "--no-ext-diff".to_string(),
         "--numstat".to_string(),
         "--format=__ASSURA_COMMIT__%x09%H%x09%ct%x09%P".to_string(),
         "-n".to_string(),
-        max_commits.to_string(),
+        max_commits.saturating_add(1).to_string(),
     ];
     if let Window::Minutes(minutes) = window {
         args.push(format!(
@@ -271,12 +295,19 @@ pub(super) fn collect_history(
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("history_output_truncated".to_string()),
         GitOutput::Failed => return Err("history_unavailable".to_string()),
+        GitOutput::TimedOut => return Err("history_timeout".to_string()),
     };
     let mut categories = std::array::from_fn(|_| CategoryStats::default());
     let mut commits = 0u64;
+    let mut observed_commits = 0u64;
     let mut active_timestamp = None;
     for line in text.lines() {
         if let Some(fields) = line.strip_prefix("__ASSURA_COMMIT__\t") {
+            observed_commits = observed_commits.saturating_add(1);
+            if observed_commits > max_commits {
+                active_timestamp = None;
+                continue;
+            }
             commits = commits.saturating_add(1);
             active_timestamp = fields
                 .split('\t')
@@ -291,8 +322,7 @@ pub(super) fn collect_history(
             add_category(&mut categories[classify_path(&path)], additions, deletions);
         }
     }
-    let capped = commits >= max_commits
-        || matches!(window, Window::Minutes(minutes) if active_timestamp.is_some_and(|timestamp| timestamp >= now.saturating_sub((minutes * 60) as i64)) && commits == max_commits);
+    let capped = observed_commits > max_commits;
     Ok((
         HistoryResult {
             commits,
@@ -324,11 +354,34 @@ fn collect_pending(
         })
         .and_then(|value| value.trim().parse::<u64>().ok());
     let range = merge_base.to_string();
-    let args = ["diff", "--find-renames", "--numstat", range.as_str(), "--"];
+    if input
+        .integration_ref
+        .as_deref()
+        .and_then(|reference| trees_match(repo_root, reference, "HEAD"))
+        == Some(true)
+        && input.untracked_paths.is_empty()
+    {
+        return Ok(PendingResult {
+            commits: Some(0),
+            files: 0,
+            dirty_files: input.status_files,
+            categories: std::array::from_fn(|_| CategoryStats::default()),
+        });
+    }
+    let args = [
+        "diff",
+        "--no-ext-diff",
+        "--no-textconv",
+        "--find-renames",
+        "--numstat",
+        range.as_str(),
+        "--",
+    ];
     let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("pending_diff_output_truncated".to_string()),
         GitOutput::Failed => return Err("pending_diff_unavailable".to_string()),
+        GitOutput::TimedOut => return Err("pending_diff_timeout".to_string()),
     };
     let mut categories = std::array::from_fn(|_| CategoryStats::default());
     let mut files = 0u64;
@@ -338,12 +391,35 @@ fn collect_pending(
             add_category(&mut categories[classify_path(&path)], additions, deletions);
         }
     }
+    for path in &input.untracked_paths {
+        files = files.saturating_add(1);
+        add_category(&mut categories[classify_path(path)], None, None);
+    }
     Ok(PendingResult {
         commits,
         files,
         dirty_files: input.status_files,
         categories,
     })
+}
+
+fn trees_match(repo_root: &Path, left: &str, right: &str) -> Option<bool> {
+    match run_git(
+        repo_root,
+        &[
+            "diff",
+            "--no-ext-diff",
+            "--no-textconv",
+            "--name-only",
+            left,
+            right,
+            "--",
+        ],
+        MAX_STATUS_BYTES,
+    ) {
+        GitOutput::Text(text) => Some(text.trim().is_empty()),
+        GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
+    }
 }
 
 fn add_category(category: &mut CategoryStats, additions: Option<u64>, deletions: Option<u64>) {
@@ -418,6 +494,9 @@ fn normalize_path(path: &str) -> String {
 struct StatusFacts {
     files: Option<u64>,
     truncated: bool,
+    unavailable: bool,
+    timed_out: bool,
+    untracked_paths: Vec<String>,
     digest: String,
 }
 
@@ -427,10 +506,11 @@ fn status_facts(repo_root: &Path) -> StatusFacts {
         &["status", "--porcelain=v1", "--untracked-files=normal"],
         MAX_STATUS_BYTES,
     );
-    let (text, truncated, files_available) = match output {
-        GitOutput::Text(text) => (text, false, true),
-        GitOutput::Truncated => (String::new(), true, false),
-        GitOutput::Failed => (String::new(), true, false),
+    let (text, truncated, files_available, unavailable, timed_out) = match output {
+        GitOutput::Text(text) => (text, false, true, false, false),
+        GitOutput::Truncated => (String::new(), true, false, false, false),
+        GitOutput::Failed => (String::new(), false, false, true, false),
+        GitOutput::TimedOut => (String::new(), false, false, true, true),
     };
     let relevant_lines = text
         .lines()
@@ -439,6 +519,13 @@ fn status_facts(repo_root: &Path) -> StatusFacts {
     StatusFacts {
         files: files_available.then_some(relevant_lines.len() as u64),
         truncated,
+        unavailable,
+        timed_out,
+        untracked_paths: relevant_lines
+            .iter()
+            .filter_map(|line| line.strip_prefix("?? "))
+            .map(normalize_path)
+            .collect(),
         digest: digest(&relevant_lines.join("\n")),
     }
 }
@@ -481,7 +568,7 @@ fn resolve_git_path(repo_root: &Path, value: Option<String>) -> PathBuf {
 fn git_text(repo_root: &Path, args: &[&str], limit: usize) -> Option<String> {
     match run_git(repo_root, args, limit) {
         GitOutput::Text(text) => Some(text),
-        GitOutput::Failed | GitOutput::Truncated => None,
+        GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
     }
 }
 

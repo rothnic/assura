@@ -119,7 +119,7 @@ fn inspect_at(project_root: &Path, now: i64) -> Result<TrajectorySnapshot, Strin
     let cache_read = snapshot::read(&cache_key);
 
     if let Some(previous) = cache_read.snapshot.as_ref() {
-        if previous.generation == generation {
+        if previous.generation == generation && previous.coverage == "complete" {
             let mut cached = previous.clone();
             cached.freshness = Freshness {
                 snapshot: "cache_hit".to_string(),
@@ -179,6 +179,12 @@ fn build_snapshot(
     let mut reasons = collection.reasons;
     if input.status_truncated {
         reasons.push("status_output_truncated".to_string());
+    }
+    if input.status_unavailable {
+        reasons.push("status_unavailable".to_string());
+    }
+    if input.status_timed_out {
+        reasons.push("status_timeout".to_string());
     }
     if let Some(previous) = cache_read.snapshot.as_ref() {
         if previous.captured_at > now {
@@ -335,5 +341,25 @@ mod tests {
             .expect("commit history is available");
         assert_eq!(minutes.commits, 2);
         assert_eq!(commits.commits, 1);
+    }
+
+    #[test]
+    fn minute_cache_refreshes_after_the_window_bucket_changes() {
+        let root = tempfile::tempdir().expect("cache fixture");
+        git(root.path(), &["init"]);
+        git(root.path(), &["branch", "-M", "master"]);
+        fs::write(root.path().join("history.txt"), "one\n").expect("write history");
+        git(root.path(), &["add", "."]);
+        git(root.path(), &["commit", "-m", "one"]);
+
+        let now = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .expect("clock")
+            .as_secs() as i64;
+        let first = super::inspect_at(root.path(), now).expect("first inspect");
+        let second = super::inspect_at(root.path(), now + 30 * 60).expect("next bucket inspect");
+        assert_eq!(first.cache.status, "refreshed");
+        assert_eq!(second.cache.status, "refreshed");
+        assert_eq!(second.freshness.snapshot, "refreshed");
     }
 }
