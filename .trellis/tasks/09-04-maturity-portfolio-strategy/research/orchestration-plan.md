@@ -22,33 +22,36 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=9c1b68a` (2026-09-12 post-merge candidate-bound no-credit)
+## Current route — `origin/master=36e5a840` (2026-09-12 post-merge candidate-bound no-credit)
 
-- PR #309 merged the reviewed process/evidence slice from
-  `35faaeae48b1155aafab4415bd5bdfba19588933` as
-  `9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` with tree
-  `3a90f6a5b055f17f20fb564481c9072bb4652e86`. Applicable merge-SHA
-  Documentation (`34665394575`), Security Audit (`34665394527`) and Rust CI
-  (`34665394542`, including CI Scope and Evidence Gates) passed; skipped
-  product/performance/release rows remain non-proof. The refreshed ledger is
+- PR #310 merged the reviewed process/evidence slice at
+  `36e5a84024b1680b887bd789ed89ec8a0490f30f` with tree
+  `292936709bd59a9f87531e7b0fb5d77826eb8751`. Exact-head Documentation,
+  CI Scope, Evidence Gates, Security Scope and GitGuardian plus applicable
+  merge-SHA Documentation (`34668192073`), Security Audit (`34668192076`) and
+  Rust CI (`34668192074`) passed; skipped product/performance/release rows
+  remain non-proof. The refreshed ledger is
   `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03
   verified, R01/W02/F01 held).
-- The 3e67 candidate is candidate-base/no-credit. The fresh owned 9c1
-  candidate uses exact Rust/Cargo `1.94.1`, binary/shim
-  `5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`, and
-  passing login identity plus wrong-target/wrong-root controls. An empty
-  fixture evaluator failure is retained as unfavorable evidence; seeded
-  source-scaffold retries for both conditions pass all seven dimensions with
-  zero critical failures. The new redacted canary summary is
-  `screening/canary-2026-09-12-current-9c1.json`.
-- A fresh six-holdout/two-condition/30-cell packet is bound to 9c1 and its
-  adapted validator is `valid=true`; scoped review corrected a freeze/canary
-  status mismatch and stale pending-review timestamp, and isolated protocol
-  rereview is `PASS_NO_CREDIT`.
+- The 9c1 candidate is candidate-base/no-credit. Fresh owned checkout
+  `/private/tmp/assura-train-postmerge-36e5` uses exact Rust/Cargo `1.94.1`,
+  binary/shim `7144ed4b77096daf6efe3419bf14a7df59bab5adc33e48444390a618344be87d`,
+  and passing login identity plus wrong-target/wrong-root controls. The prior
+  empty-fixture evaluator failure remains unfavorable evidence; fresh seeded
+  source-only retries for both conditions pass all seven dimensions with zero
+  critical failures. Redacted canary summary:
+  `screening/canary-2026-09-12-current-36e5.json`.
+- A fresh six-holdout/two-condition/30-cell packet is bound to 36e5 and its
+  adapted validator is `valid=true`; isolated protocol rereview is
+  `PASS_NO_CREDIT` after correcting the final construction digest binding. The
+  final reviewer artifact is `screening/protocol-review-2026-09-12-current-36e5-r1.json`
+  at `2026-09-12T03:26:10Z`, SHA-256
+  `a5e51d32930603645e582bb8ef00ea559568d96d59fca1d3c30a7764745fd4e8`.
   Keep screening/allocation/credit/acceptance false. The VPS lane remains held
   because `vps-dev` is unresolved and `vps` is at 95% disk with nightly rather
-  than pinned Rust/Cargo. Publish a redacted process pointer through review and
-  gates, merge, observe post-merge workflows and refresh/rebuild before screening.
+  than pinned Rust/Cargo. Publish only a redacted process pointer through
+  review and gates, merge, observe post-merge workflows, then refresh/rebuild
+  before screening.
 
 ## Historical route — `origin/master=3e67d5f` (2026-09-12 candidate-bound no-credit; superseded by `9c1b68a`)
 

@@ -30,41 +30,43 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — 9c1b68a (post-merge candidate-bound canary; no-credit)
+## Current checkpoint — 36e5a840 (post-merge candidate-bound canary; no-credit)
 
-PR #309 merged the reviewed process/evidence reconciliation from head
-`35faaeae48b1155aafab4415bd5bdfba19588933` as
-`9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` with tree
-`3a90f6a5b055f17f20fb564481c9072bb4652e86`. Its applicable exact-head checks
-and merge-SHA Documentation (`34665394575`), Security Audit (`34665394527`)
-and Rust CI (`34665394542`) workflows passed; scope-skipped product,
-performance and release rows remain non-proof. The ledger at this source is
-still `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03
-verified, R01/W02/F01 held.
+PR #310 merged the reviewed process/evidence reconciliation at
+`36e5a84024b1680b887bd789ed89ec8a0490f30f` with tree
+`292936709bd59a9f87531e7b0fb5d77826eb8751`; its exact-head Documentation,
+CI Scope, Evidence Gates, Security Scope and GitGuardian checks passed, and
+the applicable merge-SHA Documentation (`34668192073`), Security Audit
+(`34668192076`) and Rust CI (`34668192074`) workflows passed. Product,
+performance and release rows were scope-skipped and remain non-proof. The
+ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active,
+W03 verified, R01/W02/F01 held.
 
-The prior 3e67 candidate and packet are now candidate-base/no-credit. A fresh
-owned candidate at `/private/tmp/assura-train-postmerge-9c1` uses exact
-Rust/Cargo `1.94.1`, reports version `0.4.0`, and hashes to
-`5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`; login
-identity passes and wrong-target/wrong-root controls reject. An initial empty
-fixture attempt failed the Rust preservation/native evaluator and is retained
-as unfavorable evidence. Fresh seeded-scaffold, sibling-free retries for both
-conditions pass all seven evaluator dimensions with zero critical failures,
-expected negative policy rejection, native tests and unchanged source hashes.
-The new private packet has six holdouts, two conditions and 30 reserved cells;
-its adapted validator is `valid=true`, and scoped independent metadata protocol
-review is `PASS_NO_CREDIT` in this checkpoint. Screening, allocation, credit and
-acceptance remain false. The final private review artifact was written at
-`2026-09-12T02:30:34Z` with SHA-256
-`55fe84c16eea584ac056209aa51ebaff051cdf70af7bffb695a1207897af81ef`.
+The 9c1 candidate and packet are now candidate-base/no-credit. Fresh owned
+checkout `/private/tmp/assura-train-postmerge-36e5` uses exact Rust/Cargo
+`1.94.1`, reports version `0.4.0`, and hashes to
+`7144ed4b77096daf6efe3419bf14a7df59bab5adc33e48444390a618344be87d`; login
+identity passes and wrong-target/wrong-root controls reject. A fresh seeded,
+sibling-free A/B canary against this exact binary completed with initializer
+exit `0`; both full evaluators pass all seven dimensions with zero critical
+failures, the expected negative policy rejection, native tests and preserved
+source hashes. The initial empty-fixture failure remains retained as
+unfavorable evidence. The fresh private packet has six holdouts, two conditions
+and 30 reserved cells; its metadata validator is `valid=true` with zero errors,
+and isolated protocol rereview is `PASS_NO_CREDIT` after correcting the final
+construction digest binding. The final reviewer artifact is timestamped
+`2026-09-12T03:26:10Z` and hashes to
+`a5e51d32930603645e582bb8ef00ea559568d96d59fca1d3c30a7764745fd4e8`.
+Screening, allocation, credit and acceptance remain false.
 
 The VPS efficiency lane remains held: `vps-dev` is unresolved; configured
 `vps` has 95% root usage, nightly Rust/Cargo rather than the pinned toolchain,
 and unrelated activity. Remote output cannot replace hosted/platform proof.
-Next action is to publish only a redacted evidence pointer through independent
-review and applicable gates, merge at current master, observe merge-SHA
-workflows, then refresh and rebuild again before any separately authorized
-screening. A canary or protocol pass never closes A07.
+Next action is to publish only a redacted pointer through independent review and
+applicable gates, merge at current master, observe merge-SHA workflows, then
+refresh and rebuild before any separately authorized screening. A canary or
+protocol pass never closes A07; the final protocol correction remains recorded
+as no-credit evidence.
 
 ## Historical checkpoint — 3e67d5f (candidate-bound canary; no-credit; superseded by `9c1b68a`)
 
@@ -401,6 +403,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-12 | PR #310 merged the reviewed post-merge reconciliation at `36e5a840` from head `c1b489c4`; applicable exact-head Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34668192073`), Security Audit (`34668192076`) and Rust CI (`34668192074`) passed. The 9c1 candidate/packet are now candidate-base/no-credit. A fresh 36e5 candidate passed exact identity controls, seeded source-only A/B canaries and full seven-dimension evaluators; the prior empty-fixture failure remains unfavorable evidence, and the new six-holdout packet passed isolated protocol rereview `PASS_NO_CREDIT` after its final construction digest binding was corrected. No product, screening, allocation, credit or authority state changed. | PR #310; `research/evidence/A07.md`; `research/process-corrections-2026-09-11.md`; fresh private identity/canary/packet/review records. |
 | 2026-09-11 | PR #304 reconciled the reviewed process route at `284e781`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did merge-SHA Documentation (`34651068660`), Rust CI (`34651068675`) and Security Audit (`34651068699`) for applicable scope. The d228472 candidate canary remains explicitly candidate-base/no-credit after this source advance, with its ambient-context limitation and initial structure-placement failure retained. No packet rebind, isolated protocol review, screening, allocation or product acceptance state carried forward. | PR #304; `research/evidence/A07.md`; `research/progress-current.md` Iteration 164; merge-SHA workflow records. |
 | 2026-09-11 | PR #303 reconciled the reviewed process route at `d228472`; exact-head Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian checks passed, as did merge-SHA Documentation (`34646077514`), Rust CI (`34646077520`) and Security Audit (`34646077494`) for applicable scope. A fresh exact-toolchain d228472 candidate then passed identity controls, two sibling-free source-only initializer canaries, and full seven-dimension evaluators with zero critical failures. Generic ambient skill metadata remained visible and is recorded as an isolation limitation; an initial root-level freeze placement failed the structure gate and was corrected under ignored `target/a07-evidence/`. This is no-credit preparation only; packet rebind, isolated protocol review, screening, allocation and product acceptance remain false. | PR #303; `research/evidence/A07.md`; `research/progress-current.md` Iteration 163; private identity/freeze and redacted canary/evaluator receipts. |
 | 2026-09-11 | PR #301 merged the reviewed current-source routing/skill reconciliation as `24a1966`; exact-head applicable checks and merge-SHA Documentation (`34642991331`), Rust CI (`34642991392`) and Security Audit (`34642991344`) workflows passed for their applicable scope. The 0dff804 A07 candidate is now candidate-base/no-credit; no product, threshold, screening, allocation, acceptance, authority or release state changed. | PR #301; `research/progress-current.md` Iteration 161; post-merge workflow records. |
