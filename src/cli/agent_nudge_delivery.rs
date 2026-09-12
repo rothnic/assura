@@ -672,8 +672,7 @@ pub(super) fn finish_refresh() {
                                 std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
                                     .ok()
                                     .and_then(|value| value.parse::<i64>().ok())
-                                    .unwrap_or(2_000)
-                                    ,
+                                    .unwrap_or(2_000),
                             )
                             .to_string(),
                     )
