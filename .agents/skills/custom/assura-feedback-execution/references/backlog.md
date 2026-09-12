@@ -50,8 +50,8 @@ opening another. Independent review/validation can overlap.
 | Card | Outcome | Depends on | State | Candidate / result |
 | --- | --- | --- | --- | --- |
 | CF01 | Cheap, bounded existing feedback and convergent instructions | None | done | PR #328; merge `75992ad4cfcba4efb1cfc8a1d3333208991bba88`; candidate refs archived |
-| CF02 | Cached Git trajectory facts with honest coverage | CF01 | active | `goal/compact-feedback-cf02`; focused CLI/cache tests passing |
-| CF03 | Configurable one-line scheduling and async host delivery | CF02 | pending | Not started |
+| CF02 | Cached Git trajectory facts with honest coverage | CF01 | done | PR #329; merge `9383acc2fd9a47d63553fd32768aef7428c7b34c`; candidate refs archived |
+| CF03 | Configurable one-line scheduling and async host delivery | CF02 | active | PR #330; `goal/compact-feedback-cf03`; exact candidate tracked in branch-hygiene.md |
 | CF04 | Performance evidence, project trial and instruction handoff | CF03 | pending | Not started |
 
 Inspected at `c957f89`: maturity A06 owns the existing bounded-feedback baseline;

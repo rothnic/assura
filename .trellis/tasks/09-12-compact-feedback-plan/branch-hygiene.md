@@ -131,3 +131,10 @@ Independent CF03 review at `a0c18fa` found Windows snapshot replacement,
 refresh-state writer serialization, and cache-retention gaps. The correction
 keeps one shared atomic-replace helper, leases refresh-state writes, and caps
 trajectory snapshots at 128 files; rereview is required at the corrected tip.
+
+An incomplete concurrent refresh-pointer/token overlay was observed during
+CF03 validation and parked intact: owner unknown/foreign; handle
+`stash@{0}` (`preserved foreign CF03 overlay 2026-09-12`); next action is owner
+review; restore with `git stash apply stash@{0}`. It includes a wrapper-test
+timing relaxation, hook guidance, backlog state, and task-log additions; none
+is part of the candidate until separately reviewed.
