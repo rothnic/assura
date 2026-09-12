@@ -50,7 +50,11 @@ pub struct AgentNudgeOptions {
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
     let result = build_agent_nudge(options, config);
+    let refresh_expired = agent_nudge_delivery::refresh_deadline_expired();
     agent_nudge_delivery::finish_refresh();
+    if refresh_expired {
+        return ExitCode::RuntimeError;
+    }
     match result {
         Ok(output) => {
             if let Err(error) = log::maybe_write(&output.project_root, &output.output) {

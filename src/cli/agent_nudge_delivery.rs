@@ -548,6 +548,18 @@ pub(super) fn finish_refresh() {
                 if Command::new(executable)
                     .args(args)
                     .env("ASSURA_FEEDBACK_REFRESH_LOCK", &path)
+                    .env(
+                        "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
+                        now_millis()
+                            .saturating_add(
+                                std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
+                                    .ok()
+                                    .and_then(|value| value.parse::<i64>().ok())
+                                    .unwrap_or(2_000)
+                                    .saturating_mul(1_000),
+                            )
+                            .to_string(),
+                    )
                     .env_remove("ASSURA_AGENT_LOG")
                     .stdin(Stdio::null())
                     .stdout(Stdio::null())
@@ -562,6 +574,13 @@ pub(super) fn finish_refresh() {
             }
         }
     }
+}
+
+pub(super) fn refresh_deadline_expired() -> bool {
+    std::env::var("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS")
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .is_some_and(|deadline| now_millis() >= deadline)
 }
 
 pub(super) fn now() -> i64 {
@@ -757,6 +776,35 @@ mod tests {
             state.sends.iter().map(|send| send.bytes).sum::<usize>(),
             256
         );
+    }
+
+    #[test]
+    fn pending_episode_table_keeps_short_clean_gaps_in_one_episode() {
+        let config = AgentFeedbackConfig::default();
+        let mut state = DeliveryState {
+            schema: STATE_SCHEMA.to_string(),
+            ..Default::default()
+        };
+        for (pending, observed_at, expected) in [
+            (true, 1_000, Some(1_000)),
+            (false, 1_001, Some(1_000)),
+            (false, 1_060, Some(1_000)),
+            (false, 1_061, None),
+            (true, 1_062, Some(1_062)),
+        ] {
+            update_pending_episode(&mut state, pending, observed_at, &config);
+            assert_eq!(state.first_pending_at, expected);
+        }
+    }
+
+    #[test]
+    fn delivery_lease_allows_only_one_writer() {
+        let root = tempdir().expect("lease directory");
+        let state = root.path().join("state.json");
+        let first = DeliveryLease::acquire(&state).expect("first writer");
+        assert!(DeliveryLease::acquire(&state).is_none());
+        drop(first);
+        assert!(DeliveryLease::acquire(&state).is_some());
     }
 
     #[test]
