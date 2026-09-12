@@ -16,27 +16,32 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed post-merge integration (PR #315, 2026-09-12; refresh required):
-`origin/master=2d51296d2a61b7a7b41f2277164a97926b806ba4` with tree
-`6c400e42834b86a7ba2853e554386f69afa27848`; PR #315 merged reviewed head
-`964f15de3e81430d499e1b9e7c861857dff0eebc` from base
-`20256c132b208bdbce5637d693c4ff8c4b03b5e6`. Exact-head Documentation Scope,
+Latest observed post-merge integration (PR #317, 2026-09-12; refresh required):
+`origin/master=a1d387f736d52e19ee0037bcd2e62146a21147d8` with tree
+`9e64c20bebe24e2527238c206ea38f0e2245332c`; PR #317 merged reviewed head
+`a011ac8e30e9af7d25a007fbb06eecabb8fe7621` from base
+`2760ec6e1121ce0b56e20e29da191ccc17bd44d6`. Exact-head Documentation Scope,
 CI Scope, Evidence Gates, Security Scope and GitGuardian passed. Merge-SHA
-Documentation (`34676984403`), Security Audit (`34676984409`) and Rust CI
-(`34676984395`) passed, including CI Scope (`103508475702`) and Evidence Gates
-(`103508495744`); product/Rust/performance/release jobs were scope-skipped and
-remain non-proof.
+Documentation (`34678359451`), Security Audit (`34678359480`) and Rust CI
+(`34678359434`) passed; product/Rust/performance/release jobs were
+scope-skipped and remain non-proof.
 
-This is an as-of observation, not a live source claim. Fetch `origin/master`,
+This is an as-of observation, not a live source claim. The reset found no
+`origin/release` head and no release tag at `a1d387f`. Fetch `origin/master`,
 release/tag, PR/CI, topology and the ledger before routing the next phase. The
-ledger remains `items=32; ready_pending=0; unfinished=5; held=3`; A07 remains
-active and candidate-base/no-credit, while W03 is verified and R01/W02/F01
-remain held. Preserve unknown/foreign/stale topology and unfavorable evidence.
+ledger is `items=32; ready_pending=0; unfinished=5; held=3`; A07 remains
+active with no live candidate and candidate-base/no-credit evidence, W03 is
+verified, and R01/W02/F01 remain held. Preserve unknown/foreign/stale topology
+and unfavorable evidence.
 
-After refresh, if no-credit A07 preparation is authorized, create one clean
-owned exact-toolchain candidate from the fetched source and run identity,
-sibling-free canary, current holdout/manifest rebind and isolated protocol
-review in order before any separately authorized screening.
+After refresh, keep A07 ahead of empty ready-pending rows without declaring the
+goal blocked. Confirm explicit no-credit A07 preparation authority before
+creating one clean owned exact-toolchain candidate from the fetched source and
+running identity, sibling-free canary, current holdout/manifest rebind and
+isolated protocol review in order. Without that authority, continue the
+independently audited R01/W02/W03/F01 held-action routes in
+`progress-current.md`; never infer product success from process metadata or
+skipped checks.
 
 Historical post-merge checkpoint (2026-09-12, superseded by 2d512c1):
 `origin/master=20256c132b208bdbce5637d693c4ff8c4b03b5e6` with tree

@@ -1,5 +1,36 @@
 # Current maturity train checkpoint
 
+## Iteration 173 — 2026-09-12 — current-source route reconciliation (no-credit)
+
+- Owner/phase: `/root` / reset and route reconciliation from a clean detached
+  checkout at `a1d387f736d52e19ee0037bcd2e62146a21147d8` (tree
+  `9e64c20b`). PR #317 is merged; its exact-head applicable checks and
+  merge-SHA Documentation `34678359451`, Security Audit `34678359480` and
+  Rust CI `34678359434` passed. Product, Rust, performance and release rows
+  were scope-skipped and remain non-proof.
+- Release availability is explicit: `origin/release` is absent; remote tags
+  `v0.1.0`, `v0.2.0` and `v0.3.0` exist but none points at this head. The
+  required report/strict reset snapshot was
+  `base=origin/master worktrees=55 dirty=2 prunable=3 unreadable=1
+  goal_branches=13 unmerged_goal=9`; root unknown dirt, the foreign dirty
+  worktree and stale/prunable registrations remain preserved.
+- Revision-pinned ledger: `items=32; ready_pending=0; unfinished=5; held=3`.
+  A07 is active with no live candidate and candidate-base/no-credit evidence;
+  W03 is verified but its external PR #61 is still open and publication needs
+  authority; R01, W02 and F01 retain their named holds. No product card,
+  screening, allocation, release, deployment, publication or invitation state
+  changed.
+- Route decision: an empty pending set is not completion or a whole-goal
+  block. A07 remains the next owner-controlled route; after explicit
+  no-credit preparation authority, `/root` may create one fresh exact-toolchain
+  candidate and run identity → sibling-free canary → current holdout/manifest
+  rebind → isolated protocol review. Until then, continue the held-action
+  audits: R01 needs the missing raw path/kind/rescan/config evidence or a
+  maintainer native-readiness decision; W02 needs Nick's Cloudflare approval
+  before a build-triggering current-master push; F01 needs participant and
+  invitation authority. Preserve all unfavorable evidence and keep the runtime
+  goal active with this explicit next action.
+
 ## Iteration 172 — 2026-09-12 — PR #315 merge observation (as-of; no-credit)
 
 - Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation;
