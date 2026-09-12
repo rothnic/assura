@@ -38,7 +38,33 @@ continues; a card-level hold is not a whole-goal block. Every continuation
 must end with a live handle or one explicit next action, and the runtime goal
 stays active until authorized scope is accepted and owned topology is terminal.
 
-## Latest observed integration — PR #319 — `afa1637` (2026-09-12; refresh required)
+## Latest observed integration — PR #320 — `38626e0` (2026-09-12; refresh required)
+
+PR #320 merged the reviewed R01 owner-approved archive reconciliation from
+head `f9b19902a8ed076215b62fb1106efa53f6ffa470` on base
+`afa1637ccceb93feff1bed5e652cf50516f68a9a` as
+`38626e0a80fdf7a6a646bac29d810f9097e75686` with tree
+`37bbea4b34812964ea91db62ad6e2c7c25e465b2`. Independent review returned
+PASS for the exact candidate. Exact-head Documentation Scope, CI Scope,
+Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation (`34681519433`), Security Audit (`34681519434`) and Rust CI
+(`34681519451`, including Evidence Gates job `103520912276`) passed. Product,
+Rust, performance and release rows were scope-skipped and remain non-proof.
+
+The post-merge ledger is `items=32; ready_pending=0; unfinished=4; held=2`:
+R01 is `not_needed` under Nick's explicit H01 archive decision in
+[PR #185](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709),
+A07 remains active/no-credit, W03 is verified while publication remains
+separately held pending authority, and W02/F01 retain external holds. The failed R01 run and missing
+causal callback fields remain preserved; this process merge does not claim a
+watch fix or product acceptance. The runtime goal remains active with A07 as
+the next owner-controlled route.
+
+This is the latest observed integration, not a live source claim.
+On every continuation fetch `origin/master` again, rerun the revision-pinned
+ledger and topology audit, and use the fetched SHA as the only current route.
+
+## Historical checkpoint — PR #319 — `afa1637` (2026-09-12; superseded by PR #320)
 
 PR #319 merged the reviewed R01 owner-approved archive reconciliation from
 head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
@@ -58,9 +84,9 @@ runtime goal remains active; A07 remains the next owner-controlled route, and
 W02/F01 retain their external authority holds while W03 retains publication
 authority.
 
-This is the latest observed integration, not a live source claim. On every
-continuation fetch `origin/master` again, rerun the revision-pinned ledger and
-topology audit, and use the fetched SHA as the only current route.
+At that observation this was the latest integration, not a live source claim.
+On every continuation fetch `origin/master` again, rerun the revision-pinned
+ledger and topology audit, and use the fetched SHA as the only current route.
 
 ## Historical checkpoint — PR #318 — 3c01e65 (2026-09-12; superseded by PR #319)
 
