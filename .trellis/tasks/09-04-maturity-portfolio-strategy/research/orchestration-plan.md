@@ -5,7 +5,7 @@ The durable goal contract is
 This compact plan is the task-specific operator route; it must not become a
 second goal or a substitute for the ledger and selected card packet.
 
-Status: active process contract, 2026-09-11. This document routes the
+Status: active process contract, 2026-09-12. This document routes the
 supported runtime goal; it does not promote a product card, grant authority,
 or create screening, holdout, publication, release, deployment, or invitation
 credit. The task ledger and each card packet remain the acceptance source of
@@ -22,7 +22,28 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Latest observed integration route — PR #318 — `3c01e65` (2026-09-12; refresh required)
+## Latest observed integration route — PR #319 — `afa1637` (2026-09-12; refresh required)
+
+- PR #319 merged the reviewed R01 owner-approved archive reconciliation from
+  head `8d09ebd64bc764ce00337a4a957164ffc0a622d2` on base
+  `3c01e65ab609e40b4cdb9d53d4337577899d5a29` as
+  `afa1637ccceb93feff1bed5e652cf50516f68a9a` with tree
+  `d286f78b299f5c080d9e4f2f452bf8615f01ceb1`. Exact-head Documentation
+  Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian passed;
+  merge-SHA Documentation `34680275467`, Security Audit `34680275427` and
+  Rust CI `34680275538` passed. Scope-skipped product, Rust, performance and
+  release rows remain non-proof.
+- Nick's owner-level [PR #185 archive decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+  accepts H01. R01 is now `not_needed` as an explicit scoped exclusion, not a
+  product-fix claim; the failed run and missing causal callback fields remain
+  preserved. The revision-pinned route must not infer that the historical
+  regression was repaired.
+- The active goal remains active. A07 remains ahead of empty pending rows with
+  no live candidate; W02/F01 retain their external authority holds and W03
+  retains publication authority. Refresh source, release/tag, PR/CI, topology
+  and ledger before the next phase.
+
+## Historical integration route — PR #318 — `3c01e65` (2026-09-12; superseded by PR #319)
 
 - PR #318 merged the reviewed current-source continuation-route correction
   from head `78fdfb0ca3f61873b50078e077d5744345a85101` on base
@@ -33,8 +54,8 @@ decision; keep this plan as the task-level route.
   merge-SHA Documentation `34679613211`, Security Audit `34679613203` and
   Rust CI `34679613179` passed. Scope-skipped product, Rust, performance and
   release rows remain non-proof.
-- Treat this as the latest observed as-of record, not a live pointer. The
-  reset found no `origin/release` head and no release tag at `3c01e65`; fetch
+- At that observation this was the latest as-of record, not a live pointer.
+  The reset found no `origin/release` head and no release tag at `3c01e65`; fetch
   `origin/master` and rerun release/tag, PR/CI, topology and the revision-
   pinned ledger before routing work. The ledger is
   `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03

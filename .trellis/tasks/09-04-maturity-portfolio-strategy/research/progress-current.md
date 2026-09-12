@@ -1,5 +1,29 @@
 # Current maturity train checkpoint
 
+## Iteration 175 — 2026-09-12 — R01 owner-approved archive disposition
+
+- Owner/phase: `/root` / independent R01 impasse review and evidence
+  reconciliation at refreshed `origin/master=afa1637ccceb93feff1bed5e652cf50516f68a9a`
+  (tree `d286f78b299f5c080d9e4f2f452bf8615f01ceb1`). The read-only reset
+  confirmed PR #185 is closed/conflicting and its failed macOS job
+  `101643647551` remains the only retained causal source; the run artifact
+  inventory has no raw callback trace.
+- Nick's owner-level [PR #185 decision](https://github.com/rothnic/assura/pull/185#issuecomment-5591702709)
+  explicitly accepts H01 and records a verified archive decision: the
+  current-master exact-scope reproduction passed one test and the card's
+  no-reproduced-cause stop rule prohibits speculative reactivation. The
+  preserved candidate bundle and restore command remain recorded in `R01.md`.
+- R01 is reconciled to `not_needed` as an explicit scoped exclusion, not as a
+  product fix. The historical failure, unknown callback paths/kinds/rescan/
+  config state and unfavorable no-cause reproduction remain preserved; no
+  classifier, threshold, loop, CI or product change was made. This removes the
+  R01 external hold without granting downstream product or release proof.
+- The active runtime goal remains active. The refreshed ledger must be rerun
+  after this process slice; A07 remains the next owner-controlled route, while
+  W02/F01 retain their external authority holds and W03 retains publication
+  authority. Preserve unknown/foreign/stale topology and never infer product
+  success from the archive disposition.
+
 ## Iteration 174 — 2026-09-12 — PR #318 post-merge reconciliation (no-credit)
 
 - Owner/phase: `/root` / post-merge reconciliation. PR #318 merged the
