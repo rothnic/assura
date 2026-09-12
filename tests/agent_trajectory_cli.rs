@@ -340,3 +340,25 @@ fn corrupt_snapshot_is_replaced_without_inventing_facts() {
         .as_u64()
         .is_some());
 }
+
+#[test]
+fn truncated_status_does_not_invent_a_zero_dirty_file_count() {
+    let project = fixture();
+    for index in 0..12_000 {
+        write(
+            &project
+                .path()
+                .join(format!("untracked-{index:05}-file.txt")),
+            "untracked\n",
+        );
+    }
+
+    let snapshot = inspect(project.path());
+    assert_eq!(snapshot["trajectory"]["coverage"], "partial");
+    assert!(snapshot["trajectory"]["coverage_reasons"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .any(|reason| reason == "status_output_truncated"));
+    assert!(snapshot["trajectory"]["pending"]["dirty_files"].is_null());
+}

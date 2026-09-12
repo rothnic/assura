@@ -114,7 +114,7 @@ pub(super) fn inspect(project_root: &Path) -> Result<TrajectorySnapshot, String>
 
 fn inspect_at(project_root: &Path, now: i64) -> Result<TrajectorySnapshot, String> {
     let input = git::discover(project_root, now)?;
-    let generation = git::generation(&input, CLASSIFICATION_VERSION);
+    let generation = git::generation(&input, CLASSIFICATION_VERSION, now);
     let cache_key = snapshot::CacheKey::new(&input, CLASSIFICATION_VERSION);
     let cache_read = snapshot::read(&cache_key);
 
@@ -264,7 +264,7 @@ fn pending_metrics(pending: git::PendingResult) -> PendingMetrics {
     PendingMetrics {
         commits: pending.commits,
         files: Some(pending.files),
-        dirty_files: Some(pending.dirty_files),
+        dirty_files: pending.dirty_files,
         source: category_metrics(pending.categories[0].clone()),
         tests: category_metrics(pending.categories[1].clone()),
         coordination: category_metrics(pending.categories[2].clone()),
@@ -293,8 +293,11 @@ mod tests {
     fn trajectory_windows_have_stable_public_labels() {
         assert_eq!(Window::Minutes(30).kind(), "minutes");
         assert_eq!(Window::Minutes(30).value(), 30);
+        assert_eq!(Window::Minutes(30).cache_bucket(119), "minute:1");
+        assert_eq!(Window::Minutes(30).cache_bucket(120), "minute:2");
         assert_eq!(Window::Commits(20).kind(), "commits");
         assert_eq!(Window::Commits(20).value(), 20);
+        assert_eq!(Window::Commits(20).cache_bucket(119), "commits");
     }
 
     fn git(root: &Path, args: &[&str]) {

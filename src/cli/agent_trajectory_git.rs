@@ -27,7 +27,7 @@ pub(super) struct GitInput {
     pub(super) merge_base: Option<String>,
     pub(super) shallow: bool,
     pub(super) status_truncated: bool,
-    pub(super) status_files: u64,
+    pub(super) status_files: Option<u64>,
     pub(super) status_digest: String,
     pub(super) window: Window,
 }
@@ -53,6 +53,13 @@ impl Window {
             Self::Minutes(value) | Self::Commits(value) => value,
         }
     }
+
+    pub(super) fn cache_bucket(self, now: i64) -> String {
+        match self {
+            Self::Minutes(_) => format!("minute:{}", now.div_euclid(60)),
+            Self::Commits(_) => "commits".to_string(),
+        }
+    }
 }
 
 #[derive(Debug, Default)]
@@ -72,7 +79,7 @@ pub(super) struct HistoryResult {
 pub(super) struct PendingResult {
     pub(super) commits: Option<u64>,
     pub(super) files: u64,
-    pub(super) dirty_files: u64,
+    pub(super) dirty_files: Option<u64>,
     pub(super) categories: [CategoryStats; 5],
 }
 
@@ -160,15 +167,15 @@ pub(super) fn unavailable(worktree_root: PathBuf, _now: i64) -> GitInput {
         merge_base: None,
         shallow: false,
         status_truncated: false,
-        status_files: 0,
+        status_files: None,
         status_digest: String::new(),
         window: Window::Minutes(30),
     }
 }
 
-pub(super) fn generation(input: &GitInput, classification_version: &str) -> String {
+pub(super) fn generation(input: &GitInput, classification_version: &str, now: i64) -> String {
     digest(&format!(
-        "{classification_version}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
+        "{classification_version}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}|{}",
         input.repo_root.display(),
         input.git_dir.display(),
         input.branch.as_deref().unwrap_or(""),
@@ -178,6 +185,7 @@ pub(super) fn generation(input: &GitInput, classification_version: &str) -> Stri
         input.status_digest,
         input.window.kind(),
         input.window.value(),
+        input.window.cache_bucket(now),
         input.shallow
     ))
 }
@@ -408,7 +416,7 @@ fn normalize_path(path: &str) -> String {
 }
 
 struct StatusFacts {
-    files: u64,
+    files: Option<u64>,
     truncated: bool,
     digest: String,
 }
@@ -419,17 +427,17 @@ fn status_facts(repo_root: &Path) -> StatusFacts {
         &["status", "--porcelain=v1", "--untracked-files=normal"],
         MAX_STATUS_BYTES,
     );
-    let (text, truncated) = match output {
-        GitOutput::Text(text) => (text, false),
-        GitOutput::Truncated => (String::new(), true),
-        GitOutput::Failed => (String::new(), true),
+    let (text, truncated, files_available) = match output {
+        GitOutput::Text(text) => (text, false, true),
+        GitOutput::Truncated => (String::new(), true, false),
+        GitOutput::Failed => (String::new(), true, false),
     };
     let relevant_lines = text
         .lines()
         .filter(|line| !line.trim().is_empty() && !is_runtime_status_path(line))
         .collect::<Vec<_>>();
     StatusFacts {
-        files: relevant_lines.len() as u64,
+        files: files_available.then_some(relevant_lines.len() as u64),
         truncated,
         digest: digest(&relevant_lines.join("\n")),
     }
