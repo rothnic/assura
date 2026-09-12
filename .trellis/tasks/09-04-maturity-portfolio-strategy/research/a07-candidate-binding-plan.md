@@ -3,30 +3,30 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=b286c8272466ca980267c4b3858833bd7da74f8b` (tree
-`f4add323397986f074d8f21de7dd28f7ab4241bf`) after PR #323 merged the reviewed
-recovery-entry correction from base `600e9cd`. PR #322, PR #321, PR #307, the `eef7e1a` process
+`origin/master=74f565c119c9b8db4262ab26bb17163ffc1111d9` (tree
+`72064d387f09d48f5fbe3fe3e9db329397a24bd2`) after PR #324 merged the reviewed
+source-pointer reconciliation from base `b286c82`. PR #323, PR #322, PR #321,
+PR #307, the `eef7e1a` process
 checkpoint and all earlier candidate, canary and protocol packets are
 historical candidate-base/no-credit after that source advance. No screening,
 allocation or acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current post-merge route — PR #323 — 2026-09-12 UTC (`origin/master=b286c82`)
+## Current post-merge route — PR #324 — 2026-09-12 UTC (`origin/master=74f565c`)
 
-- PR #323 merged the reviewed recovery-entry correction from head
-  `feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` on base
-  `600e9cd7fa77d2ea55664cae201d5db45fac6a3c` as
-  `b286c8272466ca980267c4b3858833bd7da74f8b` with tree
-  `f4add323397986f074d8f21de7dd28f7ab4241bf`. Independent scoped rereview
-  returned PASS and resolved `TRAIN-ROUTE-600E9CD-001`, the stale PR #307
-  recovery-evidence route. Exact-head Evidence Gates, CI Scope, Documentation
-  Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
-  `34684176319`, Security Audit `34684176377` and Rust CI `34684176310`
-  (Evidence Gates job `103528145700`) passed for applicable scope. Scope-skipped
-  product/Rust/performance/release rows remain non-proof.
+- PR #324 merged the reviewed source-pointer reconciliation from head
+  `00ebba92cc0d79de43d0f321f576b1197150ece6` on base
+  `b286c8272466ca980267c4b3858833bd7da74f8b` as
+  `74f565c119c9b8db4262ab26bb17163ffc1111d9` with tree
+  `72064d387f09d48f5fbe3fe3e9db329397a24bd2`. Independent scoped review
+  returned PASS with no remaining concrete findings. Exact-head Evidence Gates,
+  CI Scope, Documentation Scope, Security Scope and GitGuardian passed;
+  merge-SHA Documentation `34684935262`, Security Audit `34684935286` and Rust
+  CI `34684935294` (Evidence Gates job `103530193780`) passed for applicable
+  scope. Scope-skipped product/Rust/performance/release rows remain non-proof.
 - Before A07 screening or acceptance, refresh source/release/tag, PR/CI,
-  topology and ledger; build a fresh exact-toolchain candidate from `b286c82`;
+  topology and ledger; build a fresh exact-toolchain candidate from `74f565c`;
   run identity and sibling-free no-credit canary gates; rebind all six holdouts
   and exactly two conditions; and obtain isolated protocol `PASS`. This process
   evidence is preparation only, and screening/allocation/credit remain false.

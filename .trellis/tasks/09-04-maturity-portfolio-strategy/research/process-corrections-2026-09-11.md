@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, latest observed source as-of the latest refresh
-`origin/master=b286c8272466ca980267c4b3858833bd7da74f8b`.
+`origin/master=74f565c119c9b8db4262ab26bb17163ffc1111d9`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,28 +12,32 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Latest observed route correction — `b286c82` — 2026-09-12 UTC (PR #323; current source)
+## Latest observed route correction — `74f565c` — 2026-09-12 UTC (PR #324; current source)
 
-The independent scoped rereview found `TRAIN-ROUTE-600E9CD-001`: the recovery
-evidence entry still labeled PR #307/`eef7e1a` current and could misroute an
-executor entering through that file. PR #323 merged the correction from head
-`feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` on base
-`600e9cd7fa77d2ea55664cae201d5db45fac6a3c` as
-`b286c8272466ca980267c4b3858833bd7da74f8b` with tree
-`f4add323397986f074d8f21de7dd28f7ab4241bf`. Independent scoped rereview
-returned PASS for the exact candidate. Exact-head Evidence Gates, CI Scope,
-Documentation Scope, Security Scope and GitGuardian passed; merge-SHA
-Documentation `34684176319`, Security Audit `34684176377` and Rust CI
-`34684176310` passed, including Evidence Gates job `103528145700`; scope-skipped
-rows remain non-proof.
+The reviewed source-pointer reconciliation in PR #324 merged head
+`00ebba92cc0d79de43d0f321f576b1197150ece6` on base
+`b286c8272466ca980267c4b3858833bd7da74f8b` as
+`74f565c119c9b8db4262ab26bb17163ffc1111d9` with tree
+`72064d387f09d48f5fbe3fe3e9db329397a24bd2`. Independent scoped review
+returned PASS with no remaining concrete findings. Exact-head Evidence Gates,
+CI Scope, Documentation Scope, Security Scope and GitGuardian passed; merge-
+SHA Documentation `34684935262`, Security Audit `34684935286` and Rust CI
+`34684935294` (Evidence Gates job `103530193780`) passed for applicable scope;
+scope-skipped rows remain non-proof.
 
-All live route copies now use `b286c82`; PR #322 and earlier source pointers
+All live route copies now use `74f565c`; PR #323 and earlier source pointers
 are historical. The refreshed ledger is `items=32; ready_pending=0; unfinished=4;
 held=2`; R01 remains `not_needed` under H01, A07 remains active/no-credit with
 no live candidate, W02/F01 remain externally held and W03 publication remains
 separately authorized. No product, threshold, screening, allocation, credit,
 acceptance, release, deployment, publication, invitation or protection state
 changed.
+
+## Historical route correction — `b286c82` — 2026-09-12 UTC (PR #323; superseded by PR #324)
+
+PR #323 merged the reviewed recovery-entry correction and resolved
+`TRAIN-ROUTE-600E9CD-001`; its exact-head and merge-SHA applicable checks passed.
+That process-only checkpoint remains preserved for provenance.
 
 ## Historical route correction — `600e9cd` — 2026-09-12 UTC (PR #322; superseded by PR #323)
 

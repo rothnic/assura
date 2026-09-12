@@ -16,19 +16,18 @@ After every merge, refresh `origin/master` and reconcile the task pointer,
 ledger and owned topology before selecting or handing off; a clean merge is a
 phase transition, not completion of the runtime goal.
 
-Latest observed current-source reconciliation (PR #323, 2026-09-12; refresh required):
-`origin/master=b286c8272466ca980267c4b3858833bd7da74f8b` with tree
-`f4add323397986f074d8f21de7dd28f7ab4241bf`; PR #323 merged reviewed head
-`feeb3640c19ed46f930fd14f4a1a7684ad0a85f6` from base
-`600e9cd7fa77d2ea55664cae201d5db45fac6a3c`. Independent scoped rereview
-returned PASS and resolved `TRAIN-ROUTE-600E9CD-001`, the stale PR #307
-recovery-evidence route. Exact-head Evidence Gates, CI Scope, Documentation
-Scope, Security Scope and GitGuardian passed; merge-SHA Documentation
-(`34684176319`), Security Audit (`34684176377`) and Rust CI (`34684176310`,
-including Evidence Gates job `103528145700`) passed for applicable scope.
-Product/Rust/performance/release rows were scope-skipped and remain non-proof.
-PR #322 and earlier pointers are historical; refresh source, release/tag,
-PR/CI, topology and ledger before acting.
+Latest observed current-source reconciliation (PR #324, 2026-09-12; refresh required):
+`origin/master=74f565c119c9b8db4262ab26bb17163ffc1111d9` with tree
+`72064d387f09d48f5fbe3fe3e9db329397a24bd2`; PR #324 merged reviewed head
+`00ebba92cc0d79de43d0f321f576b1197150ece6` from base
+`b286c8272466ca980267c4b3858833bd7da74f8b`. Independent scoped review
+returned PASS with no remaining concrete findings. Exact-head Evidence Gates,
+CI Scope, Documentation Scope, Security Scope and GitGuardian passed;
+merge-SHA Documentation (`34684935262`), Security Audit (`34684935286`) and
+Rust CI (`34684935294`, including Evidence Gates job `103530193780`) passed
+for applicable scope. Product/Rust/performance/release rows were scope-skipped
+and remain non-proof. PR #323 and earlier pointers are historical; refresh
+source, release/tag, PR/CI, topology and ledger before acting.
 
 Historical observed current-source reconciliation (PR #321, 2026-09-12;
 superseded by PR #322 and PR #323; refresh required):
