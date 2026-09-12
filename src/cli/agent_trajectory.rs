@@ -191,7 +191,26 @@ fn bound_line(value: String, max_bytes: usize) -> String {
     if value.len() <= max_bytes {
         return value;
     }
-    String::new()
+    if max_bytes <= 3 {
+        let mut result = String::with_capacity(max_bytes);
+        for character in value.chars() {
+            if result.len() + character.len_utf8() > max_bytes {
+                break;
+            }
+            result.push(character);
+        }
+        return result;
+    }
+    let limit = max_bytes - 3;
+    let mut result = String::with_capacity(max_bytes);
+    for character in value.chars() {
+        if result.len() + character.len_utf8() > limit {
+            break;
+        }
+        result.push(character);
+    }
+    result.push_str("...");
+    result
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -581,6 +600,15 @@ mod tests {
     use std::path::Path;
     use std::process::Command;
     use std::time::{SystemTime, UNIX_EPOCH};
+
+    #[test]
+    fn compact_lines_remain_nonempty_and_utf8_bounded() {
+        let snapshot = super::test_snapshot(0, true);
+        let line = snapshot.compact_line_for(None, 32, &["pending_lines".to_string()]);
+        assert!(!line.is_empty());
+        assert!(line.len() <= 32);
+        assert!(super::bound_line("ééé".to_string(), 2).len() <= 2);
+    }
 
     #[test]
     fn trajectory_windows_have_stable_public_labels() {
