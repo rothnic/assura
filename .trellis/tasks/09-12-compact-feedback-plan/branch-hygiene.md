@@ -106,3 +106,10 @@ handle `stash@{0}` / `389641009075d6eec126adc6a9fca8a225a37f23`; next action is
 owner review before any reapplication; restore with
 `git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
 No unknown or foreign source was deleted.
+
+A second overlapping harness note was observed later and is also deliberately
+excluded from the candidate net diff: owner unknown/foreign; handle
+`stash@{0}` / `8205a4a92167ece55276da24cd17b1576ed62fe2`; it contains the
+additional `SKILL.md` and `references/harness-hook-matrix.md` edits. The next
+action is owner review before any reapplication; restore with
+`git stash apply 8205a4a92167ece55276da24cd17b1576ed62fe2`.
