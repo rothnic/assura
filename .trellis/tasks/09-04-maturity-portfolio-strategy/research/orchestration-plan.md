@@ -22,7 +22,29 @@ validation budget, VPS eligibility test and merge fence live in
 Load that reference only for an execution, review, integration or handoff
 decision; keep this plan as the task-level route.
 
-## Current route — `origin/master=dc031527` (2026-09-11 checkpoint)
+## Current route — `origin/master=66e0b7e` (2026-09-11 post-merge reconciliation)
+
+- PR #306 merged reviewed process corrections from head
+  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation,
+  CI Scope, Security Scope, Evidence Gates and GitGuardian passed; applicable
+  merge-SHA Documentation `34658963096`, Security Audit `34658963070` and
+  Rust CI `34658963059` passed. Scope-skipped product/Rust/performance/release
+  rows remain non-proof.
+- Ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07
+  active, W03 verified, R01/W02/F01 held. The `dc031527` candidate, canary and
+  protocol packet are candidate-base/no-credit after this source advance; the
+  clean owned branch/worktree was removed and preserved external/unknown dirt
+  remains outside ownership. No product or authority state changed.
+- Resume route: refresh source/release/tag/PR/CI/topology and the ledger;
+  inspect active/implemented/verified/held before pending; choose one named
+  owner and one actionable recovery/preparation phase; and keep it live
+  through validation, review, integration, post-merge workflow observation and
+  cleanup. For A07, rebuild at refreshed master, then identity/no-credit
+  canary, holdout/manifest rebind, isolated protocol `PASS`, and only then a
+  separately authorized screening decision. Empty pending is not completion.
+
+## Historical route — `origin/master=dc031527` (2026-09-11 checkpoint; superseded by 66e0b7e)
 
 PR #305 merged the reviewed process reconciliation from `284e781` as
 `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Exact-head applicable

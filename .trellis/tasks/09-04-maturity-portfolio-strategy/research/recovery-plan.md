@@ -2,15 +2,23 @@
 
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
 
-## Current candidate-bound route — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`, no-credit)
+## Current post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`, no-credit)
 
-PR #305 merged reviewed head `5363b4a5d2e39beed6087bea6a5f6fa2d2aaf17c` from base `284e781` as `dc031527afd400be52dfd8fe9cfdabc7a6caa685`. Exact-head applicable checks and merge-SHA Documentation `34653158838`, Rust CI `34653159004` (CI Scope `103439684733`, Evidence Gates `103439731188`) and Security Audit `34653158857` passed; scope-skipped product/performance/release rows remain non-proof.
+PR #306 merged the reviewed process slice from head `8576f64d` on base
+`dc031527` as `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head
+Documentation, CI Scope, Security Scope, Evidence Gates and GitGuardian passed;
+merge-SHA Documentation `34658963096`, Security Audit `34658963070` and Rust
+CI `34658963059` passed for applicable scope. Scope-skipped product, Rust,
+performance and release rows remain non-proof.
 
-The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5; held=3`: A07 active, W03 verified and R01/W02/F01 held. Fresh candidate `/private/tmp/assura-a07-current-reconcile-dc031` uses exact Rust/Cargo `1.94.1` and source/tree/binary/shim identity (`dc031527`, `b68b66cc47f7e4081afd2dc21c1387de34b30c32`, `3cdaf976d7da61043a5867cb17ffd789b92b484e26f1e7d3a7989bd25ce816cf`). Two sibling-free canaries and full post-exit evaluators pass with zero critical failures; ambient metadata and hook-verifier limitations remain, so this is no-credit preparation.
-
-Private packet `/private/tmp/assura-a07-private-dc031` binds six current holdouts, exactly two conditions and 30 reserved cells. Its metadata-only validator returns `valid=true` with zero errors after deliberate current aliases replaced stale `r2` references while preserving historical construction records. Independent protocol review returned `PASS_NO_CREDIT` after correcting the stale contract digest and construction hash; screening, allocation and credit remain false.
-
-Next action: reconcile this protocol-pass/no-credit evidence in a current-base reviewed slice; refresh source and ledger after any merge. If source advances, classify the packet candidate-base/no-credit and rebuild. Keep the goal active and preserve all R01/W02/F01 authority holds.
+Ledger is `items=32; ready_pending=0; unfinished=5; held=3` (A07 active,
+W03 verified, R01/W02/F01 held). The `dc031527` candidate/canary/packet is
+candidate-base/no-credit and the owned branch/worktree is closed. Refresh
+source, release/tag, PR/CI, topology and ledger; inspect active/verified/held
+rows; then keep one owned recovery or fresh current-master A07 slice live.
+Fresh identity, canary, six-holdout/two-condition rebind and isolated protocol
+`PASS` are required before separately authorized screening. Empty pending is not
+completion; preserve all external dirt, failures and authority holds.
 
 ## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
 

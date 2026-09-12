@@ -3,15 +3,29 @@
 Status: active. Owner: this thread's A07 acceptance coordinator. This plan
 does not embed a permanent routing baseline: fetch `origin/master` and rerun
 the revision-pinned ledger before every canary. The latest reset resolved
-`origin/master=dc031527afd400be52dfd8fe9cfdabc7a6caa685` after PR #305 merged
-the reviewed post-merge reconciliation from base `284e781`. The `284e781`
-checkpoint and all earlier candidates are now historical or candidate-base/
-no-credit after that source advance. No screening, allocation or acceptance
-authority exists.
+`origin/master=66e0b7e75f644dc4d047853488daee4a1cd716a3` after PR #306 merged
+the reviewed post-merge reconciliation from base `dc031527`. The `dc031527`
+candidate, canary and protocol packet are now candidate-base/no-credit after
+that source advance. No screening, allocation or acceptance authority exists.
 Preserve the retained macOS watch-SIGINT diagnostic and all unfavorable
 evidence.
 
-## Current candidate-bound checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`)
+## Current post-merge route — PR #306 — 2026-09-11 UTC (`origin/master=66e0b7e`)
+
+- PR #306 merged reviewed process artifacts from head
+  `8576f64d9519ad4eaa529878ef9c8267d60fd1b2` on base `dc031527` as
+  `66e0b7e75f644dc4d047853488daee4a1cd716a3`. Exact-head Documentation, CI
+  Scope, Security Scope, Evidence Gates and GitGuardian passed; applicable
+  merge-SHA Documentation `34658963096`, Security Audit `34658963070` and
+  Rust CI `34658963059` passed. Current merge tree is
+  `f08120b991b0fd51c311212e45ffeeff3c6a972c`.
+- Before A07 screening or acceptance, refresh source/release/tag, PR/CI,
+  topology and ledger; inspect active/verified/held rows; build a fresh
+  exact-toolchain candidate; run identity and sibling-free no-credit canary
+  gates; rebind all six holdouts and exactly two conditions; and obtain
+  isolated protocol `PASS`. This process evidence is preparation only.
+
+## Historical candidate-bound checkpoint — PR #305 — 2026-09-11 UTC (`origin/master=dc031527`; superseded by 66e0b7e)
 
 - `/root` owns the clean candidate checkout
   `/private/tmp/assura-a07-current-reconcile-dc031`. Exact Rust/Cargo `1.94.1`
