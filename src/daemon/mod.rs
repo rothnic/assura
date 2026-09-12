@@ -235,6 +235,11 @@ impl LocalDaemonCore {
         Ok(self.prepared.check_changed_paths(paths)?)
     }
 
+    /// Return whether changed-path validation can stay incremental.
+    pub(crate) fn supports_incremental_path_checks(&self) -> bool {
+        self.prepared.supports_incremental_path_checks()
+    }
+
     /// Return outbound repository references from a changed source path.
     pub fn changed_source_references(
         &mut self,

@@ -71,6 +71,7 @@ def compact_context(payload):
         return ""
     items = payload.get("nudges") or []
     item = next((item for item in items if item.get("severity") == "critical"), None)
+    item = item or next((item for item in items if item.get("category") == "trajectory"), None)
     item = item or next((item for item in items if item.get("severity") == "high"), None)
     item = item or (items[0] if items else None)
     line = f"assura: event={{payload.get('event', 'event')}}"
@@ -158,7 +159,7 @@ function pathsFrom(value, found = new Set()) {{
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
   const items = payload.nudges ?? []
-  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.category === "trajectory") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
   const limit = payload?.feedback?.effective?.max_bytes ?? 256
@@ -223,7 +224,7 @@ function pathsFrom(value, found = new Set()) {{
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
   const items = payload.nudges ?? []
-  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.category === "trajectory") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
   const limit = payload?.feedback?.effective?.max_bytes ?? 256

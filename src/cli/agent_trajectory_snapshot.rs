@@ -205,7 +205,7 @@ impl CacheLease {
                         > CACHE_LOCK_SECONDS
                 })
                 .unwrap_or(false);
-            if stale && crate::cli::agent_nudge_delivery::lease_owner_alive(&path) == Some(false) {
+            if stale && crate::cli::agent_nudge_delivery::lease_owner_alive(&path) != Some(true) {
                 let _ = fs::remove_file(&path);
             }
         }

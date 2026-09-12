@@ -159,44 +159,55 @@ fn build_agent_nudge(
                 .saturating_sub(checkable_changed_paths.len());
             omitted += unknown_changed_paths;
 
-            match core.check_changed_paths(checkable_changed_paths) {
-                Ok(batch) => {
-                    changed_path_batch = ChangedPathBatch {
-                        requested_paths: changed_paths.len().max(batch.requested_paths),
-                        checked_paths: batch.reports.len(),
-                        full_project_fallbacks: batch.full_project_fallbacks,
-                        unknown_paths: unknown_changed_paths,
-                        coverage: if unknown_changed_paths == 0 {
-                            batch.coverage
-                        } else {
-                            "partial"
-                        },
-                    };
-                    for report in batch.reports {
-                        changed_path_checks.push(ChangedPathCheck::from_report(&report));
-                        changed_report_violations += report.violations.len();
-                        let findings = finding_nudges(
-                            &report,
-                            &options.min_severity,
-                            usize::MAX,
-                            &project_path,
-                            options.agent,
-                        );
-                        changed_eligible_findings += findings.shown_count;
-                        changed_finding_nudges.extend(findings.nudges);
+            if !core.supports_incremental_path_checks() {
+                omitted += checkable_changed_paths.len();
+                changed_path_batch = ChangedPathBatch {
+                    requested_paths: changed_paths.len(),
+                    checked_paths: 0,
+                    full_project_fallbacks: 0,
+                    unknown_paths: unknown_changed_paths,
+                    coverage: "deferred_full_project_policy",
+                };
+            } else {
+                match core.check_changed_paths(checkable_changed_paths) {
+                    Ok(batch) => {
+                        changed_path_batch = ChangedPathBatch {
+                            requested_paths: changed_paths.len().max(batch.requested_paths),
+                            checked_paths: batch.reports.len(),
+                            full_project_fallbacks: batch.full_project_fallbacks,
+                            unknown_paths: unknown_changed_paths,
+                            coverage: if unknown_changed_paths == 0 {
+                                batch.coverage
+                            } else {
+                                "partial"
+                            },
+                        };
+                        for report in batch.reports {
+                            changed_path_checks.push(ChangedPathCheck::from_report(&report));
+                            changed_report_violations += report.violations.len();
+                            let findings = finding_nudges(
+                                &report,
+                                &options.min_severity,
+                                usize::MAX,
+                                &project_path,
+                                options.agent,
+                            );
+                            changed_eligible_findings += findings.shown_count;
+                            changed_finding_nudges.extend(findings.nudges);
+                        }
                     }
-                }
-                Err(error) => {
-                    changed_path_batch.coverage = "error";
-                    changed_path_batch.requested_paths = changed_paths.len();
-                    changed_path_batch.unknown_paths = unknown_changed_paths;
-                    if let Some(changed_path) = changed_paths.first() {
-                        nudges.push(NudgeItem::daemon_error(
-                            "daemon_changed_path",
-                            changed_path,
-                            &error.to_string(),
-                            &core.health(),
-                        ));
+                    Err(error) => {
+                        changed_path_batch.coverage = "error";
+                        changed_path_batch.requested_paths = changed_paths.len();
+                        changed_path_batch.unknown_paths = unknown_changed_paths;
+                        if let Some(changed_path) = changed_paths.first() {
+                            nudges.push(NudgeItem::daemon_error(
+                                "daemon_changed_path",
+                                changed_path,
+                                &error.to_string(),
+                                &core.health(),
+                            ));
+                        }
                     }
                 }
             }

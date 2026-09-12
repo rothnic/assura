@@ -549,7 +549,7 @@ fn request_refresh(
             .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
             .map(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
             .unwrap_or(false);
-        if stale && lease_owner_alive(&lock) == Some(false) {
+        if stale && lease_owner_alive(&lock) != Some(true) {
             let _ = fs::remove_file(&lock);
         } else {
             let queued = lock.with_extension("queued");
@@ -934,7 +934,7 @@ impl DeliveryLease {
                 .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
                 .map(|value| now().saturating_sub(value.as_secs() as i64) > 30)
                 .unwrap_or(false);
-            if stale && lease_owner_alive(&path) == Some(false) {
+            if stale && lease_owner_alive(&path) != Some(true) {
                 let _ = fs::remove_file(&path);
             }
         }
