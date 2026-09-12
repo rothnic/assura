@@ -32,6 +32,7 @@ pub(super) struct GitInput {
     pub(super) window: Window,
 }
 
+// allow-reason: commit-window parsing shares the bounded collector's public shape with minute-window parsing.
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy)]
 pub(super) enum Window {
