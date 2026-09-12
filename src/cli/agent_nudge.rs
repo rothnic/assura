@@ -49,6 +49,7 @@ pub struct AgentNudgeOptions {
 
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
+    agent_nudge_delivery::start_refresh_watchdog();
     let result = build_agent_nudge(options, config);
     let refresh_expired = agent_nudge_delivery::refresh_deadline_expired();
     agent_nudge_delivery::finish_refresh();

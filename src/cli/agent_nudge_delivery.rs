@@ -7,7 +7,7 @@ use std::fs::{self, File, OpenOptions};
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const STATE_SCHEMA: &str = "assura.agent-feedback-delivery.v1";
 const HOUR_SECONDS: i64 = 3_600;
@@ -689,6 +689,31 @@ pub(super) fn finish_refresh() {
     }
 }
 
+/// Bound the whole inspect worker, including config and daemon setup before Git.
+pub(super) fn start_refresh_watchdog() {
+    let Some(deadline) = refresh_deadline_millis() else {
+        return;
+    };
+    let Some(lock) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") else {
+        return;
+    };
+    let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
+        return;
+    };
+    let remaining = deadline.saturating_sub(now_millis());
+    if remaining <= 0 {
+        return;
+    }
+    std::thread::spawn(move || {
+        std::thread::sleep(Duration::from_millis(remaining as u64));
+        if refresh_deadline_expired() {
+            let lock = PathBuf::from(lock);
+            let _ = remove_refresh_lease_if_owned(&lock, &token);
+            std::process::exit(1);
+        }
+    });
+}
+
 fn refresh_lease_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
     fs::read_to_string(path)
         .ok()
@@ -715,10 +740,13 @@ fn replace_refresh_lease(path: &Path, token: &str) -> bool {
 }
 
 pub(super) fn refresh_deadline_expired() -> bool {
+    refresh_deadline_millis().is_some_and(|deadline| now_millis() >= deadline)
+}
+
+fn refresh_deadline_millis() -> Option<i64> {
     std::env::var("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS")
         .ok()
         .and_then(|value| value.parse::<i64>().ok())
-        .is_some_and(|deadline| now_millis() >= deadline)
 }
 
 pub(super) fn now() -> i64 {
@@ -890,7 +918,7 @@ fn process_owner_alive(pid: u32) -> Option<bool> {
 #[cfg(windows)]
 fn process_owner_alive(pid: u32) -> Option<bool> {
     use windows_sys::Win32::Foundation::{
-        CloseHandle, GetLastError, ERROR_INVALID_PARAMETER, STILL_ACTIVE,
+        CloseHandle, GetLastError, ERROR_ACCESS_DENIED, ERROR_INVALID_PARAMETER, STILL_ACTIVE,
     };
     use windows_sys::Win32::System::Threading::{
         GetExitCodeProcess, OpenProcess, PROCESS_QUERY_LIMITED_INFORMATION,
@@ -899,8 +927,12 @@ fn process_owner_alive(pid: u32) -> Option<bool> {
     // SAFETY: OpenProcess receives a PID parsed from the lease and no borrowed pointers.
     let handle = unsafe { OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, 0, pid) };
     if handle.is_null() {
-        // Access failures are unknown; an invalid PID proves the owner is gone.
-        return Some(unsafe { GetLastError() } == ERROR_INVALID_PARAMETER);
+        // Access failures are unknown; only an invalid PID proves the owner is gone.
+        return match unsafe { GetLastError() } {
+            ERROR_INVALID_PARAMETER => Some(false),
+            ERROR_ACCESS_DENIED => None,
+            _ => None,
+        };
     }
     let mut exit_code = 0;
     // SAFETY: handle is owned above and exit_code is writable storage.
