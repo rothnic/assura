@@ -1,6 +1,38 @@
 # Current maturity train checkpoint
 
-## Iteration 169 — 2026-09-12 — current-master A07 packet disposition (no-credit)
+## Iteration 170 — 2026-09-12 — PR #313 post-merge reconciliation (no-credit)
+
+- Owner/phase: `/root` / post-merge source and packet-lifecycle reconciliation
+  in clean checkout `/private/tmp/assura-a07-postmerge-e1c9` on
+  `docs/a07-postmerge-e1c9`.
+- Source is `origin/master=e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+  `9d57888eec65d892dcc2a65b829369dd90278637`. PR #313 merged reviewed head
+  `a134fc6815fc76730926d9f8ded57f16a8740e74` from base
+  `a6ed20f532d93f830099e9095798a09515fead0b`. Exact-head Documentation Scope,
+  CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+  Documentation `34675049056`, Security Audit `34675049038` and Rust CI
+  `34675049055` passed, including CI Scope `103503298569` and Evidence Gates
+  `103503318127`. Scope-skipped product, Rust, performance and release jobs
+  remain non-proof.
+- Workflow gate is `Ready: yes`; the revision-pinned ledger remains
+  `items=32; ready_pending=0; unfinished=5; held=3` with A07 active, W03
+  verified, and R01/W02/F01 held. The owned `goal/a07-current-a6ed` checkout
+  was verified clean and ancestor-reachable, then removed.
+- The a6ed exact-toolchain candidate, identity controls, sibling-free A/B
+  canaries, six-holdout/two-condition packet, persisted validator and isolated
+  protocol `PASS_NO_CREDIT` are candidate-base/no-credit after the merge. The
+  immutable reviewer artifact, coordinator pre/post hash finalization and all
+  three corrected coherence findings remain retained. Screening, allocation,
+  credit, acceptance and all authority flags are false; unknown/foreign/stale
+  topology and unfavorable evidence remain preserved.
+- Next action: refresh release/tag, PR/CI, topology and ledger again. If
+  no-credit A07 preparation remains authorized, create one fresh exact-
+  toolchain candidate from `e1c9b78` in a clean owned worktree and run
+  identity, sibling-free canary, current holdout/manifest rebind and isolated
+  protocol review in order. Any public process change needs independent review,
+  applicable gates, current-master integration and merge-SHA observation.
+
+## Historical Iteration 169 — 2026-09-12 — current-master A07 packet disposition (no-credit; superseded by e1c9b78)
 
 - Owner/phase: `/root` / candidate-bound packet coherence and protocol
   disposition in clean checkout `/private/tmp/assura-a07-current-a6ed` on

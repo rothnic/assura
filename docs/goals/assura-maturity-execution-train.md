@@ -31,7 +31,49 @@ continue.
 This is an execution-control goal, not a claim that process, evaluator,
 canary, or documentation work satisfies a product card.
 
-## Current checkpoint — a6ed20f (candidate-bound protocol disposition; no-credit)
+## Current checkpoint — e1c9b78 (post-merge reconciliation; A07 packet candidate-base/no-credit)
+
+PR #313 merged the reviewed packet-coherence process slice from head
+`a134fc6815fc76730926d9f8ded57f16a8740e74` on base
+`a6ed20f532d93f830099e9095798a09515fead0b` as
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+`9d57888eec65d892dcc2a65b829369dd90278637`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed. The
+merge-SHA Documentation (`34675049056`), Security Audit (`34675049038`) and
+Rust CI (`34675049055`) workflows passed; Rust CI CI Scope
+(`103503298569`) and Evidence Gates (`103503318127`) passed. Product, Rust,
+performance and release rows were scope-skipped and remain non-proof. The
+revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3`: A07 active, W03 verified, R01/W02/F01 held.
+
+The clean owned candidate branch/worktree for `a6ed20f` was verified
+ancestor-reachable and removed after merge. Its exact-toolchain candidate,
+identity controls, two sibling-free canaries, six-holdout/two-condition
+packet, persisted validator and isolated `PASS_NO_CREDIT` protocol review are
+now candidate-base/no-credit metadata because source advanced to `e1c9b78`.
+The reviewer artifact remains immutable; the coordinator's pre/post hash
+finalization and all three corrected findings remain retained as evidence.
+
+No screening, allocation, credit, product acceptance, release, deployment,
+publication, invitation or protection authority exists. Raw evaluator,
+fixture and transcript material remains private; ambient skill metadata and
+the generated-hook verifier discrepancy remain explicit limitations. The VPS
+lane remains held by the unresolved `vps-dev` alias, configured-host disk and
+toolchain/job conditions; remote output cannot replace hosted or platform
+proof. Unknown root dirt, foreign dirty work, stale registrations, unrelated
+branches and unfavorable evidence remain outside this goal's ownership.
+
+Next action: refresh release/tag, PR/CI, topology and the revision-pinned
+ledger at `e1c9b78`; keep the active A07 route ahead of empty ready-pending
+rows, then build a fresh exact-toolchain candidate in one clean owned
+worktree only if the no-credit preparation route remains authorized. Re-run
+identity, sibling-free canary, current holdout/manifest rebind and isolated
+protocol review in order. Any public process update needs independent review,
+applicable gates, current-master integration and merge-SHA observation before
+the next refresh. Never reuse the `a6ed20f` packet for screening or acceptance,
+and never infer product success from process metadata or skipped checks.
+
+## Historical checkpoint — a6ed20f (candidate-bound protocol disposition; no-credit; superseded by e1c9b78)
 
 PR #312 merged the reviewed dcf2 process reconciliation from head
 `f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
@@ -438,6 +480,7 @@ cannot be closed or archived with an explicit recovery record.
 
 | Date | Event | Evidence |
 | --- | --- | --- |
+| 2026-09-12 | Iteration 170: PR #313 merged the independently reviewed packet-coherence process slice from head `a134fc6` on base `a6ed20f` as `e1c9b78216b5736abd24fbd165ed7e1e383b1744`; exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34675049056`), Security Audit (`34675049038`) and Rust CI (`34675049055`) passed for applicable scope, with Rust CI CI Scope (`103503298569`) and Evidence Gates (`103503318127`) successful. The clean owned a6ed candidate branch/worktree was verified ancestor-reachable and removed; its candidate/packet is now candidate-base/no-credit. Screening, allocation, credit, acceptance and all authority flags remain false. | PR #313; merge-SHA workflow records; topology refresh. |
 | 2026-09-12 | Iteration 169: refreshed current master at `a6ed20f`, completed the exact-toolchain candidate, identity controls, two sibling-free no-credit canaries, six-holdout/two-condition packet validation and isolated protocol rereview. Corrected findings `A07-A6ED-VALIDATOR-001`, `A07-A6ED-REVIEW-TIME-002` and `A07-A6ED-CANARY-STATE-003`; coordinator finalization records immutable pre/post hashes. Added the layered packet-coherence reference and reconciled the goal/task/E2E routes. Context level: not exposed; current source, owner, packet disposition and next integration action are summarized in the checkpoint above. | Current candidate worktree and private protocol review/finalization records; context-routing audit 58/0; scoped structure, evidence and docs gates. |
 | 2026-09-12 | PR #311 merged the reviewed 36e5 post-merge process reconciliation as `dcf2a9e` from head `6602ac8`; exact-head Documentation Scope, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34670911182`), Security Audit (`34670911121`) and Rust CI (`34670911124`) passed. The 36e5 candidate/packet are now candidate-base/no-credit; their protocol `PASS_NO_CREDIT` remains historical evidence and a fresh current-master candidate is required before screening. No product, screening, allocation, credit or authority state changed. | PR #311; current process records; merge-SHA workflow records. |
 | 2026-09-12 | PR #310 merged the reviewed post-merge reconciliation at `36e5a840` from head `c1b489c4`; applicable exact-head Documentation, CI Scope, Evidence Gates, Security Scope and GitGuardian plus merge-SHA Documentation (`34668192073`), Security Audit (`34668192076`) and Rust CI (`34668192074`) passed. The 9c1 candidate/packet are now candidate-base/no-credit. A fresh 36e5 candidate passed exact identity controls, seeded source-only A/B canaries and full seven-dimension evaluators; the prior empty-fixture failure remains unfavorable evidence, and the new six-holdout packet passed isolated protocol rereview `PASS_NO_CREDIT` after its final construction digest binding was corrected. No product, screening, allocation, credit or authority state changed. | PR #310; `research/evidence/A07.md`; `research/process-corrections-2026-09-11.md`; fresh private identity/canary/packet/review records. |

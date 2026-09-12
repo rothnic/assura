@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=a6ed20f532d93f830099e9095798a09515fead0b`.
+`origin/master=e1c9b78216b5736abd24fbd165ed7e1e383b1744`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -12,7 +12,44 @@ is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — a6ed20f — 2026-09-12 UTC (no-credit)
+## Current correction checkpoint — e1c9b78 — 2026-09-12 UTC (post-merge; no-credit)
+
+PR #313 merged the reviewed packet-coherence process slice from head
+`a134fc6815fc76730926d9f8ded57f16a8740e74` on base
+`a6ed20f532d93f830099e9095798a09515fead0b` as
+`e1c9b78216b5736abd24fbd165ed7e1e383b1744` with tree
+`9d57888eec65d892dcc2a65b829369dd90278637`. Exact-head Documentation Scope,
+CI Scope, Evidence Gates, Security Scope and GitGuardian passed; merge-SHA
+Documentation `34675049056`, Security Audit `34675049038` and Rust CI
+`34675049055` passed, including CI Scope `103503298569` and Evidence Gates
+`103503318127`. Scope-skipped product, Rust, performance and release rows
+remain non-proof. Ledger remains `items=32; ready_pending=0; unfinished=5;
+held=3` (A07 active, W03 verified, R01/W02/F01 held).
+
+The owned a6ed candidate branch/worktree was verified clean and ancestor-
+reachable, then removed. Its exact-toolchain identity, two sibling-free
+canaries, six-holdout/two-condition packet, persisted validator and isolated
+protocol `PASS_NO_CREDIT` are candidate-base/no-credit after this source
+advance. The immutable reviewer artifact, coordinator pre/post hashes and all
+three corrected findings remain retained; no screening, allocation, credit,
+acceptance or authority state changed. Unknown/foreign/stale topology and
+unfavorable evidence remain preserved, and the VPS lane remains held.
+
+Correction-derived route: every post-merge continuation must explicitly
+record the merged head/tree, exact applicable and merge-SHA workflow results,
+ledger, candidate/worktree ownership and packet supersession before selecting
+the next phase. A fresh current-source candidate must repeat identity,
+sibling-free canary, holdout/manifest rebind and isolated protocol review in
+order; process metadata and skipped checks cannot authorize screening.
+
+Next action: refresh source/release/tag/PR/CI/topology and ledger at `e1c9b78`,
+then continue the active A07 route or the smallest independently authorized
+held recovery slice. If A07 no-credit preparation remains authorized, create
+one clean owned candidate and retain every unfavorable result. Any public
+correction still requires independent review, applicable gates, current-base
+integration and merge-SHA observation.
+
+## Historical correction checkpoint — a6ed20f — 2026-09-12 UTC (no-credit; superseded by e1c9b78)
 
 PR #312 merged the reviewed dcf2 public process/evidence slice from head
 `f43d1a0cc6cd868a78d4f68dbc97a52a90476abb` as
