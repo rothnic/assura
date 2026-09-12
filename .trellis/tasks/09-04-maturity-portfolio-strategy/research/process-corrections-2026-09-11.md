@@ -1,7 +1,7 @@
 # Process corrections and continuation plan
 
 Status: active, current source as-of the latest refresh
-`origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`.
+`origin/master=9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd`.
 This is an as-of checkpoint; fetch again before every phase. The reusable
 state machine, checkpoint schema, layered disclosure and validation-budget
 rules are in
@@ -10,7 +10,49 @@ This record is a process and evidence route; it does not close A07, grant
 screening credit, or authorize release, deployment, publication, invitation,
 protection changes or a CI-infrastructure change.
 
-## Current correction checkpoint — 3e67d5f — 2026-09-12 UTC (no-credit)
+## Current correction checkpoint — 9c1b68a — 2026-09-12 UTC (no-credit)
+
+PR #309 merged the reviewed public process/evidence slice from head
+`35faaeae48b1155aafab4415bd5bdfba19588933` as
+`9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` with tree
+`3a90f6a5b055f17f20fb564481c9072bb4652e86`. Documentation, Security Audit
+and Rust CI applicable merge-SHA workflows passed; scope-skipped product,
+performance and release rows remain non-proof. The refreshed ledger remains
+`items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
+R01/W02/F01 held).
+
+The 3e67 candidate/packet are candidate-base/no-credit. A fresh exact-toolchain
+candidate at `/private/tmp/assura-train-postmerge-9c1` has binary/shim
+`5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`; identity
+and both negative controls pass/reject. An initial empty-fixture A attempt
+failed the Rust preservation/native evaluator and is retained as unfavorable
+evidence. Fresh seeded-scaffold sibling-free A/B retries pass all seven
+dimensions, expected negative policy rejection, native tests and preservation
+hashes. Their redacted summary is
+`screening/canary-2026-09-12-current-9c1.json`.
+
+The fresh private packet has six unique holdouts, two conditions and 30
+reserved cells; adapted validation is `valid=true` with zero errors and the
+isolated protocol review is `PASS_NO_CREDIT`. Scoped review found a freeze/canary
+status mismatch and a stale pending-review timestamp; both were corrected,
+dependent metadata was revalidated, and the final review hash map matches disk.
+The final reviewer artifact is timestamped `2026-09-12T02:30:34Z` and hashes to
+`55fe84c16eea584ac056209aa51ebaff051cdf70af7bffb695a1207897af81ef`. No screening, allocation, credit,
+acceptance, release, deployment, publication or invitation authority changed.
+The VPS lane remains held: `vps-dev` is unresolved and configured `vps` has
+95% root usage plus nightly rather than pinned Rust/Cargo.
+
+Correction in this continuation: the empty-fixture evaluator failure exposed
+that the canary setup must seed the declared source scaffold before running the
+no-content-template condition. The failed receipt/evaluator are preserved, and
+only the corrected seeded retries feed the packet; this prevents a child exit
+0 from masking a product-contract failure.
+
+Next action: complete isolated protocol review, publish only a redacted pointer
+through independent review and applicable gates, merge at current master,
+observe merge-SHA workflows, then refresh and rebuild before any screening.
+
+## Historical correction checkpoint — 3e67d5f — 2026-09-12 UTC (no-credit; superseded by `9c1b68a`)
 
 The reset fetched `origin/master=3e67d5fe123c6ebcf3ac05617966919151e44868`
 with tree `1b3b2c130a294b1020f0c63d84df120434bebf42`. The ledger is

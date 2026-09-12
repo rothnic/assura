@@ -1,8 +1,10 @@
 # Execution recovery plan
-
 The durable active goal is [`docs/goals/assura-maturity-execution-train.md`](../../../../docs/goals/assura-maturity-execution-train.md). This plan records task evidence and the next bounded action; it is not a replacement goal or a product-card acceptance record.
-
-## Current recovery route — 3e67d5f — 2026-09-12 UTC (candidate-bound no-credit)
+## Current recovery route — 9c1b68a — 2026-09-12 UTC (post-merge candidate-bound no-credit)
+PR #309 merged reviewed process evidence at `9c1b68a89a1aeefab4ab0a7512d05dfb7eb68afd` (tree `3a90f6a5b055f17f20fb564481c9072bb4652e86`); applicable Documentation, Security Audit and Rust CI merge-SHA workflows passed. Ledger: `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified, R01/W02/F01 held); 3e67 is candidate-base/no-credit.
+Fresh `/private/tmp/assura-train-postmerge-9c1` uses exact Rust/Cargo `1.94.1`, binary/shim `5a94f00360fc7f6839e5006b24e01eb121227938ce38676788eb1274ef6633a7`, and passing identity/negative controls. Retain the initial empty-fixture preservation/native failure as unfavorable evidence; seeded-scaffold sibling-free A/B retries pass all seven dimensions, native tests, negative rejection and preservation hashes.
+Summary: `screening/canary-2026-09-12-current-9c1.json`. Private packet: six holdouts, two conditions, 30 cells; `valid=true`, scoped protocol review `PASS_NO_CREDIT`, all credit/authority false. VPS is held (`vps-dev` unresolved; `vps` 95% root/nightly toolchain). Next: redacted pointer review/gates, merge, merge-SHA observation, then refresh/rebuild before screening.
+## Historical recovery route — 3e67d5f — 2026-09-12 UTC (candidate-bound no-credit; superseded by `9c1b68a`)
 Reset source/tree: `3e67d5fe123c6ebcf3ac05617966919151e44868` /
 `1b3b2c130a294b1020f0c63d84df120434bebf42`; ledger
 `items=32; ready_pending=0; unfinished=5; held=3` (A07 active, W03 verified,
@@ -27,7 +29,6 @@ merge invalidates candidate credit.
 The VPS lane remains held by unresolved alias, disk pressure, unrelated jobs
 and toolchain mismatch; remote output cannot replace hosted/platform proof.
 ## Historical post-merge route — PR #304 — 2026-09-11 UTC (`origin/master=284e781`, candidate-base; superseded by dc031527)
-
 The latest reset fetched
 `origin/master=284e78156370d49d8315f04391fcc74eaba3acb2`; refresh it before the
 next phase. PR #304 merged reviewed head `17fa9197ed79083be4b8ba0714851aeaae9bdbf3`
@@ -38,7 +39,6 @@ push-triggered Documentation (`34651068660`), Rust CI (`34651068675`) and
 Security Audit (`34651068699`) completed successfully at the merge SHA for
 applicable scope. Product/Rust/performance/release and other scope-skipped
 rows are not product proof.
-
 The revision-pinned ledger remains `items=32; ready_pending=0; unfinished=5;
 held=3`: A07 active, W03 verified and R01/W02/F01 held. The d228472 process
 reconciliation and candidate are historical or candidate-base/no-credit after
