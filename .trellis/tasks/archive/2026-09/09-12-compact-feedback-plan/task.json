@@ -1,0 +1,31 @@
+{
+  "id": "compact-feedback-plan",
+  "name": "compact-feedback-plan",
+  "title": "Compact feedback execution plan",
+  "description": "Execution record for the compact feedback and performance plan: tiny configurable trajectory statistics, cached or asynchronous collection, performance repairs, and a single execution entrypoint with idempotent reconciliation, outcome accounting, compact context and owned cleanup guardrails.",
+  "status": "completed",
+  "dev_type": "docs",
+  "scope": "compact-feedback-planning",
+  "package": null,
+  "priority": "P1",
+  "creator": "codex",
+  "assignee": "codex",
+  "createdAt": "2026-09-12",
+  "completedAt": "2026-09-12",
+  "branch": null,
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": "7069bd1161913c0ed717aff94b1f5216935a09f0",
+  "pr_url": "https://github.com/rothnic/assura/pull/331",
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [
+    ".agents/skills/custom/assura-feedback-execution/SKILL.md",
+    "AGENTS.md"
+  ],
+  "notes": "Execution completed from the explicit merge invocation. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. CF01 is merged and verified by PR #328 at 75992ad4cfcba4efb1cfc8a1d3333208991bba88; CF02 by PR #329 at 9383acc2fd9a47d63553fd32768aef7428c7b34c; CF03 by PR #330 at 6c70e23640229cb784bded5f3406e32a90fa2f25; CF04 by PR #331 at 7069bd1161913c0ed717aff94b1f5216935a09f0. Candidate d811ef179d8cc101c2c3e336f303227258bf3c88 is archived by merge reachability. Card status lives in skill references/backlog.md; branch cleanup and restore handles live in branch-hygiene.md.",
+  "meta": {
+    "execution_branches": []
+  }
+}
