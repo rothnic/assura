@@ -435,12 +435,12 @@ fn truncated_status_does_not_invent_a_zero_dirty_file_count() {
         "structure:\n  ./:\n    extra: true\nexclude:\n  - .assura/**\nagent_feedback:\n  collection:\n    timeout_ms: 10000\n",
     )
     .expect("configure bounded stress timeout");
-    for index in 0..4_000 {
+    for index in 0..2_000 {
         write(
             &project
                 .path()
                 .join(format!(
-                    "untracked-{index:05}-status-output-padding-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt"
+                    "untracked-{index:05}-status-output-padding-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx.txt"
                 )),
             "untracked\n",
         );
