@@ -75,9 +75,26 @@ pub(super) fn terminate_process_tree(pid: u32) {
     }
     #[cfg(windows)]
     {
-        let _ = std::process::Command::new("taskkill")
+        let Ok(mut killer) = std::process::Command::new("taskkill")
             .args(["/PID", &pid.to_string(), "/T", "/F"])
-            .status();
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        else {
+            return;
+        };
+        let deadline = Instant::now() + Duration::from_millis(250);
+        loop {
+            match killer.try_wait() {
+                Ok(Some(_)) | Err(_) => break,
+                Ok(None) if Instant::now() >= deadline => {
+                    let _ = killer.kill();
+                    let _ = killer.wait();
+                    break;
+                }
+                Ok(None) => thread::sleep(Duration::from_millis(5)),
+            }
+        }
     }
 }
 
