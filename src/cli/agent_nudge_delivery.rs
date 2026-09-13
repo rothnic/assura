@@ -720,6 +720,7 @@ impl LeaseMutex {
             .read(true)
             .write(true)
             .create(true)
+            .truncate(false)
             .open(mutex)
             .ok()?;
         file.try_lock_exclusive().ok()?;
@@ -741,7 +742,7 @@ impl LeaseMutex {
 
 impl Drop for LeaseMutex {
     fn drop(&mut self) {
-        let _ = self.file.unlock();
+        let _ = FileExt::unlock(&self.file);
     }
 }
 
@@ -752,6 +753,7 @@ fn open_process_lease(path: &Path) -> Option<File> {
         .read(true)
         .write(true)
         .create(true)
+        .truncate(false)
         .open(path)
         .ok()?;
     file.try_lock_exclusive().ok()?;
@@ -1216,7 +1218,7 @@ impl DeliveryLease {
         let file = open_process_lease(&path)?;
         let token = format!("{}:{}", std::process::id(), now_millis());
         if write_process_lease(&file, &token).is_err() {
-            let _ = file.unlock();
+            let _ = FileExt::unlock(&file);
             return None;
         }
         Some(Self { file })
@@ -1225,7 +1227,7 @@ impl DeliveryLease {
 
 impl Drop for DeliveryLease {
     fn drop(&mut self) {
-        let _ = self.file.unlock();
+        let _ = FileExt::unlock(&self.file);
     }
 }
 

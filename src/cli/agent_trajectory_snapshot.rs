@@ -198,6 +198,7 @@ impl CacheLease {
             .read(true)
             .write(true)
             .create(true)
+            .truncate(false)
             .open(&path)
             .ok()?;
         file.try_lock_exclusive().ok()?;
@@ -215,7 +216,7 @@ impl CacheLease {
 
 impl Drop for CacheLease {
     fn drop(&mut self) {
-        let _ = self.file.unlock();
+        let _ = FileExt::unlock(&self.file);
     }
 }
 
