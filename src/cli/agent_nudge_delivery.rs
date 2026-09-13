@@ -1,13 +1,13 @@
 //! Fast automatic feedback selection over cached trajectory facts.
 
 use crate::config::config::{AgentFeedbackConfig, AgentFeedbackMode};
+use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 const STATE_SCHEMA: &str = "assura.agent-feedback-delivery.v1";
@@ -16,7 +16,16 @@ const MAX_STATE_SENDS: usize = 64;
 const MAX_STATE_BYTES: u64 = 64 * 1024;
 const ROUTINE_WRAPPER_BYTES: usize = "<assura-feedback>\n\n</assura-feedback>".len();
 const REFRESH_TOKEN_ENV: &str = "ASSURA_FEEDBACK_REFRESH_TOKEN";
-static REFRESH_FINISHED: AtomicBool = AtomicBool::new(false);
+const REFRESH_MIN_INTERVAL_ENV: &str = "ASSURA_FEEDBACK_REFRESH_MIN_INTERVAL_SECONDS";
+const REFRESH_SUPERVISOR_ENV: &str = "ASSURA_FEEDBACK_REFRESH_SUPERVISOR";
+const REFRESH_SUPERVISOR_PID_ENV: &str = "ASSURA_FEEDBACK_REFRESH_SUPERVISOR_PID";
+const REFRESH_SUPERVISOR_DEADLINE_ENV: &str = "ASSURA_FEEDBACK_REFRESH_SUPERVISOR_DEADLINE_MS";
+const REFRESH_SUPERVISOR_CLAIM_ENV: &str = "ASSURA_FEEDBACK_REFRESH_QUEUE_CLAIM";
+const REFRESH_READY_ENV: &str = "ASSURA_FEEDBACK_REFRESH_READY";
+const HANDOFF_GRACE_MILLIS: i64 = 250;
+const MAX_LEASE_TOKEN_BYTES: usize = 128;
+const MAX_FEEDBACK_SIDECARS: usize = 64;
+const FEEDBACK_SIDECAR_RETENTION_SECONDS: i64 = 7 * HOUR_SECONDS * 24;
 
 /// Effective automatic feedback settings exposed by inspect output.
 #[derive(Debug, Serialize)]
@@ -543,32 +552,38 @@ fn request_refresh(
     if fs::create_dir_all(parent).is_err() {
         return "unavailable";
     }
+    let state_path = state_path(project_root);
+    if !state_is_valid(&state_path) {
+        return "state_corrupt";
+    }
+    let Some(state_lease) = DeliveryLease::acquire(&state_path) else {
+        mark_refresh_queued(&lock);
+        return "in_flight";
+    };
+    let Some(refresh_guard) = LeaseMutex::try_acquire(&lock) else {
+        mark_refresh_queued(&lock);
+        return "in_flight";
+    };
+    prune_feedback_sidecars(parent, now);
     if let Ok(metadata) = fs::metadata(&lock) {
-        let owner_alive = lease_owner_alive(&lock);
-        let stale_after = (config.collection.timeout_ms / 1000).max(10) as i64 * 2;
-        let stale = metadata
-            .modified()
-            .ok()
-            .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
-            .map(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
-            .unwrap_or(false);
-        if owner_alive == Some(false)
-            || (stale && owner_alive.is_none() && lease_token_is_malformed(&lock))
-        {
-            let _ = fs::remove_file(&lock);
-        } else {
+        let observed_token = refresh_lease_token(&lock).ok();
+        let malformed = observed_token
+            .as_deref()
+            .and_then(refresh_lease_pid)
+            .is_none();
+        let stale = refresh_lease_is_stale(&metadata, now, config.collection.timeout_ms);
+        let reclaimed = !malformed
+            && stale
+            && observed_token.as_deref().is_some_and(|token| {
+                owner_alive_for_token(token) == Some(false)
+                    && reclaim_lease_if_token(&lock, token, &refresh_guard)
+            });
+        if !reclaimed {
             let queued = lock.with_extension("queued");
             let _ = OpenOptions::new().write(true).create_new(true).open(queued);
             return "in_flight";
         }
     }
-    let state_path = state_path(project_root);
-    if !state_is_valid(&state_path) {
-        return "state_corrupt";
-    }
-    let Some(_state_lease) = DeliveryLease::acquire(&state_path) else {
-        return "in_flight";
-    };
     let mut state = read_state(&state_path);
     if state.last_refresh_at_ms.is_some_and(|last| {
         now_millis().saturating_sub(last) < config.collection.debounce_ms as i64
@@ -581,6 +596,7 @@ fn request_refresh(
     {
         return "cooldown";
     }
+    let previous_state = state.clone();
     if OpenOptions::new()
         .write(true)
         .create_new(true)
@@ -591,159 +607,695 @@ fn request_refresh(
     }
     let token = format!("{}:{}", std::process::id(), now_millis());
     if fs::write(&lock, &token).is_err() {
-        let _ = fs::remove_file(&lock);
+        let _ = discard_refresh_lease(&lock);
         return "unavailable";
     }
     state.last_refresh_at = Some(now);
     state.last_refresh_at_ms = Some(now_millis());
     state.last_refresh_event = Some(event.to_string());
     if write_state(&state_path, &state).is_err() {
-        let _ = fs::remove_file(&lock);
+        let _ = release_refresh_lease_if_owned(&lock, &token, &refresh_guard);
         return "unavailable";
     }
+    let queued = lock.with_extension("queued");
+    let claimed_queue = claim_refresh_queue(&queued);
     let executable = match std::env::current_exe() {
         Ok(path) => path,
         Err(_) => {
-            let _ = fs::remove_file(&lock);
+            if let Some(claimed) = claimed_queue.as_deref() {
+                restore_refresh_queue(claimed, &queued);
+            }
+            let _ = write_state(&state_path, &previous_state);
+            let _ = release_refresh_lease_if_owned(&lock, &token, &refresh_guard);
             return "unavailable";
         }
     };
-    let child = Command::new(executable)
-        .args([
-            "agent",
-            "nudge",
-            project_root.to_string_lossy().as_ref(),
-            "--delivery",
-            "inspect",
-            "--format",
-            "json",
-        ])
-        .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
-        .env(REFRESH_TOKEN_ENV, &token)
-        .env(
-            "ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS",
-            config.collection.timeout_ms.to_string(),
-        )
-        .env(
-            "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
-            now_millis()
-                .saturating_add(config.collection.timeout_ms as i64)
-                .to_string(),
-        )
+    let deadline = now_millis().saturating_add(config.collection.timeout_ms as i64);
+    let args = refresh_args(project_root);
+    if !spawn_refresh_pair(
+        &executable,
+        &args,
+        &lock,
+        &token,
+        &refresh_guard,
+        config.collection.timeout_ms,
+        config.collection.min_refresh_seconds,
+        deadline,
+        claimed_queue.as_deref(),
+    ) {
+        if let Some(claimed) = claimed_queue.as_deref() {
+            restore_refresh_queue(claimed, &queued);
+        }
+        let _ = write_state(&state_path, &previous_state);
+        let _ = release_refresh_lease_if_owned(&lock, &token, &refresh_guard);
+        return "unavailable";
+    }
+    drop(state_lease);
+    "scheduled"
+}
+
+fn refresh_args(project_root: &Path) -> Vec<std::ffi::OsString> {
+    vec![
+        "agent".into(),
+        "nudge".into(),
+        project_root.as_os_str().to_os_string(),
+        "--delivery".into(),
+        "inspect".into(),
+        "--format".into(),
+        "json".into(),
+    ]
+}
+
+// allow-reason: the spawn boundary keeps worker, lease, cadence, and deadline inputs explicit.
+#[allow(clippy::too_many_arguments)]
+fn spawn_refresh_pair(
+    executable: &Path,
+    args: &[std::ffi::OsString],
+    lock: &Path,
+    token: &str,
+    guard: &LeaseMutex,
+    timeout_ms: u64,
+    min_refresh_seconds: u64,
+    deadline: i64,
+    claimed_queue: Option<&Path>,
+) -> bool {
+    let Some(parent) = lock.parent() else {
+        return false;
+    };
+    let Some(lock_name) = lock.file_name().and_then(|name| name.to_str()) else {
+        return false;
+    };
+    let ready = parent.join(format!(
+        ".{lock_name}.{}.{}.ready",
+        std::process::id(),
+        now_millis()
+    ));
+    let mut worker = Command::new(executable);
+    worker
+        .args(args)
+        .env("ASSURA_FEEDBACK_REFRESH_LOCK", lock)
+        .env(REFRESH_TOKEN_ENV, token)
+        .env("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS", timeout_ms.to_string())
+        .env(REFRESH_MIN_INTERVAL_ENV, min_refresh_seconds.to_string())
+        .env("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS", deadline.to_string())
+        .env(REFRESH_READY_ENV, &ready)
+        .env_remove(REFRESH_SUPERVISOR_ENV)
+        .env_remove(REFRESH_SUPERVISOR_PID_ENV)
+        .env_remove(REFRESH_SUPERVISOR_DEADLINE_ENV)
+        .env_remove(REFRESH_SUPERVISOR_CLAIM_ENV)
         .env_remove("ASSURA_AGENT_LOG")
         .stdin(Stdio::null())
         .stdout(Stdio::null())
-        .stderr(Stdio::null())
-        .spawn();
-    if child.is_err() {
-        let _ = fs::remove_file(lock);
-        return "unavailable";
+        .stderr(Stdio::null());
+    super::agent_trajectory::isolate_process_tree(&mut worker);
+    let mut child = match worker.spawn() {
+        Ok(child) => child,
+        Err(_) => return false,
+    };
+    let child_token = format!("{}:{}", child.id(), now_millis());
+    if !replace_refresh_lease_if_owned(lock, token, &child_token, guard) {
+        super::agent_trajectory::terminate_process_tree(child.id());
+        let _ = child.wait();
+        let _ = fs::remove_file(&ready);
+        return false;
     }
-    "scheduled"
+
+    let mut supervisor = Command::new(executable);
+    supervisor
+        .args(args)
+        .env(REFRESH_SUPERVISOR_ENV, "1")
+        .env(REFRESH_SUPERVISOR_PID_ENV, child.id().to_string())
+        .env(REFRESH_SUPERVISOR_DEADLINE_ENV, deadline.to_string())
+        .env("ASSURA_FEEDBACK_REFRESH_LOCK", lock)
+        .env(REFRESH_TOKEN_ENV, token)
+        .env("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS", timeout_ms.to_string())
+        .env(REFRESH_MIN_INTERVAL_ENV, min_refresh_seconds.to_string())
+        .env("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS", deadline.to_string())
+        .env(REFRESH_READY_ENV, &ready)
+        .env_remove("ASSURA_AGENT_LOG")
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+    if let Some(claimed_queue) = claimed_queue {
+        supervisor.env(REFRESH_SUPERVISOR_CLAIM_ENV, claimed_queue);
+    }
+    let supervisor_spawned = supervisor.spawn().is_ok();
+    if !supervisor_spawned {
+        super::agent_trajectory::terminate_process_tree(child.id());
+        let _ = child.wait();
+        let _ = replace_refresh_lease_if_owned(lock, &child_token, token, guard);
+        let _ = fs::remove_file(&ready);
+    }
+    supervisor_spawned
+}
+
+fn mark_refresh_queued(lock: &Path) {
+    let queued = lock.with_extension("queued");
+    let _ = OpenOptions::new().write(true).create_new(true).open(queued);
+}
+
+pub(super) fn run_refresh_supervisor_if_requested() -> bool {
+    if std::env::var(REFRESH_SUPERVISOR_ENV).ok().as_deref() != Some("1") {
+        return false;
+    }
+    let pid = std::env::var(REFRESH_SUPERVISOR_PID_ENV)
+        .ok()
+        .and_then(|value| value.parse::<u32>().ok());
+    let deadline = std::env::var(REFRESH_SUPERVISOR_DEADLINE_ENV)
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok());
+    let lock = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").map(PathBuf::from);
+    let token = std::env::var(REFRESH_TOKEN_ENV).ok();
+    let ready = std::env::var_os(REFRESH_READY_ENV).map(PathBuf::from);
+    let claimed_queue = std::env::var_os(REFRESH_SUPERVISOR_CLAIM_ENV).map(PathBuf::from);
+    if let (Some(pid), Some(deadline), Some(lock), Some(token)) = (pid, deadline, lock, token) {
+        supervise_refresh(
+            pid,
+            deadline,
+            &lock,
+            &token,
+            ready.as_deref(),
+            claimed_queue.as_deref(),
+        );
+    }
+    true
+}
+
+fn supervise_refresh(
+    pid: u32,
+    deadline: i64,
+    lock: &Path,
+    token: &str,
+    ready: Option<&Path>,
+    claimed_queue: Option<&Path>,
+) {
+    while process_owner_alive(pid) != Some(false) && now_millis() < deadline {
+        std::thread::sleep(Duration::from_millis(5));
+    }
+    if process_owner_alive(pid) != Some(false) {
+        super::agent_trajectory::terminate_process_tree(pid);
+        let cleanup_deadline = now_millis().saturating_add(HANDOFF_GRACE_MILLIS);
+        while process_owner_alive(pid) != Some(false) && now_millis() < cleanup_deadline {
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    }
+    settle_refresh_queue(lock, ready, claimed_queue);
+    if let Some(active_token) = refresh_token_for_worker(lock, pid, token) {
+        finish_refresh_with_deadline(
+            lock,
+            &active_token,
+            now_millis().saturating_add(HANDOFF_GRACE_MILLIS),
+        );
+    }
+}
+
+fn settle_refresh_queue(lock: &Path, ready: Option<&Path>, claimed_queue: Option<&Path>) {
+    let refresh_ready = ready.is_some_and(Path::is_file);
+    if let Some(claimed_queue) = claimed_queue {
+        let queued = lock.with_extension("queued");
+        if refresh_ready {
+            let _ = fs::remove_file(claimed_queue);
+        } else {
+            restore_refresh_queue(claimed_queue, &queued);
+        }
+    }
+    if let Some(ready) = ready {
+        let _ = fs::remove_file(ready);
+    }
+}
+
+fn refresh_token_for_worker(path: &Path, pid: u32, provisional: &str) -> Option<String> {
+    let current = refresh_lease_token(path).ok()?;
+    (current == provisional || refresh_lease_pid(&current) == Some(pid)).then_some(current)
 }
 
 /// Release a refresh lease when the short-lived inspect child exits.
 pub(super) fn finish_refresh() {
-    REFRESH_FINISHED.store(true, Ordering::Release);
     if let Some(path) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") {
         let path = PathBuf::from(path);
         let Some(token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
             return;
         };
-        if !refresh_lease_owned(&path, &token) {
-            return;
-        }
-        let queued = path.with_extension("queued");
-        if queued.is_file() {
-            let next_token = format!("{}:{}", std::process::id(), now_millis());
-            if !replace_refresh_lease(&path, &next_token) {
-                return;
-            }
-            let spawned = std::env::current_exe().ok().is_some_and(|executable| {
-                let args = std::env::args_os().skip(1).collect::<Vec<_>>();
-                Command::new(executable)
-                    .args(args)
-                    .env("ASSURA_FEEDBACK_REFRESH_LOCK", &path)
-                    .env(REFRESH_TOKEN_ENV, &next_token)
-                    .env(
-                        "ASSURA_FEEDBACK_REFRESH_DEADLINE_MS",
-                        now_millis()
-                            .saturating_add(
-                                std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
-                                    .ok()
-                                    .and_then(|value| value.parse::<i64>().ok())
-                                    .unwrap_or(2_000),
-                            )
-                            .to_string(),
-                    )
-                    .env_remove("ASSURA_AGENT_LOG")
-                    .stdin(Stdio::null())
-                    .stdout(Stdio::null())
-                    .stderr(Stdio::null())
-                    .spawn()
-                    .is_ok()
-            });
-            if spawned {
-                let _ = fs::remove_file(&queued);
-            } else {
-                let _ = remove_refresh_lease_if_owned(&path, std::ffi::OsStr::new(&next_token));
-            }
-            return;
-        }
-        let _ = remove_refresh_lease_if_owned(&path, &token);
+        let token = token.to_string_lossy().into_owned();
+        let wait_until = refresh_deadline_millis()
+            .map(|deadline| deadline.saturating_add(HANDOFF_GRACE_MILLIS))
+            .unwrap_or_else(|| now_millis().saturating_add(500));
+        finish_refresh_with_deadline(&path, &token, wait_until);
     }
+}
+
+fn finish_refresh_with_deadline(path: &Path, token: &str, wait_until: i64) {
+    let min_interval = std::env::var(REFRESH_MIN_INTERVAL_ENV)
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+        .unwrap_or_default();
+    finish_refresh_with_min_interval(path, token, wait_until, min_interval);
+}
+
+fn finish_refresh_with_min_interval(path: &Path, token: &str, wait_until: i64, min_interval: i64) {
+    let state_path = path.with_extension("json");
+    let Some(refresh_guard) = LeaseMutex::acquire_until(path, wait_until) else {
+        return;
+    };
+    let Some(_state_lease) = DeliveryLease::acquire(&state_path) else {
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    };
+    if let Some(parent) = path.parent() {
+        prune_feedback_sidecars(parent, now());
+    }
+    if !refresh_lease_owned(path, token) {
+        return;
+    }
+    let queued = path.with_extension("queued");
+    if !queued.is_file() {
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    }
+
+    let mut state = read_state(&state_path);
+    if state
+        .last_refresh_at
+        .is_some_and(|last| now().saturating_sub(last) < min_interval)
+    {
+        // Leave the queue marker for the next event after cooldown; do not
+        // start a refresh chain that bypasses the shared cadence.
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    }
+
+    let Some(claimed) = claim_refresh_queue(&queued) else {
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    };
+    let previous_state = state.clone();
+    let handoff_at = now();
+    state.last_refresh_at = Some(handoff_at);
+    state.last_refresh_at_ms = Some(now_millis());
+    state.last_refresh_event = Some("queued_handoff".to_string());
+    if write_state(&state_path, &state).is_err() {
+        restore_refresh_queue(&claimed, &queued);
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    }
+
+    let next_token = format!("{}:{}", std::process::id(), now_millis());
+    if !replace_refresh_lease_if_owned(path, token, &next_token, &refresh_guard) {
+        let _ = write_state(&state_path, &previous_state);
+        restore_refresh_queue(&claimed, &queued);
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+        return;
+    }
+    let spawned = std::env::current_exe().ok().is_some_and(|executable| {
+        let args = std::env::args_os().skip(1).collect::<Vec<_>>();
+        let timeout_ms = std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
+            .ok()
+            .and_then(|value| value.parse::<u64>().ok())
+            .unwrap_or(2_000);
+        spawn_refresh_pair(
+            &executable,
+            &args,
+            path,
+            &next_token,
+            &refresh_guard,
+            timeout_ms,
+            min_interval.max(0) as u64,
+            now_millis().saturating_add(timeout_ms as i64),
+            Some(&claimed),
+        )
+    });
+    if !spawned {
+        let _ = replace_refresh_lease_if_owned(path, &next_token, token, &refresh_guard);
+        let _ = write_state(&state_path, &previous_state);
+        restore_refresh_queue(&claimed, &queued);
+        let _ = release_refresh_lease_if_owned(path, token, &refresh_guard);
+    }
+}
+
+fn claim_refresh_queue(queued: &Path) -> Option<PathBuf> {
+    let parent = queued.parent()?;
+    let name = queued.file_name()?.to_str()?;
+    let claimed = parent.join(format!(
+        ".{name}.{}.{}.claim",
+        std::process::id(),
+        now_millis()
+    ));
+    fs::rename(queued, &claimed).ok().map(|()| claimed)
+}
+
+fn prune_feedback_sidecars(parent: &Path, now: i64) {
+    let Ok(entries) = fs::read_dir(parent) else {
+        return;
+    };
+    let mut sidecars = entries
+        .filter_map(Result::ok)
+        .filter_map(|entry| {
+            let path = entry.path();
+            if !entry.file_type().ok()?.is_file() {
+                return None;
+            }
+            let pid = feedback_sidecar_pid(entry.file_name().to_str()?)?;
+            (process_owner_alive(pid) == Some(false)).then_some((
+                path,
+                entry
+                    .metadata()
+                    .ok()
+                    .and_then(|metadata| metadata.modified().ok())
+                    .and_then(|modified| modified.duration_since(UNIX_EPOCH).ok())
+                    .map(|duration| duration.as_secs().min(i64::MAX as u64) as i64)
+                    .unwrap_or(now),
+            ))
+        })
+        .collect::<Vec<_>>();
+    let expired = sidecars
+        .iter()
+        .filter(|(_, modified)| now.saturating_sub(*modified) > FEEDBACK_SIDECAR_RETENTION_SECONDS)
+        .count();
+    let excess = sidecars.len().saturating_sub(MAX_FEEDBACK_SIDECARS);
+    let remove_count = expired.max(excess);
+    if remove_count == 0 {
+        return;
+    }
+    sidecars.sort_by_key(|(_, modified)| *modified);
+    for (path, _) in sidecars.into_iter().take(remove_count) {
+        let _ = fs::remove_file(path);
+    }
+}
+
+fn feedback_sidecar_pid(name: &str) -> Option<u32> {
+    let mut parts = name.strip_prefix('.')?.rsplit('.');
+    let suffix = parts.next()?;
+    if !matches!(
+        suffix,
+        "claim" | "reclaiming" | "reclaimed" | "replacing" | "ready" | "tmp"
+    ) {
+        return None;
+    }
+    parts.next()?.parse::<i64>().ok()?;
+    let pid = parts.next()?.parse::<u32>().ok()?.max(1);
+    if suffix != "tmp" {
+        parts.next()?;
+    }
+    Some(pid)
+}
+
+fn restore_refresh_queue(claimed: &Path, queued: &Path) {
+    if queued.exists() {
+        return;
+    }
+    let _ = fs::rename(claimed, queued);
+}
+
+struct LeaseMutex {
+    file: File,
+}
+
+impl LeaseMutex {
+    fn try_acquire(path: &Path) -> Option<Self> {
+        let parent = path.parent()?;
+        fs::create_dir_all(parent).ok()?;
+        let mutex = path.with_extension("mutex");
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(mutex)
+            .ok()?;
+        file.try_lock_exclusive().ok()?;
+        Some(Self { file })
+    }
+
+    fn acquire_until(path: &Path, wait_until: i64) -> Option<Self> {
+        loop {
+            if let Some(lease) = Self::try_acquire(path) {
+                return Some(lease);
+            }
+            if now_millis() >= wait_until {
+                return None;
+            }
+            std::thread::sleep(Duration::from_millis(5));
+        }
+    }
+}
+
+impl Drop for LeaseMutex {
+    fn drop(&mut self) {
+        let _ = FileExt::unlock(&self.file);
+    }
+}
+
+fn open_process_lease(path: &Path) -> Option<File> {
+    let parent = path.parent()?;
+    fs::create_dir_all(parent).ok()?;
+    let file = OpenOptions::new()
+        .read(true)
+        .write(true)
+        .create(true)
+        .truncate(false)
+        .open(path)
+        .ok()?;
+    file.try_lock_exclusive().ok()?;
+    Some(file)
+}
+
+fn write_process_lease(file: &File, token: &str) -> std::io::Result<()> {
+    file.set_len(0)?;
+    let mut file = file;
+    file.seek(SeekFrom::Start(0))?;
+    file.write_all(token.as_bytes())
 }
 
 /// Bound the whole inspect worker, including config and daemon setup before Git.
-pub(super) fn start_refresh_watchdog() {
-    REFRESH_FINISHED.store(false, Ordering::Release);
-    let Some(deadline) = refresh_deadline_millis() else {
-        return;
+pub(super) fn start_refresh_watchdog() -> bool {
+    let Some(lock) = std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK") else {
+        return true;
     };
-    if std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none() {
-        return;
+    let Some(expected_token) = std::env::var_os(REFRESH_TOKEN_ENV) else {
+        return true;
+    };
+    let lock = PathBuf::from(lock);
+    let expected_token = expected_token.to_string_lossy().into_owned();
+    let deadline = refresh_deadline_millis();
+    let wait_until = deadline.unwrap_or_else(|| now_millis().saturating_add(500));
+    let state_path = lock.with_extension("json");
+    let Some(state_lease) = acquire_refresh_worker_lease(&state_path, wait_until) else {
+        return false;
+    };
+    let Some(refresh_guard) = LeaseMutex::acquire_until(&lock, wait_until) else {
+        return false;
+    };
+    let worker_token = format!("{}:{}", std::process::id(), now_millis());
+    let current_token = refresh_lease_token(&lock).ok();
+    let active_token = if current_token.as_deref() == Some(expected_token.as_str()) {
+        if !replace_refresh_lease_if_owned(&lock, &expected_token, &worker_token, &refresh_guard) {
+            return false;
+        }
+        worker_token
+    } else if current_token.as_deref().and_then(refresh_lease_pid) != Some(std::process::id()) {
+        return false;
+    } else {
+        // The parent promoted the provisional token to this child PID before
+        // setup began; keep that generation for supervisor cleanup.
+        current_token.expect("current worker token")
+    };
+    std::env::set_var(REFRESH_TOKEN_ENV, &active_token);
+    super::agent_trajectory::reset_refresh_cancellation();
+    drop(refresh_guard);
+    drop(state_lease);
+    if let Some(ready) = std::env::var_os(REFRESH_READY_ENV) {
+        if fs::write(ready, b"ready").is_err() {
+            return false;
+        }
     }
-    if std::env::var_os(REFRESH_TOKEN_ENV).is_none() {
-        return;
-    }
+    let Some(deadline) = deadline else {
+        return true;
+    };
     let remaining = deadline.saturating_sub(now_millis());
     if remaining <= 0 {
-        finish_refresh();
-        return;
+        super::agent_trajectory::cancel_refresh_worker();
+        return true;
     }
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(remaining as u64));
-        if refresh_deadline_expired() && !REFRESH_FINISHED.load(Ordering::Acquire) {
-            // Bounded Git children clean themselves up; release or hand off
-            // the lease without an abrupt process exit.
-            finish_refresh();
+        if refresh_deadline_expired() {
+            // Ask the bounded Git runner to terminate its child, then let the
+            // command unwind through finish_refresh and release or hand off.
+            super::agent_trajectory::cancel_refresh_worker();
         }
     });
+    true
 }
 
-fn refresh_lease_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
-    fs::read_to_string(path)
-        .ok()
-        .is_some_and(|current| current == token.to_string_lossy())
+fn refresh_lease_owned(path: &Path, token: &str) -> bool {
+    parse_refresh_token(token).is_some()
+        && refresh_lease_token(path)
+            .ok()
+            .is_some_and(|current| current == token && parse_refresh_token(&current).is_some())
 }
 
-fn remove_refresh_lease_if_owned(path: &Path, token: &std::ffi::OsStr) -> bool {
-    refresh_lease_owned(path, token) && fs::remove_file(path).is_ok()
+fn refresh_lease_token(path: &Path) -> Result<String, std::io::Error> {
+    let owner = if path.is_dir() {
+        path.join("owner")
+    } else {
+        path.to_path_buf()
+    };
+    let file = File::open(owner)?;
+    let mut bytes = Vec::new();
+    file.take((MAX_LEASE_TOKEN_BYTES + 1) as u64)
+        .read_to_end(&mut bytes)?;
+    if bytes.len() > MAX_LEASE_TOKEN_BYTES {
+        return Err(std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "refresh lease token exceeds bound",
+        ));
+    }
+    String::from_utf8(bytes).map_err(|_| {
+        std::io::Error::new(
+            std::io::ErrorKind::InvalidData,
+            "refresh lease token is not UTF-8",
+        )
+    })
 }
 
-fn replace_refresh_lease(path: &Path, token: &str) -> bool {
+fn replace_refresh_lease_if_owned(
+    path: &Path,
+    expected: &str,
+    replacement: &str,
+    _guard: &LeaseMutex,
+) -> bool {
+    replace_lease_if_token(path, expected, replacement, _guard)
+}
+
+fn release_refresh_lease_if_owned(path: &Path, token: &str, guard: &LeaseMutex) -> bool {
+    reclaim_lease_if_token(path, token, guard)
+}
+
+#[cfg(test)]
+fn reclaim_refresh_lease(path: &Path, expected_token: &str) -> bool {
+    let guard = LeaseMutex::try_acquire(path).expect("refresh lease guard");
+    reclaim_lease_if_token(path, expected_token, &guard)
+}
+
+fn reclaim_lease_if_token(path: &Path, expected: &str, _guard: &LeaseMutex) -> bool {
     let Some(parent) = path.parent() else {
         return false;
     };
-    let temporary = parent.join(format!(".{}.{}.tmp", std::process::id(), now_millis()));
-    if fs::write(&temporary, token).is_err() {
+    let name = path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("lease");
+    let reclaimed = parent.join(format!(
+        ".{name}.{}.{}.reclaiming",
+        std::process::id(),
+        now_millis()
+    ));
+    if fs::rename(path, &reclaimed).is_err() {
         return false;
     }
-    let result = super::replace_file(&temporary, path).is_ok();
-    if !result {
-        let _ = fs::remove_file(&temporary);
+    if parse_refresh_token(expected).is_some()
+        && refresh_lease_token(&reclaimed).ok().as_deref() == Some(expected)
+    {
+        remove_lease_path(&reclaimed);
+        return true;
     }
-    result
+    restore_or_remove_lease(&reclaimed, path);
+    false
+}
+
+fn replace_lease_if_token(
+    path: &Path,
+    expected: &str,
+    replacement: &str,
+    _guard: &LeaseMutex,
+) -> bool {
+    let Some(parent) = path.parent() else {
+        return false;
+    };
+    let name = path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("lease");
+    let temporary = parent.join(format!(
+        ".{name}.{}.{}.replacing",
+        std::process::id(),
+        now_millis()
+    ));
+    if fs::rename(path, &temporary).is_err() {
+        return false;
+    }
+    let destination = if temporary.is_dir() {
+        temporary.join("owner")
+    } else {
+        temporary.clone()
+    };
+    if parse_refresh_token(expected).is_none()
+        || parse_refresh_token(replacement).is_none()
+        || refresh_lease_token(&temporary).ok().as_deref() != Some(expected)
+        || fs::write(&destination, replacement).is_err()
+    {
+        restore_or_remove_lease(&temporary, path);
+        return false;
+    }
+    match fs::rename(&temporary, path) {
+        Ok(()) => true,
+        Err(_) => {
+            restore_or_remove_lease(&temporary, path);
+            false
+        }
+    }
+}
+
+fn restore_or_remove_lease(temporary: &Path, destination: &Path) {
+    if destination.exists() || fs::rename(temporary, destination).is_err() {
+        remove_lease_path(temporary);
+    }
+}
+
+fn remove_lease_path(path: &Path) {
+    if path.is_dir() {
+        let _ = fs::remove_dir_all(path);
+    } else {
+        let _ = fs::remove_file(path);
+    }
+}
+
+fn discard_refresh_lease(path: &Path) -> bool {
+    let Some(parent) = path.parent() else {
+        return false;
+    };
+    let name = path
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or("refresh");
+    let abandoned = parent.join(format!(
+        ".{name}.{}.{}.reclaimed",
+        std::process::id(),
+        now_millis()
+    ));
+    match fs::rename(path, &abandoned) {
+        Ok(()) => {
+            if abandoned.is_dir() {
+                fs::remove_dir_all(abandoned).is_ok()
+            } else {
+                fs::remove_file(abandoned).is_ok()
+            }
+        }
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => !path.exists(),
+        Err(_) => false,
+    }
+}
+
+fn acquire_refresh_worker_lease(state: &Path, wait_until: i64) -> Option<DeliveryLease> {
+    loop {
+        if let Some(lease) = DeliveryLease::acquire(state) {
+            return Some(lease);
+        }
+        if now_millis() >= wait_until {
+            return None;
+        }
+        std::thread::sleep(Duration::from_millis(5));
+    }
 }
 
 pub(super) fn refresh_deadline_expired() -> bool {
@@ -907,26 +1459,69 @@ fn write_state(path: &Path, state: &DeliveryState) -> Result<(), String> {
     super::replace_file(&temporary, path).map_err(|error| error.to_string())
 }
 
+#[cfg(test)]
 pub(super) fn lease_owner_alive(path: &Path) -> Option<bool> {
-    let token = fs::read_to_string(path).ok()?;
-    let pid = token.split(':').next()?.parse::<u32>().ok()?;
+    let token = refresh_lease_token(path).ok()?;
+    owner_alive_for_token(&token)
+}
+
+pub(super) fn owner_alive_for_token(token: &str) -> Option<bool> {
+    let pid = refresh_lease_pid(token)?;
     process_owner_alive(pid)
 }
 
-fn lease_token_is_malformed(path: &Path) -> bool {
-    fs::read_to_string(path)
+fn refresh_lease_pid(token: &str) -> Option<u32> {
+    parse_refresh_token(token).map(|(pid, _)| pid)
+}
+
+fn parse_refresh_token(token: &str) -> Option<(u32, i64)> {
+    let (pid, timestamp) = token.split_once(':')?;
+    if pid.is_empty()
+        || timestamp.is_empty()
+        || !pid.bytes().all(|byte| byte.is_ascii_digit())
+        || !timestamp.bytes().all(|byte| byte.is_ascii_digit())
+    {
+        return None;
+    }
+    let pid = pid.parse::<u32>().ok().filter(|pid| *pid > 0)?;
+    let timestamp = timestamp.parse::<i64>().ok()?;
+    Some((pid, timestamp))
+}
+
+fn refresh_lease_is_stale(metadata: &fs::Metadata, now: i64, timeout_ms: u64) -> bool {
+    let stale_after = (timeout_ms / 1_000).max(10).saturating_mul(2) as i64;
+    metadata
+        .modified()
         .ok()
-        .and_then(|token| token.split(':').next()?.parse::<u32>().ok())
-        .is_none()
+        .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
+        .is_some_and(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
+}
+
+#[cfg(test)]
+fn stale_lease_owner_is_gone(owner_alive: Option<bool>) -> bool {
+    owner_alive == Some(false)
 }
 
 #[cfg(unix)]
 fn process_owner_alive(pid: u32) -> Option<bool> {
-    Command::new("kill")
+    let probe = Command::new("kill")
         .args(["-0", &pid.to_string()])
-        .status()
-        .ok()
-        .map(|status| status.success())
+        .output()
+        .ok()?;
+    if probe.status.success() {
+        return Some(true);
+    }
+    let visible = Command::new("ps")
+        .args(["-p", &pid.to_string(), "-o", "pid="])
+        .output()
+        .ok()?;
+    if !visible.stdout.is_empty() {
+        Some(true)
+    } else if !visible.status.success() {
+        Some(false)
+    } else {
+        None
+    }
 }
 
 #[cfg(windows)]
@@ -962,48 +1557,25 @@ fn process_owner_alive(_pid: u32) -> Option<bool> {
 }
 
 struct DeliveryLease {
-    path: PathBuf,
-    token: String,
+    file: File,
 }
 
 impl DeliveryLease {
     fn acquire(state: &Path) -> Option<Self> {
-        let parent = state.parent()?;
-        if fs::create_dir_all(parent).is_err() {
-            return None;
-        }
         let path = state.with_extension("lock");
-        if let Ok(metadata) = fs::metadata(&path) {
-            let stale = metadata
-                .modified()
-                .ok()
-                .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
-                .map(|value| now().saturating_sub(value.as_secs() as i64) > 30)
-                .unwrap_or(false);
-            if stale && lease_owner_alive(&path) != Some(true) {
-                let _ = fs::remove_file(&path);
-            }
-        }
+        let file = open_process_lease(&path)?;
         let token = format!("{}:{}", std::process::id(), now_millis());
-        let file = OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&path)
-            .ok()?;
-        drop(file);
-        if fs::write(&path, &token).is_err() {
-            let _ = fs::remove_file(&path);
+        if write_process_lease(&file, &token).is_err() {
+            let _ = FileExt::unlock(&file);
             return None;
         }
-        Some(Self { path, token })
+        Some(Self { file })
     }
 }
 
 impl Drop for DeliveryLease {
     fn drop(&mut self) {
-        if fs::read_to_string(&self.path).ok().as_deref() == Some(self.token.as_str()) {
-            let _ = fs::remove_file(&self.path);
-        }
+        let _ = FileExt::unlock(&self.file);
     }
 }
 
@@ -1106,6 +1678,24 @@ mod tests {
     }
 
     #[test]
+    fn state_lock_contention_preserves_a_queued_refresh() {
+        let root = tempdir().expect("refresh directory");
+        fs::create_dir(root.path().join(".git")).expect("git directory");
+        let state = state_path(root.path());
+        let holder = DeliveryLease::acquire(&state).expect("state holder");
+        let config = AgentFeedbackConfig::default();
+
+        assert_eq!(
+            request_refresh(root.path(), &config, now(), "after_tool"),
+            "in_flight"
+        );
+        assert!(refresh_lock_path(root.path())
+            .with_extension("queued")
+            .is_file());
+        drop(holder);
+    }
+
+    #[test]
     fn lease_owner_probe_distinguishes_live_and_gone_processes() {
         let root = tempdir().expect("lease directory");
         let path = root.path().join("lease");
@@ -1125,6 +1715,222 @@ mod tests {
         child.wait().expect("short-lived owner exits");
         fs::write(&path, format!("{child_pid}:0")).expect("gone owner");
         assert_eq!(lease_owner_alive(&path), Some(false));
+    }
+
+    #[test]
+    fn unknown_owner_probe_does_not_reclaim_a_stale_delivery_lease() {
+        let root = tempdir().expect("lease directory");
+        let path = root.path().join("lease");
+        fs::write(&path, "not-a-process").expect("unknown owner");
+        assert_eq!(lease_owner_alive(&path), None);
+        assert!(!stale_lease_owner_is_gone(None));
+        assert!(stale_lease_owner_is_gone(Some(false)));
+        assert!(!stale_lease_owner_is_gone(Some(true)));
+    }
+
+    #[test]
+    fn refresh_reclaim_is_generation_fenced() {
+        let root = tempdir().expect("refresh directory");
+        let path = root.path().join("refresh");
+        fs::write(&path, "123456789:1").expect("refresh owner");
+        assert!(!reclaim_refresh_lease(&path, "123456789:2"));
+        assert!(path.exists());
+        assert!(reclaim_refresh_lease(&path, "123456789:1"));
+        assert!(!path.exists());
+    }
+
+    #[test]
+    fn stale_concurrent_reclaim_preserves_a_replaced_owner() {
+        let root = tempdir().expect("refresh directory");
+        let path = root.path().join("refresh");
+        fs::write(&path, "123456789:2").expect("new refresh owner");
+        let guard = LeaseMutex::try_acquire(&path).expect("refresh lease guard");
+        assert!(!reclaim_lease_if_token(&path, "123456789:1", &guard));
+        assert_eq!(
+            refresh_lease_token(&path).ok().as_deref(),
+            Some("123456789:2")
+        );
+    }
+
+    #[test]
+    fn directory_refresh_handoff_replaces_only_its_owner_file() {
+        let root = tempdir().expect("refresh directory");
+        let path = root.path().join("refresh");
+        fs::create_dir(&path).expect("refresh lease");
+        fs::write(path.join("owner"), "123456789:1").expect("refresh owner");
+        let guard = LeaseMutex::try_acquire(&path).expect("refresh lease guard");
+        assert!(replace_refresh_lease_if_owned(
+            &path,
+            "123456789:1",
+            "123456789:2",
+            &guard
+        ));
+        assert_eq!(
+            refresh_lease_token(&path).ok().as_deref(),
+            Some("123456789:2")
+        );
+        assert!(path.is_dir());
+    }
+
+    #[test]
+    fn refresh_token_requires_full_bounded_grammar() {
+        assert_eq!(parse_refresh_token("12:345"), Some((12, 345)));
+        assert_eq!(parse_refresh_token("12:garbage"), None);
+        assert_eq!(parse_refresh_token("12:345:678"), None);
+        assert_eq!(parse_refresh_token("0:345"), None);
+        let root = tempdir().expect("refresh directory");
+        let path = root.path().join("refresh");
+        fs::write(&path, "1:2:3").expect("malformed owner");
+        assert_eq!(lease_owner_alive(&path), None);
+        fs::write(&path, vec![b'x'; MAX_LEASE_TOKEN_BYTES + 1]).expect("oversized owner");
+        assert!(refresh_lease_token(&path).is_err());
+    }
+
+    #[test]
+    fn queued_marker_claim_can_be_restored_without_loss() {
+        let root = tempdir().expect("refresh directory");
+        let queued = root.path().join("refresh.queued");
+        fs::write(&queued, b"queued").expect("queue marker");
+        let claimed = claim_refresh_queue(&queued).expect("claim marker");
+        assert!(!queued.exists());
+        restore_refresh_queue(&claimed, &queued);
+        assert_eq!(
+            fs::read_to_string(&queued).expect("restored marker"),
+            "queued"
+        );
+    }
+
+    #[test]
+    fn feedback_sidecar_retention_prunes_dead_owned_files() {
+        let root = tempdir().expect("feedback directory");
+        #[cfg(windows)]
+        let mut child = Command::new("cmd")
+            .args(["/C", "exit", "0"])
+            .spawn()
+            .expect("short-lived owner");
+        #[cfg(not(windows))]
+        let mut child = Command::new("sh")
+            .args(["-c", "exit 0"])
+            .spawn()
+            .expect("short-lived owner");
+        let child_pid = child.id();
+        child.wait().expect("short-lived owner exits");
+        for index in 0..(MAX_FEEDBACK_SIDECARS + 8) {
+            fs::write(
+                root.path()
+                    .join(format!(".refresh.{child_pid}.{index}.claim")),
+                b"claim",
+            )
+            .expect("sidecar");
+        }
+
+        prune_feedback_sidecars(root.path(), now());
+
+        let remaining = fs::read_dir(root.path())
+            .expect("feedback directory")
+            .count();
+        assert_eq!(remaining, MAX_FEEDBACK_SIDECARS);
+    }
+
+    #[test]
+    fn cleanup_contention_releases_the_active_lease_and_preserves_queue() {
+        let root = tempdir().expect("refresh directory");
+        let lock = root.path().join("refresh");
+        let token = format!("{}:1", std::process::id());
+        fs::write(&lock, &token).expect("refresh owner");
+        fs::write(lock.with_extension("queued"), b"queued").expect("queue marker");
+        let state = lock.with_extension("json");
+        let holder = DeliveryLease::acquire(&state).expect("state holder");
+
+        finish_refresh_with_min_interval(&lock, &token, now_millis().saturating_add(100), 0);
+
+        assert!(!lock.exists());
+        assert!(lock.with_extension("queued").is_file());
+        drop(holder);
+    }
+
+    #[test]
+    fn queued_handoff_honors_shared_refresh_cooldown() {
+        let root = tempdir().expect("refresh directory");
+        let lock = root.path().join("refresh");
+        let token = format!("{}:1", std::process::id());
+        fs::write(&lock, &token).expect("refresh owner");
+        fs::write(lock.with_extension("queued"), b"queued").expect("queue marker");
+        let state_path = lock.with_extension("json");
+        write_state(
+            &state_path,
+            &DeliveryState {
+                schema: STATE_SCHEMA.to_string(),
+                last_refresh_at: Some(now().saturating_sub(1)),
+                ..Default::default()
+            },
+        )
+        .expect("refresh state");
+
+        finish_refresh_with_min_interval(&lock, &token, now_millis().saturating_add(100), 60);
+
+        assert!(lock.with_extension("queued").is_file());
+        assert!(!lock.exists());
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn refresh_supervisor_terminates_setup_descendant_tree() {
+        let root = tempdir().expect("refresh directory");
+        let pid_file = root.path().join("child.pid");
+        let mut worker = Command::new("sh");
+        worker
+            .args([
+                "-c",
+                "sleep 30 & echo $! > \"$ASSURA_TEST_CHILD_PID\"; wait",
+            ])
+            .env("ASSURA_TEST_CHILD_PID", &pid_file)
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+        crate::cli::agent_trajectory::isolate_process_tree(&mut worker);
+        let mut worker = worker.spawn().expect("refresh worker");
+        let token = format!("{}:1", worker.id());
+        let lock = root.path().join("refresh");
+        fs::write(&lock, &token).expect("refresh owner");
+
+        supervise_refresh(
+            worker.id(),
+            now_millis().saturating_add(25),
+            &lock,
+            &token,
+            None,
+            None,
+        );
+        let _ = worker.wait();
+
+        let child_pid = fs::read_to_string(&pid_file)
+            .expect("descendant pid")
+            .trim()
+            .parse::<u32>()
+            .expect("descendant pid parses");
+        let alive = Command::new("kill")
+            .args(["-0", &child_pid.to_string()])
+            .stderr(Stdio::null())
+            .status()
+            .expect("process probe");
+        assert!(!alive.success(), "supervisor left descendant alive");
+        assert!(!lock.exists());
+    }
+
+    #[test]
+    fn refresh_supervisor_restores_queue_when_worker_setup_never_ready() {
+        let root = tempdir().expect("refresh directory");
+        let queued = root.path().join("refresh.queued");
+        fs::write(&queued, b"queued").expect("queue marker");
+        let claimed = claim_refresh_queue(&queued).expect("claim marker");
+        let ready = root.path().join("refresh.ready");
+        let lock = root.path().join("refresh");
+
+        settle_refresh_queue(&lock, Some(&ready), Some(&claimed));
+
+        assert!(queued.is_file());
+        assert!(!claimed.exists());
+        assert!(!ready.exists());
     }
 
     #[test]

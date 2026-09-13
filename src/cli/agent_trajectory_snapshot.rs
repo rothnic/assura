@@ -1,16 +1,19 @@
 //! Atomic Git-local storage for one bounded trajectory snapshot per worktree.
 
 use super::{git::GitInput, TrajectorySnapshot};
+use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const MAX_CACHE_BYTES: usize = 1024 * 1024;
 const MAX_CACHE_FILES: usize = 128;
+const MAX_SIDECAR_FILES: usize = MAX_CACHE_FILES * 3;
+const SIDECAR_RETENTION_SECONDS: u64 = 7 * 24 * 60 * 60;
 const MAX_POINTER_BYTES: usize = 4096;
-const CACHE_LOCK_SECONDS: i64 = 30;
 const POINTER_SCHEMA: &str = "assura.agent-trajectory-pointer.v1";
 
 pub(super) struct CacheKey {
@@ -184,8 +187,7 @@ struct LatestPointer {
 }
 
 pub(super) struct CacheLease {
-    path: PathBuf,
-    token: String,
+    file: File,
 }
 
 impl CacheLease {
@@ -195,43 +197,29 @@ impl CacheLease {
 
     fn acquire_path(path: PathBuf) -> Option<Self> {
         fs::create_dir_all(path.parent()?).ok()?;
-        if let Ok(metadata) = fs::metadata(&path) {
-            let stale = metadata
-                .modified()
-                .ok()
-                .and_then(|value| value.duration_since(std::time::UNIX_EPOCH).ok())
-                .map(|value| {
-                    crate::cli::agent_nudge_delivery::now().saturating_sub(value.as_secs() as i64)
-                        > CACHE_LOCK_SECONDS
-                })
-                .unwrap_or(false);
-            if stale && crate::cli::agent_nudge_delivery::lease_owner_alive(&path) != Some(true) {
-                let _ = fs::remove_file(&path);
-            }
-        }
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .truncate(false)
+            .open(&path)
+            .ok()?;
+        file.try_lock_exclusive().ok()?;
         let token = format!(
             "{}:{}",
             std::process::id(),
             crate::cli::agent_nudge_delivery::now_millis()
         );
-        OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&path)
-            .ok()?;
-        if fs::write(&path, &token).is_err() {
-            let _ = fs::remove_file(&path);
-            return None;
-        }
-        Some(Self { path, token })
+        file.set_len(0).ok()?;
+        (&file).seek(SeekFrom::Start(0)).ok()?;
+        (&file).write_all(token.as_bytes()).ok()?;
+        Some(Self { file })
     }
 }
 
 impl Drop for CacheLease {
     fn drop(&mut self) {
-        if fs::read_to_string(&self.path).ok().as_deref() == Some(self.token.as_str()) {
-            let _ = fs::remove_file(&self.path);
-        }
+        let _ = FileExt::unlock(&self.file);
     }
 }
 
@@ -279,6 +267,9 @@ fn valid_cache_key(value: &str) -> bool {
 }
 
 fn prune_cache(directory: &Path) {
+    let Some(_maintenance) = CacheLease::acquire_path(directory.join(".maintenance.lock")) else {
+        return;
+    };
     let Ok(entries) = fs::read_dir(directory) else {
         return;
     };
@@ -297,13 +288,66 @@ fn prune_cache(directory: &Path) {
         })
         .collect::<Vec<_>>();
     let remove_count = snapshots.len().saturating_sub(MAX_CACHE_FILES);
-    if remove_count == 0 {
+    if remove_count > 0 {
+        snapshots.sort_by_key(|(modified, _)| *modified);
+        for (_, path) in snapshots.into_iter().take(remove_count) {
+            let _ = fs::remove_file(path);
+        }
+    }
+    prune_sidecars(directory);
+}
+
+fn prune_sidecars(directory: &Path) {
+    let now = SystemTime::now();
+    let Ok(entries) = fs::read_dir(directory) else {
+        return;
+    };
+    let mut sidecars = entries
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name == ".maintenance.lock"
+                || path.extension().and_then(|value| value.to_str()) == Some("json")
+                || path.extension().and_then(|value| value.to_str()) == Some("pointer")
+            {
+                return None;
+            }
+            entry
+                .metadata()
+                .ok()
+                .and_then(|metadata| metadata.modified().ok())
+                .map(|modified| (modified, path))
+        })
+        .collect::<Vec<_>>();
+    sidecars.sort_by_key(|(modified, _)| *modified);
+    let cutoff = now
+        .duration_since(UNIX_EPOCH)
+        .ok()
+        .and_then(|seconds| seconds.as_secs().checked_sub(SIDECAR_RETENTION_SECONDS));
+    let excess = sidecars.len().saturating_sub(MAX_SIDECAR_FILES);
+    for (index, (modified, path)) in sidecars.into_iter().enumerate() {
+        let old = cutoff.is_some_and(|cutoff| {
+            modified
+                .duration_since(UNIX_EPOCH)
+                .ok()
+                .is_some_and(|seconds| seconds.as_secs() < cutoff)
+        });
+        if old || index < excess {
+            remove_unlocked_sidecar(&path);
+        }
+    }
+}
+
+fn remove_unlocked_sidecar(path: &Path) {
+    let Ok(file) = OpenOptions::new().read(true).write(true).open(path) else {
+        return;
+    };
+    if file.try_lock_exclusive().is_err() {
         return;
     }
-    snapshots.sort_by_key(|(modified, _)| *modified);
-    for (_, path) in snapshots.into_iter().take(remove_count) {
-        let _ = fs::remove_file(path);
-    }
+    drop(file);
+    let _ = fs::remove_file(path);
 }
 
 fn digest(value: &str) -> String {
@@ -337,6 +381,26 @@ mod tests {
     }
 
     #[test]
+    fn cache_sidecar_retention_is_bounded() {
+        let directory = tempdir().expect("cache directory");
+        for index in 0..=MAX_SIDECAR_FILES {
+            fs::write(directory.path().join(format!("orphan-{index}.lock")), b"").expect("sidecar");
+        }
+
+        prune_cache(directory.path());
+
+        let count = fs::read_dir(directory.path())
+            .expect("cache entries")
+            .flatten()
+            .filter(|entry| {
+                entry.file_name() != ".maintenance.lock"
+                    && entry.path().extension().and_then(|value| value.to_str()) == Some("lock")
+            })
+            .count();
+        assert!(count <= MAX_SIDECAR_FILES);
+    }
+
+    #[test]
     fn bounded_reads_honor_small_pointer_limit() {
         let directory = tempdir().expect("cache directory");
         let path = directory.path().join("pointer");
@@ -345,5 +409,15 @@ mod tests {
             read_bounded_with_limit(&path, MAX_POINTER_BYTES).expect("bounded read"),
             None
         );
+    }
+
+    #[test]
+    fn cache_lease_is_exclusive_and_releases_on_drop() {
+        let directory = tempdir().expect("cache directory");
+        let path = directory.path().join("snapshot.json");
+        let first = CacheLease::acquire(&path).expect("first cache writer");
+        assert!(CacheLease::acquire(&path).is_none());
+        drop(first);
+        assert!(CacheLease::acquire(&path).is_some());
     }
 }

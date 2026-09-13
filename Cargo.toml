@@ -82,6 +82,10 @@ pico-args = "0.5"
 toml = "0.8"
 # Stable review finding identities must survive processes, versions, and worktrees.
 sha2 = "0.10"
+# Process-group supervision needs the native Unix signal/process-group API.
+libc = "0.2"
+# Advisory locks provide process-death recovery without a racy stale-file delete.
+fs2 = "0.4"
 rayon = { version = "1.7", optional = true }
 bincode = { version = "1.3", optional = true }
 pulldown-cmark = { version = "0.9", optional = true }
@@ -100,6 +104,9 @@ windows-sys = { version = "0.61.2", optional = true, features = [
   "Win32_Security",
   "Win32_Storage_FileSystem",
   "Win32_System_Console",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_System_JobObjects",
+  "Win32_System_Pipes",
   "Win32_System_Threading",
 ] }
 
@@ -113,6 +120,9 @@ mockall = "0.11"
 windows-sys = { version = "0.61.2", features = [
   "Win32_Storage_FileSystem",
   "Win32_System_Console",
+  "Win32_System_Diagnostics_ToolHelp",
+  "Win32_System_JobObjects",
+  "Win32_System_Pipes",
   "Win32_System_Threading",
 ] }
 

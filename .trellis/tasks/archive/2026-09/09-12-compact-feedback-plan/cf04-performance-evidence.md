@@ -1,4 +1,40 @@
-# CF04 performance evidence
+# Current exact-tip evidence — 2026-09-13
+
+The current CF03 safety candidate is `75ff381328ee9ab81a0f23f64ca4ea9c69fe3a6d`
+on `goal/compact-feedback-cf03-safety`, based on current `origin/master`
+`7581fd0d291f610cca006170903c0d6a90b9c0b6`. The installed adapter
+`.codex/hooks/assura-agent-nudge.py` was measured with the exact release binary
+`target/release/assura`, 100 process-to-process invocations per case. Every
+invocation returned zero, emitted zero routine stdout bytes, and emitted zero
+stderr bytes:
+
+| case | p50 ms | p95 ms | max ms |
+| --- | ---: | ---: | ---: |
+| idle prompt | 331.699 | 396.844 | 451.904 |
+| one edit | 323.375 | 396.061 | 452.689 |
+| five-file burst | 308.832 | 353.330 | 410.054 |
+| config-shaped edit | 310.595 | 368.664 | 397.556 |
+
+These are installed-hook adapter timings, not refresh-path or provider-cost
+claims. The default configuration remains default-silent; no hook optimization
+or universal sub-25-ms claim is made.
+
+The equivalent native LS-Lint comparison at the same exact tip is
+`target/performance/cf03-safety-final.json`, generated with three measured
+iterations and LS-Lint 2.3.0. Native LS-Lint was available; all 8/8 accepted
+rows were Assura-faster, with aggregate cold speedup `1.2067x`, while the
+warm-session comparison was `25.2589x` and passed 8/8 strict 2x rows. The
+strict cold 2x result is honestly `1/8`, verdict `not-complete`; the accepted
+no-slower gate passed. The exact-tip native-suite report
+`target/performance/cf03-safety-final-native.json` also passed
+`cargo xtask native-performance-no-regression`.
+
+The tracked five-iteration public refresh was deliberately not updated. Two
+same-host retries failed the no-slower gate from variance (`web_app` 8.078 ms
+versus 7.447 ms, then `many_configured_scopes_regression` 58.155 ms versus
+56.577 ms); those failed outputs were not retained as current public claims.
+
+## Historical CF04 evidence (superseded for the current tip)
 
 Measured 2026-09-12 on macOS x86_64 with the CF03 merge `6c70e23640229cb784bded5f3406e32a90fa2f25`, Rust 1.94.1, Node 25.6.0, and native LS-Lint 2.3.0. The clean current report was generated from docs-only CF04 commit `a42ef40aab8960ce5bb5aaacd1f3edaefd0228ae` on the same code base. The final candidate is `d9bbb8b4338249e501276c08f543cd740baacb8b`; its release binary was rebuilt and the final local gate passed at that exact SHA.
 

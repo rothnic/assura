@@ -15,6 +15,22 @@ const SNAPSHOT_SCHEMA: &str = "assura.agent-trajectory.v1";
 const CLASSIFICATION_VERSION: &str = "paths-v1";
 const DEFAULT_INSPECT_TIMEOUT_MS: u64 = 2_000;
 
+pub(super) fn reset_refresh_cancellation() {
+    git::reset_refresh_cancellation();
+}
+
+pub(super) fn cancel_refresh_worker() {
+    git::cancel_refresh_worker();
+}
+
+pub(super) fn isolate_process_tree(command: &mut std::process::Command) {
+    git::isolate_process_tree(command);
+}
+
+pub(super) fn terminate_process_tree(pid: u32) {
+    git::terminate_process_tree(pid);
+}
+
 /// A bounded, cached snapshot of locally observable Git facts.
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub(super) struct TrajectorySnapshot {

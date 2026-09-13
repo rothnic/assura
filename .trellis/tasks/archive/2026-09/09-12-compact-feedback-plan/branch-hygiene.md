@@ -229,3 +229,161 @@ queue-handoff, and Windows runtime tests. Next action is owner review and a
 new candidate only after those fixes, followed by independent review,
 current-base gates, and performance evidence. This is a held correction to
 merged CF03, not a new queue; the active planning task remains archived.
+## Duplicate merge reconciliation
+
+The duplicate task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` merged PR #330 before
+it was stopped. The exact merge is `6c70e23640229cb784bded5f3406e32a90fa2f25`
+with base `e10172eefc6c7650b8eed6e6351e228c16ab0c1b`; hosted CI, documentation,
+security, Windows, and performance checks were green. This is integrated
+product state, but it is not independent-review acceptance for the current
+CF03 contract: the review found refresh lease generation and worker-identity
+races plus unsafe unknown-owner recovery. Those findings are the reason for
+the safety follow-up below, not a second execution queue.
+
+The duplicate task is archived and no longer active. Its no-op branch
+`codex/compact-feedback-cf04` and clean worktree were removed after preserving
+the exact base as `archive/2026-09-12/compact-feedback-cf04-duplicate-base`;
+its task-metadata overlay is recoverable as stash
+`7308fb7859c52d22e73e0da0092a6e3807f15568`. The old CF03 topology overlay
+remains recoverable at
+`archive/2026-09-12/compact-feedback-cf03-foreign-overlay-1817968` and the
+foreign source stashes listed above remain untouched.
+
+The sole active owner is now Nick/Codex on branch
+`goal/compact-feedback-cf03-safety`, worktree
+`/Users/nroth/workspace/assura-cf03-safety`, based exactly on merge
+`6c70e23640229cb784bded5f3406e32a90fa2f25`. Next action is focused review and
+current-base merge gates for the lease-safety correction; no release,
+deployment, publication, protection, or broad cleanup is authorized.
+
+The independent rereview of safety tip `f2817d0` returned NOT READY with one
+P1: watchdog `process::exit` could bypass bounded Git cleanup and orphan a
+trajectory child. The correction moves timeout cancellation into the shared
+Git subprocess runner: the watchdog sets a cancellation flag, the runner
+kills/waits for the child, and the command unwinds through `finish_refresh`.
+Focused cancellation, delivery, and lease tests pass; rereview is required at
+the next tip. The reviewer also noted that runtime Windows execution and
+explicit watchdog timeout/queue tests remain narrower than the available
+cross-target compile and current lifecycle coverage.
+
+The requested remote recency audit after PR #330 found no remaining remote
+`goal/compact-feedback-cf03` or `codex/compact-feedback-cf04` ref after
+`fetch --prune`; PR #327, #329, and #330 are merged. The duplicate’s second
+dirty temporary overlay is preserved separately as stash
+`b0ae7310cdc493c4b3d53c046ab9a13dec70bed9`; no foreign source was deleted.
+
+The safety follow-up addressed the independent rereview findings at the
+current tip: malformed stale refresh leases are reclaimable only after a
+bounded stale interval, valid unknown-owner leases remain protected, and
+directory-form refresh handoff atomically replaces `<lease>/owner`. Added
+coverage includes the directory handoff unit and a Unix host lifecycle test
+that starts a live refresh Git process and verifies watchdog termination.
+Focused evidence is 12 delivery unit tests, 4 Git-runner tests, and 10
+feedback lifecycle tests passing. The candidate remains owned by Nick/Codex
+on `goal/compact-feedback-cf03-safety`; next action is independent rereview,
+current-base gates, and merge. Restore from the candidate commit if needed.
+
+The independent rereview then found one concrete inner-lease gap in
+`agent_trajectory_snapshot.rs`: stale malformed or indeterminate owners were
+being reclaimed by the cache lease path. The correction now reclaims only an
+observably dead owner (`Some(false)`) and adds a regression predicate test.
+Updated focused evidence is 3 snapshot unit tests, 12 delivery unit tests, 4
+Git-runner tests, and 10 feedback lifecycle tests passing. The candidate still
+needs rereview at the new tip before merge; no other reviewer gap was accepted
+as a blocker.
+
+The next independent rereview found two safety blockers: stale lease reclaim
+could remove a replacement owner after a check/remove race, and worker startup
+or finish could exit/return before releasing state. The correction uses
+token-fenced atomic move/check/reclaim for refresh, delivery, and trajectory
+leases; retries worker state-lease acquisition within its bounded deadline;
+and unwinds watchdog startup failure instead of calling `process::exit`.
+Added regression coverage preserves a replacement owner. Focused evidence at
+this correction is 13 delivery unit tests, 2 snapshot unit tests, 4 Git-runner
+tests, 10 delivery lifecycle tests, and 25 Git-hook lifecycle tests passing.
+
+Current release evidence is not a merge pass: the 100-run fixture warm loop
+keeps `agent-nudge` within budget at p95 10.130 ms, but existing structural
+rows exceed their current p95 budgets on this host (no-change 219.734/150 ms,
+one-file 198.935/175 ms, config 226.465/200 ms). An installed Codex wrapper
+measurement on a copied policy-rich fixture is 100 runs, p95 36.795 ms; the
+generated Python host adapter is p95 90.391 ms. These are current diagnostics,
+not a waived gate; next action is independent rereview, then resolve the
+actual adapter process-floor/carrier gap or hold CF03 with owner Nick/Codex,
+live handle `goal/compact-feedback-cf03-safety`, and restore from this branch
+and the preserved duplicate-base archive.
+
+The next safety correction is committed as `0879fb96`. Refresh and delivery
+state now use OS advisory locks, so process death releases state/cache/refresh
+serialization without stale-file deletion; token checks remain generation
+validation, and malformed refresh tokens remain held as unknown rather than
+reclaimed. The inspect worker checks its deadline before and after config,
+daemon, trajectory, changed-path, reference, automatic-delivery, and cooldown
+boundaries. Focused evidence is 13 delivery unit tests, 3 snapshot unit tests,
+and 10 feedback lifecycle tests passing. This is a safety candidate, not a
+merge pass: independent rereview is required, then current-base gates and
+performance evidence must still address the measured adapter process floor.
+
+Current-base refresh then advanced `origin/master` through PR #331
+(`7069bd1161913c0ed717aff94b1f5216935a09f0`) and the process-only closure
+PR #332 (`0a7831acc0a4c161f1af0851832182585080c551`). The latter archives the
+planning record but cannot close the product hold; this owned follow-up remains
+separate and deliberately unmerged.
+
+While the independent review was running, an unowned concurrent writer moved
+this worktree to `codex/compact-feedback-cf03-safety-current2`, committed
+`63d6179ff681671009f359be3f790191dc0bf0e3` (`fix(feedback): close CF03 lease
+safety races`), and began a cleanup that was stopped before deletion. Its
+follow-up record is preserved at
+`archive/2026-09-13/compact-feedback-cf03-safety-held` (`d1c14ea8`), and the
+code candidate is preserved at
+`archive/2026-09-13/compact-feedback-cf03-safety-foreign-63d6179`
+(`63d6179f`). The owned worktree was restored to
+`goal/compact-feedback-cf03-safety` at `54b46918`; no foreign branch or source
+was deleted.
+
+The cleanup nevertheless removed the worktree and owned branch after the first
+interruption. Recovery used the unreachable child `25a302f8` of `54b46918`,
+recreated `goal/compact-feedback-cf03-safety`, and added worktree
+`/Users/nroth/workspace/assura-cf03-safety`. Recovery ref
+`archive/2026-09-13/compact-feedback-cf03-safety-external-25a302` preserves
+that exact tip; the worktree is clean and no tracked source was lost.
+
+Independent rereview `01a0987e-6ac9-72c2-8d0c-97c3b79890fb` is NOT READY.
+It confirms the generation-fenced shape but requires one bounded safety pass:
+supervise setup and collection, terminate descendant process trees on Unix and
+Windows, enforce cooldown and failure-safe queued handoff, validate the full
+lease-token grammar with bounded reads, give cleanup a grace window, and bound
+lock sidecars. Next action is owner Nick/Codex on live handle
+`goal/compact-feedback-cf03-safety`: implement that correction, rerun the
+independent review and exact current-base gates, then remeasure the installed
+hook. Restore evidence is candidate `54b46918` plus the preserved foreign
+refs above. Current installed-wrapper evidence remains a hold at p95
+34.322 ms against the <=25 ms target.
+
+## CF03 safety candidate — current exact tip (2026-09-13)
+
+The sole active owner is Nick/Codex on branch
+`goal/compact-feedback-cf03-safety`, worktree
+`/Users/nroth/workspace/assura-cf03-safety`, with current `origin/master`
+`7581fd0d291f610cca006170903c0d6a90b9c0b6` and candidate tip
+`75ff381328ee9ab81a0f23f64ca4ea9c69fe3a6d`. The active Codex task is
+`01a0963c-0317-7770-a62a-db27b306ea48`; duplicate writer tasks
+`01a096d1-1512-7fb0-afb3-bd1cf739f51c` and
+`01a096d7-9390-71d3-92c1-0975a65a2939` are archived and are not active.
+
+Independent reviewer Nash, handle `01a09a06-1e6f-7d23-985e-c338791e7eed`,
+returned READY for the exact candidate tip. Focused tests, full local tests,
+clippy, Windows-target compilation, current-base checks, docs/evidence gates,
+release builds, native performance regression, equivalent LS-Lint no-slower
+comparison, and the installed-hook measurement are recorded before merge.
+
+Disposition is merge pending. Next action is create and merge the single PR,
+verify the exact merge SHA and post-merge workflows, then remove only this
+owned branch/worktree after reachability proof. Restore evidence is the exact
+candidate SHA above plus the preserved safety refs
+`archive/2026-09-13/compact-feedback-cf03-safety-candidate`,
+`archive/2026-09-13/compact-feedback-cf03-safety-external-25a302`,
+`archive/2026-09-13/compact-feedback-cf03-safety-foreign-63d6179`, and
+`archive/2026-09-13/compact-feedback-cf03-safety-held`. Foreign branches,
+worktrees, and overlays remain untouched.

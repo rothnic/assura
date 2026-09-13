@@ -49,7 +49,13 @@ pub struct AgentNudgeOptions {
 
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
-    agent_nudge_delivery::start_refresh_watchdog();
+    if agent_nudge_delivery::run_refresh_supervisor_if_requested() {
+        return ExitCode::Success;
+    }
+    if !agent_nudge_delivery::start_refresh_watchdog() {
+        agent_nudge_delivery::finish_refresh();
+        return ExitCode::RuntimeError;
+    }
     let result = build_agent_nudge(options, config);
     let refresh_expired = agent_nudge_delivery::refresh_deadline_expired();
     agent_nudge_delivery::finish_refresh();
@@ -78,11 +84,13 @@ fn build_agent_nudge(
     options: AgentNudgeOptions,
     config: Option<PathBuf>,
 ) -> Result<RenderedNudge, String> {
+    check_refresh_deadline()?;
     let project_path = match options.path.clone() {
         Some(path) => path,
         None => std::env::current_dir().map_err(|error| error.to_string())?,
     };
     let policy_generation = cooldown::policy_generation(&project_path, config.as_deref());
+    check_refresh_deadline()?;
     let agent_fallback_command = suggested_command(&project_path, options.agent);
     let mut nudges = Vec::new();
     let mut changed_path_checks = Vec::new();
@@ -93,6 +101,7 @@ fn build_agent_nudge(
     let mut changed_eligible_findings = 0usize;
     let mut omitted = 0usize;
 
+    check_refresh_deadline()?;
     let mut core = match LocalDaemonCore::load_for_feedback(
         project_path.clone(),
         config.clone(),
@@ -110,6 +119,7 @@ fn build_agent_nudge(
             None
         }
     };
+    check_refresh_deadline()?;
 
     let health = if let Some(core) = core.as_ref() {
         core.health()
@@ -130,6 +140,7 @@ fn build_agent_nudge(
         .and_then(LocalDaemonCore::feedback_config)
         .cloned();
     let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
+        check_refresh_deadline()?;
         Some(crate::cli::agent_trajectory::inspect_with_config(
             &project_path,
             feedback_config.as_ref(),
@@ -137,6 +148,7 @@ fn build_agent_nudge(
     } else {
         None
     };
+    check_refresh_deadline()?;
 
     if let Some(core) = core.as_mut() {
         if options.event != AgentNudgeEvent::SessionStart {
@@ -170,6 +182,7 @@ fn build_agent_nudge(
                     coverage: "deferred_full_project_policy",
                 };
             } else {
+                check_refresh_deadline()?;
                 match core.check_changed_paths(checkable_changed_paths) {
                     Ok(batch) => {
                         changed_path_batch = ChangedPathBatch {
@@ -214,6 +227,7 @@ fn build_agent_nudge(
             }
 
             for changed_path in &changed_paths {
+                check_refresh_deadline()?;
                 if options.reference_limit > 0 {
                     if let Ok(context) = core
                         .changed_source_references(changed_path.clone(), options.reference_limit)
@@ -270,6 +284,7 @@ fn build_agent_nudge(
         .as_ref()
         .map(|config| agent_nudge_delivery::inspect_status(&project_path, config));
     if options.delivery == AgentNudgeDelivery::Automatic {
+        check_refresh_deadline()?;
         if let Some(config) = feedback_config.as_ref() {
             if !nudges.iter().any(|nudge| nudge.severity == "critical")
                 && nudges.len() < options.max_issues
@@ -290,6 +305,7 @@ fn build_agent_nudge(
         }
     }
 
+    check_refresh_deadline()?;
     let cooldown = cooldown::apply(
         &project_path,
         event_name(options.event),
@@ -361,6 +377,14 @@ fn build_agent_nudge(
         format: options.format,
         project_root: project_root_for_log,
     })
+}
+
+fn check_refresh_deadline() -> Result<(), String> {
+    if agent_nudge_delivery::refresh_deadline_expired() {
+        Err("feedback refresh deadline exceeded".to_string())
+    } else {
+        Ok(())
+    }
 }
 
 fn path_exists_for_project(project_root: &Path, path: &Path) -> bool {
