@@ -1,16 +1,16 @@
 //! Atomic Git-local storage for one bounded trajectory snapshot per worktree.
 
 use super::{git::GitInput, TrajectorySnapshot};
+use fs2::FileExt;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
-use std::io::Read;
+use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
 
 const MAX_CACHE_BYTES: usize = 1024 * 1024;
 const MAX_CACHE_FILES: usize = 128;
 const MAX_POINTER_BYTES: usize = 4096;
-const CACHE_LOCK_SECONDS: i64 = 30;
 const POINTER_SCHEMA: &str = "assura.agent-trajectory-pointer.v1";
 
 pub(super) struct CacheKey {
@@ -184,8 +184,7 @@ struct LatestPointer {
 }
 
 pub(super) struct CacheLease {
-    path: PathBuf,
-    token: String,
+    file: File,
 }
 
 impl CacheLease {
@@ -195,49 +194,28 @@ impl CacheLease {
 
     fn acquire_path(path: PathBuf) -> Option<Self> {
         fs::create_dir_all(path.parent()?).ok()?;
-        if let Ok(metadata) = fs::metadata(&path) {
-            let observed_token = crate::cli::agent_nudge_delivery::refresh_lease_token(&path).ok();
-            let stale = metadata
-                .modified()
-                .ok()
-                .and_then(|value| value.duration_since(std::time::UNIX_EPOCH).ok())
-                .map(|value| {
-                    crate::cli::agent_nudge_delivery::now().saturating_sub(value.as_secs() as i64)
-                        > CACHE_LOCK_SECONDS
-                })
-                .unwrap_or(false);
-            if stale
-                && observed_token
-                    .as_deref()
-                    .and_then(crate::cli::agent_nudge_delivery::owner_alive_for_token)
-                    == Some(false)
-            {
-                if let Some(token) = observed_token.as_deref() {
-                    let _ = crate::cli::agent_nudge_delivery::reclaim_lease_if_token(&path, token);
-                }
-            }
-        }
+        let file = OpenOptions::new()
+            .read(true)
+            .write(true)
+            .create(true)
+            .open(&path)
+            .ok()?;
+        file.try_lock_exclusive().ok()?;
         let token = format!(
             "{}:{}",
             std::process::id(),
             crate::cli::agent_nudge_delivery::now_millis()
         );
-        OpenOptions::new()
-            .write(true)
-            .create_new(true)
-            .open(&path)
-            .ok()?;
-        if fs::write(&path, &token).is_err() {
-            let _ = fs::remove_file(&path);
-            return None;
-        }
-        Some(Self { path, token })
+        file.set_len(0).ok()?;
+        (&file).seek(SeekFrom::Start(0)).ok()?;
+        (&file).write_all(token.as_bytes()).ok()?;
+        Some(Self { file })
     }
 }
 
 impl Drop for CacheLease {
     fn drop(&mut self) {
-        let _ = crate::cli::agent_nudge_delivery::reclaim_lease_if_token(&self.path, &self.token);
+        let _ = self.file.unlock();
     }
 }
 
@@ -351,5 +329,15 @@ mod tests {
             read_bounded_with_limit(&path, MAX_POINTER_BYTES).expect("bounded read"),
             None
         );
+    }
+
+    #[test]
+    fn cache_lease_is_exclusive_and_releases_on_drop() {
+        let directory = tempdir().expect("cache directory");
+        let path = directory.path().join("snapshot.json");
+        let first = CacheLease::acquire(&path).expect("first cache writer");
+        assert!(CacheLease::acquire(&path).is_none());
+        drop(first);
+        assert!(CacheLease::acquire(&path).is_some());
     }
 }
