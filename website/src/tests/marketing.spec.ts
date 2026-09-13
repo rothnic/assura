@@ -587,7 +587,7 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await page.goto('/');
   await page.getByRole('link', { name: 'How we measured it' }).click();
   await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
-  await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint in all eight cold comparisons.' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint across eight cold comparisons.' })).toBeVisible();
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
   await expect(page.getByRole('slider')).toHaveCount(0);
