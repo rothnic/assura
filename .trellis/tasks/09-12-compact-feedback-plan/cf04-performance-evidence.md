@@ -1,6 +1,6 @@
 # CF04 performance evidence
 
-Measured 2026-09-12 on macOS x86_64 with the CF03 merge `6c70e23640229cb784bded5f3406e32a90fa2f25`, Rust 1.94.1, Node 25.6.0, and native LS-Lint 2.3.0. The clean current report was generated from docs-only CF04 commit `a42ef40aab8960ce5bb5aaacd1f3edaefd0228ae` on the same code base.
+Measured 2026-09-12 on macOS x86_64 with the CF03 merge `6c70e23640229cb784bded5f3406e32a90fa2f25`, Rust 1.94.1, Node 25.6.0, and native LS-Lint 2.3.0. The clean current report was generated from docs-only CF04 commit `a42ef40aab8960ce5bb5aaacd1f3edaefd0228ae` on the same code base. The final candidate is `d9bbb8b4338249e501276c08f543cd740baacb8b`; its release binary was rebuilt and the final local gate passed at that exact SHA.
 
 The exact installed Codex adapter `.codex/hooks/assura-agent-nudge.py` was run 100 times per case from a clean clone with the release Assura binary. All runs returned zero and emitted zero routine bytes. Wall-time p50/p95/max in milliseconds:
 
@@ -17,8 +17,10 @@ No hook optimization is claimed in CF04. The measured hook p95 is above the CF03
 
 ## Fixed six-pair project trial
 
-On 2026-09-12, a fixed six-pair trial used the release binary from this clean
-candidate, isolated temporary Git clones, and explicit `agent_feedback` config
+On 2026-09-12, a fixed six-pair trial used the release binary built from the
+code-identical candidate `d93592adb4cef1b34bcbf79ae60fdc4dd91a38cc` (the later
+`d9bbb8b` change is documentation/template-only), isolated temporary Git clones,
+and explicit `agent_feedback` config
 for the on arm (`periodic`, one-second cadence, 256-byte line cap). The off arm
 used the same fixture operation with feedback disabled. Pair order was balanced
 on/off, off/on, on/off, off/on, off/on, on/off. Each command returned zero; the
