@@ -6,7 +6,7 @@ use std::io::Read;
 use std::path::Path;
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::thread;
+use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};
 
 #[derive(Debug)]
@@ -18,6 +18,7 @@ pub(super) enum GitOutput {
 }
 
 const MAX_RUNTIME: Duration = Duration::from_secs(2);
+const CLEANUP_GRACE: Duration = Duration::from_millis(250);
 static REFRESH_CANCELLED: AtomicBool = AtomicBool::new(false);
 
 pub(super) fn reset_refresh_cancellation() {
@@ -94,6 +95,125 @@ pub(super) fn terminate_process_tree(pid: u32) {
                 }
                 Ok(None) => thread::sleep(Duration::from_millis(5)),
             }
+        }
+    }
+}
+
+#[cfg(windows)]
+struct WindowsProcessJob {
+    handle: windows_sys::Win32::Foundation::HANDLE,
+}
+
+#[cfg(windows)]
+impl WindowsProcessJob {
+    fn assign(child: &std::process::Child) -> Option<Self> {
+        use std::mem::size_of;
+        use std::os::windows::io::AsRawHandle;
+        use std::ptr::null;
+        use windows_sys::Win32::System::JobObjects::{
+            AssignProcessToJobObject, CreateJobObjectW, JobObjectExtendedLimitInformation,
+            SetInformationJobObject, JOBOBJECT_EXTENDED_LIMIT_INFORMATION,
+            JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE,
+        };
+
+        let handle = unsafe { CreateJobObjectW(null(), null()) };
+        if handle.is_null() {
+            return None;
+        }
+        let mut limits = JOBOBJECT_EXTENDED_LIMIT_INFORMATION::default();
+        limits.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+        let configured = unsafe {
+            SetInformationJobObject(
+                handle,
+                JobObjectExtendedLimitInformation,
+                (&limits as *const JOBOBJECT_EXTENDED_LIMIT_INFORMATION).cast(),
+                size_of::<JOBOBJECT_EXTENDED_LIMIT_INFORMATION>() as u32,
+            ) != 0
+        };
+        let assigned =
+            configured && unsafe { AssignProcessToJobObject(handle, child.as_raw_handle()) != 0 };
+        if !assigned {
+            unsafe {
+                windows_sys::Win32::Foundation::CloseHandle(handle);
+            }
+            return None;
+        }
+        Some(Self { handle })
+    }
+
+    fn terminate(&self) {
+        unsafe {
+            let _ = windows_sys::Win32::System::JobObjects::TerminateJobObject(self.handle, 1);
+        }
+    }
+}
+
+#[cfg(windows)]
+impl Drop for WindowsProcessJob {
+    fn drop(&mut self) {
+        unsafe {
+            let _ = windows_sys::Win32::Foundation::CloseHandle(self.handle);
+        }
+    }
+}
+
+#[cfg(windows)]
+type ProcessJob = WindowsProcessJob;
+
+#[cfg(not(windows))]
+type ProcessJob = ();
+
+fn process_job(child: &std::process::Child) -> Option<ProcessJob> {
+    #[cfg(windows)]
+    {
+        WindowsProcessJob::assign(child)
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = child;
+        None
+    }
+}
+
+fn terminate_child_process(pid: u32, job: Option<&ProcessJob>) {
+    #[cfg(windows)]
+    if let Some(job) = job {
+        job.terminate();
+    } else {
+        terminate_process_tree(pid);
+    }
+    #[cfg(not(windows))]
+    {
+        let _ = job;
+        terminate_process_tree(pid);
+    }
+}
+
+fn cleanup_after_termination(
+    mut child: std::process::Child,
+    reader: Option<JoinHandle<(Vec<u8>, bool)>>,
+) {
+    let deadline = Instant::now() + CLEANUP_GRACE;
+    let mut exited = false;
+    while Instant::now() < deadline {
+        match child.try_wait() {
+            Ok(Some(_)) => {
+                exited = true;
+                break;
+            }
+            Ok(None) => thread::sleep(Duration::from_millis(5)),
+            Err(_) => break,
+        }
+    }
+    if !exited {
+        let _ = child.kill();
+    }
+    if let Some(reader) = reader {
+        while !reader.is_finished() && Instant::now() < deadline {
+            thread::sleep(Duration::from_millis(5));
+        }
+        if reader.is_finished() {
+            let _ = reader.join();
         }
     }
 }
@@ -186,6 +306,7 @@ fn run_bounded_until_internal(
         Ok(child) => child,
         Err(_) => return GitOutput::Failed,
     };
+    let process_job = process_job(&child);
     let reader = child.stdout.take().map(|stdout| {
         thread::spawn(move || {
             let mut output = Vec::new();
@@ -199,28 +320,19 @@ fn run_bounded_until_internal(
         match child.try_wait() {
             Ok(Some(status)) => break status,
             Ok(None) if honor_cancellation && refresh_cancelled() => {
-                terminate_process_tree(child.id());
-                let _ = child.wait();
-                if let Some(reader) = reader {
-                    let _ = reader.join();
-                }
+                terminate_child_process(child.id(), process_job.as_ref());
+                cleanup_after_termination(child, reader);
                 return GitOutput::TimedOut;
             }
             Ok(None) if Instant::now() >= deadline => {
-                terminate_process_tree(child.id());
-                let _ = child.wait();
-                if let Some(reader) = reader {
-                    let _ = reader.join();
-                }
+                terminate_child_process(child.id(), process_job.as_ref());
+                cleanup_after_termination(child, reader);
                 return GitOutput::TimedOut;
             }
             Ok(None) => thread::sleep(Duration::from_millis(5)),
             Err(_) => {
-                terminate_process_tree(child.id());
-                let _ = child.wait();
-                if let Some(reader) = reader {
-                    let _ = reader.join();
-                }
+                terminate_child_process(child.id(), process_job.as_ref());
+                cleanup_after_termination(child, reader);
                 return GitOutput::Failed;
             }
         }
@@ -303,6 +415,25 @@ mod tests {
         ));
         canceller.join().expect("cancellation thread joins");
         reset_refresh_cancellation();
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_timeout_kills_descendants_without_blocking_on_inherited_pipes() {
+        let mut command = Command::new("cmd.exe");
+        command
+            .args([
+                "/C",
+                "start /b cmd.exe /C ping -n 30 127.0.0.1 & ping -n 30 127.0.0.1",
+            ])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        let started = Instant::now();
+        assert!(matches!(
+            run_bounded(command, 1024, Duration::from_millis(20)),
+            GitOutput::TimedOut
+        ));
+        assert!(started.elapsed() < Duration::from_secs(1));
     }
 
     #[cfg(unix)]
