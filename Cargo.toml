@@ -104,7 +104,9 @@ windows-sys = { version = "0.61.2", optional = true, features = [
   "Win32_Security",
   "Win32_Storage_FileSystem",
   "Win32_System_Console",
+  "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_JobObjects",
+  "Win32_System_Pipes",
   "Win32_System_Threading",
 ] }
 
@@ -118,7 +120,9 @@ mockall = "0.11"
 windows-sys = { version = "0.61.2", features = [
   "Win32_Storage_FileSystem",
   "Win32_System_Console",
+  "Win32_System_Diagnostics_ToolHelp",
   "Win32_System_JobObjects",
+  "Win32_System_Pipes",
   "Win32_System_Threading",
 ] }
 
