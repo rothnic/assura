@@ -275,6 +275,7 @@ fn feedback_config_rejects_unknown_nested_fields() {
 }
 
 #[test]
+#[cfg(unix)]
 fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
     let root = fixture("");
     let path = root.path().to_str().unwrap();

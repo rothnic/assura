@@ -229,3 +229,29 @@ queue-handoff, and Windows runtime tests. Next action is owner review and a
 new candidate only after those fixes, followed by independent review,
 current-base gates, and performance evidence. This is a held correction to
 merged CF03, not a new queue; the active planning task remains archived.
+## Duplicate merge reconciliation
+
+The duplicate task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` merged PR #330 before
+it was stopped. The exact merge is `6c70e23640229cb784bded5f3406e32a90fa2f25`
+with base `e10172eefc6c7650b8eed6e6351e228c16ab0c1b`; hosted CI, documentation,
+security, Windows, and performance checks were green. This is integrated
+product state, but it is not independent-review acceptance for the current
+CF03 contract: the review found refresh lease generation and worker-identity
+races plus unsafe unknown-owner recovery. Those findings are the reason for
+the safety follow-up below, not a second execution queue.
+
+The duplicate task is archived and no longer active. Its no-op branch
+`codex/compact-feedback-cf04` and clean worktree were removed after preserving
+the exact base as `archive/2026-09-12/compact-feedback-cf04-duplicate-base`;
+its task-metadata overlay is recoverable as stash
+`7308fb7859c52d22e73e0da0092a6e3807f15568`. The old CF03 topology overlay
+remains recoverable at
+`archive/2026-09-12/compact-feedback-cf03-foreign-overlay-1817968` and the
+foreign source stashes listed above remain untouched.
+
+The sole active owner is now Nick/Codex on branch
+`goal/compact-feedback-cf03-safety`, worktree
+`/Users/nroth/workspace/assura-cf03-safety`, based exactly on merge
+`6c70e23640229cb784bded5f3406e32a90fa2f25`. Next action is focused review and
+current-base merge gates for the lease-safety correction; no release,
+deployment, publication, protection, or broad cleanup is authorized.
