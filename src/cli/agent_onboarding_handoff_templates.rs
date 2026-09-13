@@ -29,6 +29,11 @@ Host-agent integrations are reviewable local bundles under
 Run `assura agent integration activate <agent> .` to patch only Assura-owned
 project host configuration, then `assura agent integration doctor <agent> .`
 to verify the managed files. Host trust remains under user control.
+
+Compact trajectory feedback is opt-in under `agent_feedback` in
+`.assura/config.yml`. Labels mean `trajectory_stats` (cached Git facts),
+`daemon_*` (host health), and `finding` (configured policy). Inspect details
+on demand with `assura agent nudge --delivery inspect --format json .`.
 "#
 }
 
