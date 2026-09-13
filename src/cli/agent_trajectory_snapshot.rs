@@ -205,7 +205,11 @@ impl CacheLease {
                         > CACHE_LOCK_SECONDS
                 })
                 .unwrap_or(false);
-            if stale && crate::cli::agent_nudge_delivery::lease_owner_alive(&path) != Some(true) {
+            if stale
+                && cache_lease_owner_is_gone(crate::cli::agent_nudge_delivery::lease_owner_alive(
+                    &path,
+                ))
+            {
                 let _ = fs::remove_file(&path);
             }
         }
@@ -225,6 +229,10 @@ impl CacheLease {
         }
         Some(Self { path, token })
     }
+}
+
+fn cache_lease_owner_is_gone(owner_alive: Option<bool>) -> bool {
+    owner_alive == Some(false)
 }
 
 impl Drop for CacheLease {
@@ -345,5 +353,12 @@ mod tests {
             read_bounded_with_limit(&path, MAX_POINTER_BYTES).expect("bounded read"),
             None
         );
+    }
+
+    #[test]
+    fn unknown_cache_lease_owner_is_not_reclaimed() {
+        assert!(!cache_lease_owner_is_gone(None));
+        assert!(cache_lease_owner_is_gone(Some(false)));
+        assert!(!cache_lease_owner_is_gone(Some(true)));
     }
 }

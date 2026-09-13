@@ -282,3 +282,12 @@ Focused evidence is 12 delivery unit tests, 4 Git-runner tests, and 10
 feedback lifecycle tests passing. The candidate remains owned by Nick/Codex
 on `goal/compact-feedback-cf03-safety`; next action is independent rereview,
 current-base gates, and merge. Restore from the candidate commit if needed.
+
+The independent rereview then found one concrete inner-lease gap in
+`agent_trajectory_snapshot.rs`: stale malformed or indeterminate owners were
+being reclaimed by the cache lease path. The correction now reclaims only an
+observably dead owner (`Some(false)`) and adds a regression predicate test.
+Updated focused evidence is 3 snapshot unit tests, 12 delivery unit tests, 4
+Git-runner tests, and 10 feedback lifecycle tests passing. The candidate still
+needs rereview at the new tip before merge; no other reviewer gap was accepted
+as a blocker.
