@@ -724,8 +724,11 @@ mod tests {
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
         let started = Instant::now();
+        // Hosted Windows runners can spend more than 500 ms starting
+        // PowerShell before the fixture can publish its descendant PID. Keep
+        // the fixture bounded while allowing that readiness handshake.
         assert!(matches!(
-            run_bounded(command, 1024, Duration::from_millis(500)),
+            run_bounded(command, 1024, Duration::from_secs(2)),
             GitOutput::TimedOut
         ));
         let child_pid = (0..100).find_map(|_| {
@@ -745,7 +748,7 @@ mod tests {
                 .expect("process probe");
             let listing = String::from_utf8_lossy(&alive.stdout);
             if !listing.contains(&format!("{child_pid}")) {
-                assert!(started.elapsed() < Duration::from_secs(2));
+                assert!(started.elapsed() < Duration::from_secs(4));
                 return;
             }
             thread::sleep(Duration::from_millis(10));
