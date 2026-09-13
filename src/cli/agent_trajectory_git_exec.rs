@@ -90,7 +90,7 @@ pub(super) fn terminate_process_tree(pid: u32) {
                 Ok(Some(_)) | Err(_) => break,
                 Ok(None) if Instant::now() >= deadline => {
                     let _ = killer.kill();
-                    let _ = killer.wait();
+                    let _ = killer.try_wait();
                     break;
                 }
                 Ok(None) => thread::sleep(Duration::from_millis(5)),
@@ -337,9 +337,20 @@ fn run_bounded_until_internal(
             }
         }
     };
-    let (output, read_ok) = reader
-        .and_then(|reader| reader.join().ok())
-        .unwrap_or_default();
+    let (output, read_ok) = if let Some(reader) = reader {
+        let reader_deadline = Instant::now() + CLEANUP_GRACE;
+        while !reader.is_finished() && Instant::now() < reader_deadline {
+            thread::sleep(Duration::from_millis(5));
+        }
+        if !reader.is_finished() {
+            terminate_child_process(child.id(), process_job.as_ref());
+            cleanup_after_termination(child, Some(reader));
+            return GitOutput::TimedOut;
+        }
+        reader.join().unwrap_or_default()
+    } else {
+        (Vec::new(), true)
+    };
     if !read_ok {
         return GitOutput::Failed;
     }
@@ -420,20 +431,55 @@ mod tests {
     #[cfg(windows)]
     #[test]
     fn windows_timeout_kills_descendants_without_blocking_on_inherited_pipes() {
-        let mut command = Command::new("cmd.exe");
+        let shell = ["powershell.exe", "pwsh.exe"]
+            .into_iter()
+            .find(|candidate| {
+                Command::new(candidate)
+                    .args(["-NoProfile", "-Command", "exit 0"])
+                    .status()
+                    .is_ok_and(|status| status.success())
+            })
+            .expect("PowerShell is required for the Windows process-tree fixture");
+        let directory = tempfile::tempdir().expect("process fixture");
+        let pid_file = directory.path().join("child.pid");
+        let escaped_pid_file = pid_file.to_string_lossy().replace('\'', "''");
+        let escaped_shell = shell.replace('\'', "''");
+        let script = format!(
+            "$child = Start-Process -FilePath '{escaped_shell}' -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 30' -PassThru; Set-Content -LiteralPath '{escaped_pid_file}' -Value $child.Id; Wait-Process -Id $child.Id"
+        );
+        let mut command = Command::new(shell);
         command
-            .args([
-                "/C",
-                "start /b cmd.exe /C ping -n 30 127.0.0.1 & ping -n 30 127.0.0.1",
-            ])
+            .args(["-NoProfile", "-Command", &script])
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
         let started = Instant::now();
         assert!(matches!(
-            run_bounded(command, 1024, Duration::from_millis(20)),
+            run_bounded(command, 1024, Duration::from_millis(500)),
             GitOutput::TimedOut
         ));
-        assert!(started.elapsed() < Duration::from_secs(1));
+        let child_pid = (0..100).find_map(|_| {
+            fs::read_to_string(&pid_file)
+                .ok()
+                .and_then(|pid| pid.trim().parse::<u32>().ok())
+                .or_else(|| {
+                    thread::sleep(Duration::from_millis(10));
+                    None
+                })
+        });
+        let child_pid = child_pid.expect("descendant pid is written before timeout");
+        for _ in 0..100 {
+            let alive = Command::new("tasklist")
+                .args(["/FI", &format!("PID eq {child_pid}"), "/FO", "CSV", "/NH"])
+                .output()
+                .expect("process probe");
+            let listing = String::from_utf8_lossy(&alive.stdout);
+            if !listing.contains(&format!("{child_pid}")) {
+                assert!(started.elapsed() < Duration::from_secs(2));
+                return;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        panic!("timeout left descendant {child_pid} alive");
     }
 
     #[cfg(unix)]
