@@ -271,3 +271,14 @@ The requested remote recency audit after PR #330 found no remaining remote
 `fetch --prune`; PR #327, #329, and #330 are merged. The duplicate’s second
 dirty temporary overlay is preserved separately as stash
 `b0ae7310cdc493c4b3d53c046ab9a13dec70bed9`; no foreign source was deleted.
+
+The safety follow-up addressed the independent rereview findings at the
+current tip: malformed stale refresh leases are reclaimable only after a
+bounded stale interval, valid unknown-owner leases remain protected, and
+directory-form refresh handoff atomically replaces `<lease>/owner`. Added
+coverage includes the directory handoff unit and a Unix host lifecycle test
+that starts a live refresh Git process and verifies watchdog termination.
+Focused evidence is 12 delivery unit tests, 4 Git-runner tests, and 10
+feedback lifecycle tests passing. The candidate remains owned by Nick/Codex
+on `goal/compact-feedback-cf03-safety`; next action is independent rereview,
+current-base gates, and merge. Restore from the candidate commit if needed.

@@ -548,15 +548,22 @@ fn request_refresh(
     let Some(state_lease) = DeliveryLease::acquire(&state_path) else {
         return "in_flight";
     };
-    if let Ok(_metadata) = fs::metadata(&lock) {
-        let Some(observed_token) = refresh_lease_token(&lock).ok() else {
-            let queued = lock.with_extension("queued");
-            let _ = OpenOptions::new().write(true).create_new(true).open(queued);
-            return "in_flight";
+    if let Ok(metadata) = fs::metadata(&lock) {
+        let observed_token = refresh_lease_token(&lock).ok();
+        let malformed = observed_token
+            .as_deref()
+            .and_then(refresh_lease_pid)
+            .is_none();
+        let stale = refresh_lease_is_stale(&metadata, now, config.collection.timeout_ms);
+        let reclaimed = if malformed {
+            stale && discard_refresh_lease(&lock)
+        } else {
+            let token = observed_token
+                .as_deref()
+                .expect("valid refresh lease token");
+            owner_alive_for_token(token) == Some(false) && reclaim_refresh_lease(&lock, token)
         };
-        if owner_alive_for_token(&observed_token) != Some(false)
-            || !reclaim_refresh_lease(&lock, &observed_token)
-        {
+        if !reclaimed {
             let queued = lock.with_extension("queued");
             let _ = OpenOptions::new().write(true).create_new(true).open(queued);
             return "in_flight";
@@ -765,7 +772,7 @@ fn replace_refresh_lease(path: &Path, token: &str) -> bool {
     if fs::write(&temporary, token).is_err() {
         return false;
     }
-    let result = super::replace_file(&temporary, path).is_ok();
+    let result = super::replace_file(&temporary, &destination).is_ok();
     if !result {
         let _ = fs::remove_file(&temporary);
     }
@@ -985,8 +992,21 @@ pub(super) fn lease_owner_alive(path: &Path) -> Option<bool> {
 }
 
 fn owner_alive_for_token(token: &str) -> Option<bool> {
-    let pid = token.split(':').next()?.parse::<u32>().ok()?;
+    let pid = refresh_lease_pid(token)?;
     process_owner_alive(pid)
+}
+
+fn refresh_lease_pid(token: &str) -> Option<u32> {
+    token.split(':').next()?.parse::<u32>().ok()
+}
+
+fn refresh_lease_is_stale(metadata: &fs::Metadata, now: i64, timeout_ms: u64) -> bool {
+    let stale_after = (timeout_ms / 1_000).max(10).saturating_mul(2) as i64;
+    metadata
+        .modified()
+        .ok()
+        .and_then(|value| value.duration_since(UNIX_EPOCH).ok())
+        .is_some_and(|value| now.saturating_sub(value.as_secs() as i64) > stale_after)
 }
 
 fn stale_lease_owner_is_gone(owner_alive: Option<bool>) -> bool {
@@ -1233,6 +1253,17 @@ mod tests {
         assert!(path.exists());
         assert!(reclaim_refresh_lease(&path, "123456789:old"));
         assert!(!path.exists());
+    }
+
+    #[test]
+    fn directory_refresh_handoff_replaces_only_its_owner_file() {
+        let root = tempdir().expect("refresh directory");
+        let path = root.path().join("refresh");
+        fs::create_dir(&path).expect("refresh lease");
+        fs::write(path.join("owner"), "old").expect("refresh owner");
+        assert!(replace_refresh_lease_if_owned(&path, "old", "new"));
+        assert_eq!(refresh_lease_token(&path).ok().as_deref(), Some("new"));
+        assert!(path.is_dir());
     }
 
     #[test]

@@ -8,6 +8,9 @@ use std::time::Duration;
 use std::time::{SystemTime, UNIX_EPOCH};
 use tempfile::TempDir;
 
+#[cfg(unix)]
+use std::os::unix::fs::PermissionsExt;
+
 fn bin() -> &'static str {
     env!("CARGO_BIN_EXE_assura")
 }
@@ -368,6 +371,88 @@ fn generated_codex_wrapper_returns_before_refresh_and_reuses_cache() {
     }
     let second_json = second_json.expect("warm wrapper did not reuse trajectory cache");
     assert_eq!(second_json["feedback"]["snapshot"], "fresh");
+}
+
+#[test]
+#[cfg(unix)]
+fn refresh_watchdog_kills_a_live_git_process() {
+    let root = fixture("");
+    fs::write(
+        root.path().join(".assura/config.yml"),
+        "structure: {}\nagent_feedback:\n  mode: periodic\n  periodic_seconds: 1\n  min_interval_seconds: 1\n  max_messages_per_hour: 4\n  max_bytes_per_hour: 1024\n  collection:\n    debounce_ms: 1\n    min_refresh_seconds: 1\n    timeout_ms: 5000\n",
+    )
+    .expect("watchdog config");
+    let fake_bin = root.path().join("fake-bin");
+    fs::create_dir(&fake_bin).expect("fake bin");
+    let real_git = String::from_utf8(
+        Command::new("sh")
+            .args(["-c", "command -v git"])
+            .output()
+            .expect("find git")
+            .stdout,
+    )
+    .expect("git path")
+    .trim()
+    .to_string();
+    assert!(!real_git.is_empty(), "git is installed");
+    let fake_git = fake_bin.join("git");
+    fs::write(
+        &fake_git,
+        "#!/bin/sh\nif [ -n \"$ASSURA_FEEDBACK_REFRESH_LOCK\" ]; then\n  printf '%s\\n' \"$$\" > \"$ASSURA_TEST_GIT_PID\"\n  while :; do :; done\nfi\nexec \"$ASSURA_REAL_GIT\" \"$@\"\n",
+    )
+    .expect("fake git");
+    let mut permissions = fs::metadata(&fake_git)
+        .expect("fake git metadata")
+        .permissions();
+    permissions.set_mode(0o755);
+    fs::set_permissions(&fake_git, permissions).expect("fake git executable");
+    let pid_file = root.path().join("git.pid");
+    let system_path = std::env::var("PATH").unwrap_or_default();
+    let output = Command::new(bin())
+        .args([
+            "agent",
+            "nudge",
+            root.path().to_str().unwrap(),
+            "--delivery",
+            "automatic",
+            "--format",
+            "json",
+        ])
+        .current_dir(root.path())
+        .env("PATH", format!("{}:{system_path}", fake_bin.display()))
+        .env("ASSURA_REAL_GIT", &real_git)
+        .env("ASSURA_TEST_GIT_PID", &pid_file)
+        .output()
+        .expect("automatic delivery runs");
+    let value = json(output);
+    assert_eq!(value["feedback"]["refresh"], "scheduled");
+
+    let mut pid = None;
+    for _ in 0..200 {
+        if let Ok(contents) = fs::read_to_string(&pid_file) {
+            pid = contents.trim().parse::<u32>().ok();
+            if pid.is_some() {
+                break;
+            }
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+    let pid = pid.expect("refresh spawned fake git");
+    let pid_arg = pid.to_string();
+    let mut stopped = false;
+    for _ in 0..600 {
+        let alive = Command::new("kill")
+            .args(["-0", &pid_arg])
+            .stderr(std::process::Stdio::null())
+            .status()
+            .expect("process probe");
+        if !alive.success() {
+            stopped = true;
+            break;
+        }
+        thread::sleep(Duration::from_millis(10));
+    }
+    assert!(stopped, "watchdog left fake git process {pid} alive");
 }
 
 #[test]
