@@ -49,6 +49,9 @@ pub struct AgentNudgeOptions {
 
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
+    if agent_nudge_delivery::run_refresh_supervisor_if_requested() {
+        return ExitCode::Success;
+    }
     if !agent_nudge_delivery::start_refresh_watchdog() {
         agent_nudge_delivery::finish_refresh();
         return ExitCode::RuntimeError;

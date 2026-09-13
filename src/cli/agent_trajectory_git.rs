@@ -19,6 +19,14 @@ pub(super) fn cancel_refresh_worker() {
     exec::cancel_refresh_worker();
 }
 
+pub(super) fn isolate_process_tree(command: &mut std::process::Command) {
+    exec::isolate_process_tree(command);
+}
+
+pub(super) fn terminate_process_tree(pid: u32) {
+    exec::terminate_process_tree(pid);
+}
+
 const MAX_HISTORY_BYTES: usize = 4 * 1024 * 1024;
 const MAX_STATUS_BYTES: usize = 256 * 1024;
 const MAX_COMMITS: u64 = 500;

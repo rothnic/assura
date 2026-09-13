@@ -82,6 +82,8 @@ pico-args = "0.5"
 toml = "0.8"
 # Stable review finding identities must survive processes, versions, and worktrees.
 sha2 = "0.10"
+# Process-group supervision needs the native Unix signal/process-group API.
+libc = "0.2"
 # Advisory locks provide process-death recovery without a racy stale-file delete.
 fs2 = "0.4"
 rayon = { version = "1.7", optional = true }

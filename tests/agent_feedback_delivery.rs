@@ -468,7 +468,8 @@ fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
     fs::create_dir_all(&feedback_dir).expect("feedback directory");
     let lock = feedback_dir.join(format!("{digest}.refresh"));
     let queued = lock.with_extension("queued");
-    fs::write(&lock, "active").expect("active refresh lease");
+    let active_token = format!("{}:1", std::process::id());
+    fs::write(&lock, &active_token).expect("active refresh lease");
 
     let output = json(run(
         &root,
@@ -499,7 +500,7 @@ fn queued_refresh_runs_after_the_active_refresh_releases_its_lease() {
         ])
         .current_dir(root.path())
         .env("ASSURA_FEEDBACK_REFRESH_LOCK", &lock)
-        .env("ASSURA_FEEDBACK_REFRESH_TOKEN", "active")
+        .env("ASSURA_FEEDBACK_REFRESH_TOKEN", &active_token)
         .env("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS", "2000")
         .output()
         .expect("release inspect runs");

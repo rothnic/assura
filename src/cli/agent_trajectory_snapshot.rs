@@ -7,9 +7,12 @@ use sha2::{Digest, Sha256};
 use std::fs::{self, File, OpenOptions};
 use std::io::{Read, Seek, SeekFrom, Write};
 use std::path::{Path, PathBuf};
+use std::time::{SystemTime, UNIX_EPOCH};
 
 const MAX_CACHE_BYTES: usize = 1024 * 1024;
 const MAX_CACHE_FILES: usize = 128;
+const MAX_SIDECAR_FILES: usize = MAX_CACHE_FILES * 3;
+const SIDECAR_RETENTION_SECONDS: u64 = 7 * 24 * 60 * 60;
 const MAX_POINTER_BYTES: usize = 4096;
 const POINTER_SCHEMA: &str = "assura.agent-trajectory-pointer.v1";
 
@@ -264,6 +267,9 @@ fn valid_cache_key(value: &str) -> bool {
 }
 
 fn prune_cache(directory: &Path) {
+    let Some(_maintenance) = CacheLease::acquire_path(directory.join(".maintenance.lock")) else {
+        return;
+    };
     let Ok(entries) = fs::read_dir(directory) else {
         return;
     };
@@ -282,13 +288,66 @@ fn prune_cache(directory: &Path) {
         })
         .collect::<Vec<_>>();
     let remove_count = snapshots.len().saturating_sub(MAX_CACHE_FILES);
-    if remove_count == 0 {
+    if remove_count > 0 {
+        snapshots.sort_by_key(|(modified, _)| *modified);
+        for (_, path) in snapshots.into_iter().take(remove_count) {
+            let _ = fs::remove_file(path);
+        }
+    }
+    prune_sidecars(directory);
+}
+
+fn prune_sidecars(directory: &Path) {
+    let now = SystemTime::now();
+    let Ok(entries) = fs::read_dir(directory) else {
+        return;
+    };
+    let mut sidecars = entries
+        .flatten()
+        .filter_map(|entry| {
+            let path = entry.path();
+            let name = path.file_name()?.to_str()?;
+            if name == ".maintenance.lock"
+                || path.extension().and_then(|value| value.to_str()) == Some("json")
+                || path.extension().and_then(|value| value.to_str()) == Some("pointer")
+            {
+                return None;
+            }
+            entry
+                .metadata()
+                .ok()
+                .and_then(|metadata| metadata.modified().ok())
+                .map(|modified| (modified, path))
+        })
+        .collect::<Vec<_>>();
+    sidecars.sort_by_key(|(modified, _)| *modified);
+    let cutoff = now
+        .duration_since(UNIX_EPOCH)
+        .ok()
+        .and_then(|seconds| seconds.as_secs().checked_sub(SIDECAR_RETENTION_SECONDS));
+    let excess = sidecars.len().saturating_sub(MAX_SIDECAR_FILES);
+    for (index, (modified, path)) in sidecars.into_iter().enumerate() {
+        let old = cutoff.is_some_and(|cutoff| {
+            modified
+                .duration_since(UNIX_EPOCH)
+                .ok()
+                .is_some_and(|seconds| seconds.as_secs() < cutoff)
+        });
+        if old || index < excess {
+            remove_unlocked_sidecar(&path);
+        }
+    }
+}
+
+fn remove_unlocked_sidecar(path: &Path) {
+    let Ok(file) = OpenOptions::new().read(true).write(true).open(path) else {
+        return;
+    };
+    if file.try_lock_exclusive().is_err() {
         return;
     }
-    snapshots.sort_by_key(|(modified, _)| *modified);
-    for (_, path) in snapshots.into_iter().take(remove_count) {
-        let _ = fs::remove_file(path);
-    }
+    drop(file);
+    let _ = fs::remove_file(path);
 }
 
 fn digest(value: &str) -> String {
@@ -319,6 +378,26 @@ mod tests {
             })
             .count();
         assert_eq!(count, MAX_CACHE_FILES);
+    }
+
+    #[test]
+    fn cache_sidecar_retention_is_bounded() {
+        let directory = tempdir().expect("cache directory");
+        for index in 0..=MAX_SIDECAR_FILES {
+            fs::write(directory.path().join(format!("orphan-{index}.lock")), b"").expect("sidecar");
+        }
+
+        prune_cache(directory.path());
+
+        let count = fs::read_dir(directory.path())
+            .expect("cache entries")
+            .flatten()
+            .filter(|entry| {
+                entry.file_name() != ".maintenance.lock"
+                    && entry.path().extension().and_then(|value| value.to_str()) == Some("lock")
+            })
+            .count();
+        assert!(count <= MAX_SIDECAR_FILES);
     }
 
     #[test]

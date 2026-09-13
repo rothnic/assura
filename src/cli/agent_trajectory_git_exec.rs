@@ -1,5 +1,7 @@
 //! Bounded Git subprocess execution for trajectory collection.
 
+#[cfg(unix)]
+use std::io;
 use std::io::Read;
 use std::path::Path;
 use std::process::{Command, Stdio};
@@ -28,6 +30,55 @@ pub(super) fn cancel_refresh_worker() {
 
 fn refresh_cancelled() -> bool {
     REFRESH_CANCELLED.load(Ordering::Acquire)
+}
+
+pub(super) fn isolate_process_tree(command: &mut Command) {
+    #[cfg(unix)]
+    {
+        use std::os::unix::process::CommandExt;
+
+        // A refresh worker owns its process group so timeout cleanup cannot
+        // leave a shell or Git descendant holding the output pipe open.
+        unsafe {
+            command.pre_exec(|| {
+                if libc::setpgid(0, 0) == -1 {
+                    return Err(io::Error::last_os_error());
+                }
+                Ok(())
+            });
+        }
+    }
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        command.creation_flags(windows_sys::Win32::System::Threading::CREATE_NEW_PROCESS_GROUP);
+    }
+}
+
+pub(super) fn terminate_process_tree(pid: u32) {
+    if pid == 0 {
+        return;
+    }
+    #[cfg(unix)]
+    {
+        let group = -(pid as i32);
+        // SIGTERM gives cooperative descendants a chance to close resources;
+        // SIGKILL is the bounded fallback for a stuck setup or Git process.
+        unsafe {
+            let _ = libc::kill(group, libc::SIGTERM);
+        }
+        thread::sleep(Duration::from_millis(25));
+        unsafe {
+            let _ = libc::kill(group, libc::SIGKILL);
+            let _ = libc::kill(pid as i32, libc::SIGKILL);
+        }
+    }
+    #[cfg(windows)]
+    {
+        let _ = std::process::Command::new("taskkill")
+            .args(["/PID", &pid.to_string(), "/T", "/F"])
+            .status();
+    }
 }
 
 pub(super) fn run_git(
@@ -89,6 +140,7 @@ fn run_bounded_until(
     timeout: Duration,
     deadline: Option<Instant>,
 ) -> GitOutput {
+    isolate_process_tree(&mut command);
     if refresh_cancelled() {
         return GitOutput::TimedOut;
     }
@@ -109,7 +161,7 @@ fn run_bounded_until(
         match child.try_wait() {
             Ok(Some(status)) => break status,
             Ok(None) if refresh_cancelled() => {
-                let _ = child.kill();
+                terminate_process_tree(child.id());
                 let _ = child.wait();
                 if let Some(reader) = reader {
                     let _ = reader.join();
@@ -117,7 +169,7 @@ fn run_bounded_until(
                 return GitOutput::TimedOut;
             }
             Ok(None) if Instant::now() >= deadline => {
-                let _ = child.kill();
+                terminate_process_tree(child.id());
                 let _ = child.wait();
                 if let Some(reader) = reader {
                     let _ = reader.join();
@@ -126,7 +178,7 @@ fn run_bounded_until(
             }
             Ok(None) => thread::sleep(Duration::from_millis(5)),
             Err(_) => {
-                let _ = child.kill();
+                terminate_process_tree(child.id());
                 let _ = child.wait();
                 if let Some(reader) = reader {
                     let _ = reader.join();
@@ -156,7 +208,9 @@ mod tests {
         cancel_refresh_worker, refresh_timeout_from, reset_refresh_cancellation, run_bounded,
         run_bounded_until, GitOutput,
     };
+    use std::fs;
     use std::process::{Command, Stdio};
+    use std::thread;
     use std::time::{Duration, Instant};
 
     #[cfg(unix)]
@@ -211,6 +265,43 @@ mod tests {
         ));
         canceller.join().expect("cancellation thread joins");
         reset_refresh_cancellation();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn timeout_terminates_descendants_and_closes_the_pipe() {
+        let directory = tempfile::tempdir().expect("process fixture");
+        let pid_file = directory.path().join("child.pid");
+        let mut command = Command::new("sh");
+        command
+            .args([
+                "-c",
+                "sleep 30 & echo $! > \"$ASSURA_TEST_CHILD_PID\"; wait",
+            ])
+            .env("ASSURA_TEST_CHILD_PID", &pid_file)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        assert!(matches!(
+            run_bounded(command, 1024, Duration::from_millis(20)),
+            GitOutput::TimedOut
+        ));
+        let child_pid = fs::read_to_string(&pid_file)
+            .expect("descendant pid")
+            .trim()
+            .parse::<u32>()
+            .expect("descendant pid parses");
+        for _ in 0..50 {
+            let alive = Command::new("kill")
+                .args(["-0", &child_pid.to_string()])
+                .stderr(Stdio::null())
+                .status()
+                .expect("process probe");
+            if !alive.success() {
+                return;
+            }
+            thread::sleep(Duration::from_millis(10));
+        }
+        panic!("timeout left descendant {child_pid} alive");
     }
 
     #[test]
