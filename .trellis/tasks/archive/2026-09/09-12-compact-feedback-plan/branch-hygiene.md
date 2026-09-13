@@ -199,3 +199,16 @@ CF03 validation and parked intact: owner unknown/foreign; handle
 review; restore with `git stash apply stash@{0}`. It includes a wrapper-test
 timing relaxation, hook guidance, backlog state, and task-log additions; none
 is part of the candidate until separately reviewed.
+
+## CF04 closure (2026-09-13)
+
+CF04 product candidate `d811ef179d8cc101c2c3e336f303227258bf3c88` merged via
+PR #331 as `7069bd1161913c0ed717aff94b1f5216935a09f0`. Owner:
+`assura-feedback-execution`. Live handle: PR #331; restore evidence is the
+reachable merge SHA on `origin/master` and the exact candidate SHA. PR hosted
+checks passed, including website verification `34731129299` and evidence gates
+`34731129278`. Post-merge Documentation `34731300511`, Security `34731300554`,
+and Rust CI `34731300492` are successful. Rust CI's first macOS watcher
+failure was the existing notification race; its targeted rerun passed, and the
+cancelled fail-fast jobs were rerun successfully. Next action: none within
+this goal; release/deployment/publication remain out of scope.

@@ -1,7 +1,6 @@
 # Compact feedback contract
 
-Status: active execution; CF01 and CF02 are merged and verified on
-`origin/master`, CF03 is the current candidate, and CF04 remains pending. This replaces the earlier 2 KiB routine-nudge
+Status: CF01–CF04 are merged and verified on `origin/master`; this replaces the earlier 2 KiB routine-nudge
 proposal. Explicit reports remain available on demand.
 Product semantics are independent of Trellis and any agent host.
 

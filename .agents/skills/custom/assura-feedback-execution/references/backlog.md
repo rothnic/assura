@@ -19,8 +19,8 @@ generated host bundles, integration tests and performance tooling.
 
 ## Global constraints
 
-- Execution is active after the explicit start; CF01 through CF03 are terminal
-  on `origin/master`, and CF04 owns the current product candidate.
+- Execution is terminal after the explicit start; CF01 through CF04 are merged
+  and verified on `origin/master`, with no active product candidate.
 - Routine injection: one line, <=256 UTF-8 bytes including wrapper, default
   spacing 600 seconds, <=4 messages and <=1024 bytes per rolling hour.
 - Configurable entry/clear thresholds, material steps, bounded reminders,
@@ -51,7 +51,7 @@ opening another. Independent review/validation can overlap.
 | CF01 | Cheap, bounded existing feedback and convergent instructions | None | done | PR #328; merge `75992ad4cfcba4efb1cfc8a1d3333208991bba88`; candidate refs archived |
 | CF02 | Cached Git trajectory facts with honest coverage | CF01 | done | PR #329; merge `9383acc2fd9a47d63553fd32768aef7428c7b34c`; candidate refs archived |
 | CF03 | Configurable one-line scheduling and async host delivery | CF02 | done | PR #330; merge `6c70e23640229cb784bded5f3406e32a90fa2f25`; candidate `9381ae0953ba4f9150914d7324734fa20777175d` archived |
-| CF04 | Performance evidence, project trial and instruction handoff | CF03 | active | `codex/compact-feedback-cf04`; current-base work begins at merge `6c70e23640229cb784bded5f3406e32a90fa2f25` |
+| CF04 | Performance evidence, project trial and instruction handoff | CF03 | done | PR #331; merge `7069bd1161913c0ed717aff94b1f5216935a09f0`; candidate `d811ef179d8cc101c2c3e336f303227258bf3c88` archived |
 
 Inspected at `c957f89`: maturity A06 owns the existing bounded-feedback baseline;
 R01 owns watch correctness; R02/R03 own comparison evidence/many-scope repair.
@@ -304,29 +304,29 @@ the performance-reporting skill; `website/src/components/marketing/performance-p
 `website/src/pages/performance/index.astro`; `.assura/config.yml` for opt-in;
 instruction/spec routes below. Website deployment is not implied.
 
-- [ ] Extend existing benchmarks with actual installed-hook idle/edit/config
+- [x] Extend existing benchmarks with actual installed-hook idle/edit/config
   cases plus background resource measurements. Separate naming-equivalent
   LS-Lint work from rich-policy feedback; include representative real repos.
-- [ ] Compare native released LS-Lint for equivalent cold and explicit-target
+- [x] Compare native released LS-Lint for equivalent cold and explicit-target
   operations. Preserve pinned history and add current upstream after verifying
   its release. Balanced alternating samples, distributions, ties and misses
   remain visible. Run existing no-slower/native/warm gates.
-- [ ] Bind every published number to operation/build/cohort/host/method. Use
+- [x] Bind every published number to operation/build/cohort/host/method. Use
   “Persistent-session benchmark” for that measured operation; distinguish the
   released build from development source. Never promote local probes into
   release proof or leave installed-hook cost implied by a different benchmark.
-- [ ] Keep process-only CI scope explicit: skipped product, performance,
+- [x] Keep process-only CI scope explicit: skipped product, performance,
   installer or release jobs remain non-proof, and stale/failed comparison PRs
   retain their disposition until a current equivalent run exists.
-- [ ] Explicitly opt Assura into compact feedback. Run a fixed six matched task
+- [x] Explicitly opt Assura into compact feedback. Run a fixed six matched task
   pairs: small unintegrated edits, coordination-only activity, healthy delivery;
   feedback on/off with balanced order and unchanged acceptance. Include docs-only
   work as a negative control. Record accepted/integrated outcomes, time/cost,
   bytes and nuisance reports. At trial end decide keep/tune/off; no claim of
   statistical generality and no open-ended evaluation program.
-- [ ] Finish instruction/spec/guidance edits below. No default context dump,
+- [x] Finish instruction/spec/guidance edits below. No default context dump,
   required acknowledgment, productivity score or framework replacement.
-- [ ] Review evidence/copy, validate affected website/docs and product gates,
+- [x] Review evidence/copy, validate affected website/docs and product gates,
   pursue authorized integration. Name any publication hold; do not claim live
   website changes until they are actually deployed under appropriate authority.
 
