@@ -71,6 +71,7 @@ def compact_context(payload):
         return ""
     items = payload.get("nudges") or []
     item = next((item for item in items if item.get("severity") == "critical"), None)
+    item = item or next((item for item in items if item.get("category") == "trajectory"), None)
     item = item or next((item for item in items if item.get("severity") == "high"), None)
     item = item or (items[0] if items else None)
     line = f"assura: event={{payload.get('event', 'event')}}"
@@ -79,10 +80,15 @@ def compact_context(payload):
         rule = item.get("rule") or item.get("category") or "signal"
         line += f"; [{{rule}}] {{path}}: {{item.get('message', '')}}"
     context = "\n".join(["<assura-feedback>", line, "</assura-feedback>"])
-    if len(context.encode("utf-8")) <= MAX_CONTEXT_BYTES:
+    feedback = payload.get("feedback") or {{}}
+    effective = feedback.get("effective") or {{}}
+    limit = effective.get("max_bytes", MAX_CONTEXT_BYTES)
+    if not isinstance(limit, int) or not 64 <= limit <= MAX_CONTEXT_BYTES:
+        limit = MAX_CONTEXT_BYTES
+    if len(context.encode("utf-8")) <= limit:
         return context
     suffix = "\n...\n</assura-feedback>"
-    remaining = MAX_CONTEXT_BYTES - len(suffix.encode("utf-8"))
+    remaining = limit - len(suffix.encode("utf-8"))
     prefix = context.encode("utf-8")[:remaining].decode("utf-8", errors="ignore")
     return prefix + suffix
 
@@ -101,7 +107,7 @@ def main():
     collect_paths(payload.get("tool_input"), changed)
     command = assura_command(root) + [
         "agent", "nudge", str(root), "--agent", TARGET,
-        "--event", event, "--format", "json",
+        "--event", event, "--delivery", "automatic", "--format", "json",
     ]
     for path in sorted(changed)[:20]:
         command.extend(["--changed", path])
@@ -153,19 +159,21 @@ function pathsFrom(value, found = new Set()) {{
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
   const items = payload.nudges ?? []
-  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.category === "trajectory") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
-  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+  const limit = payload?.feedback?.effective?.max_bytes ?? 256
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"), limit)
 }}
 
-function bounded(value) {{
+function bounded(value, limit) {{
   const encoder = new TextEncoder()
-  if (encoder.encode(value).length <= 256) return value
+  const maxBytes = Number.isInteger(limit) && limit >= 64 && limit <= 256 ? limit : 256
+  if (encoder.encode(value).length <= maxBytes) return value
   const suffix = "\n...\n</assura-feedback>"
   let body = ""
   for (const character of value) {{
-    if (encoder.encode(body + character + suffix).length > 256) break
+    if (encoder.encode(body + character + suffix).length > maxBytes) break
     body += character
   }}
   return body + suffix
@@ -175,7 +183,7 @@ async function nudge(directory, event, sessionID, args) {{
   const command = process.env.ASSURA_BIN || "assura"
   const changed = pathsFrom(args).flatMap((path) => ["--changed", path])
   try {{
-    const {{ stdout }} = await runFile(command, ["agent", "nudge", directory, "--agent", "opencode", "--event", event, "--format", "json", ...changed], {{
+    const {{ stdout }} = await runFile(command, ["agent", "nudge", directory, "--agent", "opencode", "--event", event, "--delivery", "automatic", "--format", "json", ...changed], {{
       cwd: directory,
       timeout: 8000,
       env: {{ ...process.env, ASSURA_AGENT_LOG: process.env.ASSURA_AGENT_LOG ?? "1", ASSURA_AGENT_SESSION_ID: sessionID }},
@@ -216,19 +224,21 @@ function pathsFrom(value, found = new Set()) {{
 function compact(payload) {{
   if (!payload?.summary?.should_inject) return ""
   const items = payload.nudges ?? []
-  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.severity === "high") ?? items[0]
+  const item = items.find((entry) => entry.severity === "critical") ?? items.find((entry) => entry.category === "trajectory") ?? items.find((entry) => entry.severity === "high") ?? items[0]
   let line = `assura: event=${{payload.event ?? "event"}}`
   if (item) line += `; [${{item.rule ?? item.category ?? "signal"}}] ${{item.path ?? "project"}}: ${{item.message ?? ""}}`
-  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"))
+  const limit = payload?.feedback?.effective?.max_bytes ?? 256
+  return bounded(["<assura-feedback>", line, "</assura-feedback>"].join("\n"), limit)
 }}
 
-function bounded(value) {{
+function bounded(value, limit) {{
   const encoder = new TextEncoder()
-  if (encoder.encode(value).length <= 256) return value
+  const maxBytes = Number.isInteger(limit) && limit >= 64 && limit <= 256 ? limit : 256
+  if (encoder.encode(value).length <= maxBytes) return value
   const suffix = "\n...\n</assura-feedback>"
   let body = ""
   for (const character of value) {{
-    if (encoder.encode(body + character + suffix).length > 256) break
+    if (encoder.encode(body + character + suffix).length > maxBytes) break
     body += character
   }}
   return body + suffix
@@ -237,7 +247,7 @@ function bounded(value) {{
 export default function (pi) {{
   async function nudge(event, ctx, input = {{}}) {{
     const changed = pathsFrom(input).flatMap((path) => ["--changed", path])
-    const result = await pi.exec(process.env.ASSURA_BIN || "assura", ["agent", "nudge", ctx.cwd, "--agent", "pi", "--event", event, "--format", "json", ...changed], {{ signal: ctx.signal, timeout: 8000 }})
+    const result = await pi.exec(process.env.ASSURA_BIN || "assura", ["agent", "nudge", ctx.cwd, "--agent", "pi", "--event", event, "--delivery", "automatic", "--format", "json", ...changed], {{ signal: ctx.signal, timeout: 8000 }})
     if (result.code !== 0) return ""
     try {{ return compact(JSON.parse(result.stdout)) }} catch {{ return "" }}
   }}
@@ -269,7 +279,10 @@ pub(super) fn wrapper_script(agent: AgentIntegrationTarget, project_root: &Path)
 # {MANAGED_MARKER}
 set -eu
 
-PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-{project_root}}}"
+PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-}}"
+if [ -z "$PROJECT_ROOT" ]; then
+  PROJECT_ROOT={project_root}
+fi
 MODE="${{ASSURA_AGENT_MODE:-nudge}}"
 EVENT="${{ASSURA_AGENT_EVENT:-session-start}}"
 ASSURA_BIN="${{ASSURA_BIN:-assura}}"
@@ -278,7 +291,7 @@ export ASSURA_AGENT_LOG_DIR="${{ASSURA_AGENT_LOG_DIR:-$PROJECT_ROOT/.assura/agen
 export ASSURA_AGENT_SESSION_ID="${{ASSURA_AGENT_SESSION_ID:-$(date -u +%Y%m%dT%H%M%SZ)-$$}}"
 
 case "$MODE" in
-  nudge) "$ASSURA_BIN" agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --format json "$@" ;;
+  nudge) "$ASSURA_BIN" agent nudge "$PROJECT_ROOT" --agent {agent} --event "$EVENT" --delivery automatic --format json "$@" ;;
   check) "$ASSURA_BIN" check "$PROJECT_ROOT" --format agent{check_extra} --warn "$@" ;;
   daemon-status) "$ASSURA_BIN" daemon status "$PROJECT_ROOT" --format json "$@" ;;
   daemon-doctor) "$ASSURA_BIN" daemon doctor "$PROJECT_ROOT" --format json "$@" ;;

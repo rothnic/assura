@@ -194,6 +194,8 @@ struct PortableConfig {
     collections: HashMap<String, PortableContentCollectionConfig>,
     relations: HashMap<String, PortableContentRelationConfig>,
     code_symbols: HashMap<String, PortableContentCodeSymbolConfig>,
+    #[serde(default)]
+    agent_feedback: Option<crate::config::config::AgentFeedbackConfig>,
     exclude: Vec<String>,
 }
 
@@ -289,6 +291,7 @@ impl From<Config> for PortableConfig {
                 .into_iter()
                 .map(|(name, symbol)| (name, symbol.into()))
                 .collect(),
+            agent_feedback: config.agent_feedback,
             exclude: config.exclude,
         }
     }
@@ -326,6 +329,7 @@ impl From<PortableConfig> for Config {
                 .into_iter()
                 .map(|(name, symbol)| (name, symbol.into()))
                 .collect(),
+            agent_feedback: config.agent_feedback,
             exclude: config.exclude,
         }
     }

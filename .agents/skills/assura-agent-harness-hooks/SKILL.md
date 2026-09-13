@@ -35,6 +35,11 @@ adapters.
    `references/harness-hook-matrix.md` whenever a hook API, payload shape,
    install path, or limitation is verified.
 
+For compact feedback delivery, keep selection, cadence, byte/message budgets,
+single-flight refresh, and bounded rendering in shared Rust. Generated adapters
+may request `--delivery automatic`; unsupported host lifecycle remains quiet
+with explicit inspect fallback until an installed-entry test proves it.
+
 ## Required Checks
 
 - Search current code for every target enum, CLI value list, generated file

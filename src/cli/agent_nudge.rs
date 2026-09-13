@@ -7,6 +7,7 @@ mod helpers;
 #[path = "agent_nudge_log.rs"]
 mod log;
 
+use super::agent_nudge_delivery;
 use super::{AgentNudgeDelivery, AgentNudgeEvent, AgentNudgeTarget, ExitCode, OutputFormat};
 use crate::cli::agent_trajectory::TrajectorySnapshot;
 use crate::cli::check::{StructureCheckReport, StructureViolation};
@@ -40,7 +41,7 @@ pub struct AgentNudgeOptions {
     pub reference_limit: usize,
     /// Duration for suppressing identical event messages.
     pub cooldown_seconds: u64,
-    /// Explicit delivery mode; inspection is the only CF02 trajectory path.
+    /// Explicit delivery mode; inspection is the on-demand trajectory path.
     pub delivery: AgentNudgeDelivery,
     /// Output format.
     pub format: OutputFormat,
@@ -48,12 +49,22 @@ pub struct AgentNudgeOptions {
 
 /// Run the shared agent nudge command.
 pub async fn agent_nudge_command(options: AgentNudgeOptions, config: Option<PathBuf>) -> ExitCode {
-    match build_agent_nudge(options, config) {
+    agent_nudge_delivery::start_refresh_watchdog();
+    let result = build_agent_nudge(options, config);
+    let refresh_expired = agent_nudge_delivery::refresh_deadline_expired();
+    agent_nudge_delivery::finish_refresh();
+    if refresh_expired {
+        return ExitCode::RuntimeError;
+    }
+    match result {
         Ok(output) => {
             if let Err(error) = log::maybe_write(&output.project_root, &output.output) {
                 eprintln!("Warning: failed to write Assura nudge log: {error}");
             }
-            println!("{}", output.render());
+            let rendered = output.render();
+            if !rendered.is_empty() {
+                println!("{rendered}");
+            }
             ExitCode::Success
         }
         Err(error) => {
@@ -70,11 +81,6 @@ fn build_agent_nudge(
     let project_path = match options.path.clone() {
         Some(path) => path,
         None => std::env::current_dir().map_err(|error| error.to_string())?,
-    };
-    let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
-        Some(crate::cli::agent_trajectory::inspect(&project_path)?)
-    } else {
-        None
     };
     let policy_generation = cooldown::policy_generation(&project_path, config.as_deref());
     let agent_fallback_command = suggested_command(&project_path, options.agent);
@@ -119,6 +125,18 @@ fn build_agent_nudge(
                 )
             })
     };
+    let feedback_config = core
+        .as_ref()
+        .and_then(LocalDaemonCore::feedback_config)
+        .cloned();
+    let trajectory = if options.delivery == AgentNudgeDelivery::Inspect {
+        Some(crate::cli::agent_trajectory::inspect_with_config(
+            &project_path,
+            feedback_config.as_ref(),
+        )?)
+    } else {
+        None
+    };
 
     if let Some(core) = core.as_mut() {
         if options.event != AgentNudgeEvent::SessionStart {
@@ -142,44 +160,55 @@ fn build_agent_nudge(
                 .saturating_sub(checkable_changed_paths.len());
             omitted += unknown_changed_paths;
 
-            match core.check_changed_paths(checkable_changed_paths) {
-                Ok(batch) => {
-                    changed_path_batch = ChangedPathBatch {
-                        requested_paths: changed_paths.len().max(batch.requested_paths),
-                        checked_paths: batch.reports.len(),
-                        full_project_fallbacks: batch.full_project_fallbacks,
-                        unknown_paths: unknown_changed_paths,
-                        coverage: if unknown_changed_paths == 0 {
-                            batch.coverage
-                        } else {
-                            "partial"
-                        },
-                    };
-                    for report in batch.reports {
-                        changed_path_checks.push(ChangedPathCheck::from_report(&report));
-                        changed_report_violations += report.violations.len();
-                        let findings = finding_nudges(
-                            &report,
-                            &options.min_severity,
-                            usize::MAX,
-                            &project_path,
-                            options.agent,
-                        );
-                        changed_eligible_findings += findings.shown_count;
-                        changed_finding_nudges.extend(findings.nudges);
+            if !core.supports_incremental_path_checks() {
+                omitted += checkable_changed_paths.len();
+                changed_path_batch = ChangedPathBatch {
+                    requested_paths: changed_paths.len(),
+                    checked_paths: 0,
+                    full_project_fallbacks: 0,
+                    unknown_paths: unknown_changed_paths,
+                    coverage: "deferred_full_project_policy",
+                };
+            } else {
+                match core.check_changed_paths(checkable_changed_paths) {
+                    Ok(batch) => {
+                        changed_path_batch = ChangedPathBatch {
+                            requested_paths: changed_paths.len().max(batch.requested_paths),
+                            checked_paths: batch.reports.len(),
+                            full_project_fallbacks: batch.full_project_fallbacks,
+                            unknown_paths: unknown_changed_paths,
+                            coverage: if unknown_changed_paths == 0 {
+                                batch.coverage
+                            } else {
+                                "partial"
+                            },
+                        };
+                        for report in batch.reports {
+                            changed_path_checks.push(ChangedPathCheck::from_report(&report));
+                            changed_report_violations += report.violations.len();
+                            let findings = finding_nudges(
+                                &report,
+                                &options.min_severity,
+                                usize::MAX,
+                                &project_path,
+                                options.agent,
+                            );
+                            changed_eligible_findings += findings.shown_count;
+                            changed_finding_nudges.extend(findings.nudges);
+                        }
                     }
-                }
-                Err(error) => {
-                    changed_path_batch.coverage = "error";
-                    changed_path_batch.requested_paths = changed_paths.len();
-                    changed_path_batch.unknown_paths = unknown_changed_paths;
-                    if let Some(changed_path) = changed_paths.first() {
-                        nudges.push(NudgeItem::daemon_error(
-                            "daemon_changed_path",
-                            changed_path,
-                            &error.to_string(),
-                            &core.health(),
-                        ));
+                    Err(error) => {
+                        changed_path_batch.coverage = "error";
+                        changed_path_batch.requested_paths = changed_paths.len();
+                        changed_path_batch.unknown_paths = unknown_changed_paths;
+                        if let Some(changed_path) = changed_paths.first() {
+                            nudges.push(NudgeItem::daemon_error(
+                                "daemon_changed_path",
+                                changed_path,
+                                &error.to_string(),
+                                &core.health(),
+                            ));
+                        }
                     }
                 }
             }
@@ -234,6 +263,30 @@ fn build_agent_nudge(
     for path in &options.changed_paths {
         if performance_sensitive_path(path) && nudges.len() < options.max_issues {
             nudges.push(NudgeItem::performance_gate(path));
+        }
+    }
+
+    let mut feedback_status = feedback_config
+        .as_ref()
+        .map(|config| agent_nudge_delivery::inspect_status(&project_path, config));
+    if options.delivery == AgentNudgeDelivery::Automatic {
+        if let Some(config) = feedback_config.as_ref() {
+            if !nudges.iter().any(|nudge| nudge.severity == "critical")
+                && nudges.len() < options.max_issues
+            {
+                let delivery = agent_nudge_delivery::automatic(
+                    &project_path,
+                    config,
+                    event_name(options.event),
+                    agent_nudge_delivery::now(),
+                );
+                feedback_status = Some(delivery.status);
+                if let Some(line) = delivery.line {
+                    nudges.push(NudgeItem::trajectory(&line));
+                }
+            } else if let Some(status) = feedback_status.as_mut() {
+                status.reason = "critical_precedence";
+            }
         }
     }
 
@@ -299,6 +352,7 @@ fn build_agent_nudge(
         changed_path_batch,
         changed_path_checks,
         reference_contexts,
+        feedback: feedback_status,
         trajectory,
         nudges,
     };
@@ -391,6 +445,8 @@ struct AgentNudgeOutput {
     changed_path_batch: ChangedPathBatch,
     changed_path_checks: Vec<ChangedPathCheck>,
     reference_contexts: Vec<ReferenceContext>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    feedback: Option<agent_nudge_delivery::DeliveryStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
     trajectory: Option<TrajectorySnapshot>,
     nudges: Vec<NudgeItem>,
@@ -556,6 +612,19 @@ impl NudgeItem {
             daemon_health: None,
         }
     }
+
+    fn trajectory(line: &str) -> Self {
+        Self {
+            category: "trajectory",
+            path: None,
+            rule: Some("trajectory_stats".to_string()),
+            severity: "low",
+            message: line.to_string(),
+            suggested_command: "assura agent nudge --delivery inspect --format json".to_string(),
+            inject: true,
+            daemon_health: None,
+        }
+    }
 }
 
 struct Findings {
@@ -583,6 +652,17 @@ impl RenderedNudge {
 
 impl AgentNudgeOutput {
     fn render_text(&self) -> String {
+        if self.delivery == "automatic" {
+            let Some(nudge) = self.nudges.iter().find(|nudge| nudge.inject) else {
+                return String::new();
+            };
+            let rule = nudge
+                .rule
+                .as_deref()
+                .or(Some(nudge.category))
+                .unwrap_or("signal");
+            return bound_routine_line(format!("assura: [{rule}] {}", nudge.message));
+        }
         let mut lines = vec![
             format!("Assura nudge: {}", self.event),
             format!("delivery={}", self.delivery),
@@ -612,6 +692,22 @@ impl AgentNudgeOutput {
         }
         lines.join("\n")
     }
+}
+
+fn bound_routine_line(value: String) -> String {
+    const MAX_BYTES: usize = 256;
+    if value.len() <= MAX_BYTES {
+        return value;
+    }
+    let mut bounded = String::new();
+    for character in value.chars() {
+        if bounded.len() + character.len_utf8() + 3 > MAX_BYTES {
+            break;
+        }
+        bounded.push(character);
+    }
+    bounded.push_str("...");
+    bounded
 }
 
 fn relative_path_string(path: &Path, root: &Path) -> String {

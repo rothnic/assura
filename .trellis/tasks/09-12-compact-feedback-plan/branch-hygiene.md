@@ -51,9 +51,21 @@ ancestor of `origin/master` at `48f18fab7527150b384603ca64cec8b374295842`.
 Its remote/local ref and attached clean worktree were removed after the plan
 was carried into CF01. Restore it with
 `git branch codex/compact-feedback-plan 48f18fab7527150b384603ca64cec8b374295842`.
-CF02 is the sole active execution candidate: owner Nick/Codex, worktree
-`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf02`, next action
-complete and review the cached trajectory slice. The detached historical
+CF02 was the sole active execution candidate: owner Nick/Codex, worktree
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf02`, and it completed
+through PR #329 at merge commit `9383acc2fd9a47d63553fd32768aef7428c7b34c`.
+Its candidate tip `ea634c5401a27578c62b4b0de2ba6db30dddd583` is an ancestor of
+that merge; focused tests, independent review, current-base gates, exact-head
+PR checks, and post-merge Rust CI/Documentation/Security workflows passed.
+The clean CF02 worktree, local branch, and remote branch were removed after
+reachability proof. Restore it with
+`git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30dddd583`.
+Owner Nick/Codex; handle none; next action none unless CF02 is deliberately
+reopened. The current CF03 candidate is owner Nick/Codex at
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03`, branch
+`goal/compact-feedback-cf03`, base `9383acc2fd9a47d63553fd32768aef7428c7b34c`,
+next action implement CF03 and preserve this restore decision.
+The detached historical
 worktree at `/Users/nroth/.codex/worktrees/2f5f1792-b405-41ee-8885-bbb1ad693526/assura`
 has no branch owner and remains untouched.
 
@@ -66,3 +78,116 @@ snapshots remain recoverable as stash commits
 `851de4adc7050437d2f53e1e7006801e6879d84a` and
 `f220df766396106ba2b4e01960a707feb4a65761`; they are preserved foreign work,
 not candidate commits.
+
+CF02 completed through PR #329. Candidate tip
+`ea634c5401a27578c62b4b0de2ba6db30dddd583` merged into `origin/master` as
+`9383acc2fd9a47d63553fd32768aef7428c7b34c`. The exact-tip focused tests,
+independent review, current-base gates, and hosted PR checks passed before the
+merge. Post-merge Rust CI run `34713601124`, Documentation run `34713601114`,
+and Security Audit run `34713601129` all passed for the merge SHA. The clean
+CF02 worktree and local/remote candidate branch were then removed. Owner is
+Nick/Codex; next action is CF03 implementation. Restore the archived candidate
+with `git branch goal/compact-feedback-cf02 ea634c5401a27578c62b4b0de2ba6db30dddd583`.
+
+## CF03 ownership checkpoint
+
+CF03 remains one owned candidate at
+`/Users/nroth/.codex/worktrees/assura-compact-feedback-cf03-final`, branch
+`goal/compact-feedback-cf03`, based on CF02 merge
+`9383acc2fd9a47d63553fd32768aef7428c7b34c`. The product candidate is
+Nick/Codex-owned and currently contains candidate tip
+`bec50c14c6940a7e2ea437be362ed7f55158f4c0`; the watchdog and owner-liveness
+corrections are retained until CF03 review and merge gates finish.
+
+The stale checkout at `5a813929f020f716a802552d5406fa0b195239e4` is archived
+as `archive/2026-09-12/compact-feedback-cf03-stale-5a81392`; restore with
+`git branch archive/2026-09-12/compact-feedback-cf03-stale-5a81392 5a813929f020f716a802552d5406fa0b195239e4`.
+Its later unknown overlay is preserved in stash
+`c4467d9e58593079e933534686d76a0d7df7d511`; owner unknown/foreign, next
+action owner review, restore with `git stash apply c4467d9e58593079e933534686d76a0d7df7d511`.
+
+The duplicate writer task `01a096d1-1512-7fb0-afb3-bd1cf739f51c` was
+interrupted and archived after it was found editing the same candidate. Its
+older local ref is archived as
+`archive/2026-09-12/compact-feedback-cf03-duplicate` at
+`7d3ba219e722a987c15f8c33bbc9f075eaf4b71a`, with the dirty delivery overlay
+preserved in stash `c0cbbfd88c5d04b24817ce77511c6df25fd57233`. Owner is
+unknown/duplicate; next action is owner review; restore the ref with
+`git branch archive/2026-09-12/compact-feedback-cf03-duplicate 7d3ba219e722a987c15f8c33bbc9f075eaf4b71a`
+and the overlay with `git stash apply c0cbbfd88c5d04b24817ce77511c6df25fd57233`.
+The duplicate worktree was removed after its non-ignored overlay was preserved;
+the remote candidate ref was retained. No source or foreign stash was deleted.
+
+An unrelated harness-matrix note was observed in the shared candidate while
+another validation owner was active. It is deliberately excluded from the
+candidate net diff and preserved as foreign work: owner unknown/foreign;
+handle `stash@{0}` / `389641009075d6eec126adc6a9fca8a225a37f23`; next action is
+owner review before any reapplication; restore with
+`git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
+No unknown or foreign source was deleted.
+
+An unowned concurrent watchdog/lease overlay appeared in the candidate after
+the reviewed CF03 commit and was excluded from the candidate: owner
+unknown/foreign; handle `e4e627daed7c08628d900779e22f20dadd925df2`; next
+action is owner review before reapplication; restore with
+`git stash apply e4e627daed7c08628d900779e22f20dadd925df2`.
+
+After the duplicate task was stopped, another unowned watchdog/lease overlay
+was found reintroduced in this worktree. It is preserved separately and
+excluded from the candidate: owner unknown/foreign; handle
+`96dc6012ff4685b44d345b8390192f396c4a4441`; next action is owner review before
+reapplication; restore with
+`git stash apply 96dc6012ff4685b44d345b8390192f396c4a4441`.
+
+During the final CF03 freeze, another owner reintroduced a foreign harness
+matrix note and an alternate `bound_line` implementation into this shared
+worktree while the current-base gate was starting. They were not reviewed as
+candidate work and were parked intact: owner unknown/foreign; handle
+`stash@{0}` / `f826b855eb7d76bcb4e1fa3d6736d98e54d9aa3e`; next action is owner
+review before reapplication; restore with `git stash apply f826b855eb7d76bcb4e1fa3d6736d98e54d9aa3e`.
+
+A second overlapping harness note was observed later and is also deliberately
+excluded from the candidate net diff: owner unknown/foreign; handle
+`stash@{0}` / `8205a4a92167ece55276da24cd17b1576ed62fe2`; it contains the
+additional `SKILL.md` and `references/harness-hook-matrix.md` edits. The next
+action is owner review before any reapplication; restore with
+`git stash apply 8205a4a92167ece55276da24cd17b1576ed62fe2`.
+
+During CF03, a foreign harness-contract overlay was briefly committed as
+`0e815a9`; it is excluded from this candidate and remains recoverable from
+that commit. Owner unknown/foreign; next action is owner review; restore with
+`git show 0e815a9 -- .agents/skills/assura-agent-harness-hooks` (or apply the
+existing preserved stash for the same owner work).
+
+Independent CF03 review at `a0c18fa` found Windows snapshot replacement,
+refresh-state writer serialization, and cache-retention gaps. The correction
+keeps one shared atomic-replace helper, leases refresh-state writes, and caps
+trajectory snapshots at 128 files; rereview is required at the corrected tip.
+
+An incomplete concurrent refresh-pointer/token overlay was observed during
+CF03 validation and parked intact: owner unknown/foreign; handle
+`fcbe82e358aa3f1b3432b6111fb9e85cbbd61fbe`; next action is owner review;
+restore with `git stash apply fcbe82e358aa3f1b3432b6111fb9e85cbbd61fbe`.
+
+A second concurrent trajectory-refresh-lease overlay was also parked intact:
+owner unknown/foreign; handle `de2d5f39f3d2a3c57f97ef2311be3082d91a00d6`;
+next action is owner review; restore with
+`git stash apply de2d5f39f3d2a3c57f97ef2311be3082d91a00d6`.
+
+A third concurrent routed-doc overlay was parked intact: owner
+unknown/foreign; handle `c4c146e3f4ffd0f211f4f020c0d390bc390398a5`; next
+action is owner review; restore with
+`git stash apply c4c146e3f4ffd0f211f4f020c0d390bc390398a5`.
+
+Windows CI run `34720474090`, job `103625300231`, exposed a valid race in the
+wrapper test: the async refresh may finish before the second invocation, so
+`feedback.refresh=not_requested` is valid with a warm snapshot. The test
+accepts that state; product single-flight coverage remains in the queued-
+refresh test.
+
+An incomplete concurrent refresh-pointer/token overlay was observed during
+CF03 validation and parked intact: owner unknown/foreign; handle
+`stash@{0}` (`preserved foreign CF03 overlay 2026-09-12`); next action is owner
+review; restore with `git stash apply stash@{0}`. It includes a wrapper-test
+timing relaxation, hook guidance, backlog state, and task-log additions; none
+is part of the candidate until separately reviewed.

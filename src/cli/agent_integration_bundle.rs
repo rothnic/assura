@@ -78,7 +78,7 @@ impl IntegrationBundle {
             },
             shared_commands: SharedCommands {
                 nudge: format!(
-                    "assura agent nudge --agent {agent} --event <event> --changed <path> --format json {}",
+                    "assura agent nudge --agent {agent} --event <event> --changed <path> --delivery automatic --format json {}",
                     quote_path(&self.project_root)
                 ),
                 check: check_command_for(self.agent, &self.project_root),
@@ -650,12 +650,12 @@ to move the log directory.
 ## Shared Commands
 
 ```bash
-assura agent nudge --agent {agent_name} --event session-start --format json {root}
-assura agent nudge --agent {agent_name} --event before-tool --changed <path> --format json {root}
-assura agent nudge --agent {agent_name} --event after-tool --changed <path> --format json {root}
-assura agent nudge --agent {agent_name} --event file-read --changed <path> --format json {root}
-assura agent nudge --agent {agent_name} --event idle --format json {root}
-assura agent nudge --agent {agent_name} --event recovery --format json {root}
+assura agent nudge --agent {agent_name} --event session-start --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event before-tool --changed <path> --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event after-tool --changed <path> --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event file-read --changed <path> --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event idle --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event recovery --delivery automatic --format json {root}
 {check}
 assura daemon status --format json {root}
 assura daemon doctor --format json {root}

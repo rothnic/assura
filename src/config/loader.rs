@@ -38,8 +38,10 @@ impl ConfigLoader {
         } else {
             None
         };
-        if let Ok(config) = Self::parse_canonical(content) {
-            return Ok(config);
+        match Self::parse_canonical(content) {
+            Ok(config) => return Ok(config),
+            Err(error) if content.contains("agent_feedback") => return Err(error),
+            Err(_) => {}
         }
         match parsed_value {
             Some(value) => parse_normalized_value(value),

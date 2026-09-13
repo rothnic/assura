@@ -82,6 +82,53 @@ fn assura_bin() -> std::path::PathBuf {
     std::path::PathBuf::from(env!("CARGO_BIN_EXE_assura"))
 }
 
+#[cfg(unix)]
+#[test]
+fn installed_codex_agent_wrapper_returns_before_async_refresh_finishes() {
+    use std::time::{Duration, Instant};
+
+    let project = tempfile::TempDir::new().unwrap();
+    assert_git(project.path(), &["init", "--quiet"]);
+    std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+    std::fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure: {}\nagent_feedback:\n  mode: periodic\n  periodic_seconds: 1\n  min_interval_seconds: 1\n",
+    )
+    .unwrap();
+    std::fs::write(project.path().join("README.md"), "# fixture\n").unwrap();
+
+    let install = Command::new(assura_bin())
+        .args(["agent", "integration", "install", "codex"])
+        .arg(project.path())
+        .output()
+        .expect("install Codex wrapper");
+    assert!(
+        install.status.success(),
+        "{}",
+        command_output_text(&install)
+    );
+    let wrapper = project
+        .path()
+        .join(".assura/integrations/codex/assura-agent.sh");
+    assert!(wrapper.is_file(), "missing installed wrapper");
+
+    let started = Instant::now();
+    let output = Command::new("sh")
+        .arg(wrapper)
+        .current_dir(project.path())
+        .env("ASSURA_BIN", assura_bin())
+        .env("ASSURA_AGENT_MODE", "nudge")
+        .env("ASSURA_AGENT_EVENT", "session-start")
+        .env("ASSURA_AGENT_LOG", "0")
+        .output()
+        .expect("run installed Codex wrapper");
+    assert!(output.status.success(), "{}", command_output_text(&output));
+    assert!(
+        started.elapsed() < Duration::from_secs(2),
+        "wrapper waited for the asynchronous refresh"
+    );
+}
+
 fn command_output_text(output: &Output) -> String {
     format!(
         "{}{}",

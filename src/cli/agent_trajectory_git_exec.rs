@@ -16,7 +16,12 @@ pub(super) enum GitOutput {
 
 const MAX_RUNTIME: Duration = Duration::from_secs(2);
 
-pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutput {
+pub(super) fn run_git(
+    repo_root: &Path,
+    args: &[&str],
+    limit: usize,
+    deadline: Option<Instant>,
+) -> GitOutput {
     let mut command = Command::new("git");
     command
         .env("GIT_OPTIONAL_LOCKS", "0")
@@ -25,10 +30,51 @@ pub(super) fn run_git(repo_root: &Path, args: &[&str], limit: usize) -> GitOutpu
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    run_bounded(command, limit, MAX_RUNTIME)
+    run_bounded_until(command, limit, refresh_timeout(), deadline)
 }
 
-fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutput {
+fn refresh_timeout() -> Duration {
+    let configured = refresh_timeout_from(
+        std::env::var("ASSURA_FEEDBACK_REFRESH_TIMEOUT_MS")
+            .ok()
+            .as_deref(),
+    );
+    let Some(deadline) = std::env::var("ASSURA_FEEDBACK_REFRESH_DEADLINE_MS")
+        .ok()
+        .and_then(|value| value.parse::<i64>().ok())
+    else {
+        return configured;
+    };
+    let remaining = deadline.saturating_sub(now_millis());
+    configured.min(Duration::from_millis(remaining.max(1) as u64))
+}
+
+fn now_millis() -> i64 {
+    use std::time::{SystemTime, UNIX_EPOCH};
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_millis().min(i64::MAX as u128) as i64)
+        .unwrap_or_default()
+}
+
+fn refresh_timeout_from(value: Option<&str>) -> Duration {
+    value
+        .and_then(|value| value.parse::<u64>().ok())
+        .map(|millis| Duration::from_millis(millis.clamp(1, 10_000)))
+        .unwrap_or(MAX_RUNTIME)
+}
+
+#[cfg(test)]
+fn run_bounded(command: Command, limit: usize, timeout: Duration) -> GitOutput {
+    run_bounded_until(command, limit, timeout, None)
+}
+
+fn run_bounded_until(
+    mut command: Command,
+    limit: usize,
+    timeout: Duration,
+    deadline: Option<Instant>,
+) -> GitOutput {
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(_) => return GitOutput::Failed,
@@ -40,7 +86,8 @@ fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutp
             (output, result.is_ok())
         })
     });
-    let deadline = Instant::now() + timeout;
+    let timeout_deadline = Instant::now() + timeout;
+    let deadline = deadline.map_or(timeout_deadline, |deadline| deadline.min(timeout_deadline));
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
@@ -80,9 +127,9 @@ fn run_bounded(mut command: Command, limit: usize, timeout: Duration) -> GitOutp
 
 #[cfg(test)]
 mod tests {
-    use super::{run_bounded, GitOutput};
+    use super::{refresh_timeout_from, run_bounded, run_bounded_until, GitOutput};
     use std::process::{Command, Stdio};
-    use std::time::Duration;
+    use std::time::{Duration, Instant};
 
     #[cfg(unix)]
     #[test]
@@ -96,5 +143,35 @@ mod tests {
             run_bounded(command, 1024, Duration::from_millis(20)),
             GitOutput::TimedOut
         ));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn aggregate_deadline_caps_the_worker_timeout() {
+        let mut command = Command::new("sh");
+        command
+            .args(["-c", "sleep 1"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        assert!(matches!(
+            run_bounded_until(
+                command,
+                1024,
+                Duration::from_secs(2),
+                Some(Instant::now() + Duration::from_millis(20)),
+            ),
+            GitOutput::TimedOut
+        ));
+    }
+
+    #[test]
+    fn refresh_timeout_is_bounded_and_configurable() {
+        assert_eq!(refresh_timeout_from(Some("20")), Duration::from_millis(20));
+        assert_eq!(refresh_timeout_from(Some("0")), Duration::from_millis(1));
+        assert_eq!(refresh_timeout_from(Some("99999")), Duration::from_secs(10));
+        assert_eq!(
+            refresh_timeout_from(Some("invalid")),
+            Duration::from_secs(2)
+        );
     }
 }

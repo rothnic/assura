@@ -12,7 +12,7 @@
   "assignee": "codex",
   "createdAt": "2026-09-12",
   "completedAt": null,
-  "branch": "goal/compact-feedback-cf02",
+  "branch": "goal/compact-feedback-cf03",
   "base_branch": "master",
   "worktree_path": null,
   "commit": null,
@@ -24,10 +24,10 @@
     ".agents/skills/custom/assura-feedback-execution/SKILL.md",
     "AGENTS.md"
   ],
-  "notes": "Execution started by the explicit merge invocation. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. CF01 is merged and verified by PR #328 at 75992ad4cfcba4efb1cfc8a1d3333208991bba88; CF02 is the current product candidate and CF03-CF04 remain pending. Card status lives only in skill references/backlog.md; branch cleanup and restore handles live in branch-hygiene.md.",
+  "notes": "Execution started by the explicit merge invocation. The supplied retrospective is incorporated as CF01 process acceptance: idempotent reconciliation, all-card outcome accounting, compact 3–6 bullet context, and owned merge/archive closure. CF01 is merged and verified by PR #328 at 75992ad4cfcba4efb1cfc8a1d3333208991bba88; CF02 is merged and verified by PR #329 at 9383acc2fd9a47d63553fd32768aef7428c7b34c; CF03 is the current product candidate and CF04 remains pending. Card status lives only in skill references/backlog.md; branch cleanup and restore handles live in branch-hygiene.md.",
   "meta": {
     "execution_branches": [
-      "goal/compact-feedback-cf02"
+      "goal/compact-feedback-cf03"
     ]
   }
 }
