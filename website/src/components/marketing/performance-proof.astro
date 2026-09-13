@@ -13,7 +13,7 @@ const warmRatio = performance.warm.aggregate_speedup_ratio.toFixed(2);
   <div>
     <span>Cold checks</span>
     <strong>{coldRatio}× faster</strong>
-    <small>across {performance.cold.measured_fixture_count} LS-Lint comparison projects</small>
+    <small>across {performance.cold.measured_fixture_count} LS-Lint comparison projects; hook entry measured separately</small>
   </div>
   <div>
     <span>Warm agent loop</span>
