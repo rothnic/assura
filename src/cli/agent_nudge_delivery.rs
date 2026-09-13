@@ -663,6 +663,8 @@ fn refresh_args(project_root: &Path) -> Vec<std::ffi::OsString> {
     ]
 }
 
+// allow-reason: the spawn boundary keeps worker, lease, cadence, and deadline inputs explicit.
+#[allow(clippy::too_many_arguments)]
 fn spawn_refresh_pair(
     executable: &Path,
     args: &[std::ffi::OsString],
