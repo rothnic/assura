@@ -101,6 +101,7 @@ pub(super) fn run_git(
         refresh_timeout(),
         deadline,
         std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none(),
+        true,
     )
 }
 
@@ -137,7 +138,7 @@ fn refresh_timeout_from(value: Option<&str>) -> Duration {
 
 #[cfg(test)]
 fn run_bounded(command: Command, limit: usize, timeout: Duration) -> GitOutput {
-    run_bounded_until_internal(command, limit, timeout, None, true)
+    run_bounded_until_internal(command, limit, timeout, None, true, true)
 }
 
 #[cfg(test)]
@@ -147,7 +148,7 @@ fn run_bounded_until(
     timeout: Duration,
     deadline: Option<Instant>,
 ) -> GitOutput {
-    run_bounded_until_internal(command, limit, timeout, deadline, true)
+    run_bounded_until_internal(command, limit, timeout, deadline, true, true)
 }
 
 fn run_bounded_until_internal(
@@ -156,11 +157,12 @@ fn run_bounded_until_internal(
     timeout: Duration,
     deadline: Option<Instant>,
     isolate: bool,
+    honor_cancellation: bool,
 ) -> GitOutput {
     if isolate {
         isolate_process_tree(&mut command);
     }
-    if refresh_cancelled() {
+    if honor_cancellation && refresh_cancelled() {
         return GitOutput::TimedOut;
     }
     let mut child = match command.spawn() {
@@ -179,7 +181,7 @@ fn run_bounded_until_internal(
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
-            Ok(None) if refresh_cancelled() => {
+            Ok(None) if honor_cancellation && refresh_cancelled() => {
                 terminate_process_tree(child.id());
                 let _ = child.wait();
                 if let Some(reader) = reader {
@@ -225,7 +227,7 @@ fn run_bounded_until_internal(
 mod tests {
     use super::{
         cancel_refresh_worker, refresh_timeout_from, reset_refresh_cancellation, run_bounded,
-        run_bounded_until, GitOutput,
+        run_bounded_until, run_bounded_until_internal, GitOutput,
     };
     use std::fs;
     use std::process::{Command, Stdio};
@@ -300,7 +302,9 @@ mod tests {
             .env("ASSURA_TEST_CHILD_PID", &pid_file)
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
-        let runner = thread::spawn(move || run_bounded(command, 1024, Duration::from_secs(1)));
+        let runner = thread::spawn(move || {
+            run_bounded_until_internal(command, 1024, Duration::from_secs(1), None, true, false)
+        });
         let child_pid = (0..400).find_map(|_| {
             fs::read_to_string(&pid_file)
                 .ok()
