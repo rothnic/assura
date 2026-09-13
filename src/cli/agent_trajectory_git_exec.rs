@@ -31,6 +31,7 @@ static REFRESH_CANCELLED: AtomicBool = AtomicBool::new(false);
 #[cfg(all(windows, test))]
 thread_local! {
     static FORCE_WINDOWS_PROCESS_TREE_FALLBACK: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
+    static FORCE_WINDOWS_PROCESS_TREE_FAILURE: std::cell::Cell<bool> = const { std::cell::Cell::new(false) };
 }
 
 pub(super) fn reset_refresh_cancellation() {
@@ -81,61 +82,74 @@ fn force_windows_process_tree_fallback() -> bool {
 }
 
 #[cfg(windows)]
-fn terminate_windows_process(pid: u32) {
+fn terminate_windows_process(pid: u32) -> bool {
     use windows_sys::Win32::Foundation::CloseHandle;
     use windows_sys::Win32::System::Threading::{OpenProcess, TerminateProcess, PROCESS_TERMINATE};
 
     let handle = unsafe { OpenProcess(PROCESS_TERMINATE, 0, pid) };
     if handle.is_null() {
-        return;
+        return false;
     }
+    let terminated = unsafe { TerminateProcess(handle, 1) != 0 };
     unsafe {
-        let _ = TerminateProcess(handle, 1);
         let _ = CloseHandle(handle);
     }
+    terminated
 }
 
 #[cfg(windows)]
-fn terminate_windows_process_tree_fallback(root_pid: u32) {
+fn terminate_windows_process_tree_fallback(root_pid: u32) -> bool {
     use std::collections::HashMap;
     use std::mem::size_of;
-    use windows_sys::Win32::Foundation::{CloseHandle, INVALID_HANDLE_VALUE};
+    use windows_sys::Win32::Foundation::{
+        CloseHandle, GetLastError, ERROR_NO_MORE_FILES, INVALID_HANDLE_VALUE,
+    };
     use windows_sys::Win32::System::Diagnostics::ToolHelp::{
         CreateToolhelp32Snapshot, Process32FirstW, Process32NextW, PROCESSENTRY32W,
         TH32CS_SNAPPROCESS,
     };
 
+    #[cfg(test)]
+    if FORCE_WINDOWS_PROCESS_TREE_FAILURE.with(std::cell::Cell::get) {
+        return false;
+    }
+
     let snapshot = unsafe { CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0) };
     if snapshot == INVALID_HANDLE_VALUE {
-        return;
+        return false;
     }
     let mut children = HashMap::<u32, Vec<u32>>::new();
+    let mut process_count = 0;
     let mut entry = PROCESSENTRY32W {
         dwSize: size_of::<PROCESSENTRY32W>() as u32,
         ..Default::default()
     };
     let mut has_entry = unsafe { Process32FirstW(snapshot, &mut entry) != 0 };
-    while has_entry
-        && children.values().map(Vec::len).sum::<usize>() < MAX_WINDOWS_FALLBACK_PROCESSES
-    {
+    let mut enumeration_ok = has_entry || unsafe { GetLastError() == ERROR_NO_MORE_FILES };
+    while has_entry && process_count < MAX_WINDOWS_FALLBACK_PROCESSES {
         children
             .entry(entry.th32ParentProcessID)
             .or_default()
             .push(entry.th32ProcessID);
+        process_count += 1;
         entry.dwSize = size_of::<PROCESSENTRY32W>() as u32;
         has_entry = unsafe { Process32NextW(snapshot, &mut entry) != 0 };
+        if !has_entry && unsafe { GetLastError() != ERROR_NO_MORE_FILES } {
+            enumeration_ok = false;
+        }
     }
     unsafe {
         let _ = CloseHandle(snapshot);
     }
 
     if !children.values().any(|pids| pids.contains(&root_pid)) {
-        return;
+        return false;
     }
 
     let mut pending = vec![(root_pid, 0usize)];
     let mut seen = vec![root_pid];
     let mut descendants = Vec::new();
+    let mut complete = enumeration_ok && !has_entry;
     while let Some((parent_pid, depth)) = pending.pop() {
         let Some(child_pids) = children.get(&parent_pid) else {
             continue;
@@ -148,6 +162,7 @@ fn terminate_windows_process_tree_fallback(root_pid: u32) {
             descendants.push((pid, depth + 1));
             pending.push((pid, depth + 1));
             if seen.len() >= MAX_WINDOWS_FALLBACK_PROCESSES {
+                complete = false;
                 break;
             }
         }
@@ -155,15 +170,17 @@ fn terminate_windows_process_tree_fallback(root_pid: u32) {
     // ponytail: one rare cleanup uses a bounded linear scan; use an indexed
     // process graph only if this ever becomes a hot path.
     descendants.sort_unstable_by_key(|(_, depth)| std::cmp::Reverse(*depth));
+    let mut terminated = true;
     for (pid, _) in descendants {
-        terminate_windows_process(pid);
+        terminated &= terminate_windows_process(pid);
     }
-    terminate_windows_process(root_pid);
+    terminated &= terminate_windows_process(root_pid);
+    complete && terminated
 }
 
-pub(super) fn terminate_process_tree(pid: u32) {
+pub(super) fn terminate_process_tree(pid: u32) -> bool {
     if pid == 0 {
-        return;
+        return false;
     }
     #[cfg(unix)]
     {
@@ -178,12 +195,12 @@ pub(super) fn terminate_process_tree(pid: u32) {
             let _ = libc::kill(group, libc::SIGKILL);
             let _ = libc::kill(pid as i32, libc::SIGKILL);
         }
+        true
     }
     #[cfg(windows)]
     {
         if force_windows_process_tree_fallback() {
-            terminate_windows_process_tree_fallback(pid);
-            return;
+            return terminate_windows_process_tree_fallback(pid);
         }
         let Ok(mut killer) = std::process::Command::new("taskkill")
             .args(["/PID", &pid.to_string(), "/T", "/F"])
@@ -191,8 +208,7 @@ pub(super) fn terminate_process_tree(pid: u32) {
             .stderr(Stdio::null())
             .spawn()
         else {
-            terminate_windows_process_tree_fallback(pid);
-            return;
+            return terminate_windows_process_tree_fallback(pid);
         };
         let mut taskkill_succeeded = false;
         let deadline = Instant::now() + Duration::from_millis(250);
@@ -212,8 +228,9 @@ pub(super) fn terminate_process_tree(pid: u32) {
             }
         }
         if !taskkill_succeeded {
-            terminate_windows_process_tree_fallback(pid);
+            return terminate_windows_process_tree_fallback(pid);
         }
+        true
     }
 }
 
@@ -338,10 +355,8 @@ impl WindowsProcessJob {
         Some(Self { handle })
     }
 
-    fn terminate(&self) {
-        unsafe {
-            let _ = windows_sys::Win32::System::JobObjects::TerminateJobObject(self.handle, 1);
-        }
+    fn terminate(&self) -> bool {
+        unsafe { windows_sys::Win32::System::JobObjects::TerminateJobObject(self.handle, 1) != 0 }
     }
 }
 
@@ -375,17 +390,21 @@ fn process_job(child: &std::process::Child) -> Option<ProcessJob> {
     }
 }
 
-fn terminate_child_process(pid: u32, job: Option<&ProcessJob>) {
+fn terminate_child_process(pid: u32, job: Option<&ProcessJob>) -> bool {
     #[cfg(windows)]
     if let Some(job) = job {
-        job.terminate();
+        if job.terminate() {
+            true
+        } else {
+            terminate_process_tree(pid)
+        }
     } else {
-        terminate_process_tree(pid);
+        terminate_process_tree(pid)
     }
     #[cfg(not(windows))]
     {
         let _ = job;
-        terminate_process_tree(pid);
+        terminate_process_tree(pid)
     }
 }
 
@@ -530,18 +549,26 @@ fn run_bounded_until_internal(
         match child.try_wait() {
             Ok(Some(status)) => break status,
             Ok(None) if honor_cancellation && refresh_cancelled() => {
-                terminate_child_process(child.id(), process_job.as_ref());
+                let terminated = terminate_child_process(child.id(), process_job.as_ref());
                 cleanup_after_termination(child, reader);
-                return GitOutput::TimedOut;
+                return if terminated {
+                    GitOutput::TimedOut
+                } else {
+                    GitOutput::Failed
+                };
             }
             Ok(None) if Instant::now() >= deadline => {
-                terminate_child_process(child.id(), process_job.as_ref());
+                let terminated = terminate_child_process(child.id(), process_job.as_ref());
                 cleanup_after_termination(child, reader);
-                return GitOutput::TimedOut;
+                return if terminated {
+                    GitOutput::TimedOut
+                } else {
+                    GitOutput::Failed
+                };
             }
             Ok(None) => thread::sleep(Duration::from_millis(5)),
             Err(_) => {
-                terminate_child_process(child.id(), process_job.as_ref());
+                let _ = terminate_child_process(child.id(), process_job.as_ref());
                 cleanup_after_termination(child, reader);
                 return GitOutput::Failed;
             }
@@ -557,9 +584,13 @@ fn run_bounded_until_internal(
             }
         }
         if !reader.done {
-            terminate_child_process(child.id(), process_job.as_ref());
+            let terminated = terminate_child_process(child.id(), process_job.as_ref());
             cleanup_after_termination(child, Some(reader));
-            return GitOutput::TimedOut;
+            return if terminated {
+                GitOutput::TimedOut
+            } else {
+                GitOutput::Failed
+            };
         }
         reader.finish()
     } else {
@@ -572,9 +603,13 @@ fn run_bounded_until_internal(
             thread::sleep(Duration::from_millis(5));
         }
         if !reader.is_finished() {
-            terminate_child_process(child.id(), process_job.as_ref());
+            let terminated = terminate_child_process(child.id(), process_job.as_ref());
             cleanup_after_termination(child, Some(reader));
-            return GitOutput::TimedOut;
+            return if terminated {
+                GitOutput::TimedOut
+            } else {
+                GitOutput::Failed
+            };
         }
         reader.join().unwrap_or_default()
     } else {
@@ -594,12 +629,12 @@ fn run_bounded_until_internal(
 
 #[cfg(test)]
 mod tests {
-    #[cfg(windows)]
-    use super::FORCE_WINDOWS_PROCESS_TREE_FALLBACK;
     use super::{
         cancel_refresh_worker, refresh_timeout_from, reset_refresh_cancellation, run_bounded,
         run_bounded_until, run_bounded_until_internal, GitOutput,
     };
+    #[cfg(windows)]
+    use super::{FORCE_WINDOWS_PROCESS_TREE_FAILURE, FORCE_WINDOWS_PROCESS_TREE_FALLBACK};
     use std::fs;
     use std::process::{Command, Stdio};
     use std::thread;
@@ -660,9 +695,8 @@ mod tests {
     }
 
     #[cfg(windows)]
-    fn assert_windows_timeout_kills_descendant(force_fallback: bool) {
-        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
-        let shell = ["powershell.exe", "pwsh.exe"]
+    fn windows_test_shell() -> &'static str {
+        ["powershell.exe", "pwsh.exe"]
             .into_iter()
             .find(|candidate| {
                 Command::new(candidate)
@@ -670,7 +704,13 @@ mod tests {
                     .status()
                     .is_ok_and(|status| status.success())
             })
-            .expect("PowerShell is required for the Windows process-tree fixture");
+            .expect("PowerShell is required for the Windows process-tree fixture")
+    }
+
+    #[cfg(windows)]
+    fn assert_windows_timeout_kills_descendant(force_fallback: bool) {
+        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
+        let shell = windows_test_shell();
         let directory = tempfile::tempdir().expect("process fixture");
         let pid_file = directory.path().join("child.pid");
         let escaped_pid_file = pid_file.to_string_lossy().replace('\'', "''");
@@ -718,6 +758,26 @@ mod tests {
     fn windows_timeout_kills_descendants_without_blocking_on_inherited_pipes() {
         assert_windows_timeout_kills_descendant(false);
         assert_windows_timeout_kills_descendant(true);
+        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(false));
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn windows_cleanup_failure_is_reported_without_blocking() {
+        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(true));
+        FORCE_WINDOWS_PROCESS_TREE_FAILURE.with(|flag| flag.set(true));
+        let mut command = Command::new(windows_test_shell());
+        command
+            .args(["-NoProfile", "-Command", "Start-Sleep -Seconds 30"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        let started = Instant::now();
+        assert!(matches!(
+            run_bounded(command, 1024, Duration::from_millis(500)),
+            GitOutput::Failed
+        ));
+        assert!(started.elapsed() < Duration::from_secs(2));
+        FORCE_WINDOWS_PROCESS_TREE_FAILURE.with(|flag| flag.set(false));
         FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(false));
     }
 
