@@ -95,7 +95,13 @@ pub(super) fn run_git(
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    run_bounded_until(command, limit, refresh_timeout(), deadline)
+    run_bounded_until_internal(
+        command,
+        limit,
+        refresh_timeout(),
+        deadline,
+        std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none(),
+    )
 }
 
 fn refresh_timeout() -> Duration {
@@ -131,16 +137,29 @@ fn refresh_timeout_from(value: Option<&str>) -> Duration {
 
 #[cfg(test)]
 fn run_bounded(command: Command, limit: usize, timeout: Duration) -> GitOutput {
-    run_bounded_until(command, limit, timeout, None)
+    run_bounded_until_internal(command, limit, timeout, None, true)
 }
 
+#[cfg(test)]
 fn run_bounded_until(
-    mut command: Command,
+    command: Command,
     limit: usize,
     timeout: Duration,
     deadline: Option<Instant>,
 ) -> GitOutput {
-    isolate_process_tree(&mut command);
+    run_bounded_until_internal(command, limit, timeout, deadline, true)
+}
+
+fn run_bounded_until_internal(
+    mut command: Command,
+    limit: usize,
+    timeout: Duration,
+    deadline: Option<Instant>,
+    isolate: bool,
+) -> GitOutput {
+    if isolate {
+        isolate_process_tree(&mut command);
+    }
     if refresh_cancelled() {
         return GitOutput::TimedOut;
     }

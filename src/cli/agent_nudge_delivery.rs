@@ -632,6 +632,7 @@ fn request_refresh(
         &args,
         &lock,
         &token,
+        &refresh_guard,
         config.collection.timeout_ms,
         config.collection.min_refresh_seconds,
         deadline,
@@ -667,6 +668,7 @@ fn spawn_refresh_pair(
     args: &[std::ffi::OsString],
     lock: &Path,
     token: &str,
+    guard: &LeaseMutex,
     timeout_ms: u64,
     min_refresh_seconds: u64,
     deadline: i64,
@@ -691,6 +693,12 @@ fn spawn_refresh_pair(
         Ok(child) => child,
         Err(_) => return false,
     };
+    let child_token = format!("{}:{}", child.id(), now_millis());
+    if !replace_refresh_lease_if_owned(lock, token, &child_token, guard) {
+        super::agent_trajectory::terminate_process_tree(child.id());
+        let _ = child.wait();
+        return false;
+    }
 
     let mut supervisor = Command::new(executable);
     let supervisor_spawned = supervisor
@@ -712,6 +720,7 @@ fn spawn_refresh_pair(
     if !supervisor_spawned {
         super::agent_trajectory::terminate_process_tree(child.id());
         let _ = child.wait();
+        let _ = replace_refresh_lease_if_owned(lock, &child_token, token, guard);
     }
     supervisor_spawned
 }
@@ -750,11 +759,18 @@ fn supervise_refresh(pid: u32, deadline: i64, lock: &Path, token: &str) {
             std::thread::sleep(Duration::from_millis(5));
         }
     }
-    finish_refresh_with_deadline(
-        lock,
-        token,
-        now_millis().saturating_add(HANDOFF_GRACE_MILLIS),
-    );
+    if let Some(active_token) = refresh_token_for_worker(lock, pid, token) {
+        finish_refresh_with_deadline(
+            lock,
+            &active_token,
+            now_millis().saturating_add(HANDOFF_GRACE_MILLIS),
+        );
+    }
+}
+
+fn refresh_token_for_worker(path: &Path, pid: u32, provisional: &str) -> Option<String> {
+    let current = refresh_lease_token(path).ok()?;
+    (current == provisional || refresh_lease_pid(&current) == Some(pid)).then_some(current)
 }
 
 /// Release a refresh lease when the short-lived inspect child exits.
@@ -841,6 +857,7 @@ fn finish_refresh_with_min_interval(path: &Path, token: &str, wait_until: i64, m
             &args,
             path,
             &next_token,
+            &refresh_guard,
             timeout_ms,
             min_interval.max(0) as u64,
             now_millis().saturating_add(timeout_ms as i64),
@@ -955,9 +972,21 @@ pub(super) fn start_refresh_watchdog() -> bool {
     let Some(refresh_guard) = LeaseMutex::acquire_until(&lock, wait_until) else {
         return false;
     };
-    if !refresh_lease_owned(&lock, &expected_token) {
+    let worker_token = format!("{}:{}", std::process::id(), now_millis());
+    let current_token = refresh_lease_token(&lock).ok();
+    let active_token = if current_token.as_deref() == Some(expected_token.as_str()) {
+        if !replace_refresh_lease_if_owned(&lock, &expected_token, &worker_token, &refresh_guard) {
+            return false;
+        }
+        worker_token
+    } else if current_token.as_deref().and_then(refresh_lease_pid) != Some(std::process::id()) {
         return false;
-    }
+    } else {
+        // The parent promoted the provisional token to this child PID before
+        // setup began; keep that generation for supervisor cleanup.
+        current_token.expect("current worker token")
+    };
+    std::env::set_var(REFRESH_TOKEN_ENV, &active_token);
     super::agent_trajectory::reset_refresh_cancellation();
     drop(refresh_guard);
     drop(state_lease);
