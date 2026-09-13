@@ -360,3 +360,30 @@ independent review and exact current-base gates, then remeasure the installed
 hook. Restore evidence is candidate `54b46918` plus the preserved foreign
 refs above. Current installed-wrapper evidence remains a hold at p95
 34.322 ms against the <=25 ms target.
+
+## CF03 safety candidate — current exact tip (2026-09-13)
+
+The sole active owner is Nick/Codex on branch
+`goal/compact-feedback-cf03-safety`, worktree
+`/Users/nroth/workspace/assura-cf03-safety`, with current `origin/master`
+`7581fd0d291f610cca006170903c0d6a90b9c0b6` and candidate tip
+`75ff381328ee9ab81a0f23f64ca4ea9c69fe3a6d`. The active Codex task is
+`01a0963c-0317-7770-a62a-db27b306ea48`; duplicate writer tasks
+`01a096d1-1512-7fb0-afb3-bd1cf739f51c` and
+`01a096d7-9390-71d3-92c1-0975a65a2939` are archived and are not active.
+
+Independent reviewer Nash, handle `01a09a06-1e6f-7d23-985e-c338791e7eed`,
+returned READY for the exact candidate tip. Focused tests, full local tests,
+clippy, Windows-target compilation, current-base checks, docs/evidence gates,
+release builds, native performance regression, equivalent LS-Lint no-slower
+comparison, and the installed-hook measurement are recorded before merge.
+
+Disposition is merge pending. Next action is create and merge the single PR,
+verify the exact merge SHA and post-merge workflows, then remove only this
+owned branch/worktree after reachability proof. Restore evidence is the exact
+candidate SHA above plus the preserved safety refs
+`archive/2026-09-13/compact-feedback-cf03-safety-candidate`,
+`archive/2026-09-13/compact-feedback-cf03-safety-external-25a302`,
+`archive/2026-09-13/compact-feedback-cf03-safety-foreign-63d6179`, and
+`archive/2026-09-13/compact-feedback-cf03-safety-held`. Foreign branches,
+worktrees, and overlays remain untouched.
