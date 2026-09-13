@@ -312,3 +312,14 @@ not a waived gate; next action is independent rereview, then resolve the
 actual adapter process-floor/carrier gap or hold CF03 with owner Nick/Codex,
 live handle `goal/compact-feedback-cf03-safety`, and restore from this branch
 and the preserved duplicate-base archive.
+
+The next safety correction is committed as `0879fb96`. Refresh and delivery
+state now use OS advisory locks, so process death releases state/cache/refresh
+serialization without stale-file deletion; token checks remain generation
+validation, and malformed refresh tokens remain held as unknown rather than
+reclaimed. The inspect worker checks its deadline before and after config,
+daemon, trajectory, changed-path, reference, automatic-delivery, and cooldown
+boundaries. Focused evidence is 13 delivery unit tests, 3 snapshot unit tests,
+and 10 feedback lifecycle tests passing. This is a safety candidate, not a
+merge pass: independent rereview is required, then current-base gates and
+performance evidence must still address the measured adapter process floor.
