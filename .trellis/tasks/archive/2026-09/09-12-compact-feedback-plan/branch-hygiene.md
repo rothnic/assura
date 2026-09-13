@@ -291,3 +291,24 @@ Updated focused evidence is 3 snapshot unit tests, 12 delivery unit tests, 4
 Git-runner tests, and 10 feedback lifecycle tests passing. The candidate still
 needs rereview at the new tip before merge; no other reviewer gap was accepted
 as a blocker.
+
+The next independent rereview found two safety blockers: stale lease reclaim
+could remove a replacement owner after a check/remove race, and worker startup
+or finish could exit/return before releasing state. The correction uses
+token-fenced atomic move/check/reclaim for refresh, delivery, and trajectory
+leases; retries worker state-lease acquisition within its bounded deadline;
+and unwinds watchdog startup failure instead of calling `process::exit`.
+Added regression coverage preserves a replacement owner. Focused evidence at
+this correction is 13 delivery unit tests, 2 snapshot unit tests, 4 Git-runner
+tests, 10 delivery lifecycle tests, and 25 Git-hook lifecycle tests passing.
+
+Current release evidence is not a merge pass: the 100-run fixture warm loop
+keeps `agent-nudge` within budget at p95 10.130 ms, but existing structural
+rows exceed their current p95 budgets on this host (no-change 219.734/150 ms,
+one-file 198.935/175 ms, config 226.465/200 ms). An installed Codex wrapper
+measurement on a copied policy-rich fixture is 100 runs, p95 36.795 ms; the
+generated Python host adapter is p95 90.391 ms. These are current diagnostics,
+not a waived gate; next action is independent rereview, then resolve the
+actual adapter process-floor/carrier gap or hold CF03 with owner Nick/Codex,
+live handle `goal/compact-feedback-cf03-safety`, and restore from this branch
+and the preserved duplicate-base archive.

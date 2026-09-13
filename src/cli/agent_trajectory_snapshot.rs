@@ -196,6 +196,7 @@ impl CacheLease {
     fn acquire_path(path: PathBuf) -> Option<Self> {
         fs::create_dir_all(path.parent()?).ok()?;
         if let Ok(metadata) = fs::metadata(&path) {
+            let observed_token = crate::cli::agent_nudge_delivery::refresh_lease_token(&path).ok();
             let stale = metadata
                 .modified()
                 .ok()
@@ -206,11 +207,14 @@ impl CacheLease {
                 })
                 .unwrap_or(false);
             if stale
-                && cache_lease_owner_is_gone(crate::cli::agent_nudge_delivery::lease_owner_alive(
-                    &path,
-                ))
+                && observed_token
+                    .as_deref()
+                    .and_then(crate::cli::agent_nudge_delivery::owner_alive_for_token)
+                    == Some(false)
             {
-                let _ = fs::remove_file(&path);
+                if let Some(token) = observed_token.as_deref() {
+                    let _ = crate::cli::agent_nudge_delivery::reclaim_lease_if_token(&path, token);
+                }
             }
         }
         let token = format!(
@@ -231,15 +235,9 @@ impl CacheLease {
     }
 }
 
-fn cache_lease_owner_is_gone(owner_alive: Option<bool>) -> bool {
-    owner_alive == Some(false)
-}
-
 impl Drop for CacheLease {
     fn drop(&mut self) {
-        if fs::read_to_string(&self.path).ok().as_deref() == Some(self.token.as_str()) {
-            let _ = fs::remove_file(&self.path);
-        }
+        let _ = crate::cli::agent_nudge_delivery::reclaim_lease_if_token(&self.path, &self.token);
     }
 }
 
@@ -353,12 +351,5 @@ mod tests {
             read_bounded_with_limit(&path, MAX_POINTER_BYTES).expect("bounded read"),
             None
         );
-    }
-
-    #[test]
-    fn unknown_cache_lease_owner_is_not_reclaimed() {
-        assert!(!cache_lease_owner_is_gone(None));
-        assert!(cache_lease_owner_is_gone(Some(false)));
-        assert!(!cache_lease_owner_is_gone(Some(true)));
     }
 }
