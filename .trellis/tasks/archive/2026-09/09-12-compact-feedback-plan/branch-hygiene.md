@@ -342,6 +342,13 @@ code candidate is preserved at
 `goal/compact-feedback-cf03-safety` at `54b46918`; no foreign branch or source
 was deleted.
 
+The cleanup nevertheless removed the worktree and owned branch after the first
+interruption. Recovery used the unreachable child `25a302f8` of `54b46918`,
+recreated `goal/compact-feedback-cf03-safety`, and added worktree
+`/Users/nroth/workspace/assura-cf03-safety`. Recovery ref
+`archive/2026-09-13/compact-feedback-cf03-safety-external-25a302` preserves
+that exact tip; the worktree is clean and no tracked source was lost.
+
 Independent rereview `01a0987e-6ac9-72c2-8d0c-97c3b79890fb` is NOT READY.
 It confirms the generation-fenced shape but requires one bounded safety pass:
 supervise setup and collection, terminate descendant process trees on Unix and
