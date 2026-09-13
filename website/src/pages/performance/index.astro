@@ -248,8 +248,8 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
         <h1 id="benchmark-title">Fast checks keep agent work moving.</h1>
         <p>
           Assura keeps deterministic repository checks fast enough to run during the edit loop, not
-          only at commit time. Every tracked cold project beats native LS-Lint, and a persistent Assura
-          session widens the gap when checks repeat.
+          only at commit time. Every tracked cold project beats native LS-Lint in this checked release
+          cohort; installed hook entry latency is measured separately from the CLI comparison.
         </p>
         <div class="hero-actions">
           <a class="button button-primary" href="#measured-comparison">See the measured comparison</a>
@@ -292,7 +292,7 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
       <header class="benchmark-section-head">
         <div>
           <p class="eyebrow">The measured takeaway</p>
-          <h2 id="comparison-title">Faster than native LS-Lint in all eight cold comparisons.</h2>
+          <h2 id="comparison-title">Faster than native LS-Lint across eight cold comparisons.</h2>
         </div>
         <p>
           The speed comparison isolates the policy surface both tools share. Assura-only checks such as
@@ -327,7 +327,7 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
           <span role="cell">Performance and output vary; hooks often arrive after a larger batch of work</span>
         </div>
       </div>
-      <p class="comparison-scope-note">Only native LS-Lint is included in the numeric benchmark. Other options are shown for workflow context, not as measured speed claims.</p>
+      <p class="comparison-scope-note">Only native LS-Lint is included in the numeric benchmark. Other options are shown for workflow context, not as measured speed claims. Installed agent-hook entry is a separate operation.</p>
     </section>
 
     <section id="regression-cases" class="benchmark-projects" aria-labelledby="projects-title">
@@ -380,7 +380,7 @@ const ruleRange = countRange(cards.map((card) => card.cold?.rule_count));
           <span>All eight measured cases</span>
           <strong>See what changes and how the speed changes with it.</strong>
         </div>
-        <p>Each row runs equivalent naming, scope, count, and ignore work through both cold release CLIs. Warm timing is the persistent Assura agent loop. Report: <code>{report.ls_lint_package ?? 'LS-Lint'}</code> · {report.timestamp?.slice(0, 10) ?? 'date unavailable'} UTC.</p>
+        <p>Each row runs equivalent naming, scope, count, and ignore work through both cold release CLIs. Warm timing is the persistent Assura agent loop; neither row is installed-hook timing. Report: <code>{report.ls_lint_package ?? 'LS-Lint'}</code> · {report.timestamp?.slice(0, 10) ?? 'date unavailable'} UTC.</p>
       </div>
 
       <div class="benchmark-matrix" role="table" aria-label="All benchmark project differences and timings">

@@ -19,9 +19,8 @@ generated host bundles, integration tests and performance tooling.
 
 ## Global constraints
 
-- Execution is active after the explicit start; CF01 and CF02 are terminal on
-  `origin/master`, CF03 owns the current product candidate, and CF04 remains
-  gated on CF03.
+- Execution is active after the explicit start; CF01 through CF03 are terminal
+  on `origin/master`, and CF04 owns the current product candidate.
 - Routine injection: one line, <=256 UTF-8 bytes including wrapper, default
   spacing 600 seconds, <=4 messages and <=1024 bytes per rolling hour.
 - Configurable entry/clear thresholds, material steps, bounded reminders,
@@ -51,8 +50,8 @@ opening another. Independent review/validation can overlap.
 | --- | --- | --- | --- | --- |
 | CF01 | Cheap, bounded existing feedback and convergent instructions | None | done | PR #328; merge `75992ad4cfcba4efb1cfc8a1d3333208991bba88`; candidate refs archived |
 | CF02 | Cached Git trajectory facts with honest coverage | CF01 | done | PR #329; merge `9383acc2fd9a47d63553fd32768aef7428c7b34c`; candidate refs archived |
-| CF03 | Configurable one-line scheduling and async host delivery | CF02 | active | PR #330; `goal/compact-feedback-cf03`; exact candidate tracked in branch-hygiene.md |
-| CF04 | Performance evidence, project trial and instruction handoff | CF03 | pending | Not started |
+| CF03 | Configurable one-line scheduling and async host delivery | CF02 | done | PR #330; merge `6c70e23640229cb784bded5f3406e32a90fa2f25`; candidate `9381ae0953ba4f9150914d7324734fa20777175d` archived |
+| CF04 | Performance evidence, project trial and instruction handoff | CF03 | active | `codex/compact-feedback-cf04`; current-base work begins at merge `6c70e23640229cb784bded5f3406e32a90fa2f25` |
 
 Inspected at `c957f89`: maturity A06 owns the existing bounded-feedback baseline;
 R01 owns watch correctness; R02/R03 own comparison evidence/many-scope repair.

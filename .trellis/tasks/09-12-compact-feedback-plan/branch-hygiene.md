@@ -126,6 +126,14 @@ owner review before any reapplication; restore with
 `git stash apply 389641009075d6eec126adc6a9fca8a225a37f23`.
 No unknown or foreign source was deleted.
 
+## CF03 closure and CF04 handoff (2026-09-13)
+
+CF03 is integrated through PR #330 with merge `6c70e23640229cb784bded5f3406e32a90fa2f25`; exact reviewed candidate `9381ae0953ba4f9150914d7324734fa20777175d` passed the full hosted matrix (Rust CI `34726516739`, Documentation `34726516745`, Security `34726516775`). The product remote goal branch and clean proof worktree were removed after reachability was verified. Local restore ref: `archive/2026-09-12/compact-feedback-cf03-merged-9381ae0`.
+
+An unreviewed foreign CF03 overlay was not merged: detached preserved checkout `/private/tmp/assura-cf03-foreign-overlay-1817968-20260912`, restore ref `archive/2026-09-12/compact-feedback-cf03-foreign-overlay-1817968` at `1817968ae63dd59840210959e59ae7f704180f89`; next action is owner review only. Earlier unknown overlay stash `c4467d9e58593079e933534686d76a0d7df7d511` remains preserved. CF04 owns `codex/compact-feedback-cf04` from the exact merge above.
+
+The first CF04 worktree was removed by an external topology cleanup after creation; no tracked source was lost. CF04 was recreated as isolated clone `/private/tmp/assura-cf04-run-20260912` so its branch and evidence remain owner-scoped. The installed-hook measurements are recorded in `cf04-performance-evidence.md`; next action is finish CF04 evidence review and merge gates.
+
 An unowned concurrent watchdog/lease overlay appeared in the candidate after
 the reviewed CF03 commit and was excluded from the candidate: owner
 unknown/foreign; handle `e4e627daed7c08628d900779e22f20dadd925df2`; next
