@@ -428,6 +428,13 @@ fn corrupt_snapshot_is_replaced_without_inventing_facts() {
 #[test]
 fn truncated_status_does_not_invent_a_zero_dirty_file_count() {
     let project = fixture();
+    // Windows hosted runners need the supported maximum for this deliberately
+    // oversized status fixture; the collector remains explicitly bounded.
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\nexclude:\n  - .assura/**\nagent_feedback:\n  collection:\n    timeout_ms: 10000\n",
+    )
+    .expect("configure bounded stress timeout");
     for index in 0..12_000 {
         write(
             &project
