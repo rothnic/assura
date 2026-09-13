@@ -323,3 +323,33 @@ boundaries. Focused evidence is 13 delivery unit tests, 3 snapshot unit tests,
 and 10 feedback lifecycle tests passing. This is a safety candidate, not a
 merge pass: independent rereview is required, then current-base gates and
 performance evidence must still address the measured adapter process floor.
+
+Current-base refresh then advanced `origin/master` through PR #331
+(`7069bd1161913c0ed717aff94b1f5216935a09f0`) and the process-only closure
+PR #332 (`0a7831acc0a4c161f1af0851832182585080c551`). The latter archives the
+planning record but cannot close the product hold; this owned follow-up remains
+separate and deliberately unmerged.
+
+While the independent review was running, an unowned concurrent writer moved
+this worktree to `codex/compact-feedback-cf03-safety-current2`, committed
+`63d6179ff681671009f359be3f790191dc0bf0e3` (`fix(feedback): close CF03 lease
+safety races`), and began a cleanup that was stopped before deletion. Its
+follow-up record is preserved at
+`archive/2026-09-13/compact-feedback-cf03-safety-held` (`d1c14ea8`), and the
+code candidate is preserved at
+`archive/2026-09-13/compact-feedback-cf03-safety-foreign-63d6179`
+(`63d6179f`). The owned worktree was restored to
+`goal/compact-feedback-cf03-safety` at `54b46918`; no foreign branch or source
+was deleted.
+
+Independent rereview `01a0987e-6ac9-72c2-8d0c-97c3b79890fb` is NOT READY.
+It confirms the generation-fenced shape but requires one bounded safety pass:
+supervise setup and collection, terminate descendant process trees on Unix and
+Windows, enforce cooldown and failure-safe queued handoff, validate the full
+lease-token grammar with bounded reads, give cleanup a grace window, and bound
+lock sidecars. Next action is owner Nick/Codex on live handle
+`goal/compact-feedback-cf03-safety`: implement that correction, rerun the
+independent review and exact current-base gates, then remeasure the installed
+hook. Restore evidence is candidate `54b46918` plus the preserved foreign
+refs above. Current installed-wrapper evidence remains a hold at p95
+34.322 ms against the <=25 ms target.
