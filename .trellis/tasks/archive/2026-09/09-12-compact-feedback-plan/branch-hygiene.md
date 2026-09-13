@@ -212,3 +212,20 @@ and Rust CI `34731300492` are successful. Rust CI's first macOS watcher
 failure was the existing notification race; its targeted rerun passed, and the
 cancelled fail-fast jobs were rerun successfully. Next action: none within
 this goal; release/deployment/publication remain out of scope.
+
+## CF03 safety follow-up hold (2026-09-13)
+
+The owned follow-up candidate based on the CF03 merge was assessed and held,
+not silently discarded. Owner: `assura-feedback-execution` / Nick-Codex. Live
+handle: `archive/2026-09-13/compact-feedback-cf03-safety-held` at
+`d1c14ea8cf21eca4ac2c111d7c1718632e1ab9a6`; prior candidate restore handles
+are `archive/2026-09-13/compact-feedback-cf03-safety-candidate` at
+`54b469184925d5acf0d88ca49d84413183a44eb2` and
+`archive/2026-09-13/compact-feedback-cf03-safety-foreign-63d6179` at
+`63d6179f`. The independent rereview is NOT READY: close the empty-marker
+process-death window, cover synchronous work and child descendants in the
+deadline, define unsupported-filesystem behavior, and add subprocess-death,
+queue-handoff, and Windows runtime tests. Next action is owner review and a
+new candidate only after those fixes, followed by independent review,
+current-base gates, and performance evidence. This is a held correction to
+merged CF03, not a new queue; the active planning task remains archived.
