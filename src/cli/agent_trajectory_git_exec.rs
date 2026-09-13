@@ -3,6 +3,7 @@
 use std::io::Read;
 use std::path::Path;
 use std::process::{Command, Stdio};
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -15,6 +16,19 @@ pub(super) enum GitOutput {
 }
 
 const MAX_RUNTIME: Duration = Duration::from_secs(2);
+static REFRESH_CANCELLED: AtomicBool = AtomicBool::new(false);
+
+pub(super) fn reset_refresh_cancellation() {
+    REFRESH_CANCELLED.store(false, Ordering::Release);
+}
+
+pub(super) fn cancel_refresh_worker() {
+    REFRESH_CANCELLED.store(true, Ordering::Release);
+}
+
+fn refresh_cancelled() -> bool {
+    REFRESH_CANCELLED.load(Ordering::Acquire)
+}
 
 pub(super) fn run_git(
     repo_root: &Path,
@@ -75,6 +89,9 @@ fn run_bounded_until(
     timeout: Duration,
     deadline: Option<Instant>,
 ) -> GitOutput {
+    if refresh_cancelled() {
+        return GitOutput::TimedOut;
+    }
     let mut child = match command.spawn() {
         Ok(child) => child,
         Err(_) => return GitOutput::Failed,
@@ -91,6 +108,14 @@ fn run_bounded_until(
     let status = loop {
         match child.try_wait() {
             Ok(Some(status)) => break status,
+            Ok(None) if refresh_cancelled() => {
+                let _ = child.kill();
+                let _ = child.wait();
+                if let Some(reader) = reader {
+                    let _ = reader.join();
+                }
+                return GitOutput::TimedOut;
+            }
             Ok(None) if Instant::now() >= deadline => {
                 let _ = child.kill();
                 let _ = child.wait();
@@ -127,7 +152,10 @@ fn run_bounded_until(
 
 #[cfg(test)]
 mod tests {
-    use super::{refresh_timeout_from, run_bounded, run_bounded_until, GitOutput};
+    use super::{
+        cancel_refresh_worker, refresh_timeout_from, reset_refresh_cancellation, run_bounded,
+        run_bounded_until, GitOutput,
+    };
     use std::process::{Command, Stdio};
     use std::time::{Duration, Instant};
 
@@ -162,6 +190,27 @@ mod tests {
             ),
             GitOutput::TimedOut
         ));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn refresh_cancellation_terminates_a_running_git_child() {
+        reset_refresh_cancellation();
+        let mut command = Command::new("sh");
+        command
+            .args(["-c", "while :; do :; done"])
+            .stdout(Stdio::piped())
+            .stderr(Stdio::null());
+        let canceller = std::thread::spawn(|| {
+            std::thread::sleep(Duration::from_millis(20));
+            cancel_refresh_worker();
+        });
+        assert!(matches!(
+            run_bounded(command, 1024, Duration::from_secs(2)),
+            GitOutput::TimedOut
+        ));
+        canceller.join().expect("cancellation thread joins");
+        reset_refresh_cancellation();
     }
 
     #[test]

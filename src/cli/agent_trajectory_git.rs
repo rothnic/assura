@@ -11,6 +11,14 @@ use std::time::Instant;
 
 use exec::{run_git, GitOutput};
 
+pub(super) fn reset_refresh_cancellation() {
+    exec::reset_refresh_cancellation();
+}
+
+pub(super) fn cancel_refresh_worker() {
+    exec::cancel_refresh_worker();
+}
+
 const MAX_HISTORY_BYTES: usize = 4 * 1024 * 1024;
 const MAX_STATUS_BYTES: usize = 256 * 1024;
 const MAX_COMMITS: u64 = 500;

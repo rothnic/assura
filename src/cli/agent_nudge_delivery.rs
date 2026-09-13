@@ -712,6 +712,7 @@ pub(super) fn start_refresh_watchdog() {
     if !replace_refresh_lease_if_owned(&lock, &expected_token, &worker_token) {
         std::process::exit(1);
     }
+    super::agent_trajectory::reset_refresh_cancellation();
     std::env::set_var(REFRESH_TOKEN_ENV, &worker_token);
     drop(_state_lease);
     let Some(deadline) = deadline else {
@@ -719,14 +720,15 @@ pub(super) fn start_refresh_watchdog() {
     };
     let remaining = deadline.saturating_sub(now_millis());
     if remaining <= 0 {
-        std::process::exit(1);
+        super::agent_trajectory::cancel_refresh_worker();
+        return;
     }
     std::thread::spawn(move || {
         std::thread::sleep(Duration::from_millis(remaining as u64));
         if refresh_deadline_expired() {
-            // Reclamation is intentionally deferred to the next requester;
-            // read-then-delete could race with a replacement lease.
-            std::process::exit(1);
+            // Ask the bounded Git runner to terminate its child, then let the
+            // command unwind through finish_refresh and release or hand off.
+            super::agent_trajectory::cancel_refresh_worker();
         }
     });
 }

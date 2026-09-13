@@ -255,3 +255,19 @@ The sole active owner is now Nick/Codex on branch
 `6c70e23640229cb784bded5f3406e32a90fa2f25`. Next action is focused review and
 current-base merge gates for the lease-safety correction; no release,
 deployment, publication, protection, or broad cleanup is authorized.
+
+The independent rereview of safety tip `f2817d0` returned NOT READY with one
+P1: watchdog `process::exit` could bypass bounded Git cleanup and orphan a
+trajectory child. The correction moves timeout cancellation into the shared
+Git subprocess runner: the watchdog sets a cancellation flag, the runner
+kills/waits for the child, and the command unwinds through `finish_refresh`.
+Focused cancellation, delivery, and lease tests pass; rereview is required at
+the next tip. The reviewer also noted that runtime Windows execution and
+explicit watchdog timeout/queue tests remain narrower than the available
+cross-target compile and current lifecycle coverage.
+
+The requested remote recency audit after PR #330 found no remaining remote
+`goal/compact-feedback-cf03` or `codex/compact-feedback-cf04` ref after
+`fetch --prune`; PR #327, #329, and #330 are merged. The duplicate’s second
+dirty temporary overlay is preserved separately as stash
+`b0ae7310cdc493c4b3d53c046ab9a13dec70bed9`; no foreign source was deleted.
