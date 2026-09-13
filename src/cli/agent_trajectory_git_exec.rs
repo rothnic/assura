@@ -300,15 +300,22 @@ mod tests {
             .env("ASSURA_TEST_CHILD_PID", &pid_file)
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
+        let runner = thread::spawn(move || run_bounded(command, 1024, Duration::from_millis(100)));
+        let child_pid = (0..100)
+            .find_map(|_| {
+                fs::read_to_string(&pid_file)
+                    .ok()
+                    .and_then(|pid| pid.trim().parse::<u32>().ok())
+                    .or_else(|| {
+                        thread::sleep(Duration::from_millis(5));
+                        None
+                    })
+            })
+            .expect("descendant pid is written before the bounded timeout");
         assert!(matches!(
-            run_bounded(command, 1024, Duration::from_millis(20)),
+            runner.join().expect("bounded runner joins"),
             GitOutput::TimedOut
         ));
-        let child_pid = fs::read_to_string(&pid_file)
-            .expect("descendant pid")
-            .trim()
-            .parse::<u32>()
-            .expect("descendant pid parses");
         for _ in 0..50 {
             let alive = Command::new("kill")
                 .args(["-0", &child_pid.to_string()])
