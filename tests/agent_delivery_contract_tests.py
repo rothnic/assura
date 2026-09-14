@@ -1620,10 +1620,6 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             )
             alternate_task_json.parent.mkdir(parents=True, exist_ok=True)
             alternate_task = json.loads(json.dumps(task))
-            alternate_task["branch"] = "refs/heads/candidate-alternate"
-            alternate_task["meta"]["delivery"]["branch_ref"] = (
-                "refs/heads/candidate-alternate"
-            )
             alternate_task_json.write_text(
                 json.dumps(alternate_task), encoding="utf-8"
             )
@@ -1643,6 +1639,47 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
                 DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
                 .read("candidate-1")["attached_branch_ref"],
                 "refs/heads/candidate",
+            )
+        finally:
+            if alternate.is_dir():
+                git(repo, "worktree", "remove", "--force", str(alternate))
+            directory.cleanup()
+
+    def test_delivery_record_rejects_a_second_branch_before_receipt_mutation(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        alternate = Path(directory.name) / "candidate-alternate"
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            intent = load_delivery_intent(task_json)
+            ensure_receipt(repo, intent, task, phase="implementing")
+
+            git(repo, "worktree", "add", "-b", "candidate-alternate", str(alternate), "candidate")
+            alternate_task_json = alternate / task_path / "task.json"
+            alternate_task_json.parent.mkdir(parents=True, exist_ok=True)
+            alternate_task_json.write_text(json.dumps(task), encoding="utf-8")
+            shutil.copytree(repo / ".test-bin", alternate / ".test-bin")
+            evidence_path = Path(directory.name) / "alternate-evidence.json"
+            evidence_path.write_text(json.dumps({"review": {}}), encoding="utf-8")
+
+            recorded = task_cli(
+                alternate,
+                "delivery",
+                "record",
+                task_path,
+                "--evidence-file",
+                str(evidence_path),
+                "--expected-generation",
+                "0",
+            )
+
+            self.assertEqual(recorded.returncode, 2)
+            self.assertIn("RECEIPT_BINDING_CONFLICT", recorded.stderr)
+            self.assertEqual(
+                DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+                .read("candidate-1")["generation"],
+                0,
             )
         finally:
             if alternate.is_dir():

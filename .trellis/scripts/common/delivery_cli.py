@@ -133,11 +133,12 @@ def _attached_branch_ref(
     data: dict[str, Any] | None = None,
 ) -> str | None:
     """Resolve the branch currently attaching a receipt to one worktree."""
+    current = _normalise_ref(_current_branch(repo_root))
+    if current is not None:
+        return current
     branch: Any = intent.branch_ref
     if branch is None and isinstance(data, dict):
         branch = data.get("branch")
-    if branch is None:
-        branch = _current_branch(repo_root)
     return _normalise_ref(branch) if isinstance(branch, str) and branch.strip() else None
 
 
@@ -178,8 +179,15 @@ def _validate_receipt_binding(
     intent: DeliveryIntent,
     receipt: dict[str, Any],
     data: dict[str, Any] | None = None,
+    allow_base_checkout: bool = False,
 ) -> None:
-    """Reject an existing receipt bound to another task, owner, or branch."""
+    """Reject an existing receipt bound to another task, owner, or branch.
+
+    Evidence recording and terminal closure may run from the canonical base
+    checkout after integration. That checkout is allowed to observe the
+    candidate's existing attachment, but it cannot create or repair a missing
+    attachment. A non-base checkout must match the live branch identity.
+    """
     if receipt.get("repository") != intent.repository:
         raise DeliveryValidationError(
             f"RECEIPT_BINDING_CONFLICT: receipt repository does not match {intent.repository}"
@@ -204,6 +212,12 @@ def _validate_receipt_binding(
         receipt.get("outcome") in _TERMINAL_OUTCOMES
         and receipt.get("closure") in {"verified", "closed"}
     )
+    base_checkout = (
+        allow_base_checkout
+        and expected_branch
+        and intent.base_ref
+        and _branch_name(expected_branch) == _branch_name(intent.base_ref)
+    )
     if expected_branch and not isinstance(attached_branch, str) and not terminal_receipt:
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt has no attached branch binding; "
@@ -213,6 +227,7 @@ def _validate_receipt_binding(
         expected_branch
         and isinstance(attached_branch, str)
         and _branch_name(attached_branch) != _branch_name(expected_branch)
+        and not base_checkout
     ):
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt branch does not match the delivery intent"
@@ -548,6 +563,13 @@ def cmd_delivery_record(args: argparse.Namespace) -> int:
             return _error_code(
                 "RECEIPT_MISSING: run delivery register or start the task first", 2
             )
+        _validate_receipt_binding(
+            repo_root,
+            intent,
+            receipt,
+            data,
+            allow_base_checkout=True,
+        )
         if receipt.get("outcome") in _TERMINAL_OUTCOMES and receipt.get("closure") in {
             "verified",
             "closed",
@@ -684,6 +706,13 @@ def cmd_delivery_close(args: argparse.Namespace) -> int:
             return _error_code(
                 "RECEIPT_MISSING: run delivery register or start the task first", 2
             )
+        _validate_receipt_binding(
+            repo_root,
+            intent,
+            receipt,
+            data,
+            allow_base_checkout=True,
+        )
         existing_outcome = receipt.get("outcome")
         if (
             existing_outcome in _TERMINAL_OUTCOMES
