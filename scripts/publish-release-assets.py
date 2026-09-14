@@ -7,6 +7,7 @@ import argparse
 import importlib.util
 import json
 import os
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,6 +28,8 @@ REQUIRED_ARCHIVES = _CONTRACT.REQUIRED_ARCHIVES
 build_asset_manifest = _CONTRACT.build_asset_manifest
 plan_asset_uploads = _CONTRACT.plan_asset_uploads
 sha256_file = _CONTRACT.sha256_file
+
+_FULL_OID = re.compile(r"^[0-9a-fA-F]{40}$")
 
 
 def _run_gh(arguments: list[str]) -> tuple[int, str, str]:
@@ -60,6 +63,84 @@ def _read_release(repository: str, tag: str) -> dict[str, Any] | None:
     if not isinstance(value, dict):
         raise ReleaseContractError("GitHub release API returned a non-object")
     return value
+
+
+def verify_remote_tag(
+    repository: str,
+    tag: str,
+    expected_tag_oid: str,
+    expected_commit_oid: str,
+) -> dict[str, str]:
+    """Require the remote tag object and peeled commit to match the source."""
+    for value, label in (
+        (expected_tag_oid, "expected tag OID"),
+        (expected_commit_oid, "expected commit OID"),
+    ):
+        if not isinstance(value, str) or _FULL_OID.fullmatch(value) is None:
+            raise ReleaseContractError(f"{label} must be a full Git object id")
+
+    code, stdout, stderr = _run_gh(
+        ["api", f"repos/{repository}/git/ref/tags/{tag}"]
+    )
+    if code != 0:
+        raise ReleaseContractError(
+            stderr.strip() or f"unable to inspect remote tag {tag}"
+        )
+    try:
+        ref = json.loads(stdout)
+    except json.JSONDecodeError as error:
+        raise ReleaseContractError("GitHub tag API returned invalid JSON") from error
+    if not isinstance(ref, dict) or ref.get("ref") != f"refs/tags/{tag}":
+        raise ReleaseContractError("GitHub tag API returned an unexpected ref")
+    tag_object = ref.get("object")
+    if not isinstance(tag_object, dict):
+        raise ReleaseContractError("GitHub tag API omitted the tag object")
+    tag_oid = tag_object.get("sha")
+    object_type = tag_object.get("type")
+    if not isinstance(tag_oid, str) or _FULL_OID.fullmatch(tag_oid) is None:
+        raise ReleaseContractError("GitHub tag API returned an invalid tag object id")
+
+    if object_type == "commit":
+        commit_oid = tag_oid
+    elif object_type == "tag":
+        code, stdout, stderr = _run_gh(
+            ["api", f"repos/{repository}/git/tags/{tag_oid}"]
+        )
+        if code != 0:
+            raise ReleaseContractError(
+                stderr.strip() or f"unable to inspect annotated tag object {tag_oid}"
+            )
+        try:
+            annotated = json.loads(stdout)
+        except json.JSONDecodeError as error:
+            raise ReleaseContractError(
+                "GitHub annotated-tag API returned invalid JSON"
+            ) from error
+        target = annotated.get("object") if isinstance(annotated, dict) else None
+        if (
+            not isinstance(target, dict)
+            or target.get("type") != "commit"
+            or not isinstance(target.get("sha"), str)
+            or _FULL_OID.fullmatch(target["sha"]) is None
+        ):
+            raise ReleaseContractError(
+                "GitHub annotated tag does not resolve directly to a commit"
+            )
+        commit_oid = target["sha"]
+    else:
+        raise ReleaseContractError("GitHub tag API returned an unsupported object type")
+
+    actual = {"tag_oid": tag_oid.lower(), "commit_oid": commit_oid.lower()}
+    expected = {
+        "tag_oid": expected_tag_oid.lower(),
+        "commit_oid": expected_commit_oid.lower(),
+    }
+    if actual != expected:
+        raise ReleaseContractError(
+            f"remote tag {tag} does not match the expected source "
+            f"(actual tag {actual['tag_oid']} commit {actual['commit_oid']})"
+        )
+    return actual
 
 
 def _local_assets(
@@ -105,9 +186,14 @@ def publish_assets(
     tag: str,
     version: str,
     assets_dir: Path,
+    expected_tag_oid: str,
+    expected_commit_oid: str,
 ) -> dict[str, Any]:
     """Create a release or upload only missing, identity-verified assets."""
     assets_dir = Path(assets_dir)
+    tag_identity = verify_remote_tag(
+        repository, tag, expected_tag_oid, expected_commit_oid
+    )
     local_assets = _local_assets(assets_dir, version)
     existing = _read_release(repository, tag)
     if existing is None:
@@ -170,6 +256,8 @@ def publish_assets(
         "action": action,
         "repository": repository,
         "tag": tag,
+        "tag_oid": tag_identity["tag_oid"],
+        "commit_oid": tag_identity["commit_oid"],
         "release_url": verified.get("html_url") or verified.get("url"),
         "uploaded_assets": uploaded,
         "skipped_assets": skipped,
@@ -182,6 +270,8 @@ def _parser() -> argparse.ArgumentParser:
     parser.add_argument("--repository", required=True)
     parser.add_argument("--tag", required=True)
     parser.add_argument("--version", required=True)
+    parser.add_argument("--tag-oid", required=True)
+    parser.add_argument("--commit-oid", required=True)
     parser.add_argument("--assets-dir", required=True)
     parser.add_argument("--output", required=True)
     return parser
@@ -190,7 +280,14 @@ def _parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _parser().parse_args(argv)
     try:
-        result = publish_assets(args.repository, args.tag, args.version, Path(args.assets_dir))
+        result = publish_assets(
+            args.repository,
+            args.tag,
+            args.version,
+            Path(args.assets_dir),
+            args.tag_oid,
+            args.commit_oid,
+        )
         _write_json(Path(args.output), result)
         print(json.dumps(result, indent=2, sort_keys=True))
         return 0

@@ -12,6 +12,7 @@ import tarfile
 import tempfile
 import unittest
 import zipfile
+from unittest import mock
 from pathlib import Path
 
 
@@ -25,6 +26,13 @@ _SPEC = importlib.util.spec_from_file_location(
 assert _SPEC is not None and _SPEC.loader is not None
 _MODULE = importlib.util.module_from_spec(_SPEC)
 _SPEC.loader.exec_module(_MODULE)
+
+_PUBLISHER_SPEC = importlib.util.spec_from_file_location(
+    "assura_publish_release_assets", ROOT / "scripts" / "publish-release-assets.py"
+)
+assert _PUBLISHER_SPEC is not None and _PUBLISHER_SPEC.loader is not None
+_PUBLISHER = importlib.util.module_from_spec(_PUBLISHER_SPEC)
+_PUBLISHER_SPEC.loader.exec_module(_PUBLISHER)
 
 RELEASE_ARCHIVES = _MODULE.REQUIRED_ARCHIVES
 ReleaseContractError = _MODULE.ReleaseContractError
@@ -145,6 +153,61 @@ class ReleaseRetryTests(unittest.TestCase):
                 [{"name": "assura-linux-amd64.tar.gz", "size": 10}],
             )
 
+    def test_remote_annotated_tag_must_match_tag_and_commit_identity(self) -> None:
+        tag_oid = "1" * 40
+        commit_oid = "2" * 40
+        with mock.patch.object(
+            _PUBLISHER,
+            "_run_gh",
+            side_effect=[
+                (
+                    0,
+                    json.dumps(
+                        {
+                            "ref": "refs/tags/v0.4.0",
+                            "object": {"sha": tag_oid, "type": "tag"},
+                        }
+                    ),
+                    "",
+                ),
+                (
+                    0,
+                    json.dumps(
+                        {"object": {"sha": commit_oid, "type": "commit"}}
+                    ),
+                    "",
+                ),
+            ],
+        ):
+            identity = _PUBLISHER.verify_remote_tag(
+                "rothnic/assura", "v0.4.0", tag_oid, commit_oid
+            )
+
+        self.assertEqual(
+            identity,
+            {"tag_oid": tag_oid, "commit_oid": commit_oid},
+        )
+
+    def test_remote_tag_mismatch_stops_existing_release_retry(self) -> None:
+        with mock.patch.object(
+            _PUBLISHER,
+            "_run_gh",
+            return_value=(
+                0,
+                json.dumps(
+                    {
+                        "ref": "refs/tags/v0.4.0",
+                        "object": {"sha": "3" * 40, "type": "commit"},
+                    }
+                ),
+                "",
+            ),
+        ):
+            with self.assertRaises(_PUBLISHER.ReleaseContractError):
+                _PUBLISHER.verify_remote_tag(
+                    "rothnic/assura", "v0.4.0", "1" * 40, "2" * 40
+                )
+
 
 class ReleaseReceiptTests(unittest.TestCase):
     def test_receipt_binds_tag_commit_workflow_assets_and_install_proof(self) -> None:
@@ -237,12 +300,15 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
             "--verify-tag",
             (ROOT / "scripts" / "publish-release-assets.py").read_text(encoding="utf-8"),
         )
+        self.assertIn("--tag-oid", workflow)
+        self.assertIn("--commit-oid", workflow)
 
     def test_existing_release_identity_must_include_the_requested_tag(self) -> None:
         publisher = (ROOT / "scripts" / "publish-release-assets.py").read_text(
             encoding="utf-8"
         )
         self.assertIn('existing.get("tag_name") != tag', publisher)
+        self.assertIn("verify_remote_tag", publisher)
 
 
 if __name__ == "__main__":
