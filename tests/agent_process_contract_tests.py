@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -33,10 +35,28 @@ def command(*args: str) -> str:
         raise AssertionError("; ".join(details)) from error
 
 
+def git_bash() -> str:
+    if os.name != "nt":
+        return "bash"
+
+    git_executable = shutil.which("git")
+    if git_executable:
+        git_path = Path(git_executable)
+        candidates = [
+            git_path.with_name("bash.exe"),
+            git_path.parent.parent / "bin" / "bash.exe",
+        ]
+        for candidate in candidates:
+            if candidate.is_file():
+                return str(candidate)
+    return "bash"
+
+
 def ledger_snapshot() -> str:
-    # Git Bash on Windows accepts POSIX-style paths consistently when the
-    # Python process itself is launched from PowerShell.
-    return command("bash", LEDGER_AUDIT.as_posix(), ROOT.as_posix())
+    # The Windows runner can expose WSL's `bash` launcher before Git Bash.
+    # Resolve the native Git Bash executable so this contract does not depend
+    # on an unconfigured WSL distribution.
+    return command(git_bash(), LEDGER_AUDIT.as_posix(), ROOT.as_posix())
 
 
 def records(snapshot: str, kind: str) -> list[list[str]]:
