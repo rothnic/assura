@@ -324,6 +324,20 @@ class DeliveryStoreTests(unittest.TestCase):
 
         self.assertEqual(calls, [("acquire", 0), ("release", 0)])
 
+    def test_windows_marker_read_failure_reports_busy(self) -> None:
+        class DeniedMarkerRead:
+            def seek(self, position: int) -> None:
+                self.position = position
+
+            def read(self, size: int) -> bytes:
+                raise OSError("sharing violation")
+
+        fake_msvcrt = types.SimpleNamespace(LK_NBLCK=1)
+        with mock.patch("common.delivery_store.os.name", "nt"):
+            with mock.patch.dict(sys.modules, {"msvcrt": fake_msvcrt}):
+                with self.assertRaises(ReceiptBusy):
+                    DeliveryStore._acquire_lock(DeniedMarkerRead())
+
 
 class FakeGithub:
     def __init__(self, pull_requests: list[dict]) -> None:
