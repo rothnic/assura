@@ -13,6 +13,9 @@ from pathlib import Path
 from typing import Any
 
 from common.active_task import resolve_active_task, resolve_task_ref
+from common.delivery import DeliveryValidationError, delivery_store_root, load_delivery_intent
+from common.delivery_cli import pending_owned_candidate
+from common.delivery_store import DeliveryStore, DeliveryStoreError
 from common.git import run_git
 from common.paths import get_repo_root
 from common.tasks import load_task
@@ -91,6 +94,48 @@ def _active_task_state(
     task = load_task(resolved) if resolved and resolved.is_dir() else None
     artifacts = _task_artifacts(resolved if task else None)
 
+    delivery: dict[str, Any] = {
+        "state": "none",
+        "candidate_id": None,
+        "owner": None,
+        "outcome": None,
+        "phase": None,
+        "closure": None,
+        "pending_owned_candidate": None,
+    }
+    if resolved and task:
+        try:
+            intent = load_delivery_intent(resolved / "task.json")
+            delivery.update({
+                "state": "registered",
+                "candidate_id": intent.candidate_id,
+                "owner": intent.owner,
+            })
+            receipt_path = delivery_store_root(repo_root) / f"{intent.candidate_id}.json"
+            if receipt_path.is_file():
+                receipt = DeliveryStore(receipt_path.parent).read(intent.candidate_id)
+                delivery.update({
+                    "state": "receipt",
+                    "outcome": receipt.get("outcome"),
+                    "phase": receipt.get("phase"),
+                    "closure": receipt.get("closure"),
+                })
+            else:
+                delivery["state"] = "receipt_missing"
+            delivery["pending_owned_candidate"] = pending_owned_candidate(
+                repo_root, intent.owner, intent.candidate_id
+            )
+        except DeliveryValidationError as error:
+            meta = task.raw.get("meta") if isinstance(task.raw, dict) else None
+            if isinstance(meta, dict) and "delivery" in meta:
+                delivery["state"] = "invalid"
+                delivery["error"] = str(error)
+            else:
+                delivery["state"] = "legacy_unclassified"
+        except (ValueError, OSError, DeliveryStoreError) as error:
+            delivery["state"] = "invalid"
+            delivery["error"] = str(error)
+
     return {
         "path": task_path,
         "source": source,
@@ -107,6 +152,7 @@ def _active_task_state(
             else None
         ) if task else None,
         "artifacts": artifacts,
+        "delivery": delivery,
     }
 
 
@@ -159,6 +205,24 @@ def _derive_verdict(state: dict[str, Any]) -> dict[str, Any]:
     elif not task["path"]:
         workflow_state = "no_task"
         next_action = "For direct Q&A, answer. For implementation or cleanup work, create/attach a Trellis task before editing."
+    elif task["delivery"]["state"] in {"legacy_unclassified", "invalid"}:
+        ready = False
+        workflow_state = task["delivery"]["state"]
+        needs.append("Establish a valid versioned delivery intent before starting or extending implementation.")
+        next_action = "Run `python3 ./.trellis/scripts/task.py delivery register <task> --candidate <id> --owner <owner>` or create an owned child task."
+    elif task["delivery"]["state"] == "receipt_missing":
+        ready = False
+        workflow_state = "delivery_receipt_missing"
+        needs.append("Create the resumable delivery receipt before changing scope.")
+        next_action = "Resume through `task.py start <task>` or explicitly register the delivery candidate."
+    elif task["delivery"].get("pending_owned_candidate"):
+        pending = task["delivery"]["pending_owned_candidate"]
+        ready = False
+        workflow_state = "delivery_scope_pending"
+        needs.append(
+            f"Finish or explicitly disposition same-owner candidate {pending['candidate_id']} before starting another lane."
+        )
+        next_action = str(pending.get("next_action") or "Resume the pending delivery candidate.")
     elif task["status"] == "planning":
         workflow_state = "planning"
         if not task["artifacts"]["prd"]:

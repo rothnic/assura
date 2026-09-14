@@ -28,6 +28,7 @@ from .config import (
     resolve_package,
     validate_package,
 )
+from .delivery import repository_identity
 from .git import run_git
 from .io import read_json, write_json
 from .log import Colors, colored
@@ -43,7 +44,6 @@ from .paths import (
 )
 from .safe_commit import (
     print_gitignore_warning,
-    safe_archive_paths_to_add,
     safe_git_add,
 )
 from .task_utils import (
@@ -227,7 +227,19 @@ def cmd_create(args: argparse.Namespace) -> int:
         "parent": None,
         "relatedFiles": [],
         "notes": "",
-        "meta": {},
+        "meta": {
+            "delivery": {
+                "schema_version": 1,
+                "kind": "integration",
+                "candidate_id": dir_name,
+                "owner": assignee,
+                "repository": repository_identity(repo_root),
+                "base_ref": f"refs/heads/{current_branch}",
+                "branch_ref": None,
+                "acceptance_ref": "prd.md#acceptance",
+                "authority_ref": None,
+            }
+        },
     }
 
     write_json(task_json_path, task_data)
@@ -308,6 +320,25 @@ def cmd_create(args: argparse.Namespace) -> int:
 # Command: archive
 # =============================================================================
 
+
+def _find_archived_task_dir(task_name: str, tasks_dir: Path) -> Path | None:
+    """Find an archive destination for retrying an interrupted archive."""
+    archive_root = tasks_dir / DIR_ARCHIVE
+    requested_name = Path(task_name).name
+    if not requested_name or not archive_root.is_dir():
+        return None
+    matches: list[Path] = []
+    for task_json in sorted(archive_root.rglob(FILE_TASK_JSON)):
+        if task_json.parent.name != requested_name:
+            continue
+        try:
+            data = read_json(task_json)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            matches.append(task_json.parent)
+    return matches[0] if len(matches) == 1 else None
+
 def cmd_archive(args: argparse.Namespace) -> int:
     """Archive completed task."""
     repo_root = get_repo_root()
@@ -323,6 +354,27 @@ def cmd_archive(args: argparse.Namespace) -> int:
     task_dir = resolve_task_dir(task_name, repo_root)
 
     if not task_dir or not task_dir.is_dir():
+        # A previous run may have moved the task successfully and failed only
+        # while closing its receipt. Make that state resumable instead of
+        # reporting a missing task and leaving an apparently half-complete
+        # delivery operation stranded.
+        archived_dir = _find_archived_task_dir(task_name, tasks_dir)
+        if archived_dir is not None:
+            from .delivery_cli import recover_archive_closure
+
+            recovered, recovery_error = recover_archive_closure(repo_root, archived_dir)
+            if recovered:
+                print(
+                    colored(
+                        f"Archive already moved; delivery closure verified: {archived_dir}",
+                        Colors.GREEN,
+                    ),
+                    file=sys.stderr,
+                )
+                print(archived_dir.relative_to(repo_root).as_posix())
+                return 0
+            print(colored(f"Archive recovery blocked: {recovery_error}", Colors.RED), file=sys.stderr)
+            return 1
         print(colored(f"Error: Task not found: {task_name}", Colors.RED), file=sys.stderr)
         print("Active tasks:", file=sys.stderr)
         # Import lazily to avoid circular dependency
@@ -334,8 +386,19 @@ def cmd_archive(args: argparse.Namespace) -> int:
     dir_name = task_dir.name
     task_json_path = task_dir / FILE_TASK_JSON
 
+    # Delivery validation must happen before changing task status, clearing
+    # session pointers, moving the directory, or staging an archive commit.
+    # Physical archival is storage maintenance after an explicit verified
+    # outcome; it is not evidence of delivery.
+    from .delivery_cli import archive_guard
+    allowed, guard_error, delivery_intent, _ = archive_guard(repo_root, task_dir)
+    if not allowed:
+        print(colored(f"Archive blocked: {guard_error}", Colors.RED), file=sys.stderr)
+        return 1
+
     # Update status before archiving
     today = datetime.now().strftime("%Y-%m-%d")
+    related_task_paths: list[str] = []
     if task_json_path.is_file():
         data = read_json(task_json_path)
         if data:
@@ -345,8 +408,8 @@ def cmd_archive(args: argparse.Namespace) -> int:
 
             # Handle subtask relationships on archive.
             # Keep this task in its parent's children list so progress
-            # counters (children_progress) stay consistent — children
-            # missing from the active set are treated as completed.
+            # counters (children_progress) can resolve the archived receipt.
+            # A missing or legacy child remains unknown, never implicitly done.
             task_children = data.get("children", [])
 
             # If this is a parent, clear parent field in all children
@@ -355,6 +418,13 @@ def cmd_archive(args: argparse.Namespace) -> int:
                     child_dir_path = find_task_by_name(child_name, tasks_dir)
                     if child_dir_path:
                         child_json = child_dir_path / FILE_TASK_JSON
+                        try:
+                            if child_json.is_file():
+                                related_task_paths.append(
+                                    child_json.relative_to(repo_root).as_posix()
+                                )
+                        except ValueError:
+                            pass
                         if child_json.is_file():
                             child_data = read_json(child_json)
                             if child_data:
@@ -372,9 +442,30 @@ def cmd_archive(args: argparse.Namespace) -> int:
         year_month = archive_dest.parent.name
         print(colored(f"Archived: {dir_name} -> archive/{year_month}/", Colors.GREEN), file=sys.stderr)
 
+        if delivery_intent is not None:
+            from .delivery_cli import record_archive_closure
+            closure_recorded, closure_error = record_archive_closure(
+                repo_root, delivery_intent, archive_dest
+            )
+            if not closure_recorded:
+                print(
+                    colored(
+                        f"[WARN] Archive moved but delivery closure receipt was not updated: {closure_error}",
+                        Colors.YELLOW,
+                    ),
+                    file=sys.stderr,
+                )
+                return 1
+
         # Auto-commit unless --no-commit
         if not getattr(args, "no_commit", False):
-            _auto_commit_archive(dir_name, repo_root)
+            _auto_commit_archive(
+                dir_name,
+                repo_root,
+                source_path=task_dir,
+                archive_path=archive_dest,
+                related_paths=related_task_paths,
+            )
 
         # Return the archive path
         print(f"{DIR_WORKFLOW}/{DIR_TASKS}/{DIR_ARCHIVE}/{year_month}/{dir_name}")
@@ -387,15 +478,40 @@ def cmd_archive(args: argparse.Namespace) -> int:
     return 1
 
 
-def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
+def _auto_commit_archive(
+    task_name: str,
+    repo_root: Path,
+    source_path: Path,
+    archive_path: Path,
+    related_paths: list[str] | None = None,
+) -> None:
     """Stage Trellis-owned task paths and commit after archive.
 
-    Only stages specific subpaths (the archive subtree and active task dirs),
-    never the whole `.trellis/` tree. If `.gitignore` excludes `.trellis/`,
-    falls back to `git add -f <specific>` and emits a warning that explicitly
-    forbids `git add -f .trellis/` (which would fan out to caches/backups).
+    Stages only the selected archive move and explicitly related task paths,
+    never the whole `.trellis/` tree. If `.gitignore` excludes a selected
+    path, it falls back to `git add -f <specific>` and emits a warning that
+    explicitly forbids `git add -f .trellis/` (which would fan out to
+    caches/backups).
     """
-    paths = safe_archive_paths_to_add(repo_root)
+    source_relative: str
+    archive_relative: str
+    try:
+        source_relative = source_path.relative_to(repo_root).as_posix()
+        archive_relative = archive_path.relative_to(repo_root).as_posix()
+    except ValueError:
+        print("[WARN] Archive paths are outside the repository; skipping auto-commit.", file=sys.stderr)
+        return
+    source_files = run_git(
+        ["ls-files", "--", source_relative], cwd=repo_root
+    )[1].splitlines()
+    source_was_tracked = bool(source_files)
+    paths = [
+        archive_relative,
+        *([source_relative] if source_was_tracked else []),
+        *(related_paths or []),
+    ]
+    # Preserve order while avoiding duplicate pathspecs.
+    paths = list(dict.fromkeys(paths))
     if not paths:
         print("[OK] No task changes to commit.", file=sys.stderr)
         return
@@ -417,15 +533,19 @@ def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
             file=sys.stderr,
         )
 
+    # Include the exact moved source in the check. It is already in ``paths``
+    # and safe_git_add uses -A, so its deletion is staged without widening the
+    # pathspec to the whole task tree.
+    staged_paths = paths
     rc, _, _ = run_git(
-        ["diff", "--cached", "--quiet", "--", *paths], cwd=repo_root
+        ["diff", "--cached", "--quiet", "--", *staged_paths], cwd=repo_root
     )
     if rc == 0:
         print("[OK] No task changes to commit.", file=sys.stderr)
         return
 
     commit_msg = f"chore(task): archive {task_name}"
-    rc, _, err = run_git(["commit", "-m", commit_msg], cwd=repo_root)
+    rc, _, err = run_git(["commit", "-m", commit_msg, "--", *paths], cwd=repo_root)
     if rc == 0:
         print(f"[OK] Auto-committed: {commit_msg}", file=sys.stderr)
     else:
@@ -557,6 +677,12 @@ def cmd_set_branch(args: argparse.Namespace) -> int:
         return 1
 
     data["branch"] = branch
+    meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+    delivery = meta.get("delivery") if isinstance(meta.get("delivery"), dict) else None
+    if delivery is not None:
+        delivery["branch_ref"] = branch if branch.startswith("refs/") else f"refs/heads/{branch}"
+        meta["delivery"] = delivery
+        data["meta"] = meta
     write_json(task_json, data)
 
     print(colored(f"✓ Branch set to: {branch}", Colors.GREEN))
@@ -591,6 +717,12 @@ def cmd_set_base_branch(args: argparse.Namespace) -> int:
         return 1
 
     data["base_branch"] = base_branch
+    meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+    delivery = meta.get("delivery") if isinstance(meta.get("delivery"), dict) else None
+    if delivery is not None:
+        delivery["base_ref"] = base_branch if base_branch.startswith("refs/") else f"refs/heads/{base_branch}"
+        meta["delivery"] = delivery
+        data["meta"] = meta
     write_json(task_json, data)
 
     print(colored(f"✓ Base branch set to: {base_branch}", Colors.GREEN))

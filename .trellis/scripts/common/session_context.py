@@ -474,7 +474,7 @@ def get_context_text(repo_root: Path | None = None) -> str:
 
     # Collect all task data for hierarchy display
     all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir)}
-    all_statuses = {name: t.status for name, t in all_tasks.items()}
+    all_statuses = get_all_statuses(tasks_dir)
 
     def _print_task_tree(name: str, indent: int = 0) -> None:
         nonlocal task_count
@@ -574,14 +574,33 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
 
     # My tasks (single pass — collect statuses and filter by assignee)
     all_tasks_list = list(iter_active_tasks(tasks_dir))
-    all_statuses = {t.dir_name: t.status for t in all_tasks_list}
+    all_statuses = get_all_statuses(tasks_dir)
 
     my_tasks = []
     for t in all_tasks_list:
         if t.assignee == developer:
             done = sum(
                 1 for c in t.children
-                if all_statuses.get(c) in ("completed", "done")
+                if all_statuses.get(c) == "outcome:delivered"
+            )
+            dispositioned = sum(
+                1 for c in t.children
+                if all_statuses.get(c) in {
+                    "outcome:superseded",
+                    "outcome:rejected",
+                    "outcome:cancelled",
+                }
+            )
+            unknown = sum(
+                1
+                for c in t.children
+                if all_statuses.get(c)
+                not in {
+                    "outcome:delivered",
+                    "outcome:superseded",
+                    "outcome:rejected",
+                    "outcome:cancelled",
+                }
             )
             my_tasks.append({
                 "dir": t.dir_name,
@@ -590,6 +609,8 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
                 "priority": t.priority,
                 "children": list(t.children),
                 "childrenDone": done,
+                "childrenDispositioned": dispositioned,
+                "childrenUnknown": unknown,
                 "parent": t.parent,
                 "meta": t.meta,
             })

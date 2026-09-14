@@ -49,8 +49,15 @@ Every task has its own directory under `.trellis/tasks/{MM-DD-name}/` holding `p
 python3 ./.trellis/scripts/task.py create "<title>" [--slug <name>] [--parent <dir>]
 python3 ./.trellis/scripts/task.py start <name>          # set active task (session-scoped when available)
 python3 ./.trellis/scripts/task.py current --source      # show active task and source
-python3 ./.trellis/scripts/task.py finish                # clear active task (triggers after_finish hooks)
-python3 ./.trellis/scripts/task.py archive <name>        # move to archive/{year-month}/
+python3 ./.trellis/scripts/task.py finish                # pause + clear active task (triggers after_finish hooks)
+python3 ./.trellis/scripts/task.py archive <name>        # archive only after verified delivery outcome
+python3 ./.trellis/scripts/task.py delivery register <task> --candidate <id> --owner <owner>
+python3 ./.trellis/scripts/task.py delivery inspect <task> --format json
+python3 ./.trellis/scripts/task.py delivery record <task> --evidence-file <file> --expected-generation <n>
+python3 ./.trellis/scripts/task.py delivery close <task> --outcome delivered|superseded|rejected|cancelled
+python3 ./.trellis/scripts/task.py delivery audit --format json [--refresh] [--strict --owner <owner>]
+python3 ./.trellis/scripts/task.py delivery next [--owner <owner>]
+python3 ./.trellis/scripts/task.py delivery checkpoint [--owner <owner>]
 python3 ./.trellis/scripts/task.py list [--mine] [--status <s>]
 python3 ./.trellis/scripts/task.py list-archive
 
@@ -76,7 +83,7 @@ python3 ./.trellis/scripts/task.py create-pr [name] [--dry-run]
 
 > Run `python3 ./.trellis/scripts/task.py --help` to see the authoritative, up-to-date list.
 
-**Current-task mechanism**: `task.py create` creates the task directory and (when session identity is available) auto-sets the per-session active-task pointer so the planning breadcrumb fires immediately. `task.py start` writes the same pointer (idempotent if already set) and flips `task.json.status` from `planning` to `in_progress`. State is stored under `.trellis/.runtime/sessions/`. If no context key is available from hook input, `TRELLIS_CONTEXT_ID`, or a platform-native session environment variable, there is no active task and `task.py start` fails with a session identity hint. `task.py finish` deletes the current session file (status unchanged). `task.py archive <task>` writes `status=completed`, moves the directory to `archive/`, and deletes any runtime session files that still point at the archived task.
+**Current-task mechanism**: `task.py create` creates a versioned `meta.delivery` intent and (when session identity is available) auto-sets the per-session active-task pointer so the planning breadcrumb fires immediately. `task.py start` validates that intent, creates an owned resumable receipt, writes the same pointer (idempotent if already set), and flips `task.json.status` from `planning` to `in_progress`. Historical tasks without an intent must be explicitly classified before new work starts. State is stored under `.trellis/.runtime/sessions/`; receipts are outside the worktree under the Git common directory. If no context key is available from hook input, `TRELLIS_CONTEXT_ID`, or a platform-native session environment variable, there is no active task and `task.py start` fails with a session identity hint. `task.py finish` records `session_state: paused` for a versioned candidate and then deletes the current session file (task status unchanged). `task.py archive <task>` validates an explicit terminal delivery outcome before writing `status=completed`, moving the directory to `archive/`, or clearing runtime session files; archive location is not delivery evidence. Use `task.py delivery audit` for the current read-only Git/GitHub/task topology and `delivery checkpoint` for a bounded handoff summary.
 
 ### Workspace System
 

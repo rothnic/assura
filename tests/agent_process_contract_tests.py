@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
+import os
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -16,17 +18,46 @@ CONTEXT_AUDIT = ROOT / ".agents/skills/assura-goal-execution/scripts/audit-conte
 
 
 def command(*args: str) -> str:
-    return subprocess.run(
+    result = subprocess.run(
         list(args),
         cwd=ROOT,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
-    ).stdout
+    )
+    if result.returncode != 0:
+        raise AssertionError(
+            "command failed with exit code "
+            f"{result.returncode}: {args}\n"
+            f"stdout={result.stdout.strip()}\n"
+            f"stderr={result.stderr.strip()}"
+        )
+    return result.stdout
 
 
 def ledger_snapshot() -> str:
-    return command("bash", str(LEDGER_AUDIT), str(ROOT))
+    return command(bash_executable(), str(LEDGER_AUDIT), str(ROOT))
+
+
+def bash_executable() -> str:
+    """Choose Git for Windows Bash instead of the unconfigured WSL shim."""
+    if sys.platform != "win32":
+        return "bash"
+
+    candidates: list[Path] = []
+    for variable in ("ProgramFiles", "ProgramFiles(x86)"):
+        program_files = os.environ.get(variable)
+        if program_files:
+            candidates.append(Path(program_files) / "Git" / "bin" / "bash.exe")
+
+    git_executable = shutil.which("git.exe") or shutil.which("git")
+    if git_executable:
+        candidates.append(Path(git_executable).resolve().parent.parent / "bin" / "bash.exe")
+
+    for candidate in candidates:
+        if candidate.is_file():
+            return str(candidate)
+    raise AssertionError("Git for Windows bash.exe is required for the ledger contract")
 
 
 def records(snapshot: str, kind: str) -> list[list[str]]:

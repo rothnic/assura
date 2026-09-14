@@ -12,6 +12,7 @@ Provides:
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -73,18 +74,97 @@ def iter_active_tasks(tasks_dir: Path) -> Iterator[TaskInfo]:
             yield info
 
 
-def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
-    """Get a {dir_name: status} mapping for all active tasks.
+def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str, str]:
+    """Get current {dir_name: status} values for active and archived tasks.
 
     Useful for computing children progress without loading full TaskInfo.
 
     Args:
         tasks_dir: Path to the tasks directory.
+        github: Optional injectable GitHub reader for current-status checks.
 
     Returns:
         Dict mapping directory names to status strings.
     """
-    return {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
+    statuses = {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
+    archive_dir = tasks_dir / "archive"
+
+    # Archived task folders remain useful provenance. An old completed flag
+    # without a receipt is deliberately represented as unknown rather than as
+    # success.
+    try:
+        from .delivery import (
+            classify_candidate,
+            collect_inventory,
+            delivery_store_root,
+            load_delivery_intent,
+        )
+        from .delivery_store import DeliveryStore, DeliveryStoreError
+
+        repo_root = tasks_dir.parent.parent
+        store = DeliveryStore(delivery_store_root(repo_root))
+        inventory = collect_inventory(repo_root, github=github)
+    except Exception:
+        store = None
+        inventory = None
+
+    # Recompute each typed task against one current inventory. A receipt is
+    # evidence input, not a status override: stale tips, moved refs, invalid
+    # evidence, duplicate identities, and unavailable coverage must remain
+    # visible as unresolved instead of inflating parent progress.
+    if store is not None and inventory is not None:
+        candidate_task_paths: dict[str, list[str]] = {}
+        for task in inventory.tasks:
+            intent_data = task.get("intent")
+            if isinstance(intent_data, dict):
+                candidate_id = str(intent_data.get("candidate_id") or "")
+                if candidate_id:
+                    candidate_task_paths.setdefault(candidate_id, []).append(
+                        str(task["task_path"])
+                    )
+        duplicate_candidates = {
+            candidate_id
+            for candidate_id, paths in candidate_task_paths.items()
+            if len(paths) > 1
+        }
+        for task in inventory.tasks:
+            if not isinstance(task.get("intent"), dict):
+                continue
+            task_json = repo_root / str(task["task_path"]) / FILE_TASK_JSON
+            try:
+                intent = load_delivery_intent(task_json)
+                if intent.candidate_id in duplicate_candidates:
+                    continue
+                receipt = store.read(intent.candidate_id)
+                status = classify_candidate(intent, inventory, receipt)
+            except (DeliveryStoreError, OSError, ValueError):
+                continue
+            if (
+                status.outcome in {"delivered", "superseded", "rejected", "cancelled"}
+                and status.closure in {"verified", "closed"}
+                and not status.issues
+            ):
+                task_name = Path(str(task["task_path"])).name
+                statuses[task_name] = f"outcome:{status.outcome}"
+
+    if not archive_dir.is_dir():
+        return statuses
+
+    for task_json in sorted(archive_dir.rglob("task.json")):
+        task_name = task_json.parent.name
+        state = "unknown:archived"
+        try:
+            raw = json.loads(task_json.read_text(encoding="utf-8"))
+            if (
+                store is None
+                and isinstance(raw, dict)
+                and raw.get("status") not in {"completed", "done"}
+            ):
+                state = str(raw.get("status", "unknown"))
+        except Exception:
+            pass
+        statuses[task_name] = state
+    return statuses
 
 
 def children_progress(
@@ -102,11 +182,18 @@ def children_progress(
     """
     if not children:
         return ""
-    # A child missing from active statuses has been archived (cmd_archive
-    # sets status=completed before moving the dir). Count it as done so
-    # parent progress doesn't regress when children are archived.
-    done = sum(
+    delivered = sum(1 for c in children if all_statuses.get(c) == "outcome:delivered")
+    dispositioned = sum(
         1 for c in children
-        if c not in all_statuses or all_statuses.get(c) in ("completed", "done")
+        if all_statuses.get(c) in {"outcome:superseded", "outcome:rejected", "outcome:cancelled"}
     )
-    return f" [{done}/{len(children)} done]"
+    known_outcomes = {
+        "outcome:delivered",
+        "outcome:superseded",
+        "outcome:rejected",
+        "outcome:cancelled",
+    }
+    unknown = sum(1 for c in children if all_statuses.get(c) not in known_outcomes)
+    if unknown or dispositioned:
+        return f" [{delivered}/{len(children)} delivered; dispositioned={dispositioned}; unknown={unknown}]"
+    return f" [{delivered}/{len(children)} delivered]"

@@ -28,6 +28,18 @@ fi
 command -v git >/dev/null
 command -v jq >/dev/null
 
+# Python's subprocess API passes a Windows checkout to Git Bash using its
+# native drive-letter form (for example, D:\\a\\repo). Normalize that input
+# before handing it to Git so the read-only audit works on Windows as well as
+# POSIX hosts. Git for Windows accepts the slash form when cygpath is absent.
+if [[ "$repo_root" =~ ^[[:alpha:]]:[\\/].* ]]; then
+  if command -v cygpath >/dev/null 2>&1; then
+    repo_root=$(cygpath -u -- "$repo_root")
+  else
+    repo_root=${repo_root//\\//}
+  fi
+fi
+
 repo_root=$(git -C "$repo_root" rev-parse --show-toplevel)
 base_sha=$(git -C "$repo_root" rev-parse "$base_ref^{commit}")
 ledger_path="$task_rel/research/backlog.json"

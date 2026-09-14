@@ -144,6 +144,23 @@ jobs:
     - name: Verify review evidence policy
       run: cargo xtask evidence
 
+  process-contracts:
+    name: Delivery and Process Contracts (${{ matrix.os }})
+    needs: changes
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    - name: Run delivery lifecycle contracts
+      run: python3 tests/agent_delivery_contract_tests.py
+    - name: Run process and topology contracts
+      run: python3 tests/agent_process_contract_tests.py
+
   fmt:
     name: Rustfmt
     needs: changes
