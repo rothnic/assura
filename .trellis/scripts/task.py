@@ -44,7 +44,18 @@ from common.active_task import (
 )
 from common.io import read_json, write_json
 from common.task_utils import resolve_task_dir, run_task_hooks
-from common.tasks import iter_active_tasks, children_progress
+from common.tasks import iter_active_tasks, get_all_statuses, children_progress
+from common.delivery_cli import (
+    cmd_delivery_audit,
+    cmd_delivery_checkpoint,
+    cmd_delivery_close,
+    cmd_delivery_inspect,
+    cmd_delivery_next,
+    cmd_delivery_record,
+    cmd_delivery_register,
+    pause_active_task,
+    prepare_task_start,
+)
 
 # Import command handlers from split modules (also re-exports for plan.py compatibility)
 from common.task_store import (
@@ -91,6 +102,11 @@ def cmd_start(args: argparse.Namespace) -> int:
         task_dir = str(full_path)
 
     task_json_path = full_path / FILE_TASK_JSON
+
+    ready, delivery_error = prepare_task_start(repo_root, task_json_path)
+    if not ready:
+        print(colored(f"Error: {delivery_error}", Colors.RED), file=sys.stderr)
+        return 1
 
     if not resolve_context_key():
         # Degraded mode: no session identity available.
@@ -141,9 +157,12 @@ def cmd_start(args: argparse.Namespace) -> int:
 
 
 def cmd_finish(args: argparse.Namespace) -> int:
-    """Clear active task."""
+    """Pause the active task and clear only the session pointer."""
     repo_root = get_repo_root()
-    active = clear_active_task(repo_root)
+    paused, pause_error, active = pause_active_task(repo_root)
+    if not paused:
+        print(colored(f"Error: {pause_error}", Colors.RED), file=sys.stderr)
+        return 1
     current = active.task_path
 
     if not current:
@@ -204,7 +223,7 @@ def cmd_list(args: argparse.Namespace) -> int:
 
     # Single pass: collect all tasks via shared iterator
     all_tasks = {t.dir_name: t for t in iter_active_tasks(tasks_dir)}
-    all_statuses = {name: t.status for name, t in all_tasks.items()}
+    all_statuses = get_all_statuses(tasks_dir)
 
     # Display tasks hierarchically
     count = 0
@@ -313,6 +332,13 @@ Usage:
   python3 task.py start <dir>                        Set active task
   python3 task.py current [--source]                 Show active task
   python3 task.py finish                             Clear active task
+  python3 task.py delivery register <task> --candidate <id> --owner <owner>
+  python3 task.py delivery inspect <task> [--format json|text]
+  python3 task.py delivery record <task> --evidence-file <file> --expected-generation <n>
+  python3 task.py delivery close <task> --outcome <outcome> [--reason <text>]
+  python3 task.py delivery audit [--format json|text] [--strict] [--owner <owner>]
+  python3 task.py delivery next [--owner <owner>] [--format json|text]
+  python3 task.py delivery checkpoint [--owner <owner>]
   python3 task.py set-branch <dir> <branch>          Set git branch
   python3 task.py set-base-branch <dir> <branch>     Set PR target branch
   python3 task.py set-scope <dir> <scope>            Set scope for PR title
@@ -426,6 +452,48 @@ def main() -> int:
     # finish
     subparsers.add_parser("finish", help="Clear active task")
 
+    # delivery lifecycle and read-only audit commands
+    p_delivery = subparsers.add_parser("delivery", help="Explicit delivery ownership and closure")
+    delivery_subparsers = p_delivery.add_subparsers(dest="delivery_command", help="Delivery commands")
+
+    p_delivery_register = delivery_subparsers.add_parser("register", help="Register delivery ownership")
+    p_delivery_register.add_argument("task", help="Task directory or name")
+    p_delivery_register.add_argument("--candidate", required=True, help="Stable candidate identity")
+    p_delivery_register.add_argument("--owner", required=True, help="Accountable owner")
+    p_delivery_register.add_argument("--kind", choices=["integration", "artifact", "experiment", "release", "aggregate"], default="integration")
+    p_delivery_register.add_argument("--base-ref", help="Integration base ref")
+    p_delivery_register.add_argument("--acceptance-ref", default="prd.md#acceptance")
+    p_delivery_register.add_argument("--authority-ref")
+
+    p_delivery_inspect = delivery_subparsers.add_parser("inspect", help="Inspect one delivery candidate")
+    p_delivery_inspect.add_argument("task", help="Task directory or name")
+    p_delivery_inspect.add_argument("--format", choices=["json", "text"], default="text")
+
+    p_delivery_record = delivery_subparsers.add_parser("record", help="Record bounded delivery evidence")
+    p_delivery_record.add_argument("task", help="Task directory or name")
+    p_delivery_record.add_argument("--evidence-file", required=True)
+    p_delivery_record.add_argument("--expected-generation", required=True, type=int)
+
+    p_delivery_close = delivery_subparsers.add_parser("close", help="Record a verified terminal outcome")
+    p_delivery_close.add_argument("task", help="Task directory or name")
+    p_delivery_close.add_argument("--outcome", choices=["delivered", "superseded", "rejected", "cancelled"], required=True)
+    p_delivery_close.add_argument("--reason")
+    p_delivery_close.add_argument("--decision-file")
+    p_delivery_close.add_argument("--replacement")
+    p_delivery_close.add_argument("--expected-generation", type=int)
+
+    p_delivery_audit = delivery_subparsers.add_parser("audit", help="Audit all delivery candidates and topology")
+    p_delivery_audit.add_argument("--format", choices=["json", "text"], default="text")
+    p_delivery_audit.add_argument("--strict", action="store_true")
+    p_delivery_audit.add_argument("--owner")
+
+    p_delivery_next = delivery_subparsers.add_parser("next", help="Show next owned delivery actions")
+    p_delivery_next.add_argument("--owner")
+    p_delivery_next.add_argument("--format", choices=["json", "text"], default="text")
+
+    p_delivery_checkpoint = delivery_subparsers.add_parser("checkpoint", help="Render a bounded delivery checkpoint")
+    p_delivery_checkpoint.add_argument("--owner")
+
     # set-branch
     p_branch = subparsers.add_parser("set-branch", help="Set git branch")
     p_branch.add_argument("dir", help="Task directory")
@@ -470,6 +538,22 @@ def main() -> int:
     if not args.command:
         show_usage()
         return 1
+
+    if args.command == "delivery":
+        delivery_commands = {
+            "register": cmd_delivery_register,
+            "inspect": cmd_delivery_inspect,
+            "record": cmd_delivery_record,
+            "close": cmd_delivery_close,
+            "audit": cmd_delivery_audit,
+            "next": cmd_delivery_next,
+            "checkpoint": cmd_delivery_checkpoint,
+        }
+        handler = delivery_commands.get(args.delivery_command)
+        if handler is None:
+            p_delivery.print_help()
+            return 1
+        return handler(args)
 
     commands = {
         "create": cmd_create,

@@ -28,6 +28,7 @@ from .config import (
     resolve_package,
     validate_package,
 )
+from .delivery import repository_identity
 from .git import run_git
 from .io import read_json, write_json
 from .log import Colors, colored
@@ -227,7 +228,19 @@ def cmd_create(args: argparse.Namespace) -> int:
         "parent": None,
         "relatedFiles": [],
         "notes": "",
-        "meta": {},
+        "meta": {
+            "delivery": {
+                "schema_version": 1,
+                "kind": "integration",
+                "candidate_id": dir_name,
+                "owner": assignee,
+                "repository": repository_identity(repo_root),
+                "base_ref": f"refs/heads/{current_branch}",
+                "branch_ref": None,
+                "acceptance_ref": "prd.md#acceptance",
+                "authority_ref": None,
+            }
+        },
     }
 
     write_json(task_json_path, task_data)
@@ -334,8 +347,19 @@ def cmd_archive(args: argparse.Namespace) -> int:
     dir_name = task_dir.name
     task_json_path = task_dir / FILE_TASK_JSON
 
+    # Delivery validation must happen before changing task status, clearing
+    # session pointers, moving the directory, or staging an archive commit.
+    # Physical archival is storage maintenance after an explicit verified
+    # outcome; it is not evidence of delivery.
+    from .delivery_cli import archive_guard
+    allowed, guard_error, delivery_intent, _ = archive_guard(repo_root, task_dir)
+    if not allowed:
+        print(colored(f"Archive blocked: {guard_error}", Colors.RED), file=sys.stderr)
+        return 1
+
     # Update status before archiving
     today = datetime.now().strftime("%Y-%m-%d")
+    related_task_paths: list[str] = []
     if task_json_path.is_file():
         data = read_json(task_json_path)
         if data:
@@ -354,6 +378,12 @@ def cmd_archive(args: argparse.Namespace) -> int:
                 for child_name in task_children:
                     child_dir_path = find_task_by_name(child_name, tasks_dir)
                     if child_dir_path:
+                        try:
+                            related_task_paths.append(
+                                child_dir_path.relative_to(repo_root).as_posix()
+                            )
+                        except ValueError:
+                            pass
                         child_json = child_dir_path / FILE_TASK_JSON
                         if child_json.is_file():
                             child_data = read_json(child_json)
@@ -372,9 +402,29 @@ def cmd_archive(args: argparse.Namespace) -> int:
         year_month = archive_dest.parent.name
         print(colored(f"Archived: {dir_name} -> archive/{year_month}/", Colors.GREEN), file=sys.stderr)
 
+        if delivery_intent is not None:
+            from .delivery_cli import record_archive_closure
+            closure_recorded, closure_error = record_archive_closure(
+                repo_root, delivery_intent, archive_dest
+            )
+            if not closure_recorded:
+                print(
+                    colored(
+                        f"[WARN] Archive moved but delivery closure receipt was not updated: {closure_error}",
+                        Colors.YELLOW,
+                    ),
+                    file=sys.stderr,
+                )
+
         # Auto-commit unless --no-commit
         if not getattr(args, "no_commit", False):
-            _auto_commit_archive(dir_name, repo_root)
+            _auto_commit_archive(
+                dir_name,
+                repo_root,
+                source_path=task_dir,
+                archive_path=archive_dest,
+                related_paths=related_task_paths,
+            )
 
         # Return the archive path
         print(f"{DIR_WORKFLOW}/{DIR_TASKS}/{DIR_ARCHIVE}/{year_month}/{dir_name}")
@@ -387,7 +437,13 @@ def cmd_archive(args: argparse.Namespace) -> int:
     return 1
 
 
-def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
+def _auto_commit_archive(
+    task_name: str,
+    repo_root: Path,
+    source_path: Path,
+    archive_path: Path,
+    related_paths: list[str] | None = None,
+) -> None:
     """Stage Trellis-owned task paths and commit after archive.
 
     Only stages specific subpaths (the archive subtree and active task dirs),
@@ -395,7 +451,21 @@ def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
     falls back to `git add -f <specific>` and emits a warning that explicitly
     forbids `git add -f .trellis/` (which would fan out to caches/backups).
     """
-    paths = safe_archive_paths_to_add(repo_root)
+    source_relative: str
+    archive_relative: str
+    try:
+        source_relative = source_path.relative_to(repo_root).as_posix()
+        archive_relative = archive_path.relative_to(repo_root).as_posix()
+    except ValueError:
+        print("[WARN] Archive paths are outside the repository; skipping auto-commit.", file=sys.stderr)
+        return
+    paths = [archive_relative, *(related_paths or [])]
+    # Preserve order while avoiding duplicate pathspecs.
+    paths = list(dict.fromkeys(paths))
+
+    source_was_tracked = run_git(
+        ["ls-files", "--error-unmatch", "--", source_relative], cwd=repo_root
+    )[0] == 0
     if not paths:
         print("[OK] No task changes to commit.", file=sys.stderr)
         return
@@ -411,6 +481,17 @@ def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
             )
         return
 
+    if source_was_tracked:
+        remove_rc, _, remove_err = run_git(
+            ["update-index", "--remove", "--ignore-unmatch", "--", source_relative],
+            cwd=repo_root,
+        )
+        if remove_rc != 0:
+            print(
+                f"[WARN] Could not stage the archived source deletion: {remove_err.strip() or 'unknown error'}",
+                file=sys.stderr,
+            )
+
     if used_force:
         print(
             "[OK] Staged Trellis-owned paths with -f (specific paths, not .trellis/).",
@@ -425,7 +506,8 @@ def _auto_commit_archive(task_name: str, repo_root: Path) -> None:
         return
 
     commit_msg = f"chore(task): archive {task_name}"
-    rc, _, err = run_git(["commit", "-m", commit_msg], cwd=repo_root)
+    commit_paths = [*paths, source_relative] if source_was_tracked else paths
+    rc, _, err = run_git(["commit", "-m", commit_msg, "--", *commit_paths], cwd=repo_root)
     if rc == 0:
         print(f"[OK] Auto-committed: {commit_msg}", file=sys.stderr)
     else:
@@ -557,6 +639,12 @@ def cmd_set_branch(args: argparse.Namespace) -> int:
         return 1
 
     data["branch"] = branch
+    meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+    delivery = meta.get("delivery") if isinstance(meta.get("delivery"), dict) else None
+    if delivery is not None:
+        delivery["branch_ref"] = branch if branch.startswith("refs/") else f"refs/heads/{branch}"
+        meta["delivery"] = delivery
+        data["meta"] = meta
     write_json(task_json, data)
 
     print(colored(f"✓ Branch set to: {branch}", Colors.GREEN))
@@ -591,6 +679,12 @@ def cmd_set_base_branch(args: argparse.Namespace) -> int:
         return 1
 
     data["base_branch"] = base_branch
+    meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
+    delivery = meta.get("delivery") if isinstance(meta.get("delivery"), dict) else None
+    if delivery is not None:
+        delivery["base_ref"] = base_branch if base_branch.startswith("refs/") else f"refs/heads/{base_branch}"
+        meta["delivery"] = delivery
+        data["meta"] = meta
     write_json(task_json, data)
 
     print(colored(f"✓ Base branch set to: {base_branch}", Colors.GREEN))

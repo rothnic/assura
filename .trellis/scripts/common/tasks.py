@@ -12,6 +12,7 @@ Provides:
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -84,7 +85,39 @@ def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
     Returns:
         Dict mapping directory names to status strings.
     """
-    return {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
+    statuses = {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
+    archive_dir = tasks_dir / "archive"
+    if not archive_dir.is_dir():
+        return statuses
+
+    # Archived task folders remain useful provenance. Resolve their explicit
+    # delivery receipt when available; an old completed flag without a receipt
+    # is deliberately represented as unknown rather than as success.
+    try:
+        from .delivery import delivery_store_root, load_delivery_intent
+        from .delivery_store import DeliveryStore, DeliveryStoreError
+
+        store = DeliveryStore(delivery_store_root(tasks_dir.parent.parent))
+    except Exception:
+        store = None
+
+    for task_json in sorted(archive_dir.rglob("task.json")):
+        task_name = task_json.parent.name
+        state = "unknown:archived"
+        try:
+            raw = json.loads(task_json.read_text(encoding="utf-8"))
+            if store is not None:
+                intent = load_delivery_intent(task_json)
+                receipt = store.read(intent.candidate_id)
+                outcome = receipt.get("outcome")
+                if outcome in {"delivered", "superseded", "rejected", "cancelled"} and receipt.get("closure") in {"verified", "closed"}:
+                    state = f"outcome:{outcome}"
+            elif isinstance(raw, dict) and raw.get("status") not in {"completed", "done"}:
+                state = str(raw.get("status", "unknown"))
+        except Exception:
+            pass
+        statuses[task_name] = state
+    return statuses
 
 
 def children_progress(
@@ -102,11 +135,22 @@ def children_progress(
     """
     if not children:
         return ""
-    # A child missing from active statuses has been archived (cmd_archive
-    # sets status=completed before moving the dir). Count it as done so
-    # parent progress doesn't regress when children are archived.
-    done = sum(
+    delivered = sum(
         1 for c in children
-        if c not in all_statuses or all_statuses.get(c) in ("completed", "done")
+        if all_statuses.get(c) in ("outcome:delivered", "delivered")
     )
-    return f" [{done}/{len(children)} done]"
+    dispositioned = sum(
+        1 for c in children
+        if all_statuses.get(c) in {"outcome:superseded", "outcome:rejected", "outcome:cancelled"}
+    )
+    known_outcomes = {
+        "outcome:delivered",
+        "outcome:superseded",
+        "outcome:rejected",
+        "outcome:cancelled",
+        "delivered",
+    }
+    unknown = sum(1 for c in children if all_statuses.get(c) not in known_outcomes)
+    if unknown or dispositioned:
+        return f" [{delivered}/{len(children)} delivered; dispositioned={dispositioned}; unknown={unknown}]"
+    return f" [{delivered}/{len(children)} delivered]"

@@ -1,0 +1,38 @@
+{
+  "id": "assura-delivery-closure",
+  "name": "assura-delivery-closure",
+  "title": "Implement Assura delivery closure workflow",
+  "description": "Implement the delivery-closure plan: candidate ownership, complete topology/provenance audit, guarded lifecycle closure, idempotent checkpoints, release evidence, and existing-work reconciliation.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-09-14",
+  "completedAt": null,
+  "branch": "goal/assura-delivery-closure",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "delivery-closure-p01-p07",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/goal/assura-delivery-closure",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
+    }
+  }
+}
