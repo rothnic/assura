@@ -16,13 +16,21 @@ CONTEXT_AUDIT = ROOT / ".agents/skills/assura-goal-execution/scripts/audit-conte
 
 
 def command(*args: str) -> str:
-    return subprocess.run(
+    result = subprocess.run(
         list(args),
         cwd=ROOT,
-        check=True,
+        check=False,
         capture_output=True,
         text=True,
-    ).stdout
+    )
+    if result.returncode != 0:
+        raise AssertionError(
+            "command failed with exit code "
+            f"{result.returncode}: {args}\n"
+            f"stdout={result.stdout.strip()}\n"
+            f"stderr={result.stderr.strip()}"
+        )
+    return result.stdout
 
 
 def ledger_snapshot() -> str:
