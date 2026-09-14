@@ -5493,7 +5493,11 @@ fn check_docs_release_performance(checks: &mut Checks) {
     }
     checks.require(
         release_workflow.contains("target/${{ matrix.archive_name }}.sha256")
-            && ci_workflow.contains("target/${{ matrix.archive_name }}.sha256"),
+            && (ci_workflow.contains("target/${{ matrix.archive_name }}.sha256")
+                || (ci_workflow.contains("target/${{ steps.package.outputs.archive_name }}.sha256")
+                    && ci_workflow.contains(
+                        "target/${{ steps.package_unix.outputs.archive_name || steps.package_windows.outputs.archive_name }}.sha256",
+                    ))),
         "release workflows must upload checksum sidecars for every archive",
     );
     checks.require(
@@ -5528,6 +5532,12 @@ fn check_docs_release_performance(checks: &mut Checks) {
         release_train_text.contains("assura.release-readiness.v1")
             && release_readiness_text.contains("assura.release-readiness.v1"),
         "release train docs must name the release-readiness JSON schema",
+    );
+    checks.require(
+        release_train_text.contains("## CI Preview Artifacts")
+            && release_train_text.contains("<package-version>-<full-source-SHA>")
+            && release_train_text.contains("tag-driven release workflow"),
+        "release train docs must distinguish versioned CI previews from durable tag releases",
     );
     checks.require(
         release_train_text.contains("docs/data/release-surfaces.json")
@@ -5711,6 +5721,9 @@ fn check_docs_release_performance(checks: &mut Checks) {
         "performance docs: missing post-beta LS-Lint reassessment links and claim boundaries",
     );
     for failure in performance_workflow_contract_failures(&ci_workflow) {
+        checks.add(format!(".github/workflows/ci.yml: {failure}"));
+    }
+    for failure in versioned_ci_artifact_contract_failures(&ci_workflow) {
         checks.add(format!(".github/workflows/ci.yml: {failure}"));
     }
 
@@ -6386,6 +6399,58 @@ fn performance_workflow_contract_failures(workflow: &str) -> Vec<&'static str> {
     failures
 }
 
+fn versioned_ci_artifact_contract_failures(workflow: &str) -> Vec<&'static str> {
+    let workflow = workflow.replace("\r\n", "\n");
+    let mut failures = Vec::new();
+    for (required, message) in [
+        (
+            "echo \"archive_name=assura-v${package_version}-${GITHUB_SHA}-linux-amd64-preview.tar.gz\" >> \"$GITHUB_OUTPUT\"",
+            "Linux preview archives must include the package version and full source SHA",
+        ),
+        (
+            "test \"$(target/release/assura --version)\" = \"assura ${package_version}\"",
+            "Linux preview bundles must assert the launcher version",
+        ),
+        (
+            "\"archive_name=assura-v$packageVersion-$env:GITHUB_SHA-windows-amd64-preview.zip\" >> $env:GITHUB_OUTPUT",
+            "Windows preview archives must include the package version and full source SHA",
+        ),
+        (
+            "if ((& target/release/assura.exe --version).Trim() -ne \"assura $packageVersion\")",
+            "Windows preview bundles must assert the launcher version",
+        ),
+        (
+            "echo \"archive_name=assura-v${package_version}-${GITHUB_SHA}-${{ matrix.archive_name }}\" >> \"$GITHUB_OUTPUT\"",
+            "Unix adoption archives must include the package version and full source SHA",
+        ),
+        (
+            "\"archive_name=assura-v$packageVersion-$env:GITHUB_SHA-${{ matrix.archive_name }}\" >> $env:GITHUB_OUTPUT",
+            "Windows adoption archives must include the package version and full source SHA",
+        ),
+        (
+            "test \"$(target/${{ matrix.target }}/release/assura --version)\" = \"assura ${package_version}\"",
+            "Unix adoption bundles must assert the launcher version",
+        ),
+        (
+            "if ((& \"target/${{ matrix.target }}/release/assura.exe\" --version).Trim() -ne \"assura $packageVersion\")",
+            "Windows adoption bundles must assert the launcher version",
+        ),
+        (
+            "steps.package_unix.outputs.archive_name || steps.package_windows.outputs.archive_name",
+            "Adoption archive uploads must use the versioned archive path",
+        ),
+        (
+            "- name: Upload preview Windows bundle",
+            "Windows preview bundles must be uploaded as workflow artifacts",
+        ),
+    ] {
+        if !workflow.contains(required) {
+            failures.push(message);
+        }
+    }
+    failures
+}
+
 #[cfg(test)]
 #[derive(Debug, PartialEq, Eq)]
 struct PerformanceWorkflowFixtureResult {
@@ -6860,6 +6925,22 @@ mod tests {
         assert!(
             performance_workflow_contract_failures(&crlf_origin_workflow).is_empty(),
             "workflow contract must evaluate identically with Windows checkout line endings"
+        );
+    }
+
+    #[test]
+    fn versioned_ci_artifact_contract_matches_ci_workflow() {
+        let workflow = include_str!("../../.github/workflows/ci.yml");
+        let failures = versioned_ci_artifact_contract_failures(workflow);
+        assert!(
+            failures.is_empty(),
+            "versioned CI artifact contract must match the workflow: {failures:?}"
+        );
+
+        let crlf_workflow = workflow.replace('\n', "\r\n");
+        assert!(
+            versioned_ci_artifact_contract_failures(&crlf_workflow).is_empty(),
+            "versioned CI artifact contract must be line-ending independent"
         );
     }
 
