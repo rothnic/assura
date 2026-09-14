@@ -486,23 +486,37 @@ def _required_facts(
             inventory.base_oid,
             section="review",
             intent=intent,
-        ) and _github_evidence_matches_pr(review_evidence, pull_request)
+        ) and (
+            review_evidence.get("source") != "github"
+            or _github_review_matches_pr(review_evidence, pull_request)
+            if isinstance(review_evidence, dict)
+            else False
+        )
         checks_verified = _evidence_verified(
             checks_evidence,
             tip,
             inventory.base_oid,
             section="checks",
             intent=intent,
-        ) and _github_evidence_matches_pr(checks_evidence, pull_request)
+        ) and (
+            checks_evidence.get("source") != "github"
+            or _github_checks_match_pr(checks_evidence, pull_request)
+            if isinstance(checks_evidence, dict)
+            else False
+        )
         if (
             isinstance(review_evidence, dict)
             and review_evidence.get("source") == "github"
-            and not _github_evidence_matches_pr(review_evidence, pull_request)
+            and not _github_review_matches_pr(review_evidence, pull_request)
         ):
             issues.append(
                 DeliveryIssue(
-                    "GITHUB_REVIEW_UNBOUND",
-                    "review evidence is not bound to the current candidate pull request",
+                    "GITHUB_REVIEW_UNVERIFIED"
+                    if _github_evidence_matches_pr(review_evidence, pull_request)
+                    else "GITHUB_REVIEW_UNBOUND",
+                    "review evidence is not independently verified by the current GitHub provider payload"
+                    if _github_evidence_matches_pr(review_evidence, pull_request)
+                    else "review evidence is not bound to the current candidate pull request",
                     intent.candidate_id,
                     next_action="Re-record the review against the exact current PR head and number.",
                 )
@@ -510,18 +524,22 @@ def _required_facts(
         if (
             isinstance(checks_evidence, dict)
             and checks_evidence.get("source") == "github"
-            and not _github_evidence_matches_pr(checks_evidence, pull_request)
+            and not _github_checks_match_pr(checks_evidence, pull_request)
         ):
             issues.append(
                 DeliveryIssue(
-                    "GITHUB_CHECKS_UNBOUND",
-                    "checks evidence is not bound to the current candidate pull request",
+                    "GITHUB_CHECKS_UNVERIFIED"
+                    if _github_evidence_matches_pr(checks_evidence, pull_request)
+                    else "GITHUB_CHECKS_UNBOUND",
+                    "checks evidence is not independently verified by the current GitHub provider payload"
+                    if _github_evidence_matches_pr(checks_evidence, pull_request)
+                    else "checks evidence is not bound to the current candidate pull request",
                     intent.candidate_id,
                     next_action="Re-record checks for the exact current PR head and number.",
                 )
             )
         facts = {
-            "integration_verified": integration == "pr_merged",
+            "integration_verified": integration in {"ancestry_integrated", "pr_merged"},
             "review_resolved": review_verified,
             "required_checks_pass": checks_verified,
             "postmerge_verified": _evidence_verified(_evidence_section(receipt, "postmerge"), tip, inventory.base_oid, require_base=True, section="postmerge", intent=intent),
@@ -787,8 +805,6 @@ def classify_candidate(
         issues.append(DeliveryIssue("PR_IDENTITY_AMBIGUOUS", "multiple pull requests could identify the candidate head", intent.candidate_id, next_action="Bind the candidate to one exact pull request and head before closure."))
     if receipt is None:
         issues.append(DeliveryIssue("RECEIPT_MISSING", "candidate has no resumable delivery receipt", intent.candidate_id, next_action="Register the candidate or recreate its receipt from preserved task and Git evidence."))
-    if intent.kind == "integration" and integration == "ancestry_integrated":
-        issues.append(DeliveryIssue("INTEGRATION_NOT_PR_BACKED", "candidate is reachable from the base but no unique merged pull request proves integration", intent.candidate_id, next_action="Bind the integrated tip to its merged pull request before claiming delivery."))
     for inventory_issue in inventory.issues:
         if inventory_issue.code != "WORKTREE_COVERAGE_UNAVAILABLE":
             continue
