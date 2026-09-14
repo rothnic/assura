@@ -35,6 +35,9 @@ _VERSION = re.compile(
 _SAFE_ASSET = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
 _FULL_OID = re.compile(r"^[0-9a-fA-F]{40}$")
 _SHA256 = re.compile(r"^[0-9a-fA-F]{64}$")
+_ACTIONS_RUN_JOB = re.compile(
+    r"/actions/runs/(?P<run>[^/?#]+)/job/(?P<job>[^/?#]+)"
+)
 _REQUIRED_RELEASE_ASSETS = (
     "assura-linux-amd64.tar.gz",
     "assura-linux-musl-amd64.tar.gz",
@@ -644,11 +647,35 @@ def _normalise_check(raw: Any) -> dict[str, Any]:
     if not isinstance(raw, dict):
         return {}
     conclusion = raw.get("conclusion") or raw.get("state") or raw.get("bucket")
+    details_url = raw.get("detailsUrl") or raw.get("url") or raw.get("link")
+    workflow_run = raw.get("workflowRun")
+    workflow_run_id = (
+        workflow_run.get("databaseId")
+        or workflow_run.get("id")
+        or workflow_run.get("runId")
+        if isinstance(workflow_run, dict)
+        else None
+    )
+    run_id = (
+        raw.get("run_id")
+        or raw.get("workflow_run_id")
+        or raw.get("workflowRunId")
+        or raw.get("runId")
+        or workflow_run_id
+    )
+    job_id = raw.get("job_id") or raw.get("jobId")
+    if isinstance(details_url, str):
+        match = _ACTIONS_RUN_JOB.search(details_url)
+        if match:
+            run_id = run_id or match.group("run")
+            job_id = job_id or match.group("job")
     return {
         "id": raw.get("databaseId") or raw.get("id"),
         "name": raw.get("name") or raw.get("context"),
         "context": raw.get("context"),
-        "url": raw.get("detailsUrl") or raw.get("url") or raw.get("link"),
+        "url": details_url,
+        "run_id": run_id,
+        "job_id": job_id,
         "status": str(raw.get("status") or "").lower(),
         "conclusion": str(conclusion or "").lower(),
     }

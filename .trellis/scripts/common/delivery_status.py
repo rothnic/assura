@@ -427,7 +427,7 @@ def _check_success(check: dict[str, Any]) -> bool:
 def _github_checks_match_pr(
     value: Any, pull_request: dict[str, Any] | None
 ) -> bool:
-    """Require the bound check and every reported required check to pass."""
+    """Require a passing provider check bound to its run, job, and name."""
     if not _github_evidence_matches_pr(value, pull_request):
         return False
     if not isinstance(value, dict) or not isinstance(pull_request, dict):
@@ -437,15 +437,23 @@ def _github_checks_match_pr(
         isinstance(check, dict) and _check_success(check) for check in checks
     ):
         return False
-    check_id = value.get("check_id") or value.get("job_id")
+    run_id = value.get("run_id") or value.get("workflow_run_id")
+    job_id = value.get("job_id") or value.get("check_id")
     check_name = value.get("check_name")
     check_url = value.get("check_url")
+    if run_id is None or job_id is None:
+        return False
     for check in checks:
-        same_id = check_id is not None and str(check.get("id")) == str(check_id)
+        provider_run_id = check.get("run_id") or check.get("workflow_run_id")
+        provider_job_id = check.get("job_id") or check.get("id")
+        if provider_run_id is None or provider_job_id is None:
+            continue
+        same_run = str(provider_run_id) == str(run_id)
+        same_job = str(provider_job_id) == str(job_id)
         same_name = check_name is not None and check.get("name") == check_name
         same_context = check_name is not None and check.get("context") == check_name
         same_url = check_url is not None and check.get("url") == check_url
-        if same_id or same_name or same_context or same_url:
+        if same_run and same_job and (same_name or same_context or same_url):
             return True
     return False
 

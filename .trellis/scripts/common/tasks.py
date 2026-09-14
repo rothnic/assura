@@ -74,13 +74,14 @@ def iter_active_tasks(tasks_dir: Path) -> Iterator[TaskInfo]:
             yield info
 
 
-def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
-    """Get a {dir_name: status} mapping for all active tasks.
+def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str, str]:
+    """Get current {dir_name: status} values for active and archived tasks.
 
     Useful for computing children progress without loading full TaskInfo.
 
     Args:
         tasks_dir: Path to the tasks directory.
+        github: Optional injectable GitHub reader for current-status checks.
 
     Returns:
         Dict mapping directory names to status strings.
@@ -88,31 +89,63 @@ def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
     statuses = {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
     archive_dir = tasks_dir / "archive"
 
-    # Archived task folders remain useful provenance. Resolve their explicit
-    # delivery receipt when available; an old completed flag without a receipt
-    # is deliberately represented as unknown rather than as success.
+    # Archived task folders remain useful provenance. An old completed flag
+    # without a receipt is deliberately represented as unknown rather than as
+    # success.
     try:
-        from .delivery import delivery_store_root, load_delivery_intent
+        from .delivery import (
+            classify_candidate,
+            collect_inventory,
+            delivery_store_root,
+            load_delivery_intent,
+        )
         from .delivery_store import DeliveryStore, DeliveryStoreError
 
-        store = DeliveryStore(delivery_store_root(tasks_dir.parent.parent))
+        repo_root = tasks_dir.parent.parent
+        store = DeliveryStore(delivery_store_root(repo_root))
+        inventory = collect_inventory(repo_root, github=github)
     except Exception:
         store = None
+        inventory = None
 
-    # A verified terminal receipt is authoritative for both active and
-    # archived task records. An active task can remain in ``in_progress``
-    # while its delivery receipt is waiting only for optional physical
-    # cleanup; it must still count as an explicit outcome for parent progress.
-    if store is not None:
-        for task in iter_active_tasks(tasks_dir):
+    # Recompute each typed task against one current inventory. A receipt is
+    # evidence input, not a status override: stale tips, moved refs, invalid
+    # evidence, duplicate identities, and unavailable coverage must remain
+    # visible as unresolved instead of inflating parent progress.
+    if store is not None and inventory is not None:
+        candidate_task_paths: dict[str, list[str]] = {}
+        for task in inventory.tasks:
+            intent_data = task.get("intent")
+            if isinstance(intent_data, dict):
+                candidate_id = str(intent_data.get("candidate_id") or "")
+                if candidate_id:
+                    candidate_task_paths.setdefault(candidate_id, []).append(
+                        str(task["task_path"])
+                    )
+        duplicate_candidates = {
+            candidate_id
+            for candidate_id, paths in candidate_task_paths.items()
+            if len(paths) > 1
+        }
+        for task in inventory.tasks:
+            if not isinstance(task.get("intent"), dict):
+                continue
+            task_json = repo_root / str(task["task_path"]) / FILE_TASK_JSON
             try:
-                intent = load_delivery_intent(task.directory / FILE_TASK_JSON)
+                intent = load_delivery_intent(task_json)
+                if intent.candidate_id in duplicate_candidates:
+                    continue
                 receipt = store.read(intent.candidate_id)
+                status = classify_candidate(intent, inventory, receipt)
             except (DeliveryStoreError, OSError, ValueError):
                 continue
-            outcome = receipt.get("outcome")
-            if outcome in {"delivered", "superseded", "rejected", "cancelled"} and receipt.get("closure") in {"verified", "closed"}:
-                statuses[task.dir_name] = f"outcome:{outcome}"
+            if (
+                status.outcome in {"delivered", "superseded", "rejected", "cancelled"}
+                and status.closure in {"verified", "closed"}
+                and not status.issues
+            ):
+                task_name = Path(str(task["task_path"])).name
+                statuses[task_name] = f"outcome:{status.outcome}"
 
     if not archive_dir.is_dir():
         return statuses
@@ -122,13 +155,11 @@ def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
         state = "unknown:archived"
         try:
             raw = json.loads(task_json.read_text(encoding="utf-8"))
-            if store is not None:
-                intent = load_delivery_intent(task_json)
-                receipt = store.read(intent.candidate_id)
-                outcome = receipt.get("outcome")
-                if outcome in {"delivered", "superseded", "rejected", "cancelled"} and receipt.get("closure") in {"verified", "closed"}:
-                    state = f"outcome:{outcome}"
-            elif isinstance(raw, dict) and raw.get("status") not in {"completed", "done"}:
+            if (
+                store is None
+                and isinstance(raw, dict)
+                and raw.get("status") not in {"completed", "done"}
+            ):
                 state = str(raw.get("status", "unknown"))
         except Exception:
             pass
