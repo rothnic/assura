@@ -799,6 +799,131 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_github_evidence_requires_provider_review_and_check_facts(self) -> None:
+        repo, base_oid, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merged_oid = git(repo, "rev-parse", "HEAD")
+            provider_pr = {
+                "number": 14,
+                "state": "MERGED",
+                "headRefName": "candidate",
+                "headRefOid": tip,
+                "baseRefName": "master",
+                "baseRefOid": base_oid,
+                "mergeCommit": {"oid": tip},
+                "reviewDecision": "APPROVED",
+                "reviews": [
+                    {
+                        "id": "review-14",
+                        "author": {"login": "independent-reviewer"},
+                        "state": "APPROVED",
+                    }
+                ],
+                "statusCheckRollup": [
+                    {
+                        "databaseId": "job-14",
+                        "name": "process-contracts",
+                        "conclusion": "SUCCESS",
+                    }
+                ],
+            }
+            evidence = {
+                "review": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "github",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "https://github.com/rothnic/assura/pull/14#pullrequestreview-14",
+                    "result": "approved",
+                    "head_oid": tip,
+                    "pr_number": 14,
+                    "reviewer": "independent-reviewer",
+                    "reviewer_role": "architect",
+                    "review_id": "review-14",
+                    "findings": [],
+                },
+                "checks": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "github",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "https://github.com/rothnic/assura/actions/runs/run-14",
+                    "result": "passed",
+                    "conclusion": "success",
+                    "head_oid": tip,
+                    "base_oid": merged_oid,
+                    "pr_number": 14,
+                    "run_id": "run-14",
+                    "job_id": "job-14",
+                    "check_name": "process-contracts",
+                },
+                "postmerge": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "local",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "test:postmerge-14",
+                    "result": "verified",
+                    "head_oid": tip,
+                    "base_oid": merged_oid,
+                    "merge_oid": merged_oid,
+                },
+                "acceptance": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "owner",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "test:acceptance-14",
+                    "result": "accepted",
+                    "head_oid": tip,
+                    "acceptance_ref": "prd.md#acceptance",
+                    "authority_ref": "test:delivery-authority",
+                    "approved_by": "release-authority",
+                    "artifact_sha256": "c" * 64,
+                },
+            }
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "owner": "tester",
+                    "phase": "verified",
+                    "outcome": "delivered",
+                    "closure": "verified",
+                    "observed_tip": tip,
+                    "evidence": evidence,
+                },
+            )
+            inventory = collect_inventory(
+                repo, github=FakeGithub([provider_pr]), base_ref="refs/heads/master"
+            )
+
+            status = classify_candidate(intent, inventory, store.read("candidate-1"))
+
+            self.assertEqual(status.integration, "pr_merged")
+            self.assertEqual(status.outcome, "delivered")
+
+            changed_provider_pr = {**provider_pr, "reviewDecision": "CHANGES_REQUESTED"}
+            changed_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([changed_provider_pr]),
+                base_ref="refs/heads/master",
+            )
+            changed_status = classify_candidate(
+                intent, changed_inventory, store.read("candidate-1")
+            )
+
+            self.assertNotEqual(changed_status.outcome, "delivered")
+            self.assertTrue(
+                any(
+                    issue.code == "GITHUB_REVIEW_UNVERIFIED"
+                    for issue in changed_status.issues
+                )
+            )
+        finally:
+            directory.cleanup()
+
     def test_post_merge_commit_after_reviewed_head_remains_outstanding(self) -> None:
         repo, base_oid, reviewed_tip, directory = fixture_repo()
         try:
