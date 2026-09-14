@@ -35,7 +35,8 @@
       "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
     },
     "execution_branches": [
-      "goal/assura-delivery-closure-release-v2"
+      "goal/assura-delivery-closure-release-v2",
+      "goal/assura-delivery-followup"
     ]
   }
 }
