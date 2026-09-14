@@ -408,7 +408,6 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
     git(repo, "remote", "add", "origin", "https://github.com/rothnic/assura.git")
     fake_bin = repo / ".test-bin"
     fake_bin.mkdir()
-    fake_gh = fake_bin / "gh"
     fake_pull_requests = json.dumps(
         [
             {
@@ -425,11 +424,21 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
             }
         ]
     )
-    fake_gh.write_text(
-        "#!/usr/bin/env python3\nprint(" + repr(fake_pull_requests) + ")\n",
-        encoding="utf-8",
+    fake_gh_source = (
+        "#!/usr/bin/env python3\nprint(" + repr(fake_pull_requests) + ")\n"
     )
-    fake_gh.chmod(0o755)
+    if os.name == "nt":
+        fake_gh = fake_bin / "gh.py"
+        fake_gh.write_text(fake_gh_source, encoding="utf-8")
+        launcher = fake_bin / "gh.cmd"
+        launcher.write_text(
+            f'@echo off\n"{sys.executable}" "{fake_gh}" %*\n',
+            encoding="utf-8",
+        )
+    else:
+        fake_gh = fake_bin / "gh"
+        fake_gh.write_text(fake_gh_source, encoding="utf-8")
+        fake_gh.chmod(0o755)
     exclude = repo / ".git" / "info" / "exclude"
     exclude.write_text(exclude.read_text(encoding="utf-8") + ".test-bin/\n", encoding="utf-8")
     return repo, base_oid, tip, directory

@@ -149,11 +149,18 @@ class DeliveryStore:
         if os.name == "nt":
             import msvcrt
 
-            lock_file.seek(0)
-            if lock_file.read(1) != b"0":
+            try:
                 lock_file.seek(0)
-                lock_file.write(b"0")
-                lock_file.flush()
+                marker = lock_file.read(1)
+                if marker != b"0":
+                    lock_file.seek(0)
+                    lock_file.write(b"0")
+                    lock_file.flush()
+            except OSError as error:
+                # Windows can deny even the marker read while another
+                # process holds the one-byte region. Report the same
+                # recoverable busy state as a failed non-blocking lock.
+                raise ReceiptBusy("delivery receipt is busy") from error
             lock_file.seek(0)
             try:
                 msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
