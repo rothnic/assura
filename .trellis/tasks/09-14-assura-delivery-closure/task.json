@@ -33,6 +33,9 @@
       "branch_ref": "refs/heads/goal/assura-delivery-closure",
       "acceptance_ref": "prd.md#acceptance",
       "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
-    }
+    },
+    "execution_branches": [
+      "goal/assura-delivery-closure-core-v2"
+    ]
   }
 }
