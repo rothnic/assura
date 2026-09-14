@@ -101,17 +101,25 @@ def _candidate_pr_matches(
     """Return PRs bound to the exact candidate branch/head when possible."""
     task = _task_for_intent(intent, inventory)
     branch_short = _branch_name(intent.branch_ref or (task or {}).get("branch"))
+    base_short = _branch_name(intent.base_ref)
     branch_matches = [
         pr
         for pr in inventory.pull_requests
-        if branch_short and _branch_name(pr.get("head_ref")) == branch_short
+        if branch_short
+        and _branch_name(pr.get("head_ref")) == branch_short
+        and _branch_name(pr.get("base_ref")) == base_short
     ]
     if tip:
         exact_head = [pr for pr in branch_matches if pr.get("head_oid") == tip]
         if exact_head:
             return exact_head
         if not branch_matches:
-            return [pr for pr in inventory.pull_requests if pr.get("head_oid") == tip]
+            return [
+                pr
+                for pr in inventory.pull_requests
+                if pr.get("head_oid") == tip
+                and _branch_name(pr.get("base_ref")) == base_short
+            ]
     return branch_matches
 
 
