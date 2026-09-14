@@ -408,7 +408,7 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
     git(repo, "remote", "add", "origin", "https://github.com/rothnic/assura.git")
     fake_bin = repo / ".test-bin"
     fake_bin.mkdir()
-    fake_gh = fake_bin / "gh"
+    fake_gh = fake_bin / ("gh.py" if os.name == "nt" else "gh")
     fake_pull_requests = json.dumps(
         [
             {
@@ -429,13 +429,15 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
         "#!/usr/bin/env python3\nprint(" + repr(fake_pull_requests) + ")\n",
         encoding="utf-8",
     )
-    fake_gh.chmod(0o755)
-    # Windows does not execute extensionless scripts from PATH. Keep the
-    # same fixture command while providing its native command shim.
-    (fake_bin / "gh.cmd").write_text(
-        '@python "%~dp0gh" %*\n',
-        encoding="utf-8",
-    )
+    if os.name == "nt":
+        # Windows does not execute extensionless scripts from PATH. Keep the
+        # same fixture command while providing its native command shim.
+        (fake_bin / "gh.cmd").write_text(
+            '@python "%~dp0gh.py" %*\n',
+            encoding="utf-8",
+        )
+    else:
+        fake_gh.chmod(0o755)
     exclude = repo / ".git" / "info" / "exclude"
     exclude.write_text(exclude.read_text(encoding="utf-8") + ".test-bin/\n", encoding="utf-8")
     return repo, base_oid, tip, directory
