@@ -26,7 +26,9 @@ def command(*args: str) -> str:
 
 
 def ledger_snapshot() -> str:
-    return command("bash", str(LEDGER_AUDIT), str(ROOT))
+    # Git Bash on Windows accepts POSIX-style paths consistently when the
+    # Python process itself is launched from PowerShell.
+    return command("bash", LEDGER_AUDIT.as_posix(), ROOT.as_posix())
 
 
 def records(snapshot: str, kind: str) -> list[list[str]]:
