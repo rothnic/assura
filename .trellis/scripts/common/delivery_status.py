@@ -835,33 +835,6 @@ def classify_candidate(
     )
     coverage_unknown = not bool(inventory.coverage.get("base_resolved")) or inventory.coverage.get("git") != "complete" or inventory.coverage.get("tasks") != "complete" or remote_coverage_unknown
     issues: list[DeliveryIssue] = list(fact_issues)
-    if isinstance(receipt, dict) and intent.branch_ref:
-        terminal_receipt = (
-            receipt.get("outcome") in _TERMINAL_OUTCOMES
-            and receipt.get("closure") in {"verified", "closed"}
-        )
-        attached_branch = receipt.get("attached_branch_ref")
-        if not terminal_receipt and not isinstance(attached_branch, str):
-            issues.append(
-                DeliveryIssue(
-                    "RECEIPT_BRANCH_UNBOUND",
-                    "active receipt has no attached branch binding",
-                    intent.candidate_id,
-                    next_action="Preserve the receipt and perform explicit candidate recovery before resuming it.",
-                )
-            )
-        elif (
-            not terminal_receipt
-            and _branch_name(attached_branch) != _branch_name(intent.branch_ref)
-        ):
-            issues.append(
-                DeliveryIssue(
-                    "RECEIPT_BRANCH_CONFLICT",
-                    "active receipt is attached to a different candidate branch",
-                    intent.candidate_id,
-                    next_action="Preserve both branches and reconcile ownership explicitly before resuming the candidate.",
-                )
-            )
     if intent.kind != "aggregate" and not tip:
         issues.append(DeliveryIssue("CANDIDATE_TIP_UNRESOLVED", "candidate branch or PR head is not present in the inventory", intent.candidate_id, next_action="Resolve the branch/PR identity without deleting historical refs."))
     if len(ref_matches) > 1:

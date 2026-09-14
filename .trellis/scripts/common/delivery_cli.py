@@ -200,7 +200,11 @@ def _validate_receipt_binding(
         )
     expected_branch = _attached_branch_ref(repo_root, intent, data)
     attached_branch = receipt.get("attached_branch_ref")
-    if expected_branch and not isinstance(attached_branch, str):
+    terminal_receipt = (
+        receipt.get("outcome") in _TERMINAL_OUTCOMES
+        and receipt.get("closure") in {"verified", "closed"}
+    )
+    if expected_branch and not isinstance(attached_branch, str) and not terminal_receipt:
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt has no attached branch binding; "
             "recover the candidate explicitly before reusing it"
