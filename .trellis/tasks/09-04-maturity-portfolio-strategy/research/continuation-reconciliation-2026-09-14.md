@@ -16,6 +16,14 @@ refresh source is `origin/master` at
 | `codex/assura-landing-experience`, `5c8cc8fa` | Stale mixed branch. Core landing/project-review behavior landed in PR #140 (`96dca6d6`); the remaining 115 commits mix later historical task, product, and generated-site work without a current PR. | Owner `nroth`; deliberately archive, do not merge wholesale. Reopen only as a named current slice with a fresh review path. | Verified bundle `landing-experience.bundle` (SHA-256 `76de0980318b13c4128f71fff563768a3526ec1616aad0c3651b4d723b5e7715`). |
 | `codex/assura-0.3.1-release-audit`, `58813d51` | Stale local release-metadata branch; current source is already 0.4.0, while R06 remains pending and publication/tag authority is not granted. | Owner `nroth`; deliberately archive. R06 may restore only as a narrowed current candidate after readiness evidence and publication authority. | Verified bundle `release-audit.bundle` (SHA-256 `90d2ebcff4f87436426c2d543349c50a68441b2a82f4620a12d5ca681b72b7d2`). |
 
+The live source refs were deleted only after these durable remote archive refs
+resolved to the recorded tips: `archive/2026-09-12/r03-calibration-cohort` →
+`4c3c4981`; `archive/2026-09-12/r03-calibration-collector` → `0d0f941f`;
+`archive/2026-09-12/w02-performance-claim-containment` → `cba6628f`;
+`archive/2026-09-14/release-install-paths` → `dc990c93`;
+`archive/2026-09-14/landing-experience` → `5c8cc8fa`; and
+`archive/2026-09-14/release-audit` → `58813d51`.
+
 Bundle directory: `/Users/nroth/.codex/archives/assura/2026-09-14/`. Each bundle
 requires the recorded current-master ancestor. The exact restore commands are:
 
