@@ -644,18 +644,76 @@ class DeliveryProjectionTests(unittest.TestCase):
     def test_active_verified_receipt_counts_as_explicit_child_outcome(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merged_tip = git(repo, "rev-parse", "HEAD")
             store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
             store.create(
                 "candidate-1",
                 {
                     "owner": "tester",
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
                     "outcome": "delivered",
                     "closure": "verified",
                     "phase": "verified",
+                    "observed_tip": merged_tip,
+                    "registered_tip": merged_tip,
+                    "registered_base_oid": git(repo, "rev-parse", "HEAD^") ,
+                    "evidence": {
+                        "review": {
+                            "schema_version": "assura.delivery-evidence.v1",
+                            "source": "local",
+                            "repository": "rothnic/assura",
+                            "evidence_ref": "test:review-parent-progress",
+                            "result": "approved",
+                            "head_oid": merged_tip,
+                            "reviewer": "independent-reviewer",
+                            "reviewer_role": "architect",
+                            "review_id": "review-parent-progress",
+                            "findings": [],
+                        },
+                        "checks": {
+                            "schema_version": "assura.delivery-evidence.v1",
+                            "source": "local",
+                            "repository": "rothnic/assura",
+                            "evidence_ref": "test:checks-parent-progress",
+                            "result": "passed",
+                            "conclusion": "success",
+                            "head_oid": merged_tip,
+                            "base_oid": merged_tip,
+                            "run_id": "run-parent-progress",
+                            "job_id": "job-parent-progress",
+                        },
+                        "postmerge": {
+                            "schema_version": "assura.delivery-evidence.v1",
+                            "source": "local",
+                            "repository": "rothnic/assura",
+                            "evidence_ref": "test:postmerge-parent-progress",
+                            "result": "verified",
+                            "head_oid": merged_tip,
+                            "base_oid": merged_tip,
+                            "merge_oid": merged_tip,
+                        },
+                        "acceptance": {
+                            "schema_version": "assura.delivery-evidence.v1",
+                            "source": "owner",
+                            "repository": "rothnic/assura",
+                            "evidence_ref": "test:acceptance-parent-progress",
+                            "result": "accepted",
+                            "head_oid": merged_tip,
+                            "acceptance_ref": "prd.md#acceptance",
+                            "authority_ref": "test:delivery-authority",
+                            "approved_by": "release-authority",
+                            "artifact_sha256": "d" * 64,
+                        },
+                    },
                 },
             )
 
-            statuses = get_all_statuses(repo / ".trellis" / "tasks")
+            statuses = get_all_statuses(
+                repo / ".trellis" / "tasks", github=FakeGithub([])
+            )
 
             self.assertEqual(
                 statuses["01-01-candidate"],
@@ -663,6 +721,43 @@ class DeliveryProjectionTests(unittest.TestCase):
             )
             self.assertIn(
                 "1/1 delivered",
+                children_progress(("01-01-candidate",), statuses),
+            )
+        finally:
+            directory.cleanup()
+
+    def test_stale_terminal_receipt_does_not_count_as_child_outcome(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "owner": "tester",
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "outcome": "delivered",
+                    "closure": "verified",
+                    "phase": "verified",
+                    "observed_tip": tip,
+                },
+            )
+            git(repo, "checkout", "candidate")
+            (repo / "moved.txt").write_text("moved\n", encoding="utf-8")
+            git(repo, "add", "moved.txt")
+            git(repo, "commit", "-m", "move candidate tip")
+            git(repo, "checkout", "master")
+
+            statuses = get_all_statuses(
+                repo / ".trellis" / "tasks", github=FakeGithub([])
+            )
+
+            self.assertNotEqual(
+                statuses["01-01-candidate"],
+                "outcome:delivered",
+            )
+            self.assertIn(
+                "unknown=1",
                 children_progress(("01-01-candidate",), statuses),
             )
         finally:
@@ -831,6 +926,7 @@ class DeliveryProjectionTests(unittest.TestCase):
                     {
                         "databaseId": "job-14",
                         "name": "process-contracts",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/job-14",
                         "conclusion": "SUCCESS",
                     }
                 ],
@@ -925,6 +1021,33 @@ class DeliveryProjectionTests(unittest.TestCase):
                 any(
                     issue.code == "GITHUB_REVIEW_UNVERIFIED"
                     for issue in changed_status.issues
+                )
+            )
+
+            changed_checks = {
+                **provider_pr,
+                "statusCheckRollup": [
+                    {
+                        "databaseId": "job-14",
+                        "name": "process-contracts",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/other-run/job/job-14",
+                        "conclusion": "SUCCESS",
+                    }
+                ],
+            }
+            changed_checks_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([changed_checks]),
+                base_ref="refs/heads/master",
+            )
+            changed_checks_status = classify_candidate(
+                intent, changed_checks_inventory, store.read("candidate-1")
+            )
+            self.assertNotEqual(changed_checks_status.outcome, "delivered")
+            self.assertTrue(
+                any(
+                    issue.code == "GITHUB_CHECKS_UNVERIFIED"
+                    for issue in changed_checks_status.issues
                 )
             )
         finally:
