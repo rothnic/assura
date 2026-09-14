@@ -20,6 +20,17 @@ and protected by a kernel-held per-candidate lock. A stale writer fails rather
 than overwriting newer evidence. Audits never write receipts, task JSON, refs,
 or worktrees.
 
+Each recorded evidence section is a typed `assura.delivery-evidence.v1`
+object. It names its source, exact repository, full candidate `head_oid`,
+bounded `evidence_ref`, and successful result. Review sections additionally
+name a distinct reviewer, role, review identity, and finding dispositions;
+check sections name a run and job/check identity; post-merge sections name the
+full integration base and merge OID; acceptance sections bind the intent's
+authority and a distinct approver to the named criterion and a digest or
+measurement. GitHub-sourced review and check sections must also match the
+current PR number/head and the live provider payload. A caller-supplied
+boolean or stale URL is not terminal evidence.
+
 ## State and outcomes
 
 `task.py finish` means pause: it records `session_state: paused` and then
@@ -57,14 +68,17 @@ python3 .trellis/scripts/task.py delivery register <task> --candidate <id> --own
 python3 .trellis/scripts/task.py delivery inspect <task> --format json
 python3 .trellis/scripts/task.py delivery record <task> --evidence-file <file> --expected-generation <n>
 python3 .trellis/scripts/task.py delivery close <task> --outcome delivered|superseded|rejected|cancelled
-python3 .trellis/scripts/task.py delivery audit --format json [--strict --owner <owner>]
+python3 .trellis/scripts/task.py delivery audit --format json [--refresh] [--strict --owner <owner>]
 python3 .trellis/scripts/task.py delivery next [--owner <owner>]
 python3 .trellis/scripts/task.py delivery checkpoint [--owner <owner>]
 python3 .agents/skills/assura-goal-execution/scripts/audit-delivery.py --format json
 ```
 
-`audit`, `next`, and `checkpoint` are read-only. They report unavailable
-GitHub/host coverage as unknown rather than as an empty successful inventory.
+`audit`, `next`, and `checkpoint` are read-only. `audit --refresh` performs a
+read-only advertised-head/tag query; it does not fetch or mutate local refs.
+Without it, remote coverage is explicitly `local-tracking-only` and strict
+fleet claims cannot pass. These commands report unavailable GitHub/host
+coverage as unknown rather than as an empty successful inventory.
 The checkpoint is deterministic for unchanged inputs and is bounded to 1,024
 UTF-8 bytes. No delivery command merges, publishes, deploys, deletes branches,
 or executes shell text from task metadata.

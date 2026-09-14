@@ -55,7 +55,7 @@ python3 ./.trellis/scripts/task.py delivery register <task> --candidate <id> --o
 python3 ./.trellis/scripts/task.py delivery inspect <task> --format json
 python3 ./.trellis/scripts/task.py delivery record <task> --evidence-file <file> --expected-generation <n>
 python3 ./.trellis/scripts/task.py delivery close <task> --outcome delivered|superseded|rejected|cancelled
-python3 ./.trellis/scripts/task.py delivery audit --format json [--strict --owner <owner>]
+python3 ./.trellis/scripts/task.py delivery audit --format json [--refresh] [--strict --owner <owner>]
 python3 ./.trellis/scripts/task.py delivery next [--owner <owner>]
 python3 ./.trellis/scripts/task.py delivery checkpoint [--owner <owner>]
 python3 ./.trellis/scripts/task.py list [--mine] [--status <s>]
