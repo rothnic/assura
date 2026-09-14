@@ -1026,6 +1026,53 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_audit_holds_duplicate_candidate_identity_across_tasks(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            original = json.loads(
+                (
+                    repo
+                    / ".trellis"
+                    / "tasks"
+                    / "01-01-candidate"
+                    / "task.json"
+                ).read_text(encoding="utf-8")
+            )
+            duplicate = dict(original)
+            duplicate.update(
+                {
+                    "id": "duplicate-task",
+                    "name": "duplicate-task",
+                    "title": "Duplicate task",
+                }
+            )
+            duplicate_dir = repo / ".trellis" / "tasks" / "01-02-duplicate"
+            duplicate_dir.mkdir(parents=True)
+            (duplicate_dir / "task.json").write_text(
+                json.dumps(duplicate), encoding="utf-8"
+            )
+
+            _, statuses = project_audit(repo, github=FakeGithub([]))
+
+            duplicate_statuses = [
+                status
+                for status in statuses
+                if status.candidate_id == "candidate-1"
+            ]
+            self.assertEqual(len(duplicate_statuses), 2)
+            self.assertTrue(
+                all(
+                    status.outcome is None
+                    and any(
+                        issue.code == "DUPLICATE_CANDIDATE_ID"
+                        for issue in status.issues
+                    )
+                    for status in duplicate_statuses
+                )
+            )
+        finally:
+            directory.cleanup()
+
     def test_audit_keeps_detached_worktree_and_invalid_intent_visible(self) -> None:
         repo, _, _, directory = fixture_repo()
         detached = Path(directory.name) / "detached-worktree"
