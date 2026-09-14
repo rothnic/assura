@@ -9,8 +9,10 @@ record. A task is not a delivered change merely because it is marked
 New tasks contain `meta.delivery` with `schema_version: 1`, a stable candidate
 ID, kind, owner, repository, base ref, and acceptance reference. The candidate
 ID is safe for use as a receipt filename and remains stable across rebases and
-session changes. Historical tasks without this metadata are
-`legacy_unclassified` until an owner explicitly classifies them.
+session changes. Release intents additionally require a validated package
+version and unique safe asset names. Historical tasks without this metadata are
+`legacy_unclassified` until an owner explicitly classifies them; malformed
+typed intents are invalid and remain held.
 
 Mutable observations live outside the task worktree at the Git common
 directory's `assura/delivery-v1/` store. Receipts are atomic, generation-aware,
@@ -30,6 +32,14 @@ evidence. Terminal outcomes are `delivered`, `superseded`, `rejected`, and
 An integration candidate requires an exact tip, verified integration (including
 squash/rebase PR mapping), resolved review, required checks, post-merge proof,
 acceptance proof, complete required coverage, and no owned uncommitted changes.
+Release candidates additionally require a matching `assura.release-receipt.v1`
+record containing the exact source commit, tag object, workflow run, required
+asset hashes, checksum verification, and installed version proof. The receipt
+is retained as an Actions evidence artifact; retrying publication verifies
+matching assets, uploads only missing assets, and stops on conflicts or missing
+remote digests. Publication evidence remains distinct from explicit
+owner-authorized acceptance, so a release receipt alone cannot close a release
+candidate.
 Superseded, rejected, and cancelled outcomes require a decision bound to the
 exact tip; superseded additionally requires a replacement and remaining-diff
 disposition. These outcomes remain distinct from delivered for parent

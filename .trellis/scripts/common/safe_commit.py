@@ -58,13 +58,14 @@ def safe_trellis_paths_to_add(repo_root: Path) -> list[str]:
 
     Only includes paths that exist on disk so callers don't pass non-existent
     arguments to git. The caller is responsible for `git diff --cached`
-    checking afterwards.
+    checking afterwards. This helper is used for the ordinary task lifecycle;
+    archive moves use the narrower ``safe_archive_paths_to_add`` helper.
 
     Included:
       - .trellis/workspace/<developer>/journal-*.md
       - .trellis/workspace/<developer>/index.md
-      - .trellis/tasks/<task-dir>/   (every active task directory)
-      - .trellis/tasks/archive/      (whole archive subtree, if present)
+      - .trellis/tasks/<task-dir>/   (each existing active task directory)
+      - .trellis/tasks/archive/      (the existing archive subtree, if present)
 
     Excluded (intentionally — these must not be staged):
       - .trellis/.backup-*, .trellis/worktrees/,
@@ -110,10 +111,9 @@ def safe_archive_paths_to_add(repo_root: Path) -> list[str]:
     """Return paths to stage after `task.py archive`.
 
     Limited to the archive subtree (where the freshly-moved task lives) plus
-    the source task directory's parent area to capture the deletion in the
-    same commit. We pass the whole `.trellis/tasks/` path so deletions of the
-    pre-move path are tracked, but only as a SPECIFIC subpath — not the whole
-    `.trellis/` tree.
+    the currently existing active task directories that may have been touched
+    by the selected parent/child relationship. Callers separately stage the
+    exact source deletion; no broad ``.trellis`` or all-task pathspec is used.
     """
     paths: list[str] = []
     tasks_dir = repo_root / DIR_WORKFLOW / DIR_TASKS

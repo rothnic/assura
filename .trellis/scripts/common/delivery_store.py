@@ -7,6 +7,7 @@ session changes without allowing a stale writer to replace newer state.
 
 from __future__ import annotations
 
+import errno
 import json
 import os
 import re
@@ -33,6 +34,10 @@ class StaleGeneration(DeliveryStoreError):
 
 class ReceiptExists(DeliveryStoreError):
     """A candidate receipt already exists."""
+
+
+class ReceiptBusy(DeliveryStoreError):
+    """Another process currently owns the candidate receipt lock."""
 
 
 def _validate_candidate_id(candidate_id: str) -> str:
@@ -131,7 +136,8 @@ class DeliveryStore:
         """Hold a process-releasing lock while mutating one receipt."""
         self.root.mkdir(parents=True, exist_ok=True)
         lock_path = self._lock_path(candidate_id)
-        with lock_path.open("a+b") as lock_file:
+        lock_path.touch(exist_ok=True)
+        with lock_path.open("r+b") as lock_file:
             self._acquire_lock(lock_file)
             try:
                 yield
@@ -144,14 +150,27 @@ class DeliveryStore:
             import msvcrt
 
             lock_file.seek(0)
-            lock_file.write(b"0")
-            lock_file.flush()
-            msvcrt.locking(lock_file.fileno(), msvcrt.LK_LOCK, 1)
+            if lock_file.read(1) != b"0":
+                lock_file.seek(0)
+                lock_file.write(b"0")
+                lock_file.flush()
+            lock_file.seek(0)
+            try:
+                msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as error:
+                raise ReceiptBusy("delivery receipt is busy") from error
             return
 
         import fcntl
 
-        fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX)
+        try:
+            fcntl.flock(lock_file.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise ReceiptBusy("delivery receipt is busy") from error
+        except OSError as error:
+            if error.errno in {errno.EACCES, errno.EAGAIN}:
+                raise ReceiptBusy("delivery receipt is busy") from error
+            raise
 
     @staticmethod
     def _release_lock(lock_file: Any) -> None:

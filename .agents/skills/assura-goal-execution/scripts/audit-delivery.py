@@ -16,7 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[4]
 sys.path.insert(0, str(REPO_ROOT / ".trellis" / "scripts"))
 
-from common.delivery_cli import project_audit  # noqa: E402
+from common.delivery_cli import project_audit, strict_audit_pass  # noqa: E402
 
 
 def main() -> int:
@@ -25,10 +25,17 @@ def main() -> int:
     parser.add_argument("--format", choices=("json", "text"), default="text")
     parser.add_argument("--strict", action="store_true")
     parser.add_argument("--owner")
+    parser.add_argument(
+        "--refresh",
+        action="store_true",
+        help="read advertised origin heads/tags before assessing complete coverage",
+    )
     args = parser.parse_args()
 
     repo_root = Path.cwd().resolve()
-    report, statuses = project_audit(repo_root, owner=args.owner)
+    report, statuses = project_audit(
+        repo_root, owner=args.owner, refresh_remote=args.refresh
+    )
     if args.format == "json":
         print(json.dumps(report, indent=2, sort_keys=True))
     else:
@@ -39,7 +46,7 @@ def main() -> int:
             print(f"{status.candidate_id}: {status.outcome or status.phase}; next: {status.next_action}")
         print(f"unowned refs: {len(report['unowned_refs'])}")
         print(f"unowned worktrees: {len(report['unowned_worktrees'])}")
-    if args.strict and any(status.outcome is None or status.dirty for status in statuses):
+    if args.strict and not strict_audit_pass(report, statuses, args.owner):
         return 1
     return 0
 

@@ -37,7 +37,6 @@ from common.paths import (
     get_current_task,
 )
 from common.active_task import (
-    clear_active_task,
     resolve_active_task,
     resolve_context_key,
     set_active_task,
@@ -464,6 +463,12 @@ def main() -> int:
     p_delivery_register.add_argument("--base-ref", help="Integration base ref")
     p_delivery_register.add_argument("--acceptance-ref", default="prd.md#acceptance")
     p_delivery_register.add_argument("--authority-ref")
+    p_delivery_register.add_argument("--version", help="Release package version for release candidates")
+    p_delivery_register.add_argument(
+        "--required-asset",
+        action="append",
+        help="Required durable release asset; repeat for each platform archive",
+    )
 
     p_delivery_inspect = delivery_subparsers.add_parser("inspect", help="Inspect one delivery candidate")
     p_delivery_inspect.add_argument("task", help="Task directory or name")
@@ -486,6 +491,11 @@ def main() -> int:
     p_delivery_audit.add_argument("--format", choices=["json", "text"], default="text")
     p_delivery_audit.add_argument("--strict", action="store_true")
     p_delivery_audit.add_argument("--owner")
+    p_delivery_audit.add_argument(
+        "--refresh",
+        action="store_true",
+        help="read advertised origin heads/tags before assessing complete coverage",
+    )
 
     p_delivery_next = delivery_subparsers.add_parser("next", help="Show next owned delivery actions")
     p_delivery_next.add_argument("--owner")
