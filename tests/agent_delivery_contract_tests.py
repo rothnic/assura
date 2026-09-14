@@ -1235,6 +1235,33 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_audit_classifies_missing_delivery_intent_as_legacy(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            legacy_dir = repo / ".trellis" / "tasks" / "01-02-legacy"
+            legacy_dir.mkdir(parents=True)
+            (legacy_dir / "task.json").write_text(
+                json.dumps(
+                    {
+                        "id": "legacy",
+                        "assignee": "tester",
+                        "status": "completed",
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            report, _ = project_audit(repo, github=FakeGithub([]))
+
+            self.assertEqual(report["invalid_intents"], [])
+            self.assertEqual(len(report["legacy"]), 1)
+            self.assertEqual(
+                report["legacy"][0]["issues"][0]["code"],
+                "LEGACY_UNCLASSIFIED",
+            )
+        finally:
+            directory.cleanup()
+
     def test_explicit_remote_refresh_proves_remote_ref_coverage(self) -> None:
         repo, _, _, directory = fixture_repo()
         advertised = [{"name": "refs/heads/master", "oid": "a" * 40, "kind": "heads"}]
@@ -1308,6 +1335,48 @@ class DeliveryProjectionTests(unittest.TestCase):
         with mock.patch("common.delivery.subprocess.run", return_value=completed):
             with self.assertRaises(GithubUnavailable):
                 SubprocessGithubReader().list_pull_requests("rothnic/assura")
+
+    def test_github_reader_merges_bounded_provider_field_queries(self) -> None:
+        responses = [
+            json.dumps(
+                [
+                    {
+                        "number": 14,
+                        "state": "MERGED",
+                        "headRefName": "candidate",
+                        "headRefOid": "a" * 40,
+                    }
+                ]
+            ),
+            json.dumps(
+                [
+                    {
+                        "number": 14,
+                        "reviews": [{"id": "review-14", "state": "APPROVED"}],
+                    }
+                ]
+            ),
+            json.dumps(
+                [
+                    {
+                        "number": 14,
+                        "statusCheckRollup": [{"databaseId": "job-14"}],
+                    }
+                ]
+            ),
+        ]
+        completed = [
+            subprocess.CompletedProcess(["gh"], 0, stdout=payload, stderr="")
+            for payload in responses
+        ]
+        with mock.patch("common.delivery.subprocess.run", side_effect=completed) as run:
+            rows = SubprocessGithubReader().list_pull_requests("rothnic/assura")
+
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["headRefOid"], "a" * 40)
+        self.assertIn("reviews", rows[0])
+        self.assertIn("statusCheckRollup", rows[0])
+        self.assertEqual(run.call_count, 3)
 
 
 class DeliveryLifecycleCommandTests(unittest.TestCase):

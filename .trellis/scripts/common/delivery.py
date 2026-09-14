@@ -191,44 +191,56 @@ class SubprocessGithubReader:
 
     def list_pull_requests(self, repository: str) -> list[dict[str, Any]]:
         """Query all pull requests without invoking a shell."""
-        command = [
-            self.executable,
-            "pr",
-            "list",
-            "--repo",
-            repository,
-            "--state",
-            "all",
-            "--limit",
-            "1000",
-            "--json",
-            "number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeCommit,mergedAt,reviewDecision,reviews,statusCheckRollup",
-        ]
-        try:
-            result = subprocess.run(
-                command,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                check=False,
-            )
-        except OSError as error:
-            raise GithubUnavailable(f"GitHub CLI unavailable: {error}") from error
-        if result.returncode != 0:
-            detail = result.stderr.strip() or "unknown GitHub CLI failure"
-            raise GithubUnavailable(detail)
-        try:
-            value = json.loads(result.stdout or "[]")
-        except json.JSONDecodeError as error:
-            raise GithubUnavailable("GitHub CLI returned invalid JSON") from error
-        if not isinstance(value, list):
-            raise GithubUnavailable("GitHub CLI returned a non-list response")
-        if len(value) >= 1000:
-            raise GithubUnavailable(
-                "GitHub PR pagination is incomplete at the 1000-result limit"
-            )
-        return [item for item in value if isinstance(item, dict)]
+        field_sets = (
+            "number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeCommit,mergedAt,reviewDecision",
+            "number,reviews",
+            "number,statusCheckRollup",
+        )
+        rows: dict[str, dict[str, Any]] = {}
+        for fields in field_sets:
+            command = [
+                self.executable,
+                "pr",
+                "list",
+                "--repo",
+                repository,
+                "--state",
+                "all",
+                "--limit",
+                "1000",
+                "--json",
+                fields,
+            ]
+            try:
+                result = subprocess.run(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
+                    check=False,
+                )
+            except OSError as error:
+                raise GithubUnavailable(f"GitHub CLI unavailable: {error}") from error
+            if result.returncode != 0:
+                detail = result.stderr.strip() or "unknown GitHub CLI failure"
+                raise GithubUnavailable(detail)
+            try:
+                value = json.loads(result.stdout or "[]")
+            except json.JSONDecodeError as error:
+                raise GithubUnavailable("GitHub CLI returned invalid JSON") from error
+            if not isinstance(value, list):
+                raise GithubUnavailable("GitHub CLI returned a non-list response")
+            if len(value) >= 1000:
+                raise GithubUnavailable(
+                    "GitHub PR pagination is incomplete at the 1000-result limit"
+                )
+            for item in value:
+                if not isinstance(item, dict) or item.get("number") is None:
+                    continue
+                key = str(item["number"])
+                rows.setdefault(key, {}).update(item)
+        return list(rows.values())
 
 
 def _required_string(data: dict[str, Any], field: str) -> str:
@@ -591,9 +603,9 @@ def _read_tasks(repo_root: Path) -> tuple[list[dict[str, Any]], list[DeliveryIss
             intent_error = None
         except DeliveryValidationError as error:
             intent_data = None
-            intent_error = str(error)
             meta = raw.get("meta")
             if isinstance(meta, dict) and "delivery" in meta:
+                intent_error = str(error)
                 issues.append(
                     DeliveryIssue(
                         "DELIVERY_INTENT_INVALID",
@@ -602,6 +614,11 @@ def _read_tasks(repo_root: Path) -> tuple[list[dict[str, Any]], list[DeliveryIss
                         next_action="Preserve the task and repair its versioned delivery intent before continuing.",
                     )
                 )
+            else:
+                # A task created before delivery intents were introduced is
+                # legacy history, not a malformed typed candidate. Keep it
+                # visible without inventing a broken delivery identity.
+                intent_error = None
         tasks.append(
             {
                 "task_path": relative,
