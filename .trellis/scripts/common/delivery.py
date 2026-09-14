@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import json
 import re
+import shutil
 import subprocess
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -191,8 +192,9 @@ class SubprocessGithubReader:
 
     def list_pull_requests(self, repository: str) -> list[dict[str, Any]]:
         """Query all pull requests without invoking a shell."""
+        executable = shutil.which(self.executable) or self.executable
         command = [
-            self.executable,
+            executable,
             "pr",
             "list",
             "--repo",
