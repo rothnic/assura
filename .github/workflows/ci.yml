@@ -231,29 +231,44 @@ jobs:
         cache-all-crates: true
     - name: Summarize Rust cache
       run: bash scripts/summarize-rust-cache.sh "Release Bundle Smoke" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
+    - name: Validate versioned artifact contract
+      run: cargo test -p xtask versioned_ci_artifact_contract_matches_ci_workflow
+    - name: Read package version
+      id: package
+      shell: bash
+      run: |
+        package_version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json, sys; print(next(package["version"] for package in json.load(sys.stdin)["packages"] if package["name"] == "assura"))')"
+        echo "version=${package_version}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=assura-v${package_version}-${GITHUB_SHA}-linux-amd64-preview.tar.gz" >> "$GITHUB_OUTPUT"
     - name: Build installable bundle
       run: |
+        archive_name="${{ steps.package.outputs.archive_name }}"
+        package_version="${{ steps.package.outputs.version }}"
         cargo rustc --release --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
         cargo build --release --bin assura-full
+        test "$(target/release/assura --version)" = "assura ${package_version}"
+        test "$(target/release/assura-full --version)" = "assura ${package_version}"
         mkdir -p target/release-bundle
         cp target/release/assura target/release/assura-full target/release-bundle/
-        tar -C target/release-bundle -czf target/assura-linux-amd64-preview.tar.gz assura assura-full
-        sha256sum target/assura-linux-amd64-preview.tar.gz > target/assura-linux-amd64-preview.tar.gz.sha256
+        tar -C target/release-bundle -czf "target/${archive_name}" assura assura-full
+        sha256sum "target/${archive_name}" > "target/${archive_name}.sha256"
     - name: Enforce release archive size
       run: |
-        bytes="$(wc -c < target/assura-linux-amd64-preview.tar.gz | tr -d '[:space:]')"
-        echo "assura-linux-amd64-preview.tar.gz: ${bytes} bytes"
+        archive_name="${{ steps.package.outputs.archive_name }}"
+        bytes="$(wc -c < "target/${archive_name}" | tr -d '[:space:]')"
+        echo "${archive_name}: ${bytes} bytes"
         test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
     - name: Smoke Unix installer
       run: |
+        archive_name="${{ steps.package.outputs.archive_name }}"
         tmp="$(mktemp -d)"
-        ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" ASSURA_CHECKSUM_URL="$PWD/target/assura-linux-amd64-preview.tar.gz.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        ASSURA_ASSET_URL="$PWD/target/${archive_name}" ASSURA_CHECKSUM_URL="$PWD/target/${archive_name}.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh
         "$tmp/bin/assura" --version
         "$tmp/bin/assura-full" --help >/tmp/assura-full-help.txt
         "$tmp/bin/assura" --help >/tmp/assura-help.txt
         grep -q "Usage: assura" /tmp/assura-help.txt
-        printf '%064d  assura-linux-amd64-preview.tar.gz\n' 0 > "$tmp/invalid.sha256"
-        if ASSURA_ASSET_URL="$PWD/target/assura-linux-amd64-preview.tar.gz" ASSURA_CHECKSUM_URL="$tmp/invalid.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh; then
+        printf '%064d  %s\n' 0 "$archive_name" > "$tmp/invalid.sha256"
+        if ASSURA_ASSET_URL="$PWD/target/${archive_name}" ASSURA_CHECKSUM_URL="$tmp/invalid.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh; then
           echo "installer accepted an invalid checksum" >&2
           exit 1
         fi
@@ -262,10 +277,10 @@ jobs:
     - name: Upload preview bundle
       uses: actions/upload-artifact@v4
       with:
-        name: assura-linux-amd64-preview
+        name: ${{ steps.package.outputs.archive_name }}
         path: |
-          target/assura-linux-amd64-preview.tar.gz
-          target/assura-linux-amd64-preview.tar.gz.sha256
+          target/${{ steps.package.outputs.archive_name }}
+          target/${{ steps.package.outputs.archive_name }}.sha256
         if-no-files-found: error
         retention-days: 14
 
@@ -287,30 +302,44 @@ jobs:
     - name: Summarize Rust cache
       shell: bash
       run: bash scripts/summarize-rust-cache.sh "Windows Installer Smoke" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-host"
+    - name: Read package version
+      id: package
+      shell: pwsh
+      run: |
+        $metadata = cargo metadata --no-deps --format-version 1 | ConvertFrom-Json
+        $packageVersion = $metadata.packages | Where-Object { $_.name -eq "assura" } | Select-Object -ExpandProperty version
+        "version=$packageVersion" >> $env:GITHUB_OUTPUT
+        "archive_name=assura-v$packageVersion-$env:GITHUB_SHA-windows-amd64-preview.zip" >> $env:GITHUB_OUTPUT
     - name: Build installable Windows bundle
       shell: pwsh
       run: |
+        $archiveName = "${{ steps.package.outputs.archive_name }}"
+        $packageVersion = "${{ steps.package.outputs.version }}"
         cargo build --release --bin assura --no-default-features --features json-output,yaml-config
         cargo build --release --bin assura-full
+        if ((& target/release/assura.exe --version).Trim() -ne "assura $packageVersion") { throw "assura binary version does not match package version" }
+        if ((& target/release/assura-full.exe --version).Trim() -ne "assura $packageVersion") { throw "assura-full binary version does not match package version" }
         New-Item -ItemType Directory -Force -Path target/release-bundle | Out-Null
         Copy-Item target/release/assura.exe target/release-bundle/assura.exe
         Copy-Item target/release/assura-full.exe target/release-bundle/assura-full.exe
-        Compress-Archive -Path target/release-bundle/* -DestinationPath target/assura-windows-amd64.zip -Force
-        $hash = (Get-FileHash target/assura-windows-amd64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
-        "$hash  assura-windows-amd64.zip" | Set-Content -NoNewline target/assura-windows-amd64.zip.sha256
+        Compress-Archive -Path target/release-bundle/* -DestinationPath "target/$archiveName" -Force
+        $hash = (Get-FileHash "target/$archiveName" -Algorithm SHA256).Hash.ToLowerInvariant()
+        "$hash  $archiveName" | Set-Content -NoNewline "target/$archiveName.sha256"
     - name: Enforce release archive size
       shell: pwsh
       run: |
-        $bytes = (Get-Item target/assura-windows-amd64.zip).Length
-        Write-Host "assura-windows-amd64.zip: $bytes bytes"
+        $archiveName = "${{ steps.package.outputs.archive_name }}"
+        $bytes = (Get-Item "target/$archiveName").Length
+        Write-Host "${archiveName}: $bytes bytes"
         if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
           throw "Release archive exceeds size budget"
         }
     - name: Smoke PowerShell installer
       shell: pwsh
       run: |
+        $archiveName = "${{ steps.package.outputs.archive_name }}"
         $bin = Join-Path $env:RUNNER_TEMP "assura-bin"
-        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -ChecksumUrl (Resolve-Path target/assura-windows-amd64.zip.sha256) -BinDir $bin
+        ./website/public/install.ps1 -AssetUrl (Resolve-Path "target/$archiveName") -ChecksumUrl (Resolve-Path "target/$archiveName.sha256") -BinDir $bin
         & (Join-Path $bin "assura.exe") --version
         & (Join-Path $bin "assura-full.exe") --help | Select-String "Usage: assura"
         & (Join-Path $bin "assura.exe") --help | Select-String "Usage: assura"
@@ -318,9 +347,9 @@ jobs:
           -AssuraBin (Join-Path $bin "assura.exe") `
           -WorkRoot (Join-Path (Resolve-Path target) "adoption-smoke/windows-installer")
         $invalidChecksum = Join-Path $env:RUNNER_TEMP "assura-invalid.sha256"
-        (("0" * 64) + "  assura-windows-amd64.zip") | Set-Content -NoNewline $invalidChecksum
+        (("0" * 64) + "  $archiveName") | Set-Content -NoNewline $invalidChecksum
         try {
-          ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -ChecksumUrl $invalidChecksum -BinDir $bin
+          ./website/public/install.ps1 -AssetUrl (Resolve-Path "target/$archiveName") -ChecksumUrl $invalidChecksum -BinDir $bin
           throw "installer accepted an invalid checksum"
         } catch {
           if ($_.Exception.Message -eq "installer accepted an invalid checksum") { throw }
@@ -331,7 +360,7 @@ jobs:
         $beforeFull = (Get-FileHash (Join-Path $bin "assura-full.exe") -Algorithm SHA256).Hash
         $env:ASSURA_TEST_FAIL_AFTER_FIRST_REPLACE = "1"
         try {
-          ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -ChecksumUrl (Resolve-Path target/assura-windows-amd64.zip.sha256) -BinDir $bin
+          ./website/public/install.ps1 -AssetUrl (Resolve-Path "target/$archiveName") -ChecksumUrl (Resolve-Path "target/$archiveName.sha256") -BinDir $bin
           throw "installer accepted an injected replacement failure"
         } catch {
           if ($_.Exception.Message -eq "installer accepted an injected replacement failure") { throw }
@@ -342,7 +371,7 @@ jobs:
         }
         $env:ASSURA_TEST_FAIL_DURING_SECOND_BACKUP = "1"
         try {
-          ./website/public/install.ps1 -AssetUrl (Resolve-Path target/assura-windows-amd64.zip) -ChecksumUrl (Resolve-Path target/assura-windows-amd64.zip.sha256) -BinDir $bin
+          ./website/public/install.ps1 -AssetUrl (Resolve-Path "target/$archiveName") -ChecksumUrl (Resolve-Path "target/$archiveName.sha256") -BinDir $bin
           throw "installer accepted an injected second backup failure"
         } catch {
           if ($_.Exception.Message -eq "installer accepted an injected second backup failure") { throw }
@@ -351,6 +380,15 @@ jobs:
         if ($beforeAssura -ne (Get-FileHash (Join-Path $bin "assura.exe") -Algorithm SHA256).Hash -or $beforeFull -ne (Get-FileHash (Join-Path $bin "assura-full.exe") -Algorithm SHA256).Hash) {
           throw "second backup failure did not preserve the installed executable pair"
         }
+    - name: Upload preview Windows bundle
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ steps.package.outputs.archive_name }}
+        path: |
+          target/${{ steps.package.outputs.archive_name }}
+          target/${{ steps.package.outputs.archive_name }}.sha256
+        if-no-files-found: error
+        retention-days: 14
 
   installable-adoption:
     name: Installable Adoption Smoke (${{ matrix.label }})
@@ -403,6 +441,23 @@ jobs:
     - name: Summarize Rust cache
       shell: bash
       run: bash scripts/summarize-rust-cache.sh "Installable Adoption Smoke (${{ matrix.label }})" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-release-${{ runner.os }}-${{ matrix.target }}"
+    - name: Read package version (Unix)
+      id: package_unix
+      if: matrix.archive_kind == 'tar'
+      shell: bash
+      run: |
+        package_version="$(cargo metadata --no-deps --format-version 1 | python3 -c 'import json, sys; print(next(package["version"] for package in json.load(sys.stdin)["packages"] if package["name"] == "assura"))')"
+        echo "version=${package_version}" >> "$GITHUB_OUTPUT"
+        echo "archive_name=assura-v${package_version}-${GITHUB_SHA}-${{ matrix.archive_name }}" >> "$GITHUB_OUTPUT"
+    - name: Read package version (Windows)
+      id: package_windows
+      if: matrix.archive_kind == 'zip'
+      shell: pwsh
+      run: |
+        $metadata = cargo metadata --no-deps --format-version 1 | ConvertFrom-Json
+        $packageVersion = $metadata.packages | Where-Object { $_.name -eq "assura" } | Select-Object -ExpandProperty version
+        "version=$packageVersion" >> $env:GITHUB_OUTPUT
+        "archive_name=assura-v$packageVersion-$env:GITHUB_SHA-${{ matrix.archive_name }}" >> $env:GITHUB_OUTPUT
     - name: Install musl build tools
       if: matrix.target == 'x86_64-unknown-linux-musl'
       run: sudo apt-get update && sudo apt-get install -y musl-tools
@@ -410,38 +465,48 @@ jobs:
       if: matrix.archive_kind == 'tar'
       shell: bash
       run: |
+        archive_name="${{ steps.package_unix.outputs.archive_name }}"
+        package_version="${{ steps.package_unix.outputs.version }}"
         if [ "${{ matrix.target }}" = "x86_64-unknown-linux-gnu" ]; then
           cargo rustc --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config -- -C target-feature=+crt-static -C link-arg=-lgcc_eh
         else
           cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
         fi
         cargo build --release --target ${{ matrix.target }} --bin assura-full
+        test "$(target/${{ matrix.target }}/release/assura --version)" = "assura ${package_version}"
+        test "$(target/${{ matrix.target }}/release/assura-full --version)" = "assura ${package_version}"
         mkdir -p target/release-bundle/${{ matrix.label }}
         cp target/${{ matrix.target }}/release/assura target/${{ matrix.target }}/release/assura-full target/release-bundle/${{ matrix.label }}/
-        tar -C target/release-bundle/${{ matrix.label }} -czf target/${{ matrix.archive_name }} assura assura-full
+        tar -C target/release-bundle/${{ matrix.label }} -czf "target/${archive_name}" assura assura-full
     - name: Build release-style archive (Windows)
       if: matrix.archive_kind == 'zip'
       shell: pwsh
       run: |
+        $archiveName = "${{ steps.package_windows.outputs.archive_name }}"
+        $packageVersion = "${{ steps.package_windows.outputs.version }}"
         cargo build --release --target ${{ matrix.target }} --bin assura --no-default-features --features json-output,yaml-config
         cargo build --release --target ${{ matrix.target }} --bin assura-full
+        if ((& "target/${{ matrix.target }}/release/assura.exe" --version).Trim() -ne "assura $packageVersion") { throw "assura binary version does not match package version" }
+        if ((& "target/${{ matrix.target }}/release/assura-full.exe" --version).Trim() -ne "assura $packageVersion") { throw "assura-full binary version does not match package version" }
         New-Item -ItemType Directory -Force -Path target/release-bundle/${{ matrix.label }} | Out-Null
         Copy-Item target/${{ matrix.target }}/release/assura.exe target/release-bundle/${{ matrix.label }}/assura.exe
         Copy-Item target/${{ matrix.target }}/release/assura-full.exe target/release-bundle/${{ matrix.label }}/assura-full.exe
-        Compress-Archive -Path target/release-bundle/${{ matrix.label }}/* -DestinationPath target/${{ matrix.archive_name }} -Force
+        Compress-Archive -Path target/release-bundle/${{ matrix.label }}/* -DestinationPath "target/$archiveName" -Force
     - name: Enforce release archive size (Unix)
       if: matrix.archive_kind == 'tar'
       shell: bash
       run: |
-        bytes="$(wc -c < target/${{ matrix.archive_name }} | tr -d '[:space:]')"
-        echo "${{ matrix.archive_name }}: ${bytes} bytes"
+        archive_name="${{ steps.package_unix.outputs.archive_name }}"
+        bytes="$(wc -c < "target/${archive_name}" | tr -d '[:space:]')"
+        echo "${archive_name}: ${bytes} bytes"
         test "$bytes" -le "$ASSURA_MAX_RELEASE_ARCHIVE_BYTES"
     - name: Enforce release archive size (Windows)
       if: matrix.archive_kind == 'zip'
       shell: pwsh
       run: |
-        $bytes = (Get-Item target/${{ matrix.archive_name }}).Length
-        Write-Host "${{ matrix.archive_name }}: $bytes bytes"
+        $archiveName = "${{ steps.package_windows.outputs.archive_name }}"
+        $bytes = (Get-Item "target/$archiveName").Length
+        Write-Host "${archiveName}: $bytes bytes"
         if ($bytes -gt [int64]$env:ASSURA_MAX_RELEASE_ARCHIVE_BYTES) {
           throw "Release archive exceeds size budget"
         }
@@ -449,20 +514,21 @@ jobs:
       if: matrix.archive_kind == 'tar'
       shell: bash
       run: |
+        archive_name="${{ steps.package_unix.outputs.archive_name }}"
         cd target
         if command -v sha256sum >/dev/null 2>&1; then
-          sha256sum ${{ matrix.archive_name }} > ${{ matrix.archive_name }}.sha256
-          sha256sum -c ${{ matrix.archive_name }}.sha256
+          sha256sum "${archive_name}" > "${archive_name}.sha256"
+          sha256sum -c "${archive_name}.sha256"
         else
-          shasum -a 256 ${{ matrix.archive_name }} > ${{ matrix.archive_name }}.sha256
-          shasum -a 256 -c ${{ matrix.archive_name }}.sha256
+          shasum -a 256 "${archive_name}" > "${archive_name}.sha256"
+          shasum -a 256 -c "${archive_name}.sha256"
         fi
     - name: Generate and verify checksum (Windows)
       if: matrix.archive_kind == 'zip'
       shell: pwsh
       run: |
         Push-Location target
-        $archive = "${{ matrix.archive_name }}"
+        $archive = "${{ steps.package_windows.outputs.archive_name }}"
         $checksum = "$archive.sha256"
         $hash = (Get-FileHash $archive -Algorithm SHA256).Hash.ToLowerInvariant()
         "$hash  $archive" | Set-Content -NoNewline $checksum
@@ -475,8 +541,9 @@ jobs:
       if: matrix.archive_kind == 'tar' && matrix.label != 'alpine-x86_64'
       shell: bash
       run: |
+        archive_name="${{ steps.package_unix.outputs.archive_name }}"
         tmp="$(mktemp -d)"
-        ASSURA_LINUX_LIBC="${{ matrix.linux_libc }}" ASSURA_ASSET_URL="$PWD/target/${{ matrix.archive_name }}" ASSURA_CHECKSUM_URL="$PWD/target/${{ matrix.archive_name }}.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh
+        ASSURA_LINUX_LIBC="${{ matrix.linux_libc }}" ASSURA_ASSET_URL="$PWD/target/${archive_name}" ASSURA_CHECKSUM_URL="$PWD/target/${archive_name}.sha256" BIN_DIR="$tmp/bin" ./website/public/install.sh
         "$tmp/bin/assura-full" --help >/dev/null
         ASSURA_BIN="$tmp/bin/assura" ASSURA_SMOKE_DIR="$PWD/target/adoption-smoke/${{ matrix.label }}" ./scripts/smoke-install-adoption.sh
     - name: Smoke installed archive (Alpine)
@@ -487,8 +554,8 @@ jobs:
           --mount "type=bind,source=$PWD,target=/work" \
           --workdir /work \
           -e ASSURA_LINUX_LIBC=musl \
-          -e ASSURA_ASSET_URL="/work/target/${{ matrix.archive_name }}" \
-          -e ASSURA_CHECKSUM_URL="/work/target/${{ matrix.archive_name }}.sha256" \
+          -e ASSURA_ASSET_URL="/work/target/${{ steps.package_unix.outputs.archive_name }}" \
+          -e ASSURA_CHECKSUM_URL="/work/target/${{ steps.package_unix.outputs.archive_name }}.sha256" \
           -e BIN_DIR=/tmp/assura-bin \
           -e ASSURA_BIN=/tmp/assura-bin/assura \
           -e ASSURA_SMOKE_DIR=/tmp/assura-smoke \
@@ -498,8 +565,9 @@ jobs:
       if: matrix.archive_kind == 'zip'
       shell: pwsh
       run: |
+        $archiveName = "${{ steps.package_windows.outputs.archive_name }}"
         $bin = Join-Path $env:RUNNER_TEMP "assura-${{ matrix.label }}-bin"
-        ./website/public/install.ps1 -AssetUrl (Resolve-Path target/${{ matrix.archive_name }}) -ChecksumUrl (Resolve-Path target/${{ matrix.archive_name }}.sha256) -BinDir $bin
+        ./website/public/install.ps1 -AssetUrl (Resolve-Path "target/$archiveName") -ChecksumUrl (Resolve-Path "target/$archiveName.sha256") -BinDir $bin
         & (Join-Path $bin "assura-full.exe") --help | Select-String "Usage: assura"
         ./scripts/smoke-install-adoption.ps1 `
           -AssuraBin (Join-Path $bin "assura.exe") `
@@ -514,10 +582,10 @@ jobs:
     - name: Upload release-style archive
       uses: actions/upload-artifact@v4
       with:
-        name: adoption-archive-${{ matrix.label }}
+        name: adoption-archive-${{ matrix.label }}-${{ steps.package_unix.outputs.version || steps.package_windows.outputs.version }}-${{ github.sha }}
         path: |
-          target/${{ matrix.archive_name }}
-          target/${{ matrix.archive_name }}.sha256
+          target/${{ steps.package_unix.outputs.archive_name || steps.package_windows.outputs.archive_name }}
+          target/${{ steps.package_unix.outputs.archive_name || steps.package_windows.outputs.archive_name }}.sha256
         if-no-files-found: error
         retention-days: 14
 

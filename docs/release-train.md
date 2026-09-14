@@ -48,6 +48,16 @@ inconsistent.
 Automation should parse JSON from stdout. Stderr is diagnostic output from
 Cargo or from the failing readiness verdict.
 
+## CI Preview Artifacts
+
+Release-scoped CI jobs produce temporary installable previews named with the
+package version and full source SHA, such as
+`assura-v<package-version>-<full-source-SHA>-linux-amd64-preview.tar.gz`.
+The workflow checks that bundled binaries report the same package version and
+retains these previews for 14 days. They are validation artifacts, not public
+releases; durable archives are still produced only by the tag-driven release workflow
+after an explicit version tag is pushed.
+
 ## Release Surface Manifest
 
 `docs/data/release-surfaces.json` is the structured source for release-surface
