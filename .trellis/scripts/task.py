@@ -335,7 +335,7 @@ Usage:
   python3 task.py delivery inspect <task> [--format json|text]
   python3 task.py delivery record <task> --evidence-file <file> --expected-generation <n>
   python3 task.py delivery close <task> --outcome <outcome> [--reason <text>]
-  python3 task.py delivery audit [--format json|text] [--strict] [--owner <owner>]
+  python3 task.py delivery audit [--format json|text] [--refresh] [--strict] [--owner <owner>]
   python3 task.py delivery next [--owner <owner>] [--format json|text]
   python3 task.py delivery checkpoint [--owner <owner>]
   python3 task.py set-branch <dir> <branch>          Set git branch
