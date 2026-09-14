@@ -1122,6 +1122,50 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_remote_advertised_candidate_without_local_branch_remains_identifiable(self) -> None:
+        repo, base_oid, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            git(repo, "branch", "-D", "candidate")
+            advertised = [
+                {"name": "refs/heads/master", "oid": base_oid, "kind": "heads"},
+                {"name": "refs/heads/candidate", "oid": tip, "kind": "heads"},
+            ]
+            with mock.patch(
+                "common.delivery._read_remote_refs",
+                return_value=(advertised, []),
+            ):
+                inventory = collect_inventory(
+                    repo,
+                    github=FakeGithub(
+                        [
+                            {
+                                "number": 31,
+                                "state": "OPEN",
+                                "headRefName": "candidate",
+                                "headRefOid": tip,
+                                "baseRefName": "master",
+                                "baseRefOid": base_oid,
+                            }
+                        ]
+                    ),
+                    base_ref="refs/heads/master",
+                    refresh_remote=True,
+                )
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+
+            status = classify_candidate(intent, inventory)
+
+            self.assertEqual(status.tip, tip)
+            self.assertEqual(status.integration, "pr_open")
+            self.assertFalse(
+                any(issue.code == "CANDIDATE_TIP_UNRESOLVED" for issue in status.issues)
+            )
+        finally:
+            directory.cleanup()
+
     def test_github_reader_rejects_a_full_page_as_incomplete_coverage(self) -> None:
         payload = json.dumps([{"number": index} for index in range(1000)])
         completed = subprocess.CompletedProcess(

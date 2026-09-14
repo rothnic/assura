@@ -51,20 +51,42 @@ def _candidate_ref_matches(
     if not branch_short:
         return []
     all_refs: list[dict[str, Any]] = []
-    seen: set[tuple[Any, Any]] = set()
     for ref in (*inventory.refs, *inventory.remote_refs):
-        key = (ref.get("name"), ref.get("oid"))
-        if key not in seen:
-            seen.add(key)
+        if (
+            ref.get("kind") in {"heads", "remotes"}
+            and _branch_name(ref.get("name")) == branch_short
+        ):
             all_refs.append(ref)
-    exact = [ref for ref in all_refs if ref.get("name") == branch]
-    if exact:
-        return exact
+
+    # A local head, its local tracking ref, and a read-only remote
+    # advertisement are three names for one logical branch when their OIDs
+    # agree. Collapse those aliases so ordinary current branches are not
+    # falsely ambiguous, but retain one representative per distinct OID so a
+    # local/remote disagreement remains a visible identity hold.
+    by_oid: dict[str, dict[str, Any]] = {}
+
+    def priority(ref: dict[str, Any]) -> tuple[int, str]:
+        if ref.get("kind") == "heads" and ref.get("source") != "remote-advertisement":
+            rank = 0
+        elif ref.get("kind") == "remotes":
+            rank = 1
+        else:
+            rank = 2
+        return rank, str(ref.get("name") or "")
+
+    for ref in all_refs:
+        oid = ref.get("oid")
+        if not isinstance(oid, str) or not oid:
+            continue
+        current = by_oid.get(oid)
+        if current is None or priority(ref) < priority(current):
+            by_oid[oid] = ref
+
     return [
         ref
-        for ref in all_refs
-        if ref.get("kind") in {"heads", "remotes"}
-        and _branch_name(ref.get("name")) == branch_short
+        for _, ref in sorted(
+            by_oid.items(), key=lambda item: (priority(item[1]), item[0])
+        )
     ]
 
 
@@ -800,7 +822,7 @@ def classify_candidate(
     if intent.kind != "aggregate" and not tip:
         issues.append(DeliveryIssue("CANDIDATE_TIP_UNRESOLVED", "candidate branch or PR head is not present in the inventory", intent.candidate_id, next_action="Resolve the branch/PR identity without deleting historical refs."))
     if len(ref_matches) > 1:
-        issues.append(DeliveryIssue("CANDIDATE_REF_AMBIGUOUS", "multiple local refs could identify the candidate branch", intent.candidate_id, next_action="Bind the task to one exact branch ref before recording delivery evidence."))
+        issues.append(DeliveryIssue("CANDIDATE_REF_AMBIGUOUS", "multiple refs with distinct OIDs could identify the candidate branch", intent.candidate_id, next_action="Bind the task to one exact branch ref and reconcile the differing advertised/local tips before recording delivery evidence."))
     if len(pr_matches) > 1:
         issues.append(DeliveryIssue("PR_IDENTITY_AMBIGUOUS", "multiple pull requests could identify the candidate head", intent.candidate_id, next_action="Bind the candidate to one exact pull request and head before closure."))
     if receipt is None:
