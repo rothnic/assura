@@ -163,7 +163,8 @@ def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str,
                 state = str(raw.get("status", "unknown"))
         except Exception:
             pass
-        statuses[task_name] = state
+        if task_name not in statuses:
+            statuses[task_name] = state
     return statuses
 
 

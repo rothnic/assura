@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import re
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -100,6 +101,7 @@ def project_audit(
     bound_branches: set[str] = set()
     owned_worktree_paths: set[str] = set()
     known_candidate_ids: set[str] = set()
+    candidate_paths: dict[str, list[str]] = {}
     for task in inventory.tasks:
         intent_data = task.get("intent")
         if not isinstance(intent_data, dict):
@@ -119,6 +121,7 @@ def project_audit(
         try:
             intent = load_delivery_intent(task_json)
             known_candidate_ids.add(intent.candidate_id)
+            candidate_paths.setdefault(intent.candidate_id, []).append(task["task_path"])
             if intent.branch_ref:
                 bound_branches.add(_branch_name(intent.branch_ref) or intent.branch_ref)
             elif task.get("branch"):
@@ -137,6 +140,39 @@ def project_audit(
             status = CandidateStatus(candidate_id, str(task.get("assignee") or "unknown"), "unknown", task["task_path"], None, "held", None, "unknown", False, "open", issue.next_action, issues=(issue,))
             if owner is None or status.owner == owner:
                 statuses.append(status)
+
+    duplicate_candidates = {
+        candidate_id: paths
+        for candidate_id, paths in candidate_paths.items()
+        if len(paths) > 1
+    }
+    if duplicate_candidates:
+        corrected: list[CandidateStatus] = []
+        for status in statuses:
+            paths = duplicate_candidates.get(status.candidate_id)
+            if not paths:
+                corrected.append(status)
+                continue
+            shown_paths = ", ".join(paths[:4])
+            if len(paths) > 4:
+                shown_paths += f", ... (+{len(paths) - 4} more)"
+            issue = DeliveryIssue(
+                "DUPLICATE_CANDIDATE_ID",
+                f"candidate identity is bound to multiple task records: {shown_paths}",
+                status.candidate_id,
+                shown_paths,
+                "Assign one unique candidate identity to each task and preserve the existing receipt before closure.",
+            )
+            corrected.append(
+                replace(
+                    status,
+                    phase="held",
+                    outcome=None,
+                    next_action=issue.next_action,
+                    issues=(*status.issues, issue),
+                )
+            )
+        statuses = corrected
 
     ignored_ref_names = {"master", "main", "HEAD"}
     base_branch = _branch_name(inventory.base_ref)
