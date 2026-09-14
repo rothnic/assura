@@ -58,6 +58,34 @@ retains these previews for 14 days. They are validation artifacts, not public
 releases; durable archives are still produced only by the tag-driven release workflow
 after an explicit version tag is pushed.
 
+## Version-to-release procedure
+
+For an authorized release, use this sequence so a version increment cannot
+silently produce mixed artifacts:
+
+1. Set the intended workspace/package versions and lock metadata using the
+   repository's existing versioning practice. Update `docs/release-notes.md`
+   and any release-surface rows that first ship in that version.
+2. Run `cargo xtask release-readiness --format json`, the local release smoke,
+   and the focused release-contract tests. Resolve every failure before the
+   release PR is reviewed.
+3. After the release PR is merged, verify the versioned preview artifacts and
+   their full source SHA. Create the release task bound to the chosen merged
+   commit only when publication authority is available.
+4. The tag-driven workflow verifies the tag/package version, both binary
+   `--version` outputs in every build matrix entry, both binaries again after
+   archive extraction, checksums, and an installable Linux proof. It writes an
+   `assura.release-receipt.v1` evidence artifact containing the tag
+   object/commit, workflow run, five archive identities, and install proof.
+5. On a retry, matching release assets are skipped after size and SHA-256
+   verification. Missing assets are uploaded; a conflicting or unverifiable
+   existing asset stops the workflow for investigation. No retry overwrites a
+   durable asset implicitly.
+6. Once the release exists, run the explicit-version and latest installer
+   checks from the release-live procedure. Those checks are publication
+   evidence, not a substitute for explicit release acceptance or release
+   authority.
+
 ## Release Surface Manifest
 
 `docs/data/release-surfaces.json` is the structured source for release-surface
@@ -85,6 +113,8 @@ A release PR should include:
 - the release-candidate checklist;
 - `cargo xtask release-readiness --format json` output;
 - local `cargo xtask release-smoke` evidence; and
+- focused release-contract tests covering wrong-version binaries/archives,
+  checksum mismatches, missing assets, and safe publication retries; and
 - the planned post-tag `cargo xtask release-live` command.
 
 Do not advertise daemon, editor-package, or agent integration support as
