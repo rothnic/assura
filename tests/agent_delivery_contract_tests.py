@@ -37,7 +37,11 @@ from common.delivery import (  # noqa: E402
     _read_worktrees,
     render_checkpoint,
 )
-from common.delivery_cli import _load_evidence, project_audit  # noqa: E402
+from common.delivery_cli import (  # noqa: E402
+    _load_evidence,
+    ensure_receipt,
+    project_audit,
+)
 from common.delivery_store import (  # noqa: E402
     DeliveryStore,
     ReceiptBusy,
@@ -728,6 +732,35 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_active_task_status_wins_over_archived_name_collision(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            archive_task_dir = (
+                repo / ".trellis" / "tasks" / "archive" / "01-01-candidate"
+            )
+            archive_task_dir.mkdir(parents=True)
+            archived_task = json.loads(
+                (
+                    repo
+                    / ".trellis"
+                    / "tasks"
+                    / "01-01-candidate"
+                    / "task.json"
+                ).read_text(encoding="utf-8")
+            )
+            archived_task["status"] = "completed"
+            (archive_task_dir / "task.json").write_text(
+                json.dumps(archived_task), encoding="utf-8"
+            )
+
+            statuses = get_all_statuses(
+                repo / ".trellis" / "tasks", github=FakeGithub([])
+            )
+
+            self.assertEqual(statuses["01-01-candidate"], "in_progress")
+        finally:
+            directory.cleanup()
+
     def test_stale_terminal_receipt_does_not_count_as_child_outcome(self) -> None:
         repo, _, tip, directory = fixture_repo()
         try:
@@ -832,6 +865,39 @@ class DeliveryProjectionTests(unittest.TestCase):
             self.assertNotEqual(status.integration, "pr_merged")
             self.assertTrue(
                 any(issue.code == "PR_IDENTITY_AMBIGUOUS" for issue in status.issues)
+            )
+        finally:
+            directory.cleanup()
+
+    def test_pull_request_targeting_different_base_is_not_candidate(self) -> None:
+        repo, base_oid, tip, directory = fixture_repo()
+        try:
+            inventory = collect_inventory(
+                repo,
+                github=FakeGithub(
+                    [
+                        {
+                            "number": 23,
+                            "state": "MERGED",
+                            "headRefName": "candidate",
+                            "headRefOid": tip,
+                            "baseRefName": "release",
+                            "baseRefOid": base_oid,
+                            "mergeCommit": {"oid": tip},
+                        }
+                    ]
+                ),
+                base_ref="refs/heads/master",
+            )
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+
+            status = classify_candidate(intent, inventory)
+
+            self.assertEqual(status.integration, "unmerged")
+            self.assertTrue(
+                any(issue.code == "INTEGRATION_UNVERIFIED" for issue in status.issues)
             )
         finally:
             directory.cleanup()
@@ -1154,6 +1220,45 @@ class DeliveryProjectionTests(unittest.TestCase):
             self.assertEqual(report["orphan_receipts"][0]["candidate_id"], "orphan-receipt")
             self.assertEqual(report["orphan_receipts"][0]["disposition"], "unresolved")
             self.assertTrue(all("disposition" in item for item in report["unowned_worktrees"]))
+        finally:
+            directory.cleanup()
+
+    def test_audit_holds_duplicate_candidate_identity_across_tasks(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            duplicate_dir = repo / ".trellis" / "tasks" / "01-02-duplicate"
+            duplicate_dir.mkdir(parents=True)
+            duplicate_task = json.loads(
+                (
+                    repo
+                    / ".trellis"
+                    / "tasks"
+                    / "01-01-candidate"
+                    / "task.json"
+                ).read_text(encoding="utf-8")
+            )
+            duplicate_task["id"] = "duplicate"
+            duplicate_task["name"] = "duplicate"
+            (duplicate_dir / "task.json").write_text(
+                json.dumps(duplicate_task), encoding="utf-8"
+            )
+
+            report, statuses = project_audit(repo, github=FakeGithub([]))
+
+            duplicate_statuses = [
+                status
+                for status in statuses
+                if status.candidate_id == "candidate-1"
+            ]
+            self.assertEqual(len(duplicate_statuses), 2)
+            self.assertTrue(
+                all(
+                    any(issue.code == "DUPLICATE_CANDIDATE_ID" for issue in status.issues)
+                    and status.outcome is None
+                    for status in duplicate_statuses
+                )
+            )
+            self.assertEqual(report["invalid_intents"], [])
         finally:
             directory.cleanup()
 
@@ -1497,6 +1602,51 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             task = json.loads((repo / task_path / "task.json").read_text(encoding="utf-8"))
             self.assertEqual(task["status"], "in_progress")
         finally:
+            directory.cleanup()
+
+    def test_shared_candidate_receipt_rejects_a_second_branch_attachment(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        alternate = Path(directory.name) / "candidate-alternate"
+        try:
+            task_json = repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            intent = load_delivery_intent(task_json)
+            first = ensure_receipt(repo, intent, task, phase="implementing")
+            self.assertEqual(first["attached_branch_ref"], "refs/heads/candidate")
+
+            git(repo, "worktree", "add", "-b", "candidate-alternate", str(alternate), "candidate")
+            alternate_task_json = (
+                alternate / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+            alternate_task_json.parent.mkdir(parents=True, exist_ok=True)
+            alternate_task = json.loads(json.dumps(task))
+            alternate_task["branch"] = "refs/heads/candidate-alternate"
+            alternate_task["meta"]["delivery"]["branch_ref"] = (
+                "refs/heads/candidate-alternate"
+            )
+            alternate_task_json.write_text(
+                json.dumps(alternate_task), encoding="utf-8"
+            )
+            alternate_intent = load_delivery_intent(alternate_task_json)
+
+            with self.assertRaises(DeliveryValidationError) as raised:
+                ensure_receipt(
+                    alternate,
+                    alternate_intent,
+                    alternate_task,
+                    phase="implementing",
+                )
+
+            self.assertIn("RECEIPT_BINDING_CONFLICT", str(raised.exception))
+            self.assertIn("branch", str(raised.exception))
+            self.assertEqual(
+                DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+                .read("candidate-1")["attached_branch_ref"],
+                "refs/heads/candidate",
+            )
+        finally:
+            if alternate.is_dir():
+                git(repo, "worktree", "remove", "--force", str(alternate))
             directory.cleanup()
 
     def test_finish_does_not_reopen_a_verified_terminal_receipt(self) -> None:

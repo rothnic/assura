@@ -127,6 +127,20 @@ def _tip_for_intent(repo_root: Path, intent: DeliveryIntent, data: dict[str, Any
     return _git_oid(repo_root, branch)
 
 
+def _attached_branch_ref(
+    repo_root: Path,
+    intent: DeliveryIntent,
+    data: dict[str, Any] | None = None,
+) -> str | None:
+    """Resolve the branch currently attaching a receipt to one worktree."""
+    branch: Any = intent.branch_ref
+    if branch is None and isinstance(data, dict):
+        branch = data.get("branch")
+    if branch is None:
+        branch = _current_branch(repo_root)
+    return _normalise_ref(branch) if isinstance(branch, str) and branch.strip() else None
+
+
 def _initial_receipt(
     repo_root: Path,
     intent: DeliveryIntent,
@@ -148,6 +162,7 @@ def _initial_receipt(
         "outcome": None,
         "closure": "open",
         "next_action": "Implement the candidate and record exact review/check/acceptance evidence.",
+        "attached_branch_ref": _attached_branch_ref(repo_root, intent, data),
         "observed_tip": _tip_for_intent(repo_root, intent, data),
         "registered_tip": _tip_for_intent(repo_root, intent, data),
         "registered_base_oid": _git_oid(repo_root, intent.base_ref),
@@ -162,8 +177,9 @@ def _validate_receipt_binding(
     repo_root: Path,
     intent: DeliveryIntent,
     receipt: dict[str, Any],
+    data: dict[str, Any] | None = None,
 ) -> None:
-    """Reject an existing receipt that belongs to another task or owner."""
+    """Reject an existing receipt bound to another task, owner, or branch."""
     if receipt.get("repository") != intent.repository:
         raise DeliveryValidationError(
             f"RECEIPT_BINDING_CONFLICT: receipt repository does not match {intent.repository}"
@@ -182,6 +198,21 @@ def _validate_receipt_binding(
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt task path does not match the delivery intent"
         )
+    expected_branch = _attached_branch_ref(repo_root, intent, data)
+    attached_branch = receipt.get("attached_branch_ref")
+    if expected_branch and not isinstance(attached_branch, str):
+        raise DeliveryValidationError(
+            "RECEIPT_BINDING_CONFLICT: receipt has no attached branch binding; "
+            "recover the candidate explicitly before reusing it"
+        )
+    if (
+        expected_branch
+        and isinstance(attached_branch, str)
+        and _branch_name(attached_branch) != _branch_name(expected_branch)
+    ):
+        raise DeliveryValidationError(
+            "RECEIPT_BINDING_CONFLICT: receipt branch does not match the delivery intent"
+        )
 
 
 def ensure_receipt(
@@ -194,7 +225,7 @@ def ensure_receipt(
     store = _receipt_store(repo_root)
     existing = _read_receipt(store, intent.candidate_id)
     if existing is not None:
-        _validate_receipt_binding(repo_root, intent, existing)
+        _validate_receipt_binding(repo_root, intent, existing, data)
         return existing
     try:
         return store.create(intent.candidate_id, _initial_receipt(repo_root, intent, data, phase))
@@ -202,7 +233,7 @@ def ensure_receipt(
         # Another linked worktree won the create race. Re-read its complete
         # receipt instead of turning an idempotent start/resume into failure.
         existing = store.read(intent.candidate_id)
-        _validate_receipt_binding(repo_root, intent, existing)
+        _validate_receipt_binding(repo_root, intent, existing, data)
         return existing
 
 
@@ -384,7 +415,7 @@ def register_task(
     intent = validate_delivery_mapping(delivery, task_json)
     existing_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
     if existing_receipt is not None:
-        _validate_receipt_binding(repo_root, intent, existing_receipt)
+        _validate_receipt_binding(repo_root, intent, existing_receipt, data)
     meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
     meta["delivery"] = delivery
     data["meta"] = meta

@@ -20,6 +20,15 @@ and protected by a kernel-held per-candidate lock. A stale writer fails rather
 than overwriting newer evidence. Audits never write receipts, task JSON, refs,
 or worktrees.
 
+An active receipt also records its `attached_branch_ref`, which is an observed
+worktree attachment rather than a replacement for the stable task intent. A
+new or resumed registration must use the same attached branch. A non-terminal
+receipt with no attachment or a different branch is held as a binding conflict
+and requires explicit recovery; it is never silently rebound by a second
+linked worktree. This prevents two branches from advancing one candidate and
+sharing one receipt. Pausing preserves the attachment and does not imply
+delivery.
+
 Each recorded evidence section is a typed `assura.delivery-evidence.v1`
 object. It names its source, exact repository, full candidate `head_oid`,
 bounded `evidence_ref`, and successful result. Review sections additionally
