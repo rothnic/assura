@@ -430,6 +430,12 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
         encoding="utf-8",
     )
     fake_gh.chmod(0o755)
+    # Windows does not execute extensionless scripts from PATH. Keep the
+    # same fixture command while providing its native command shim.
+    (fake_bin / "gh.cmd").write_text(
+        '@python "%~dp0gh" %*\n',
+        encoding="utf-8",
+    )
     exclude = repo / ".git" / "info" / "exclude"
     exclude.write_text(exclude.read_text(encoding="utf-8") + ".test-bin/\n", encoding="utf-8")
     return repo, base_oid, tip, directory

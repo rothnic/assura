@@ -149,11 +149,17 @@ class DeliveryStore:
         if os.name == "nt":
             import msvcrt
 
-            lock_file.seek(0)
-            if lock_file.read(1) != b"0":
+            try:
                 lock_file.seek(0)
-                lock_file.write(b"0")
-                lock_file.flush()
+                if lock_file.read(1) != b"0":
+                    lock_file.seek(0)
+                    lock_file.write(b"0")
+                    lock_file.flush()
+            except PermissionError as error:
+                # Windows byte-range locks can reject even the probe read
+                # while another process owns the byte. Surface the same
+                # recoverable condition as msvcrt.LK_NBLCK below.
+                raise ReceiptBusy("delivery receipt is busy") from error
             lock_file.seek(0)
             try:
                 msvcrt.locking(lock_file.fileno(), msvcrt.LK_NBLCK, 1)
