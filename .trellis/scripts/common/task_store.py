@@ -533,11 +533,10 @@ def _auto_commit_archive(
             file=sys.stderr,
         )
 
-    # Include the exact moved source in the check. It no longer exists on
-    # disk, so it is staged with update-index above rather than with git add.
-    # Omitting it would leave a source deletion staged while falsely reporting
-    # that there was no archive change to commit.
-    staged_paths = [*paths, source_relative] if source_was_tracked else paths
+    # Include the exact moved source in the check. It is already in ``paths``
+    # and safe_git_add uses -A, so its deletion is staged without widening the
+    # pathspec to the whole task tree.
+    staged_paths = paths
     rc, _, _ = run_git(
         ["diff", "--cached", "--quiet", "--", *staged_paths], cwd=repo_root
     )
