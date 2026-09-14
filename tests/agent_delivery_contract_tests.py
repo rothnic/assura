@@ -1378,6 +1378,23 @@ class DeliveryProjectionTests(unittest.TestCase):
         self.assertIn("statusCheckRollup", rows[0])
         self.assertEqual(run.call_count, 3)
 
+    def test_github_reader_resolves_cli_through_path(self) -> None:
+        completed = [
+            subprocess.CompletedProcess(
+                ["gh"],
+                0,
+                stdout=json.dumps([{"number": 14}]),
+                stderr="",
+            )
+            for _ in range(3)
+        ]
+        with mock.patch("common.delivery.shutil.which", return_value="/tmp/gh.cmd") as which:
+            with mock.patch("common.delivery.subprocess.run", side_effect=completed) as run:
+                SubprocessGithubReader().list_pull_requests("rothnic/assura")
+
+        which.assert_called_once_with("gh")
+        self.assertTrue(all(call.args[0][0] == "/tmp/gh.cmd" for call in run.call_args_list))
+
 
 class DeliveryLifecycleCommandTests(unittest.TestCase):
     def test_invalid_registration_does_not_mutate_task_json(self) -> None:
