@@ -792,7 +792,9 @@ def collect_inventory(
 # separate from intent and inventory collection.
 from .delivery_status import (  # noqa: E402,F401
     classify_candidate,
+    _github_checks_match_pr,
     _github_evidence_matches_pr,
+    _github_review_matches_pr,
     _pr_for_candidate,
     render_checkpoint,
     validate_evidence_mapping,

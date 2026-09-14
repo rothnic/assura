@@ -417,13 +417,14 @@ def cmd_archive(args: argparse.Namespace) -> int:
                 for child_name in task_children:
                     child_dir_path = find_task_by_name(child_name, tasks_dir)
                     if child_dir_path:
+                        child_json = child_dir_path / FILE_TASK_JSON
                         try:
-                            related_task_paths.append(
-                                child_dir_path.relative_to(repo_root).as_posix()
-                            )
+                            if child_json.is_file():
+                                related_task_paths.append(
+                                    child_json.relative_to(repo_root).as_posix()
+                                )
                         except ValueError:
                             pass
-                        child_json = child_dir_path / FILE_TASK_JSON
                         if child_json.is_file():
                             child_data = read_json(child_json)
                             if child_data:
@@ -500,13 +501,17 @@ def _auto_commit_archive(
     except ValueError:
         print("[WARN] Archive paths are outside the repository; skipping auto-commit.", file=sys.stderr)
         return
-    paths = [archive_relative, *(related_paths or [])]
+    source_files = run_git(
+        ["ls-files", "--", source_relative], cwd=repo_root
+    )[1].splitlines()
+    source_was_tracked = bool(source_files)
+    paths = [
+        archive_relative,
+        *([source_relative] if source_was_tracked else []),
+        *(related_paths or []),
+    ]
     # Preserve order while avoiding duplicate pathspecs.
     paths = list(dict.fromkeys(paths))
-
-    source_was_tracked = run_git(
-        ["ls-files", "--error-unmatch", "--", source_relative], cwd=repo_root
-    )[0] == 0
     if not paths:
         print("[OK] No task changes to commit.", file=sys.stderr)
         return
@@ -521,17 +526,6 @@ def _auto_commit_archive(
                 file=sys.stderr,
             )
         return
-
-    if source_was_tracked:
-        remove_rc, _, remove_err = run_git(
-            ["update-index", "--remove", "--ignore-unmatch", "--", source_relative],
-            cwd=repo_root,
-        )
-        if remove_rc != 0:
-            print(
-                f"[WARN] Could not stage the archived source deletion: {remove_err.strip() or 'unknown error'}",
-                file=sys.stderr,
-            )
 
     if used_force:
         print(
@@ -552,8 +546,7 @@ def _auto_commit_archive(
         return
 
     commit_msg = f"chore(task): archive {task_name}"
-    commit_paths = [*paths, source_relative] if source_was_tracked else paths
-    rc, _, err = run_git(["commit", "-m", commit_msg, "--", *commit_paths], cwd=repo_root)
+    rc, _, err = run_git(["commit", "-m", commit_msg, "--", *paths], cwd=repo_root)
     if rc == 0:
         print(f"[OK] Auto-committed: {commit_msg}", file=sys.stderr)
     else:

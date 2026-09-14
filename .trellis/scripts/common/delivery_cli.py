@@ -20,7 +20,9 @@ from .delivery import (
     _choose_base_ref,
     _DELIVERY_EVIDENCE_SCHEMA,
     _git_oid,
+    _github_checks_match_pr,
     _github_evidence_matches_pr,
+    _github_review_matches_pr,
     _pr_for_candidate,
     _worktree_matches_candidate,
     classify_candidate,
@@ -536,17 +538,19 @@ def cmd_delivery_record(args: argparse.Namespace) -> int:
             validate_evidence_mapping(
                 {section: value}, intent, tip, inventory.base_oid
             )
-            if (
-                isinstance(value, dict)
-                and value.get("source") == "github"
-                and not _github_evidence_matches_pr(
-                    value, _pr_for_candidate(intent, inventory, tip)
-                )
-            ):
-                return _error_code(
-                    f"evidence {section} is not bound to the current GitHub pull request",
-                    2,
-                )
+            if isinstance(value, dict) and value.get("source") == "github":
+                pull_request = _pr_for_candidate(intent, inventory, tip)
+                if section == "review":
+                    provider_verified = _github_review_matches_pr(value, pull_request)
+                elif section == "checks":
+                    provider_verified = _github_checks_match_pr(value, pull_request)
+                else:
+                    provider_verified = _github_evidence_matches_pr(value, pull_request)
+                if not provider_verified:
+                    return _error_code(
+                        f"evidence {section} is not verified by the current GitHub pull request",
+                        2,
+                    )
             for field in ("head_oid", "observed_tip"):
                 observed = value.get(field)
                 if observed is not None and observed != tip:
