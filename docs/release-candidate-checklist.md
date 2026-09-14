@@ -59,6 +59,9 @@ must come from `Cargo.toml`; do not copy a previous release tag into these steps
 | Extension API boundaries | `cargo xtask target-state` and `cargo xtask docs` | Public docs overclaim plugin APIs or omit supported/roadmap boundary wording. |
 | Project Intelligence smoke | `cargo test --test project_intelligence_release_hardening --quiet` | Supported local Project Intelligence schemas, docs, or starter workflow drift. |
 | Checksums | `cargo xtask release-smoke` and release workflow checksum steps | Archive checksum generation or verification fails. |
+| Durable version assertions | `python3 tests/release_process_contract_tests.py` and the tag workflow | Any durable matrix binary or extracted archive does not report the package version, or the tag/package versions differ. |
+| Release receipt | `assura.release-receipt.v1` workflow evidence artifact | Tag object/commit, workflow run, all five archive hashes, checksum state, or installed-version proof is missing. |
+| Safe publication retry | `scripts/publish-release-assets.py` contract tests and workflow output | A matching asset is re-uploaded, or an unverified/conflicting asset would be overwritten. |
 | Evidence | `cargo xtask evidence` | Goal status, review evidence, or stale command-surface checks fail. |
 | Whitespace | `git diff --check` | Whitespace errors. |
 
@@ -109,7 +112,8 @@ maintainer-owned exception recorded in the PR.
    - `assura-windows-amd64.zip`
 6. Confirm each archive is below `ASSURA_MAX_RELEASE_ARCHIVE_BYTES`
    unless the release PR explicitly approved a new budget.
-7. Confirm the workflow generated and verified checksums before upload.
+7. Confirm the workflow generated and verified checksums before upload and
+   wrote the durable release receipt.
 
 ## Post-Tag Verification
 
@@ -126,8 +130,10 @@ release assets, and their `.sha256` checksum files.
 
 ## Rollback Or Reissue
 
-- If an asset is missing or corrupt, rerun the release workflow or upload the
-  corrected asset with `gh release upload --clobber`.
+- If an asset is missing, rerun the release workflow. If an existing asset is
+  corrupt or conflicts with the candidate hash, stop and investigate; do not
+  overwrite it implicitly. Publish a corrected version under a new authorized
+  tag after the release decision is recorded.
 - If a release note is wrong but binaries are valid, update the release notes
   in a follow-up docs PR and edit the GitHub release body.
 - If a binary has a functional blocker, mark the release as prerelease, open a

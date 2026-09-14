@@ -17,6 +17,10 @@ jobs:
   validate-release-contract:
     name: Validate Release Contract
     runs-on: ubuntu-latest
+    outputs:
+      package_version: ${{ steps.release-source.outputs.package_version }}
+      tag_oid: ${{ steps.release-source.outputs.tag_oid }}
+      commit_oid: ${{ steps.release-source.outputs.commit_oid }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -25,11 +29,21 @@ jobs:
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Match tag to package version
+      - name: Match tag to package version and bind source
+        id: release-source
         shell: bash
         run: |
           package_version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "assura") | .version')"
           test "v${package_version}" = "${GITHUB_REF_NAME}"
+          tag_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}")"
+          commit_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}^{commit}")"
+          test -n "${tag_oid}"
+          test -n "${commit_oid}"
+          {
+            echo "package_version=${package_version}"
+            echo "tag_oid=${tag_oid}"
+            echo "commit_oid=${commit_oid}"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Validate marketed release claims
         run: cargo xtask website-demo-data --check --released
@@ -43,6 +57,8 @@ jobs:
     name: Build Release Assets
     runs-on: ${{ matrix.os }}
     needs: validate-release-contract
+    env:
+      ASSURA_RELEASE_VERSION: ${{ needs.validate-release-contract.outputs.package_version }}
     strategy:
       matrix:
         include:
@@ -102,12 +118,38 @@ jobs:
           fi
           cargo build --release --target ${{ matrix.target }} --bin assura-full
 
+      - name: Verify release binaries (Unix)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          python3 scripts/release-contract.py assert-version \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --binary "target/${{ matrix.target }}/release/assura" \
+            --binary "target/${{ matrix.target }}/release/assura-full"
+
+      - name: Verify release binaries (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          python scripts/release-contract.py assert-version `
+            --version $env:ASSURA_RELEASE_VERSION `
+            --binary "target/${{ matrix.target }}/release/assura.exe" `
+            --binary "target/${{ matrix.target }}/release/assura-full.exe"
+
       - name: Package binary (Unix)
         if: matrix.os != 'windows-latest'
         run: |
           mkdir -p target/release-assets/${{ matrix.asset_name }}
           cp target/${{ matrix.target }}/release/assura target/${{ matrix.target }}/release/assura-full target/release-assets/${{ matrix.asset_name }}/
           tar -C target/release-assets/${{ matrix.asset_name }} -czf target/${{ matrix.archive_name }} assura assura-full
+
+      - name: Verify packaged archive (Unix)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          python3 scripts/release-contract.py assert-archive \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --archive "target/${{ matrix.archive_name }}"
 
       - name: Package binary (Windows)
         if: matrix.os == 'windows-latest'
@@ -117,6 +159,34 @@ jobs:
           Copy-Item target/${{ matrix.target }}/release/assura.exe target/release-assets/${{ matrix.asset_name }}/assura.exe
           Copy-Item target/${{ matrix.target }}/release/assura-full.exe target/release-assets/${{ matrix.asset_name }}/assura-full.exe
           Compress-Archive -Path target/release-assets/${{ matrix.asset_name }}/* -DestinationPath target/${{ matrix.archive_name }}
+
+      - name: Verify packaged archive (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          python scripts/release-contract.py assert-archive `
+            --version $env:ASSURA_RELEASE_VERSION `
+            --archive "target/${{ matrix.archive_name }}"
+
+      - name: Write release build evidence (Unix)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          python3 scripts/release-contract.py build-metadata \
+            --asset-name "${{ matrix.asset_name }}" \
+            --archive-name "${{ matrix.archive_name }}" \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --output "target/${{ matrix.asset_name }}.release.json"
+
+      - name: Write release build evidence (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          python scripts/release-contract.py build-metadata `
+            --asset-name "${{ matrix.asset_name }}" `
+            --archive-name "${{ matrix.archive_name }}" `
+            --version $env:ASSURA_RELEASE_VERSION `
+            --output "target/${{ matrix.asset_name }}.release.json"
 
       - name: Enforce release archive size (Unix)
         if: matrix.os != 'windows-latest'
@@ -169,15 +239,20 @@ jobs:
           path: |
             target/${{ matrix.archive_name }}
             target/${{ matrix.archive_name }}.sha256
+            target/${{ matrix.asset_name }}.release.json
           if-no-files-found: error
           retention-days: 7
 
   publish-release:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
-    needs: build-release
+    needs: [validate-release-contract, build-release]
+    env:
+      ASSURA_RELEASE_VERSION: ${{ needs.validate-release-contract.outputs.package_version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Download release archive artifacts
         uses: actions/download-artifact@v4
@@ -185,17 +260,50 @@ jobs:
           path: target/release-upload
           merge-multiple: true
 
-      - name: Create GitHub release
+      - name: Publish verified or missing assets safely
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          if gh release view "${{ github.ref_name }}" --repo "${{ github.repository }}" >/dev/null 2>&1; then
-            gh release upload "${{ github.ref_name }}" target/release-upload/* \
-              --repo "${{ github.repository }}" \
-              --clobber
-          else
-            gh release create "${{ github.ref_name }}" target/release-upload/* \
-              --repo "${{ github.repository }}" \
-              --title "Release ${{ github.ref_name }}" \
-              --notes "Prebuilt Assura CLI archives for ${{ github.ref_name }}."
-          fi
+          python3 scripts/publish-release-assets.py \
+            --repository "${{ github.repository }}" \
+            --tag "${{ github.ref_name }}" \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --assets-dir target/release-upload \
+            --output target/release-publish.json
+
+      - name: Verify installed release version
+        shell: bash
+        run: |
+          mkdir -p target/release-install
+          tar -xzf target/release-upload/assura-linux-amd64.tar.gz -C target/release-install
+          python3 scripts/release-contract.py assert-version \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --binary target/release-install/assura \
+            --binary target/release-install/assura-full
+
+      - name: Write durable release receipt
+        shell: bash
+        run: |
+          tag_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}")"
+          commit_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}^{commit}")"
+          python3 scripts/release-contract.py receipt \
+            --repository "${{ github.repository }}" \
+            --version "$ASSURA_RELEASE_VERSION" \
+            --tag "${{ github.ref_name }}" \
+            --tag-oid "$tag_oid" \
+            --commit-oid "$commit_oid" \
+            --workflow-run-id "${{ github.run_id }}" \
+            --assets-dir target/release-upload \
+            --install-dir target/release-install \
+            --publish-json target/release-publish.json \
+            --output target/release-receipt.json
+
+      - name: Upload durable release evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: assura-release-evidence-${{ github.ref_name }}
+          path: |
+            target/release-receipt.json
+            target/release-publish.json
+          if-no-files-found: error
+          retention-days: 90
