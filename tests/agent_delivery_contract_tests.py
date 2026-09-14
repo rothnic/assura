@@ -1676,6 +1676,20 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
 
             self.assertEqual(recorded.returncode, 2)
             self.assertIn("RECEIPT_BINDING_CONFLICT", recorded.stderr)
+
+            closed = task_cli(
+                alternate,
+                "delivery",
+                "close",
+                task_path,
+                "--outcome",
+                "rejected",
+                "--reason",
+                "must not close from a second branch",
+            )
+
+            self.assertEqual(closed.returncode, 2)
+            self.assertIn("RECEIPT_BINDING_CONFLICT", closed.stderr)
             self.assertEqual(
                 DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
                 .read("candidate-1")["generation"],
