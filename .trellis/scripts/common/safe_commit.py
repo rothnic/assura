@@ -163,14 +163,17 @@ def safe_git_add(
     if not paths:
         return True, False, ""
 
-    rc, _, err = run_git(["add", "--", *paths], cwd=repo_root)
+    # -A is required for a narrowly scoped archive move: the source task
+    # directory has disappeared and must be staged as a deletion. Pathspecs
+    # remain explicit, so this cannot sweep unrelated staged or dirty paths.
+    rc, _, err = run_git(["add", "-A", "--", *paths], cwd=repo_root)
     if rc == 0:
         return True, False, ""
 
     if not _stderr_indicates_ignored(err):
         return False, False, err
 
-    rc2, _, err2 = run_git(["add", "-f", "--", *paths], cwd=repo_root)
+    rc2, _, err2 = run_git(["add", "-A", "-f", "--", *paths], cwd=repo_root)
     if rc2 == 0:
         return True, True, err2 or err
     return False, True, err2 or err

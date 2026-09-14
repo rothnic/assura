@@ -31,6 +31,7 @@ REQUIRED_REFERENCES = (
     "references/source-pointer-lifecycle.md",
     "references/validation-routing.md",
     "scripts/audit-ledger.sh",
+    "scripts/audit-delivery.py",
 )
 REQUIRED_TASK_FILES = (
     "orchestration-plan.md",
