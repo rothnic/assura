@@ -581,7 +581,7 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
         if t.assignee == developer:
             done = sum(
                 1 for c in t.children
-                if all_statuses.get(c) in ("outcome:delivered", "delivered")
+                if all_statuses.get(c) == "outcome:delivered"
             )
             dispositioned = sum(
                 1 for c in t.children
@@ -600,7 +600,6 @@ def get_context_record_json(repo_root: Path | None = None) -> dict:
                     "outcome:superseded",
                     "outcome:rejected",
                     "outcome:cancelled",
-                    "delivered",
                 }
             )
             my_tasks.append({

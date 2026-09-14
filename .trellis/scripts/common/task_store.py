@@ -44,7 +44,6 @@ from .paths import (
 )
 from .safe_commit import (
     print_gitignore_warning,
-    safe_archive_paths_to_add,
     safe_git_add,
 )
 from .task_utils import (
@@ -321,6 +320,25 @@ def cmd_create(args: argparse.Namespace) -> int:
 # Command: archive
 # =============================================================================
 
+
+def _find_archived_task_dir(task_name: str, tasks_dir: Path) -> Path | None:
+    """Find an archive destination for retrying an interrupted archive."""
+    archive_root = tasks_dir / DIR_ARCHIVE
+    requested_name = Path(task_name).name
+    if not requested_name or not archive_root.is_dir():
+        return None
+    matches: list[Path] = []
+    for task_json in sorted(archive_root.rglob(FILE_TASK_JSON)):
+        if task_json.parent.name != requested_name:
+            continue
+        try:
+            data = read_json(task_json)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if isinstance(data, dict):
+            matches.append(task_json.parent)
+    return matches[0] if len(matches) == 1 else None
+
 def cmd_archive(args: argparse.Namespace) -> int:
     """Archive completed task."""
     repo_root = get_repo_root()
@@ -336,6 +354,27 @@ def cmd_archive(args: argparse.Namespace) -> int:
     task_dir = resolve_task_dir(task_name, repo_root)
 
     if not task_dir or not task_dir.is_dir():
+        # A previous run may have moved the task successfully and failed only
+        # while closing its receipt. Make that state resumable instead of
+        # reporting a missing task and leaving an apparently half-complete
+        # delivery operation stranded.
+        archived_dir = _find_archived_task_dir(task_name, tasks_dir)
+        if archived_dir is not None:
+            from .delivery_cli import recover_archive_closure
+
+            recovered, recovery_error = recover_archive_closure(repo_root, archived_dir)
+            if recovered:
+                print(
+                    colored(
+                        f"Archive already moved; delivery closure verified: {archived_dir}",
+                        Colors.GREEN,
+                    ),
+                    file=sys.stderr,
+                )
+                print(archived_dir.relative_to(repo_root).as_posix())
+                return 0
+            print(colored(f"Archive recovery blocked: {recovery_error}", Colors.RED), file=sys.stderr)
+            return 1
         print(colored(f"Error: Task not found: {task_name}", Colors.RED), file=sys.stderr)
         print("Active tasks:", file=sys.stderr)
         # Import lazily to avoid circular dependency
@@ -369,8 +408,8 @@ def cmd_archive(args: argparse.Namespace) -> int:
 
             # Handle subtask relationships on archive.
             # Keep this task in its parent's children list so progress
-            # counters (children_progress) stay consistent — children
-            # missing from the active set are treated as completed.
+            # counters (children_progress) can resolve the archived receipt.
+            # A missing or legacy child remains unknown, never implicitly done.
             task_children = data.get("children", [])
 
             # If this is a parent, clear parent field in all children
@@ -415,6 +454,7 @@ def cmd_archive(args: argparse.Namespace) -> int:
                     ),
                     file=sys.stderr,
                 )
+                return 1
 
         # Auto-commit unless --no-commit
         if not getattr(args, "no_commit", False):
@@ -446,10 +486,11 @@ def _auto_commit_archive(
 ) -> None:
     """Stage Trellis-owned task paths and commit after archive.
 
-    Only stages specific subpaths (the archive subtree and active task dirs),
-    never the whole `.trellis/` tree. If `.gitignore` excludes `.trellis/`,
-    falls back to `git add -f <specific>` and emits a warning that explicitly
-    forbids `git add -f .trellis/` (which would fan out to caches/backups).
+    Stages only the selected archive move and explicitly related task paths,
+    never the whole `.trellis/` tree. If `.gitignore` excludes a selected
+    path, it falls back to `git add -f <specific>` and emits a warning that
+    explicitly forbids `git add -f .trellis/` (which would fan out to
+    caches/backups).
     """
     source_relative: str
     archive_relative: str
@@ -498,8 +539,13 @@ def _auto_commit_archive(
             file=sys.stderr,
         )
 
+    # Include the exact moved source in the check. It no longer exists on
+    # disk, so it is staged with update-index above rather than with git add.
+    # Omitting it would leave a source deletion staged while falsely reporting
+    # that there was no archive change to commit.
+    staged_paths = [*paths, source_relative] if source_was_tracked else paths
     rc, _, _ = run_git(
-        ["diff", "--cached", "--quiet", "--", *paths], cwd=repo_root
+        ["diff", "--cached", "--quiet", "--", *staged_paths], cwd=repo_root
     )
     if rc == 0:
         print("[OK] No task changes to commit.", file=sys.stderr)

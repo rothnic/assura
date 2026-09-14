@@ -14,6 +14,7 @@ from typing import Any
 
 from common.active_task import resolve_active_task, resolve_task_ref
 from common.delivery import DeliveryValidationError, delivery_store_root, load_delivery_intent
+from common.delivery_cli import pending_owned_candidate
 from common.delivery_store import DeliveryStore, DeliveryStoreError
 from common.git import run_git
 from common.paths import get_repo_root
@@ -100,6 +101,7 @@ def _active_task_state(
         "outcome": None,
         "phase": None,
         "closure": None,
+        "pending_owned_candidate": None,
     }
     if resolved and task:
         try:
@@ -120,8 +122,16 @@ def _active_task_state(
                 })
             else:
                 delivery["state"] = "receipt_missing"
-        except DeliveryValidationError:
-            delivery["state"] = "legacy_unclassified"
+            delivery["pending_owned_candidate"] = pending_owned_candidate(
+                repo_root, intent.owner, intent.candidate_id
+            )
+        except DeliveryValidationError as error:
+            meta = task.raw.get("meta") if isinstance(task.raw, dict) else None
+            if isinstance(meta, dict) and "delivery" in meta:
+                delivery["state"] = "invalid"
+                delivery["error"] = str(error)
+            else:
+                delivery["state"] = "legacy_unclassified"
         except (ValueError, OSError, DeliveryStoreError) as error:
             delivery["state"] = "invalid"
             delivery["error"] = str(error)
@@ -205,6 +215,14 @@ def _derive_verdict(state: dict[str, Any]) -> dict[str, Any]:
         workflow_state = "delivery_receipt_missing"
         needs.append("Create the resumable delivery receipt before changing scope.")
         next_action = "Resume through `task.py start <task>` or explicitly register the delivery candidate."
+    elif task["delivery"].get("pending_owned_candidate"):
+        pending = task["delivery"]["pending_owned_candidate"]
+        ready = False
+        workflow_state = "delivery_scope_pending"
+        needs.append(
+            f"Finish or explicitly disposition same-owner candidate {pending['candidate_id']} before starting another lane."
+        )
+        next_action = str(pending.get("next_action") or "Resume the pending delivery candidate.")
     elif task["status"] == "planning":
         workflow_state = "planning"
         if not task["artifacts"]["prd"]:

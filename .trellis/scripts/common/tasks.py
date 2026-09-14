@@ -87,8 +87,6 @@ def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
     """
     statuses = {t.dir_name: t.status for t in iter_active_tasks(tasks_dir)}
     archive_dir = tasks_dir / "archive"
-    if not archive_dir.is_dir():
-        return statuses
 
     # Archived task folders remain useful provenance. Resolve their explicit
     # delivery receipt when available; an old completed flag without a receipt
@@ -100,6 +98,24 @@ def get_all_statuses(tasks_dir: Path) -> dict[str, str]:
         store = DeliveryStore(delivery_store_root(tasks_dir.parent.parent))
     except Exception:
         store = None
+
+    # A verified terminal receipt is authoritative for both active and
+    # archived task records. An active task can remain in ``in_progress``
+    # while its delivery receipt is waiting only for optional physical
+    # cleanup; it must still count as an explicit outcome for parent progress.
+    if store is not None:
+        for task in iter_active_tasks(tasks_dir):
+            try:
+                intent = load_delivery_intent(task.directory / FILE_TASK_JSON)
+                receipt = store.read(intent.candidate_id)
+            except (DeliveryStoreError, OSError, ValueError):
+                continue
+            outcome = receipt.get("outcome")
+            if outcome in {"delivered", "superseded", "rejected", "cancelled"} and receipt.get("closure") in {"verified", "closed"}:
+                statuses[task.dir_name] = f"outcome:{outcome}"
+
+    if not archive_dir.is_dir():
+        return statuses
 
     for task_json in sorted(archive_dir.rglob("task.json")):
         task_name = task_json.parent.name
@@ -135,10 +151,7 @@ def children_progress(
     """
     if not children:
         return ""
-    delivered = sum(
-        1 for c in children
-        if all_statuses.get(c) in ("outcome:delivered", "delivered")
-    )
+    delivered = sum(1 for c in children if all_statuses.get(c) == "outcome:delivered")
     dispositioned = sum(
         1 for c in children
         if all_statuses.get(c) in {"outcome:superseded", "outcome:rejected", "outcome:cancelled"}
@@ -148,7 +161,6 @@ def children_progress(
         "outcome:superseded",
         "outcome:rejected",
         "outcome:cancelled",
-        "delivered",
     }
     unknown = sum(1 for c in children if all_statuses.get(c) not in known_outcomes)
     if unknown or dispositioned:
