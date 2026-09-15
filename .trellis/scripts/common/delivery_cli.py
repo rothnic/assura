@@ -180,6 +180,7 @@ def _validate_receipt_binding(
     receipt: dict[str, Any],
     data: dict[str, Any] | None = None,
     allow_base_checkout: bool = False,
+    allow_missing_attachment: bool = False,
 ) -> None:
     """Reject an existing receipt bound to another task, owner, or branch.
 
@@ -208,30 +209,57 @@ def _validate_receipt_binding(
         )
     expected_branch = _attached_branch_ref(repo_root, intent, data)
     attached_branch = receipt.get("attached_branch_ref")
-    terminal_receipt = (
-        receipt.get("outcome") in _TERMINAL_OUTCOMES
-        and receipt.get("closure") in {"verified", "closed"}
-    )
+    terminal_receipt = receipt.get("outcome") in _TERMINAL_OUTCOMES and receipt.get("closure") in {"verified", "closed"}
     base_checkout = (
         allow_base_checkout
         and expected_branch
         and intent.base_ref
         and _branch_name(expected_branch) == _branch_name(intent.base_ref)
     )
-    if expected_branch and not isinstance(attached_branch, str) and not terminal_receipt:
+    has_attachment = isinstance(attached_branch, str) and bool(attached_branch.strip())
+    if expected_branch and not has_attachment and not terminal_receipt and not allow_missing_attachment:
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt has no attached branch binding; "
             "recover the candidate explicitly before reusing it"
         )
     if (
         expected_branch
-        and isinstance(attached_branch, str)
+        and has_attachment
         and _branch_name(attached_branch) != _branch_name(expected_branch)
         and not base_checkout
     ):
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt branch does not match the delivery intent"
         )
+
+
+def _repair_missing_receipt_binding(
+    repo_root: Path,
+    intent: DeliveryIntent,
+    data: dict[str, Any],
+    receipt: dict[str, Any],
+) -> dict[str, Any]:
+    """Recover a legacy receipt from its declared live branch using CAS."""
+    attached_branch = receipt.get("attached_branch_ref")
+    has_attachment = isinstance(attached_branch, str) and bool(attached_branch.strip())
+    _validate_receipt_binding(
+        repo_root, intent, receipt, data, allow_missing_attachment=True
+    )
+    terminal_receipt = (
+        receipt.get("outcome") in _TERMINAL_OUTCOMES
+        and receipt.get("closure") in {"verified", "closed"}
+    )
+    if has_attachment or terminal_receipt:
+        return receipt
+
+    current_ref = _normalise_ref(_current_branch(repo_root))
+    declared_ref = _normalise_ref(intent.branch_ref) or _normalise_ref(data.get("branch"))
+    if current_ref is None or declared_ref is None:
+        raise DeliveryValidationError("RECEIPT_BINDING_CONFLICT: explicit recovery requires a live checkout of the declared candidate branch")
+    if _branch_name(current_ref) != _branch_name(declared_ref):
+        raise DeliveryValidationError(f"current branch {_branch_name(current_ref)!r} does not match declared candidate branch {_branch_name(declared_ref)!r}")
+
+    return _receipt_store(repo_root).update(intent.candidate_id, int(receipt["generation"]), {"attached_branch_ref": current_ref})
 
 
 def ensure_receipt(
@@ -409,6 +437,9 @@ def register_task(
                 if not write_json(task_json, data):
                     raise DeliveryValidationError(f"cannot write delivery intent: {task_json}")
                 intent = load_delivery_intent(task_json)
+        existing_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
+        if existing_receipt is not None:
+            _repair_missing_receipt_binding(repo_root, intent, data, existing_receipt)
         ensure_receipt(repo_root, intent, data)
         return intent
 
@@ -434,7 +465,7 @@ def register_task(
     intent = validate_delivery_mapping(delivery, task_json)
     existing_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
     if existing_receipt is not None:
-        _validate_receipt_binding(repo_root, intent, existing_receipt, data)
+        _repair_missing_receipt_binding(repo_root, intent, data, existing_receipt)
     meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
     meta["delivery"] = delivery
     data["meta"] = meta
