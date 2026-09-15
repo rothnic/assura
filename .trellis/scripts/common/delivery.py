@@ -277,6 +277,18 @@ def validate_delivery_mapping(
     if _SAFE_ID.fullmatch(candidate_id) is None:
         raise DeliveryValidationError(f"unsafe delivery candidate id: {candidate_id!r}")
 
+    base_ref = _required_string(delivery, "base_ref")
+    branch_ref = _optional_string(delivery, "branch_ref")
+    if (
+        (base_ref.startswith("refs/remotes/") or base_ref.startswith("origin/"))
+        and _branch_name(base_ref) == "HEAD"
+    ):
+        raise DeliveryValidationError(
+            "delivery base_ref must name an explicit remote branch, not a remote HEAD alias"
+        )
+    if branch_ref and _branch_name(branch_ref) == _branch_name(base_ref):
+        raise DeliveryValidationError("delivery branch_ref must differ from base_ref")
+
     version = _optional_string(delivery, "version")
     if version is not None and _VERSION.fullmatch(version) is None:
         raise DeliveryValidationError(f"invalid delivery version: {version!r}")
@@ -309,8 +321,8 @@ def validate_delivery_mapping(
         candidate_id=candidate_id,
         owner=_required_string(delivery, "owner"),
         repository=_required_string(delivery, "repository"),
-        base_ref=_required_string(delivery, "base_ref"),
-        branch_ref=_optional_string(delivery, "branch_ref"),
+        base_ref=base_ref,
+        branch_ref=branch_ref,
         acceptance_ref=_optional_string(delivery, "acceptance_ref"),
         authority_ref=_optional_string(delivery, "authority_ref"),
         version=version,
@@ -395,11 +407,26 @@ def _choose_base_ref(repo_root: Path) -> str | None:
     return None
 
 
+def _normalise_ref(ref: str | None) -> str | None:
+    if not ref:
+        return None
+    value = ref.strip()
+    if value.startswith("refs/"):
+        return value
+    if value.startswith("origin/"):
+        return f"refs/remotes/{value}"
+    return f"refs/heads/{value}"
+
+
 def _branch_name(ref: str | None) -> str | None:
     if not ref:
         return None
     value = ref.strip()
-    for prefix in ("refs/remotes/origin/", "refs/heads/", "origin/"):
+    if value.startswith("refs/remotes/"):
+        remote_branch = value[len("refs/remotes/") :]
+        _, separator, branch = remote_branch.partition("/")
+        return branch if separator else value
+    for prefix in ("refs/heads/", "origin/"):
         if value.startswith(prefix):
             return value[len(prefix):]
     return value

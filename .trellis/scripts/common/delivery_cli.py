@@ -23,6 +23,7 @@ from .delivery import (
     _github_checks_match_pr,
     _github_evidence_matches_pr,
     _github_review_matches_pr,
+    _normalise_ref,
     _pr_for_candidate,
     _worktree_matches_candidate,
     classify_candidate,
@@ -88,17 +89,6 @@ def _task_json(args: argparse.Namespace, repo_root: Path) -> Path:
 def _current_branch(repo_root: Path) -> str | None:
     code, stdout, _ = run_git(["branch", "--show-current"], cwd=repo_root)
     return stdout.strip() if code == 0 and stdout.strip() else None
-
-
-def _normalise_ref(ref: str | None) -> str | None:
-    if not ref:
-        return None
-    value = ref.strip()
-    if value.startswith("refs/"):
-        return value
-    if value.startswith("origin/"):
-        return f"refs/remotes/{value}"
-    return f"refs/heads/{value}"
 
 
 def _intent_task_data(task_json: Path) -> tuple[dict[str, Any], DeliveryIntent | None]:
@@ -256,6 +246,8 @@ def _repair_missing_receipt_binding(
     declared_ref = _normalise_ref(intent.branch_ref) or _normalise_ref(data.get("branch"))
     if current_ref is None or declared_ref is None:
         raise DeliveryValidationError("RECEIPT_BINDING_CONFLICT: explicit recovery requires a live checkout of the declared candidate branch")
+    if _branch_name(current_ref) == _branch_name(intent.base_ref):
+        raise DeliveryValidationError("RECEIPT_BINDING_CONFLICT: explicit recovery cannot use the integration base branch")
     if _branch_name(current_ref) != _branch_name(declared_ref):
         raise DeliveryValidationError(f"current branch {_branch_name(current_ref)!r} does not match declared candidate branch {_branch_name(declared_ref)!r}")
 
@@ -422,6 +414,7 @@ def register_task(
         if existing.get("candidate_id") != candidate_id or existing.get("owner") != owner:
             raise DeliveryValidationError("task already has a different delivery owner or candidate")
         intent = load_delivery_intent(task_json)
+        updated_task = False
         if authority_ref is not None:
             if intent.authority_ref and intent.authority_ref != authority_ref:
                 raise DeliveryValidationError(
@@ -430,17 +423,17 @@ def register_task(
             if not intent.authority_ref:
                 updated_delivery = dict(existing)
                 updated_delivery["authority_ref"] = authority_ref
-                validate_delivery_mapping(updated_delivery, task_json)
+                intent = validate_delivery_mapping(updated_delivery, task_json)
                 meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
                 meta["delivery"] = updated_delivery
                 data["meta"] = meta
-                if not write_json(task_json, data):
-                    raise DeliveryValidationError(f"cannot write delivery intent: {task_json}")
-                intent = load_delivery_intent(task_json)
+                updated_task = True
         existing_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
         if existing_receipt is not None:
             _repair_missing_receipt_binding(repo_root, intent, data, existing_receipt)
         ensure_receipt(repo_root, intent, data)
+        if updated_task and not write_json(task_json, data):
+            raise DeliveryValidationError(f"cannot write delivery intent: {task_json}")
         return intent
 
     chosen_base = _normalise_ref(base_ref) or _normalise_ref(data.get("base_branch")) or _normalise_ref(_choose_base_ref(repo_root))
@@ -469,9 +462,9 @@ def register_task(
     meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
     meta["delivery"] = delivery
     data["meta"] = meta
+    ensure_receipt(repo_root, intent, data)
     if not write_json(task_json, data):
         raise DeliveryValidationError(f"cannot write delivery intent: {task_json}")
-    ensure_receipt(repo_root, intent, data)
     return intent
 
 
