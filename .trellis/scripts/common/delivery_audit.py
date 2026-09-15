@@ -100,6 +100,8 @@ def project_audit(
     invalid_intents: list[dict[str, Any]] = []
     bound_branches: set[str] = set()
     owned_worktree_paths: set[str] = set()
+    execution_bindings: list[dict[str, Any]] = []
+    execution_worktree_paths: set[str] = set()
     known_candidate_ids: set[str] = set()
     candidate_paths: dict[str, list[str]] = {}
     for task in inventory.tasks:
@@ -133,6 +135,59 @@ def project_audit(
                     path = worktree.get("path")
                     if isinstance(path, str) and path:
                         owned_worktree_paths.add(path)
+
+            execution_branches = _execution_branches(task)
+            dirty_execution_paths: list[str] = []
+            for branch in execution_branches:
+                bound_branches.add(branch)
+                binding = {
+                    "branch": branch,
+                    "branch_ref": f"refs/heads/{branch}",
+                    "candidate_id": intent.candidate_id,
+                    "owner": status.owner,
+                    "task_path": task["task_path"],
+                    "worktrees": [],
+                }
+                for worktree in inventory.worktrees:
+                    if _branch_name(worktree.get("branch_ref")) != branch:
+                        continue
+                    path = worktree.get("path")
+                    worktree_row = {
+                        **worktree,
+                        "scope": "candidate",
+                        "owner": status.owner,
+                        "candidate_id": intent.candidate_id,
+                        "evidence_ref": path,
+                        "disposition": "held" if worktree.get("dirty") is True else "bound",
+                        "next_action": (
+                            "Preserve and resolve the dirty execution worktree before closure."
+                            if worktree.get("dirty") is True
+                            else "Retain this clean execution worktree as provenance for the candidate."
+                        ),
+                    }
+                    binding["worktrees"].append(worktree_row)
+                    if isinstance(path, str) and path:
+                        execution_worktree_paths.add(path)
+                        if worktree.get("dirty") is True:
+                            dirty_execution_paths.append(path)
+                        else:
+                            owned_worktree_paths.add(path)
+                execution_bindings.append(binding)
+            if dirty_execution_paths:
+                issue = DeliveryIssue(
+                    "OWNED_EXECUTION_WORKTREE_DIRTY",
+                    "execution worktree has uncommitted changes: "
+                    + ", ".join(sorted(dirty_execution_paths)),
+                    intent.candidate_id,
+                    dirty_execution_paths[0],
+                    "Preserve and resolve the dirty execution worktree before closure.",
+                )
+                status = replace(
+                    status,
+                    dirty=True,
+                    next_action=issue.next_action,
+                    issues=(*status.issues, issue),
+                )
             if owner is None or status.owner == owner:
                 statuses.append(status)
         except (DeliveryValidationError, DeliveryStoreError) as error:
@@ -214,6 +269,8 @@ def project_audit(
     for item in inventory.worktrees:
         if item.get("path") in owned_worktree_paths:
             continue
+        if item.get("path") in execution_worktree_paths:
+            continue
         branch = _branch_name(item.get("branch_ref"))
         if branch and branch in bound_branches:
             continue
@@ -285,6 +342,10 @@ def project_audit(
         "coverage": inventory.coverage,
         "inventory": inventory.as_dict(),
         "candidates": [status.as_dict() for status in sorted(statuses, key=lambda item: item.candidate_id)],
+        "execution_bindings": sorted(
+            execution_bindings,
+            key=lambda item: (str(item.get("candidate_id") or ""), str(item.get("branch") or "")),
+        ),
         "legacy": legacy,
         "invalid_intents": sorted(invalid_intents, key=lambda item: item["candidate_id"]),
         "unowned_refs": sorted(unowned_refs, key=lambda item: item["name"]),
@@ -294,6 +355,22 @@ def project_audit(
         "issues": [issue.as_dict() for issue in inventory.issues],
     }
     return report, sorted(statuses, key=lambda item: item.candidate_id)
+
+
+def _execution_branches(task: dict[str, Any]) -> tuple[str, ...]:
+    """Return valid task-level execution branches in stable order."""
+    meta = task.get("meta")
+    values = meta.get("execution_branches") if isinstance(meta, dict) else None
+    if not isinstance(values, (list, tuple)):
+        return ()
+    branches: list[str] = []
+    for value in values:
+        if not isinstance(value, str) or not value.strip():
+            continue
+        branch = _branch_name(value.strip())
+        if branch and branch not in branches:
+            branches.append(branch)
+    return tuple(branches)
 
 
 def strict_audit_pass(
