@@ -165,6 +165,40 @@ class DeliveryIntentTests(unittest.TestCase):
             ):
                 load_delivery_intent(task_json)
 
+    def test_rejects_symbolic_remote_head_as_candidate_branch(self) -> None:
+        for branch_ref in (
+            "refs/remotes/origin/HEAD",
+            "refs/remotes/upstream/HEAD",
+            "origin/HEAD",
+        ):
+            with self.subTest(branch_ref=branch_ref):
+                with tempfile.TemporaryDirectory() as directory:
+                    task_json = Path(directory) / "task.json"
+                    task_json.write_text(
+                        json.dumps(
+                            {
+                                "meta": {
+                                    "delivery": {
+                                        "schema_version": 1,
+                                        "kind": "integration",
+                                        "candidate_id": "candidate-1",
+                                        "owner": "nroth",
+                                        "repository": "rothnic/assura",
+                                        "base_ref": "refs/heads/master",
+                                        "branch_ref": branch_ref,
+                                    }
+                                }
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    with self.assertRaisesRegex(
+                        DeliveryValidationError,
+                        "branch_ref must name an explicit remote branch",
+                    ):
+                        load_delivery_intent(task_json)
+
     def test_rejects_unsafe_candidate_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             task_json = Path(directory) / "task.json"

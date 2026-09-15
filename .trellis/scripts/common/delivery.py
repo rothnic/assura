@@ -279,12 +279,13 @@ def validate_delivery_mapping(
 
     base_ref = _required_string(delivery, "base_ref")
     branch_ref = _optional_string(delivery, "branch_ref")
-    if (
-        (base_ref.startswith("refs/remotes/") or base_ref.startswith("origin/"))
-        and _branch_name(base_ref) == "HEAD"
-    ):
+    if _is_remote_head_alias(base_ref):
         raise DeliveryValidationError(
             "delivery base_ref must name an explicit remote branch, not a remote HEAD alias"
+        )
+    if _is_remote_head_alias(branch_ref):
+        raise DeliveryValidationError(
+            "delivery branch_ref must name an explicit remote branch, not a remote HEAD alias"
         )
     if branch_ref and _branch_name(branch_ref) == _branch_name(base_ref):
         raise DeliveryValidationError("delivery branch_ref must differ from base_ref")
@@ -430,6 +431,14 @@ def _branch_name(ref: str | None) -> str | None:
         if value.startswith(prefix):
             return value[len(prefix):]
     return value
+
+
+def _is_remote_head_alias(ref: str | None) -> bool:
+    return bool(
+        ref
+        and ref.startswith(("refs/remotes/", "origin/"))
+        and _branch_name(ref) == "HEAD"
+    )
 
 
 def _worktree_branch_matches(worktree_branch: str | None, branch_ref: str | None) -> bool:
