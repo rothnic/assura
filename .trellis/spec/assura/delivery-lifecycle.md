@@ -33,6 +33,14 @@ explicit recovery; it is never silently rebound by a second linked worktree.
 This prevents two branches from advancing one candidate and sharing one
 receipt. Pausing preserves the attachment and does not imply delivery.
 
+For a legacy non-terminal receipt that predates `attached_branch_ref`, the
+explicit recovery is to rerun `delivery register` from a live checkout of the
+intent's declared candidate branch with the same candidate and owner. The
+command validates the task and receipt identity, then attaches that branch with
+a generation-checked update. Repeating the command is idempotent. A base,
+detached, or different-branch checkout is rejected without changing the task
+or receipt; callers must not edit the receipt store directly.
+
 Each recorded evidence section is a typed `assura.delivery-evidence.v1`
 object. It names its source, exact repository, full candidate `head_oid`,
 bounded `evidence_ref`, and successful result. Review sections additionally

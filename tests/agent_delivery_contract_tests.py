@@ -1572,6 +1572,143 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_register_repairs_legacy_receipt_from_declared_candidate_branch(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+
+            repaired = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+            )
+
+            self.assertEqual(repaired.returncode, 0, repaired.stderr)
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+            self.assertEqual(receipt["generation"], 1)
+            self.assertEqual(task_json.read_bytes(), before_task)
+
+            repeated = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+            )
+
+            self.assertEqual(repeated.returncode, 0, repeated.stderr)
+            self.assertEqual(store.read("candidate-1")["generation"], 1)
+            self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
+    def test_register_rejects_legacy_receipt_from_base_checkout_without_mutation(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+            git(repo, "checkout", "master")
+
+            rejected = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+            )
+
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn("does not match declared candidate branch", rejected.stderr)
+            self.assertEqual(store.read("candidate-1")["generation"], 0)
+            self.assertNotIn("attached_branch_ref", store.read("candidate-1"))
+            self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
+    def test_register_rejects_legacy_receipt_from_wrong_branch_without_mutation(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+            git(repo, "checkout", "-b", "wrong-candidate")
+
+            rejected = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+            )
+
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn("does not match declared candidate branch", rejected.stderr)
+            self.assertEqual(store.read("candidate-1")["generation"], 0)
+            self.assertNotIn("attached_branch_ref", store.read("candidate-1"))
+            self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
     def test_create_seeds_versioned_delivery_intent(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
