@@ -1223,6 +1223,74 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_audit_binds_declared_execution_branch_refs_to_the_candidate(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task.setdefault("meta", {})["execution_branches"] = ["execution-lane"]
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            git(repo, "branch", "execution-lane", "candidate")
+
+            report, _ = project_audit(repo, github=FakeGithub([]))
+
+            self.assertFalse(
+                any(
+                    item["name"] == "refs/heads/execution-lane"
+                    for item in report["unowned_refs"]
+                )
+            )
+            bindings = [
+                item
+                for item in report["execution_bindings"]
+                if item["branch"] == "execution-lane"
+            ]
+            self.assertEqual(len(bindings), 1)
+            self.assertEqual(bindings[0]["candidate_id"], "candidate-1")
+            self.assertEqual(bindings[0]["owner"], "tester")
+            self.assertEqual(bindings[0]["task_path"], ".trellis/tasks/01-01-candidate")
+        finally:
+            directory.cleanup()
+
+    def test_audit_keeps_dirty_execution_worktree_as_an_owned_hold(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        execution = Path(directory.name) / "execution-lane"
+        try:
+            task_json = repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task.setdefault("meta", {})["execution_branches"] = ["execution-lane"]
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            git(repo, "worktree", "add", "-b", "execution-lane", str(execution), "candidate")
+            (execution / "preserve.txt").write_text("uncommitted\n", encoding="utf-8")
+
+            report, statuses = project_audit(repo, github=FakeGithub([]))
+
+            status = next(item for item in statuses if item.candidate_id == "candidate-1")
+            self.assertTrue(status.dirty)
+            self.assertTrue(
+                any(issue.code == "OWNED_EXECUTION_WORKTREE_DIRTY" for issue in status.issues)
+            )
+            binding = next(
+                item
+                for item in report["execution_bindings"]
+                if item["branch"] == "execution-lane"
+            )
+            self.assertEqual(
+                Path(binding["worktrees"][0]["path"]).resolve(), execution.resolve()
+            )
+            self.assertTrue(binding["worktrees"][0]["dirty"])
+            self.assertEqual(binding["worktrees"][0]["disposition"], "held")
+            self.assertFalse(
+                any(
+                    item.get("path") == str(execution)
+                    for item in report["unowned_worktrees"]
+                )
+            )
+        finally:
+            if execution.is_dir():
+                git(repo, "worktree", "remove", "--force", str(execution))
+            directory.cleanup()
+
     def test_audit_holds_duplicate_candidate_identity_across_tasks(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
