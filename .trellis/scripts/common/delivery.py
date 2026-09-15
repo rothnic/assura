@@ -279,6 +279,14 @@ def validate_delivery_mapping(
 
     base_ref = _required_string(delivery, "base_ref")
     branch_ref = _optional_string(delivery, "branch_ref")
+    if _is_symbolic_head_ref(base_ref):
+        raise DeliveryValidationError(
+            "delivery base_ref must name an explicit branch, not HEAD or @"
+        )
+    if _is_symbolic_head_ref(branch_ref):
+        raise DeliveryValidationError(
+            "delivery branch_ref must name an explicit branch, not HEAD or @"
+        )
     if _is_remote_head_alias(base_ref):
         raise DeliveryValidationError(
             "delivery base_ref must name an explicit remote branch, not a remote HEAD alias"
@@ -439,6 +447,11 @@ def _is_remote_head_alias(ref: str | None) -> bool:
         and ref.startswith(("refs/remotes/", "origin/"))
         and _branch_name(ref) == "HEAD"
     )
+
+
+def _is_symbolic_head_ref(ref: str | None) -> bool:
+    """Reject Git's moving current-branch aliases where a stable branch is required."""
+    return bool(ref and ref.strip() in {"HEAD", "@"})
 
 
 def _worktree_branch_matches(worktree_branch: str | None, branch_ref: str | None) -> bool:

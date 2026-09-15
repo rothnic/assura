@@ -37,7 +37,8 @@ from common.delivery import (  # noqa: E402
     _read_worktrees,
     render_checkpoint,
 )
-from common import delivery_cli
+from common import delivery_cli, delivery_receipts
+from common.io import write_json
 from common.delivery_cli import (  # noqa: E402
     _load_evidence,
     ensure_receipt,
@@ -50,6 +51,20 @@ from common.delivery_store import (  # noqa: E402
     StaleGeneration,
 )
 from common.tasks import children_progress, get_all_statuses  # noqa: E402
+
+
+class CommonJsonIOTests(unittest.TestCase):
+    def test_failed_atomic_json_replace_preserves_prior_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "task.json"
+            path.write_text('{"prior": true}', encoding="utf-8")
+            before = path.read_bytes()
+
+            with mock.patch("os.replace", side_effect=OSError("simulated interruption")):
+                self.assertFalse(write_json(path, {"replacement": True}))
+
+            self.assertEqual(path.read_bytes(), before)
+            self.assertEqual(list(Path(directory).glob(".task.json.*.tmp")), [])
 
 
 class DeliveryIntentTests(unittest.TestCase):
@@ -164,6 +179,40 @@ class DeliveryIntentTests(unittest.TestCase):
                 DeliveryValidationError, "base_ref must name an explicit remote branch"
             ):
                 load_delivery_intent(task_json)
+
+    def test_rejects_literal_head_aliases_for_delivery_refs(self) -> None:
+        for field, value, base_ref, branch_ref in (
+            ("base_ref", "HEAD", "HEAD", "refs/heads/candidate"),
+            ("base_ref", "@", "@", "refs/heads/candidate"),
+            ("branch_ref", "HEAD", "refs/heads/master", "HEAD"),
+            ("branch_ref", "@", "refs/heads/master", "@"),
+        ):
+            with self.subTest(field=field, value=value):
+                with tempfile.TemporaryDirectory() as directory:
+                    task_json = Path(directory) / "task.json"
+                    task_json.write_text(
+                        json.dumps(
+                            {
+                                "meta": {
+                                    "delivery": {
+                                        "schema_version": 1,
+                                        "kind": "integration",
+                                        "candidate_id": "candidate-1",
+                                        "owner": "nroth",
+                                        "repository": "rothnic/assura",
+                                        "base_ref": base_ref,
+                                        "branch_ref": branch_ref,
+                                    }
+                                }
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    with self.assertRaisesRegex(
+                        DeliveryValidationError, f"{field} must name an explicit branch"
+                    ):
+                        load_delivery_intent(task_json)
 
     def test_rejects_symbolic_remote_head_as_candidate_branch(self) -> None:
         for branch_ref in (
@@ -1800,6 +1849,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             )
             receipt = store.read("candidate-1")
             self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+            self.assertEqual(receipt["authority_ref"], "test:delivery-authority")
             self.assertEqual(receipt["generation"], 1)
 
             repeated = task_cli(
@@ -1820,6 +1870,105 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_register_rejects_conflicting_receipt_authority_without_mutation(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                    "authority_ref": "test:older-authority",
+                },
+            )
+            before_receipt = store.read("candidate-1")
+
+            with self.assertRaisesRegex(
+                DeliveryValidationError, "receipt authority_ref does not match"
+            ):
+                delivery_cli.register_task(
+                    repo,
+                    task_json,
+                    "candidate-1",
+                    "tester",
+                    authority_ref="test:delivery-authority",
+                )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            self.assertEqual(store.read("candidate-1"), before_receipt)
+        finally:
+            directory.cleanup()
+
+    def test_register_retries_after_task_write_failure_without_advancing_receipt(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+
+            with mock.patch.object(delivery_cli, "write_json", return_value=False):
+                with self.assertRaisesRegex(
+                    DeliveryValidationError, "cannot write delivery intent"
+                ):
+                    delivery_cli.register_task(
+                        repo,
+                        task_json,
+                        "candidate-1",
+                        "tester",
+                        authority_ref="test:delivery-authority",
+                    )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["authority_ref"], "test:delivery-authority")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+            self.assertEqual(receipt["generation"], 1)
+
+            delivery_cli.register_task(
+                repo,
+                task_json,
+                "candidate-1",
+                "tester",
+                authority_ref="test:delivery-authority",
+            )
+
+            updated = json.loads(task_json.read_text(encoding="utf-8"))
+            self.assertEqual(
+                updated["meta"]["delivery"]["authority_ref"],
+                "test:delivery-authority",
+            )
+            self.assertEqual(store.read("candidate-1")["generation"], 1)
+        finally:
+            directory.cleanup()
+
     def test_register_rejects_receipt_created_during_recovery_before_authority_write(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
@@ -1830,7 +1979,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             task_json.write_text(json.dumps(task), encoding="utf-8")
             before_task = task_json.read_bytes()
             store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
-            original_read = delivery_cli._read_receipt
+            original_read = delivery_receipts._read_receipt
             reads = 0
 
             def read_after_competing_create(
@@ -1857,6 +2006,8 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
 
             with mock.patch.object(
                 delivery_cli, "_read_receipt", side_effect=read_after_competing_create
+            ), mock.patch.object(
+                delivery_receipts, "_read_receipt", side_effect=read_after_competing_create
             ):
                 with self.assertRaisesRegex(
                     DeliveryValidationError, "receipt branch does not match"
@@ -1886,7 +2037,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             task_json.write_text(json.dumps(task), encoding="utf-8")
             before_task = task_json.read_bytes()
             store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
-            original_read = delivery_cli._read_receipt
+            original_read = delivery_receipts._read_receipt
             reads = 0
 
             def read_after_competing_create(
@@ -1913,6 +2064,8 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
 
             with mock.patch.object(
                 delivery_cli, "_read_receipt", side_effect=read_after_competing_create
+            ), mock.patch.object(
+                delivery_receipts, "_read_receipt", side_effect=read_after_competing_create
             ):
                 with self.assertRaisesRegex(
                     DeliveryValidationError, "receipt branch does not match"

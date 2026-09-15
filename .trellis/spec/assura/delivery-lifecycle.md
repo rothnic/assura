@@ -41,6 +41,15 @@ a generation-checked update. Repeating the command is idempotent. A base,
 detached, or different-branch checkout is rejected without changing the task
 or receipt; callers must not edit the receipt store directly.
 
+When registration explicitly fills a missing task `authority_ref`, the receipt
+must carry the same provenance reference. A legacy receipt missing that field
+is backfilled in the same compare-and-swap update as any missing branch
+attachment; a conflicting existing value is rejected without changing either
+record. If the task write fails after the receipt update, registration is
+resumable: retrying with the same authority reference completes the task write
+without advancing the receipt generation again. Git's moving `HEAD` and `@`
+aliases are not valid base or candidate branch refs.
+
 Each recorded evidence section is a typed `assura.delivery-evidence.v1`
 object. It names its source, exact repository, full candidate `head_oid`,
 bounded `evidence_ref`, and successful result. Review sections additionally
