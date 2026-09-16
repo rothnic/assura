@@ -714,9 +714,8 @@ mod tests {
         let directory = tempfile::tempdir().expect("process fixture");
         let pid_file = directory.path().join("child.pid");
         let escaped_pid_file = pid_file.to_string_lossy().replace('\'', "''");
-        let escaped_shell = shell.replace('\'', "''");
         let script = format!(
-            "$child = Start-Process -FilePath '{escaped_shell}' -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 30' -PassThru; Set-Content -LiteralPath '{escaped_pid_file}' -Value $child.Id; Wait-Process -Id $child.Id"
+            "$child = Start-Process -FilePath $env:ComSpec -ArgumentList '/c','ping','-n','31','127.0.0.1' -PassThru; Set-Content -LiteralPath '{escaped_pid_file}' -Value $child.Id; Wait-Process -Id $child.Id"
         );
         let mut command = Command::new(shell);
         command
@@ -724,9 +723,8 @@ mod tests {
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
         let started = Instant::now();
-        // Hosted Windows runners can spend more than 500 ms starting
-        // PowerShell before the fixture can publish its descendant PID. Keep
-        // the fixture bounded while allowing that readiness handshake.
+        // Use a native descendant so the fixture can publish its PID before
+        // the bounded timeout without another PowerShell startup.
         assert!(matches!(
             run_bounded(command, 1024, Duration::from_secs(2)),
             GitOutput::TimedOut
