@@ -1,0 +1,38 @@
+{
+  "id": "close-shared-release-publication-identity",
+  "name": "close-shared-release-publication-identity",
+  "title": "Close shared release publication identity predicate",
+  "description": "Require the shared delivery receipt predicate to validate nested publish.tag_oid and publish.commit_oid against the receipt identities, with focused regressions; preserve release and publication boundaries.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-09-16",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "goal/assura-delivery-publication-oid-v1",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-04-maturity-portfolio-strategy",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "09-16-close-shared-release-publication-identity",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/goal/assura-delivery-publication-oid-v1",
+      "branch_ref": null,
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
