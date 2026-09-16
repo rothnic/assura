@@ -32,7 +32,7 @@
       "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/goal/assura-delivery-closure-scoped-coverage.v1",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
     }
   }
 }
