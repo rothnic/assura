@@ -4415,10 +4415,6 @@ class DeliveryRemoteFreshnessTests(unittest.TestCase):
         self, terminal: bool
     ) -> tuple[Path, tempfile.TemporaryDirectory[str], Path, DeliveryStore]:
         repo, base_oid, tip, directory = fixture_repo()
-        bare_origin = repo / ".git" / "test-origin.git"
-        git(repo, "init", "--bare", str(bare_origin))
-        git(repo, "remote", "set-url", "origin", str(bare_origin))
-        git(repo, "push", "origin", "master:refs/heads/master")
         git(repo, "update-ref", "refs/remotes/origin/master", tip)
         repository = delivery_cli.repository_identity(repo)
         task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
