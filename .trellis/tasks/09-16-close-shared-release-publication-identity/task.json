@@ -13,7 +13,7 @@
   "createdAt": "2026-09-16",
   "completedAt": null,
   "branch": "goal/assura-delivery-publication-oid-v1",
-  "base_branch": "goal/assura-delivery-publication-oid-v1",
+  "base_branch": "master",
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
