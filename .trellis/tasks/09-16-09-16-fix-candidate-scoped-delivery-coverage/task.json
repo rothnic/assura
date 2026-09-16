@@ -1,0 +1,38 @@
+{
+  "id": "09-16-fix-candidate-scoped-delivery-coverage",
+  "name": "09-16-fix-candidate-scoped-delivery-coverage",
+  "title": "Fix candidate-scoped delivery coverage gate",
+  "description": "Keep fleet audit coverage fail-closed while allowing an independently proven candidate to close when only unrelated unavailable worktrees remain.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": "process",
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-09-16",
+  "completedAt": null,
+  "branch": "goal/assura-delivery-closure-scoped-coverage.v1",
+  "base_branch": "origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "09-16-09-16-fix-candidate-scoped-delivery-coverage",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/goal/assura-delivery-closure-scoped-coverage.v1",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
