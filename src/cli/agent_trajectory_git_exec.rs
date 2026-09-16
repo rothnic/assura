@@ -709,7 +709,6 @@ mod tests {
 
     #[cfg(windows)]
     fn assert_windows_timeout_kills_descendant(force_fallback: bool) {
-        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
         let shell = windows_test_shell();
         let directory = tempfile::tempdir().expect("process fixture");
         let pid_file = directory.path().join("child.pid");
@@ -723,13 +722,13 @@ mod tests {
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
         let started = Instant::now();
-        // Use a native descendant so the fixture can publish its PID before
-        // the bounded timeout without another PowerShell startup.
-        assert!(matches!(
-            run_bounded(command, 1024, Duration::from_secs(2)),
-            GitOutput::TimedOut
-        ));
-        let child_pid = (0..100).find_map(|_| {
+        let runner = thread::spawn(move || {
+            FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
+            run_bounded(command, 1024, Duration::from_secs(5))
+        });
+        // Use a native descendant and observe the marker while the bounded
+        // command is alive; checking after timeout races with cleanup.
+        let child_pid = (0..500).find_map(|_| {
             fs::read_to_string(&pid_file)
                 .ok()
                 .and_then(|pid| pid.trim().parse::<u32>().ok())
@@ -738,6 +737,10 @@ mod tests {
                     None
                 })
         });
+        assert!(matches!(
+            runner.join().expect("bounded runner joins"),
+            GitOutput::TimedOut
+        ));
         let child_pid = child_pid.expect("descendant pid is written before timeout");
         for _ in 0..100 {
             let alive = Command::new("tasklist")
@@ -746,7 +749,7 @@ mod tests {
                 .expect("process probe");
             let listing = String::from_utf8_lossy(&alive.stdout);
             if !listing.contains(&format!("{child_pid}")) {
-                assert!(started.elapsed() < Duration::from_secs(4));
+                assert!(started.elapsed() < Duration::from_secs(7));
                 return;
             }
             thread::sleep(Duration::from_millis(10));
