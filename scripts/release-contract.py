@@ -294,8 +294,8 @@ def plan_asset_uploads(
     return {"upload": upload, "skip": skip}
 
 
-def _require_oid(value: str, field: str) -> str:
-    if not _OID.fullmatch(value):
+def _require_oid(value: Any, field: str) -> str:
+    if not isinstance(value, str) or _OID.fullmatch(value) is None:
         raise ReleaseContractError(f"{field} must be a full 40-character Git object id")
     return value.lower()
 
@@ -338,6 +338,19 @@ def build_release_receipt(
         raise ReleaseContractError(
             "release receipt publication result is bound to a different repository or tag"
         )
+    publication_tag_oid = _require_oid(publish.get("tag_oid"), "publication tag_oid")
+    publication_commit_oid = _require_oid(
+        publish.get("commit_oid"), "publication commit_oid"
+    )
+    if (publication_tag_oid, publication_commit_oid) != (tag_oid, commit_oid):
+        raise ReleaseContractError(
+            "release receipt publication result has inconsistent tag or commit identity"
+        )
+    normalized_publish = {
+        **publish,
+        "tag_oid": publication_tag_oid,
+        "commit_oid": publication_commit_oid,
+    }
     if not isinstance(install_proof, dict):
         raise ReleaseContractError("release receipt requires an install proof object")
     installed: dict[str, str] = {}
@@ -395,7 +408,7 @@ def build_release_receipt(
         "assets": normalized_assets,
         "checksums_verified": True,
         "install": {"verified": True, **installed},
-        "publish": publish,
+        "publish": normalized_publish,
     }
 
 

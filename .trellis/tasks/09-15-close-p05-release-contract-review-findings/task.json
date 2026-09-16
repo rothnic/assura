@@ -3,7 +3,7 @@
   "name": "close-p05-release-contract-review-findings",
   "title": "Close P05 release-contract review findings",
   "description": "Address the independent retrospective findings on merged PR #340 through a narrow, reviewed current-master correction; preserve the no-tag/no-publication boundary.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
