@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/delivery-lifecycle.md","reason":"Review the exact required predicate behavior and state-preserving delivery semantics."}
+{"file":".trellis/spec/assura/index.md","reason":"Review project-level acceptance and structure-check expectations."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Review quality and regression expectations for the shared backend validator."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Review the receipt-builder to shared-predicate data flow and cross-layer compatibility risks."}

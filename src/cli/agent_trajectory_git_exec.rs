@@ -709,14 +709,12 @@ mod tests {
 
     #[cfg(windows)]
     fn assert_windows_timeout_kills_descendant(force_fallback: bool) {
-        FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
         let shell = windows_test_shell();
         let directory = tempfile::tempdir().expect("process fixture");
         let pid_file = directory.path().join("child.pid");
         let escaped_pid_file = pid_file.to_string_lossy().replace('\'', "''");
-        let escaped_shell = shell.replace('\'', "''");
         let script = format!(
-            "$child = Start-Process -FilePath '{escaped_shell}' -ArgumentList '-NoProfile','-Command','Start-Sleep -Seconds 30' -PassThru; Set-Content -LiteralPath '{escaped_pid_file}' -Value $child.Id; Wait-Process -Id $child.Id"
+            "$child = Start-Process -FilePath $env:ComSpec -ArgumentList '/c','ping','-n','31','127.0.0.1' -PassThru; Set-Content -LiteralPath '{escaped_pid_file}' -Value $child.Id; Wait-Process -Id $child.Id"
         );
         let mut command = Command::new(shell);
         command
@@ -724,14 +722,13 @@ mod tests {
             .stdout(Stdio::piped())
             .stderr(Stdio::null());
         let started = Instant::now();
-        // Hosted Windows runners can spend more than 500 ms starting
-        // PowerShell before the fixture can publish its descendant PID. Keep
-        // the fixture bounded while allowing that readiness handshake.
-        assert!(matches!(
-            run_bounded(command, 1024, Duration::from_secs(2)),
-            GitOutput::TimedOut
-        ));
-        let child_pid = (0..100).find_map(|_| {
+        let runner = thread::spawn(move || {
+            FORCE_WINDOWS_PROCESS_TREE_FALLBACK.with(|flag| flag.set(force_fallback));
+            run_bounded(command, 1024, Duration::from_secs(5))
+        });
+        // Use a native descendant and observe the marker while the bounded
+        // command is alive; checking after timeout races with cleanup.
+        let child_pid = (0..500).find_map(|_| {
             fs::read_to_string(&pid_file)
                 .ok()
                 .and_then(|pid| pid.trim().parse::<u32>().ok())
@@ -740,6 +737,10 @@ mod tests {
                     None
                 })
         });
+        assert!(matches!(
+            runner.join().expect("bounded runner joins"),
+            GitOutput::TimedOut
+        ));
         let child_pid = child_pid.expect("descendant pid is written before timeout");
         for _ in 0..100 {
             let alive = Command::new("tasklist")
@@ -748,7 +749,7 @@ mod tests {
                 .expect("process probe");
             let listing = String::from_utf8_lossy(&alive.stdout);
             if !listing.contains(&format!("{child_pid}")) {
-                assert!(started.elapsed() < Duration::from_secs(4));
+                assert!(started.elapsed() < Duration::from_secs(7));
                 return;
             }
             thread::sleep(Duration::from_millis(10));

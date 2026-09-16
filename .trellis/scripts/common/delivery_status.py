@@ -667,9 +667,21 @@ def _release_receipt_verified(
     if install.get("assura") != expected_output or install.get("assura-full") != expected_output:
         return False
     publish = value.get("publish")
+    if not isinstance(publish, dict):
+        return False
+    publication_tag_oid = publish.get("tag_oid")
+    publication_commit_oid = publish.get("commit_oid")
+    if (
+        not isinstance(publication_tag_oid, str)
+        or _FULL_OID.fullmatch(publication_tag_oid) is None
+        or publication_tag_oid != tag_oid
+        or not isinstance(publication_commit_oid, str)
+        or _FULL_OID.fullmatch(publication_commit_oid) is None
+        or publication_commit_oid != commit_oid
+    ):
+        return False
     return (
-        isinstance(publish, dict)
-        and publish.get("repository") == intent.repository
+        publish.get("repository") == intent.repository
         and publish.get("tag") == f"v{intent.version}"
         and publish.get("action") in {"created", "uploaded", "verified"}
         and isinstance(publish.get("verified_assets"), list)
