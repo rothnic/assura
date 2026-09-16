@@ -171,6 +171,24 @@ jobs:
     - name: Run release process contracts
       run: python3 tests/release_process_contract_tests.py
 
+  validate-windows-release-contract:
+    name: Windows Release Negative Contract
+    runs-on: windows-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Intentionally fail PowerShell assert-version contract
+      id: negative_assert_version
+      shell: pwsh
+      continue-on-error: true
+      run: |
+        python scripts/release-contract.py assert-version `
+          --version 0.4.0 `
+          --binary python
+    - name: Require the expected assert-version failure
+      if: steps.negative_assert_version.outcome != 'failure'
+      shell: pwsh
+      run: throw "The negative assert-version contract unexpectedly passed"
+
   fmt:
     name: Rustfmt
     needs: changes
