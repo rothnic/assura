@@ -2067,6 +2067,16 @@ class DeliveryProjectionTests(unittest.TestCase):
                 "CANDIDATE_REF_AMBIGUOUS",
                 {issue["code"] for issue in audited["issues"]},
             )
+            self.assertIsNone(audited["outcome"])
+            advertised_rows = [
+                row
+                for row in report["unowned_refs"]
+                if row["name"] == "refs/heads/candidate" and row["oid"] == ahead_tip
+            ]
+            self.assertEqual(len(advertised_rows), 1)
+            self.assertEqual(advertised_rows[0]["name"], "refs/heads/candidate")
+            self.assertEqual(advertised_rows[0]["oid"], ahead_tip)
+            self.assertEqual(advertised_rows[0]["disposition"], "unresolved")
             self.assertEqual(report["inventory"]["remote_refs"], advertised)
         finally:
             directory.cleanup()

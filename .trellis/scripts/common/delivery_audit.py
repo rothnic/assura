@@ -12,6 +12,7 @@ from .delivery import (
     DeliveryIssue,
     DeliveryValidationError,
     _branch_name,
+    _git_oid,
     _normalise_ref,
     _refs_match_or_proven_alias,
     _worktree_matches_candidate,
@@ -42,6 +43,28 @@ def _ref_matches_any(
     """Return whether a ref is exact or an OID-proven alias of a binding."""
     return any(
         _refs_match_or_proven_alias(repo_root, ref, candidate)
+        for candidate in candidates
+    )
+
+
+def _advertised_ref_matches_any(
+    repo_root: Path, ref: dict[str, Any], candidates: set[str]
+) -> bool:
+    """Match an advertised ref only when its advertised OID proves the alias."""
+    advertised_ref = _normalise_ref(ref.get("name"))
+    advertised_oid = ref.get("oid")
+    if (
+        not advertised_ref
+        or not isinstance(advertised_oid, str)
+        or not advertised_oid
+    ):
+        return False
+    advertised_branch = _branch_name(advertised_ref)
+    if not advertised_branch:
+        return False
+    return any(
+        advertised_branch == _branch_name(candidate)
+        and _git_oid(repo_root, candidate) == advertised_oid
         for candidate in candidates
     )
 
@@ -311,9 +334,13 @@ def project_audit(
         statuses = corrected
 
     unowned_refs = []
-    all_refs = [*inventory.refs, *inventory.remote_refs]
+    all_refs = [
+        (ref, False) for ref in inventory.refs
+    ] + [
+        (ref, True) for ref in inventory.remote_refs
+    ]
     seen_ref_keys: set[tuple[str, str]] = set()
-    for ref in all_refs:
+    for ref, advertised in all_refs:
         ref_key = (str(ref.get("name") or ""), str(ref.get("oid") or ""))
         if ref_key in seen_ref_keys:
             continue
@@ -323,11 +350,24 @@ def project_audit(
         ref_name = _normalise_ref(ref.get("name"))
         if not ref_name:
             continue
-        if ref.get("kind") in {"heads", "remotes"} and (
-            _is_integration_ref(repo_root, ref_name, inventory.base_ref)
-            or _ref_matches_any(repo_root, ref_name, bound_refs)
-        ):
-            continue
+        if ref.get("kind") in {"heads", "remotes"}:
+            if advertised:
+                base_matches = (
+                    _advertised_ref_matches_any(
+                        repo_root,
+                        ref,
+                        {inventory.base_ref}
+                        if inventory.base_ref is not None
+                        else set(),
+                    )
+                    or _advertised_ref_matches_any(repo_root, ref, bound_refs)
+                )
+            else:
+                base_matches = _is_integration_ref(
+                    repo_root, ref_name, inventory.base_ref
+                ) or _ref_matches_any(repo_root, ref_name, bound_refs)
+            if base_matches:
+                continue
         is_tag = ref.get("kind") == "tags"
         unowned_refs.append(
             {
