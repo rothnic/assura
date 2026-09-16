@@ -12,6 +12,8 @@ from .delivery import (
     DeliveryIssue,
     DeliveryValidationError,
     _branch_name,
+    _normalise_ref,
+    _refs_match_or_proven_alias,
     _worktree_matches_candidate,
     classify_candidate,
     collect_inventory,
@@ -32,6 +34,60 @@ def _read_receipt(store: DeliveryStore, candidate_id: str) -> dict[str, Any] | N
     if not path.exists():
         return None
     return store.read(candidate_id)
+
+
+def _ref_matches_any(
+    repo_root: Path, ref: str | None, candidates: set[str]
+) -> bool:
+    """Return whether a ref is exact or an OID-proven alias of a binding."""
+    return any(
+        _refs_match_or_proven_alias(repo_root, ref, candidate)
+        for candidate in candidates
+    )
+
+
+def _is_integration_ref(
+    repo_root: Path, ref: str | None, base_ref: str | None
+) -> bool:
+    """Identify integration refs without hiding divergent remote tips."""
+    normalized = _normalise_ref(ref)
+    if normalized in {"refs/heads/master", "refs/heads/main"}:
+        return True
+    if normalized and normalized.endswith("/HEAD"):
+        return True
+    base = _normalise_ref(base_ref)
+    if normalized == base:
+        return True
+    base_name = _branch_name(base)
+    origin_alias = (
+        f"refs/remotes/origin/{base_name}"
+        if base_name in {"master", "main"}
+        else None
+    )
+    return normalized == origin_alias and _refs_match_or_proven_alias(
+        repo_root, normalized, base
+    )
+
+
+def _is_base_named_worktree(
+    repo_root: Path, ref: str | None, base_ref: str | None
+) -> bool:
+    """Return whether a worktree is named for the integration base."""
+    normalized = _normalise_ref(ref)
+    if normalized in {"refs/heads/master", "refs/heads/main"}:
+        return True
+    base = _normalise_ref(base_ref)
+    if normalized == base:
+        return True
+    base_name = _branch_name(base)
+    origin_alias = (
+        f"refs/remotes/origin/{base_name}"
+        if base_name in {"master", "main"}
+        else None
+    )
+    return normalized == origin_alias and _refs_match_or_proven_alias(
+        repo_root, normalized, base
+    )
 
 
 def _legacy_status(task: dict[str, Any]) -> CandidateStatus:
@@ -99,7 +155,7 @@ def project_audit(
     statuses: list[CandidateStatus] = []
     legacy: list[dict[str, Any]] = []
     invalid_intents: list[dict[str, Any]] = []
-    bound_branches: set[str] = set()
+    bound_refs: set[str] = set()
     owned_worktree_paths: set[str] = set()
     execution_bindings: list[dict[str, Any]] = []
     execution_worktree_paths: set[str] = set()
@@ -126,9 +182,13 @@ def project_audit(
             known_candidate_ids.add(intent.candidate_id)
             candidate_paths.setdefault(intent.candidate_id, []).append(task["task_path"])
             if intent.branch_ref:
-                bound_branches.add(_branch_name(intent.branch_ref) or intent.branch_ref)
+                bound_ref = _normalise_ref(intent.branch_ref)
+                if bound_ref:
+                    bound_refs.add(bound_ref)
             elif task.get("branch"):
-                bound_branches.add(_branch_name(str(task["branch"])) or str(task["branch"]))
+                bound_ref = _normalise_ref(str(task["branch"]))
+                if bound_ref:
+                    bound_refs.add(bound_ref)
             receipt = _read_receipt(store, intent.candidate_id)
             if receipt is not None:
                 _validate_receipt_binding(
@@ -140,7 +200,9 @@ def project_audit(
                 )
             status = classify_candidate(intent, inventory, receipt)
             for worktree in inventory.worktrees:
-                if _worktree_matches_candidate(worktree, intent, task, status.tip):
+                if _worktree_matches_candidate(
+                    worktree, intent, task, status.tip, repo_root
+                ):
                     path = worktree.get("path")
                     if isinstance(path, str) and path:
                         owned_worktree_paths.add(path)
@@ -148,17 +210,22 @@ def project_audit(
             execution_branches = _execution_branches(task)
             dirty_execution_paths: list[str] = []
             for branch in execution_branches:
-                bound_branches.add(branch)
+                execution_ref = _normalise_ref(branch)
+                if execution_ref is None:
+                    continue
+                bound_refs.add(execution_ref)
                 binding = {
                     "branch": branch,
-                    "branch_ref": f"refs/heads/{branch}",
+                    "branch_ref": execution_ref,
                     "candidate_id": intent.candidate_id,
                     "owner": status.owner,
                     "task_path": task["task_path"],
                     "worktrees": [],
                 }
                 for worktree in inventory.worktrees:
-                    if _branch_name(worktree.get("branch_ref")) != branch:
+                    if not _refs_match_or_proven_alias(
+                        repo_root, worktree.get("branch_ref"), execution_ref
+                    ):
                         continue
                     path = worktree.get("path")
                     worktree_row = {
@@ -243,10 +310,6 @@ def project_audit(
             )
         statuses = corrected
 
-    ignored_ref_names = {"master", "main", "HEAD"}
-    base_branch = _branch_name(inventory.base_ref)
-    if base_branch:
-        ignored_ref_names.add(base_branch)
     unowned_refs = []
     all_refs = [*inventory.refs, *inventory.remote_refs]
     seen_ref_keys: set[tuple[str, str]] = set()
@@ -257,8 +320,13 @@ def project_audit(
         seen_ref_keys.add(ref_key)
         if ref.get("kind") not in {"heads", "remotes", "tags"}:
             continue
-        branch = _branch_name(ref.get("name"))
-        if not branch or branch in ignored_ref_names or branch in bound_branches:
+        ref_name = _normalise_ref(ref.get("name"))
+        if not ref_name:
+            continue
+        if ref.get("kind") in {"heads", "remotes"} and (
+            _is_integration_ref(repo_root, ref_name, inventory.base_ref)
+            or _ref_matches_any(repo_root, ref_name, bound_refs)
+        ):
             continue
         is_tag = ref.get("kind") == "tags"
         unowned_refs.append(
@@ -285,10 +353,10 @@ def project_audit(
             continue
         if item.get("path") in execution_worktree_paths:
             continue
-        branch = _branch_name(item.get("branch_ref"))
-        if branch and branch in bound_branches:
+        branch_ref = _normalise_ref(item.get("branch_ref"))
+        if _ref_matches_any(repo_root, branch_ref, bound_refs):
             continue
-        if branch and branch in ignored_ref_names:
+        if _is_base_named_worktree(repo_root, branch_ref, inventory.base_ref):
             head_oid = item.get("head_oid")
             exact_base = (
                 isinstance(inventory.base_oid, str)

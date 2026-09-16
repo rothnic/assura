@@ -12,6 +12,7 @@ from .delivery import (
     _branch_name,
     _git_oid,
     _normalise_ref,
+    _refs_match_or_proven_alias,
     delivery_store_root,
     load_delivery_intent,
 )
@@ -58,12 +59,14 @@ def _attached_branch_ref(
 ) -> str | None:
     """Resolve the branch currently attaching a receipt to one worktree."""
     current = _normalise_ref(_current_branch(repo_root))
-    if current is not None:
-        return current
     branch: Any = intent.branch_ref
     if branch is None and isinstance(data, dict):
         branch = data.get("branch")
     declared = _normalise_ref(branch) if isinstance(branch, str) and branch.strip() else None
+    if current is not None:
+        if declared is None:
+            return current
+        return current if _refs_match_or_proven_alias(repo_root, current, declared) else None
     if declared is None:
         return None
     head_oid = _git_oid(repo_root, "HEAD")
@@ -162,32 +165,32 @@ def _validate_receipt_binding(
             else None
         )
     else:
-        expected_branch = _attached_branch_ref(repo_root, intent, data)
+        expected_branch = _normalise_ref(_current_branch(repo_root))
+        if expected_branch is None:
+            declared_branch = intent.branch_ref
+            if declared_branch is None and isinstance(data, dict):
+                declared_branch = data.get("branch")
+            expected_branch = (
+                _normalise_ref(declared_branch)
+                if isinstance(declared_branch, str) and declared_branch.strip()
+                else None
+            )
     attached_branch = receipt.get("attached_branch_ref")
     has_attachment = isinstance(attached_branch, str) and bool(attached_branch.strip())
     attached_ref = _normalise_ref(attached_branch) if has_attachment else None
-    branch_matches = attached_ref == expected_branch
-    expected_oid: str | None = None
-    if (
-        expected_branch
-        and has_attachment
-        and not branch_matches
-        and _branch_name(attached_ref) == _branch_name(expected_branch)
-    ):
-        expected_oid = _git_oid(repo_root, expected_branch)
-        attached_oid = _git_oid(repo_root, attached_ref)
-        branch_matches = expected_oid is not None and expected_oid == attached_oid
+    branch_matches = _refs_match_or_proven_alias(
+        repo_root, attached_ref, expected_branch
+    )
 
     base_ref = _normalise_ref(intent.base_ref)
     base_checkout = False
     if allow_base_checkout and expected_branch and base_ref and not branch_matches:
         if expected_branch == base_ref:
             base_checkout = True
-        elif _branch_name(expected_branch) == _branch_name(base_ref):
-            if expected_oid is None:
-                expected_oid = _git_oid(repo_root, expected_branch)
-            base_oid = _git_oid(repo_root, base_ref)
-            base_checkout = expected_oid is not None and expected_oid == base_oid
+        else:
+            base_checkout = _refs_match_or_proven_alias(
+                repo_root, expected_branch, base_ref
+            )
 
     if expected_branch and not has_attachment and not allow_missing_attachment:
         raise DeliveryValidationError(
@@ -241,9 +244,9 @@ def _repair_missing_receipt_binding(
     declared_ref = _normalise_ref(intent.branch_ref) or _normalise_ref(data.get("branch"))
     if current_ref is None or declared_ref is None:
         raise DeliveryValidationError("RECEIPT_BINDING_CONFLICT: explicit recovery requires a live checkout of the declared candidate branch")
-    if _branch_name(current_ref) == _branch_name(intent.base_ref):
+    if _refs_match_or_proven_alias(repo_root, current_ref, intent.base_ref):
         raise DeliveryValidationError("RECEIPT_BINDING_CONFLICT: explicit recovery cannot use the integration base branch")
-    if _branch_name(current_ref) != _branch_name(declared_ref):
+    if not _refs_match_or_proven_alias(repo_root, current_ref, declared_ref):
         raise DeliveryValidationError(f"current branch {_branch_name(current_ref)!r} does not match declared candidate branch {_branch_name(declared_ref)!r}")
 
     changes["attached_branch_ref"] = current_ref

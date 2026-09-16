@@ -441,6 +441,23 @@ def _branch_name(ref: str | None) -> str | None:
     return value
 
 
+def _refs_match_or_proven_alias(
+    repo_root: Path, left_ref: str | None, right_ref: str | None
+) -> bool:
+    """Match full refs, or aliases whose current full OIDs prove equality."""
+    left = _normalise_ref(left_ref)
+    right = _normalise_ref(right_ref)
+    if left is None or right is None:
+        return False
+    if left == right:
+        return True
+    if _branch_name(left) != _branch_name(right):
+        return False
+    left_oid = _git_oid(repo_root, left)
+    right_oid = _git_oid(repo_root, right)
+    return left_oid is not None and left_oid == right_oid
+
+
 def _is_remote_head_alias(ref: str | None) -> bool:
     return bool(
         ref
@@ -457,7 +474,7 @@ def _is_symbolic_head_ref(ref: str | None) -> bool:
 def _worktree_branch_matches(worktree_branch: str | None, branch_ref: str | None) -> bool:
     if not worktree_branch or not branch_ref:
         return False
-    return _branch_name(worktree_branch) == _branch_name(branch_ref)
+    return _normalise_ref(worktree_branch) == _normalise_ref(branch_ref)
 
 
 def _worktree_matches_candidate(
@@ -465,10 +482,15 @@ def _worktree_matches_candidate(
     intent: DeliveryIntent,
     task: dict[str, Any] | None,
     tip: str | None,
+    repo_root: Path | None = None,
 ) -> bool:
     """Match attached, path-bound, or detached worktrees conservatively."""
     branch = intent.branch_ref or (task or {}).get("branch")
     if _worktree_branch_matches(worktree.get("branch_ref"), branch):
+        return True
+    if repo_root is not None and _refs_match_or_proven_alias(
+        repo_root, worktree.get("branch_ref"), branch
+    ):
         return True
 
     configured_path = (task or {}).get("worktree_path")

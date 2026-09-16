@@ -58,7 +58,10 @@ revision expressions are rejected without changing task or receipt state.
 Recovery of an existing intent first verifies the current checkout's exact
 repository identity. Registrations for one repository-relative task path share
 a stable task lock across candidate IDs, so concurrent requests cannot create
-an orphan receipt before one task intent wins.
+an orphan receipt before one task intent wins. Fresh registration writes the
+typed task intent before creating its receipt; a failed receipt step therefore
+leaves a recoverable intent with no orphan receipt, and retrying the same
+registration reconciles the missing receipt.
 
 Starting a new task checks receipt binding before treating a terminal receipt
 as complete. A terminal receipt misbound to another task, owner, repository,
@@ -224,8 +227,11 @@ progress.
 
 Physical archiving is optional storage maintenance after a verified outcome.
 The archive command validates the outcome before changing status, session
-state, or filesystem paths. Its auto-commit stages only the selected move and
-related selected task paths; unrelated staged or dirty work remains untouched.
+state, or filesystem paths. After the move, archive closure reloads the typed
+intent from the archived task and compares candidate, repository, branch, and
+base identity before changing the receipt. Its auto-commit stages only the
+selected move and related selected task paths; unrelated staged or dirty work
+remains untouched.
 
 ## Commands
 

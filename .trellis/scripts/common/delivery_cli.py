@@ -6,7 +6,6 @@ import argparse
 import hashlib
 import json
 import sys
-from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -29,6 +28,7 @@ from .delivery import (
     _github_review_matches_pr,
     _normalise_ref,
     _pr_for_candidate,
+    _refs_match_or_proven_alias,
     _worktree_matches_candidate,
     classify_candidate,
     collect_inventory,
@@ -53,6 +53,11 @@ from .delivery_receipts import (
     _repair_missing_receipt_binding,
     _validate_receipt_binding,
     ensure_receipt,
+)
+from .delivery_archive import (
+    archive_guard,
+    record_archive_closure,
+    recover_archive_closure,
 )
 from .git import run_git
 from .io import read_json, write_json
@@ -350,9 +355,15 @@ def _register_task_locked(
     declared_ref = _normalise_ref(data.get("branch"))
     if isinstance(existing, dict):
         declared_ref = _normalise_ref(existing.get("branch_ref")) or declared_ref
-    if declared_ref and current_ref and _branch_name(declared_ref) != _branch_name(current_ref):
+    if (
+        declared_ref
+        and current_ref
+        and not _refs_match_or_proven_alias(repo_root, declared_ref, current_ref)
+    ):
         raise DeliveryValidationError(
-            f"current branch {_branch_name(current_ref)!r} does not match declared candidate branch {_branch_name(declared_ref)!r}"
+            "BRANCH_BINDING_UNPROVEN: "
+            f"current branch {_branch_name(current_ref)!r} does not match "
+            f"declared candidate branch {_branch_name(declared_ref)!r}"
         )
     if isinstance(existing, dict):
         if existing.get("candidate_id") != candidate_id or existing.get("owner") != owner:
@@ -409,12 +420,18 @@ def _register_task_locked(
     existing_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
     if existing_receipt is not None:
         _repair_missing_receipt_binding(repo_root, intent, data, existing_receipt)
+    # Recheck immediately before persisting the task so a receipt that appears
+    # during the fresh-registration window cannot turn the task into an
+    # orphaned or ambiguously owned record.
+    latest_receipt = _read_receipt(_receipt_store(repo_root), intent.candidate_id)
+    if latest_receipt is not None:
+        _repair_missing_receipt_binding(repo_root, intent, data, latest_receipt)
     meta = data.get("meta") if isinstance(data.get("meta"), dict) else {}
     meta["delivery"] = delivery
     data["meta"] = meta
-    ensure_receipt(repo_root, intent, data)
     if not write_json(task_json, data):
         raise DeliveryValidationError(f"cannot write delivery intent: {task_json}")
+    ensure_receipt(repo_root, intent, data)
     return intent
 
 
@@ -837,11 +854,17 @@ def prepare_task_start(repo_root: Path, task_json: Path) -> tuple[bool, str]:
     if intent is None:
         return False, "LEGACY_UNCLASSIFIED: classify the task with delivery register before starting new implementation"
     current_branch = _current_branch(repo_root)
-    declared_branch = _branch_name(intent.branch_ref)
-    if declared_branch and current_branch and declared_branch != _branch_name(current_branch):
+    declared_branch = _normalise_ref(intent.branch_ref)
+    current_ref = _normalise_ref(current_branch)
+    if (
+        declared_branch
+        and current_ref
+        and not _refs_match_or_proven_alias(repo_root, declared_branch, current_ref)
+    ):
         return False, (
-            f"BRANCH_MISMATCH: current branch {_branch_name(current_branch)!r} does not match "
-            f"candidate branch {declared_branch!r}"
+            "BRANCH_MISMATCH: current branch "
+            f"{_branch_name(current_ref)!r} does not match candidate branch "
+            f"{_branch_name(declared_branch)!r}"
         )
     pending = pending_owned_candidate(repo_root, intent.owner, intent.candidate_id)
     if pending is not None:
@@ -894,115 +917,3 @@ def pause_active_task(repo_root: Path) -> tuple[bool, str, Any]:
         return True, "", previous
     except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
         return False, str(error), active
-
-
-def archive_guard(
-    repo_root: Path,
-    task_dir: Path,
-    github: Any = None,
-) -> tuple[bool, str, DeliveryIntent | None, CandidateStatus | None]:
-    """Check archive eligibility before any task/status/session mutation."""
-    task_json = task_dir / FILE_TASK_JSON
-    if not task_json.is_file():
-        return False, "TASK_RECORD_INVALID: task.json is missing", None, None
-    try:
-        data, intent = _intent_task_data(task_json)
-        if intent is None:
-            return False, "LEGACY_UNCLASSIFIED: archive requires explicit delivery classification", None, None
-        store = _receipt_store(repo_root)
-        receipt = _read_receipt(store, intent.candidate_id)
-        if receipt is None:
-            return False, "RECEIPT_MISSING: archive requires an explicit delivery receipt", intent, None
-        _validate_receipt_binding(
-            repo_root,
-            intent,
-            receipt,
-            data,
-            allow_base_checkout=True,
-        )
-        inventory = collect_inventory(
-            repo_root,
-            github=github,
-            base_ref=intent.base_ref,
-            refresh_remote=True,
-        )
-        status = classify_candidate(intent, inventory, receipt)
-        issues = [*status.issues, *validate_transition(intent, status, "archive")]
-        seen_codes: set[str] = set()
-        issues = [issue for issue in issues if not (issue.code in seen_codes or seen_codes.add(issue.code))]
-        if issues:
-            return False, "\n".join(f"{issue.code}: {issue.message}" for issue in issues), intent, status
-        return True, "", intent, status
-    except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
-        return False, str(error), None, None
-
-
-def record_archive_closure(
-    repo_root: Path,
-    intent: DeliveryIntent,
-    archive_path: Path,
-) -> tuple[bool, str]:
-    """Record physical archive completion after the task move succeeds."""
-    try:
-        store = _receipt_store(repo_root)
-        receipt = store.read(intent.candidate_id)
-        task_data = read_json(archive_path / FILE_TASK_JSON)
-        if not isinstance(task_data, dict):
-            raise DeliveryValidationError(
-                f"cannot read archived task JSON: {archive_path / FILE_TASK_JSON}"
-            )
-        _validate_receipt_binding(
-            repo_root,
-            intent,
-            receipt,
-            task_data,
-            allow_base_checkout=True,
-            use_declared_branch=True,
-        )
-        store.update(
-            intent.candidate_id,
-            int(receipt["generation"]),
-            {
-                "closure": "closed",
-                "archive_path": archive_path.relative_to(repo_root).as_posix(),
-                "next_action": "No delivery action remains; retain the receipt and historical refs.",
-            },
-        )
-        return True, ""
-    except (DeliveryStoreError, DeliveryValidationError, KeyError, ValueError) as error:
-        return False, str(error)
-
-
-def recover_archive_closure(
-    repo_root: Path,
-    archived_task_dir: Path,
-) -> tuple[bool, str]:
-    """Finish a receipt after a prior archive move was interrupted."""
-    task_json = archived_task_dir / FILE_TASK_JSON
-    try:
-        task_data, archived_intent = _intent_task_data(task_json)
-        if archived_intent is None:
-            raise DeliveryValidationError(
-                "ARCHIVE_RECEIPT_BINDING_CONFLICT: archived task has no delivery intent"
-            )
-        intent = replace(
-            archived_intent,
-            task_json=get_tasks_dir(repo_root) / archived_task_dir.name / FILE_TASK_JSON,
-        )
-        store = _receipt_store(repo_root)
-        receipt = store.read(intent.candidate_id)
-        _validate_receipt_binding(
-            repo_root,
-            intent,
-            receipt,
-            task_data,
-            allow_base_checkout=True,
-            use_declared_branch=True,
-        )
-        if receipt.get("closure") == "closed":
-            return True, ""
-        if receipt.get("outcome") not in _TERMINAL_OUTCOMES or receipt.get("closure") != "verified":
-            return False, "ARCHIVE_RECEIPT_NOT_READY: archived task does not have a verified terminal receipt"
-        return record_archive_closure(repo_root, intent, archived_task_dir)
-    except (DeliveryValidationError, DeliveryStoreError, KeyError, ValueError) as error:
-        return False, str(error)
