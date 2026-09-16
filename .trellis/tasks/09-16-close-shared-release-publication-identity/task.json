@@ -9,7 +9,7 @@
   "package": null,
   "priority": "P1",
   "creator": "nroth",
-  "assignee": "nroth",
+  "assignee": "Godel",
   "createdAt": "2026-09-16",
   "completedAt": null,
   "branch": null,
@@ -27,12 +27,12 @@
       "schema_version": 1,
       "kind": "integration",
       "candidate_id": "09-16-close-shared-release-publication-identity",
-      "owner": "nroth",
+      "owner": "Godel",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/goal/assura-delivery-publication-oid-v1",
+      "base_ref": "refs/remotes/origin/master",
       "branch_ref": null,
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
     }
   }
 }

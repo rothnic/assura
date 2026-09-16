@@ -1,1 +1,4 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/spec/assura/delivery-lifecycle.md","reason":"Defines release receipt identity, source binding, evidence, and delivery closure invariants."}
+{"file":".trellis/spec/assura/index.md","reason":"Routes the implementation to the canonical Assura delivery and structure contracts."}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Requires focused responsibility, readable validation logic, and regression coverage."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Requires searching and extending the existing shared predicate rather than adding a parallel validator."}
