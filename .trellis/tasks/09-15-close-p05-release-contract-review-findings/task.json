@@ -1,0 +1,38 @@
+{
+  "id": "close-p05-release-contract-review-findings",
+  "name": "close-p05-release-contract-review-findings",
+  "title": "Close P05 release-contract review findings",
+  "description": "Address the independent retrospective findings on merged PR #340 through a narrow, reviewed current-master correction; preserve the no-tag/no-publication boundary.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-09-15",
+  "completedAt": null,
+  "branch": "goal/assura-delivery-p05-review-fixes-v2",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-04-maturity-portfolio-strategy",
+  "relatedFiles": [],
+  "notes": "Isolated from the preserved dirty goal/assura-delivery-p05-review-fixes worktree after PR A integrated.",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "09-15-close-p05-release-contract-review-findings",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/goal/assura-delivery-p05-review-fixes-v2",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
+    }
+  }
+}
