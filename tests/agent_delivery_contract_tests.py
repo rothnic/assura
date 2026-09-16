@@ -11,6 +11,7 @@ import sys
 import tempfile
 import types
 import unittest
+from dataclasses import replace
 from unittest import mock
 from pathlib import Path
 
@@ -28,6 +29,7 @@ RELEASE_ARCHIVES = (
 
 from common.delivery import (  # noqa: E402
     CandidateStatus,
+    DeliveryIssue,
     DeliveryValidationError,
     GithubUnavailable,
     SubprocessGithubReader,
@@ -620,6 +622,85 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
 
 
 class DeliveryProjectionTests(unittest.TestCase):
+    def test_unrelated_unavailable_worktree_does_not_block_candidate_coverage(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+            missing_path = Path(directory.name) / "unrelated-missing"
+            inventory = collect_inventory(
+                repo, github=FakeGithub([]), base_ref="refs/heads/master"
+            )
+            inventory = replace(
+                inventory,
+                coverage={**inventory.coverage, "git": "partial", "worktrees": "partial", "complete": False},
+                worktrees=inventory.worktrees
+                + (
+                    {
+                        "path": str(missing_path),
+                        "head_oid": "b" * 40,
+                        "branch_ref": None,
+                        "state": "missing",
+                        "dirty": None,
+                    },
+                ),
+                issues=inventory.issues
+                + (
+                    DeliveryIssue(
+                        "WORKTREE_COVERAGE_UNAVAILABLE",
+                        "worktree path is missing",
+                        evidence_ref=str(missing_path),
+                    ),
+                ),
+            )
+
+            self.assertFalse(
+                delivery_status._candidate_coverage_unknown(intent, inventory, tip)
+            )
+            self.assertFalse(inventory.coverage["complete"])
+        finally:
+            directory.cleanup()
+
+    def test_candidate_unavailable_worktree_keeps_candidate_coverage_unknown(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+            missing_path = Path(directory.name) / "candidate-missing"
+            inventory = collect_inventory(
+                repo, github=FakeGithub([]), base_ref="refs/heads/master"
+            )
+            inventory = replace(
+                inventory,
+                coverage={**inventory.coverage, "git": "partial", "worktrees": "partial", "complete": False},
+                worktrees=inventory.worktrees
+                + (
+                    {
+                        "path": str(missing_path),
+                        "head_oid": tip,
+                        "branch_ref": "refs/heads/candidate",
+                        "state": "missing",
+                        "dirty": None,
+                    },
+                ),
+                issues=inventory.issues
+                + (
+                    DeliveryIssue(
+                        "WORKTREE_COVERAGE_UNAVAILABLE",
+                        "worktree path is missing",
+                        evidence_ref=str(missing_path),
+                    ),
+                ),
+            )
+
+            self.assertTrue(
+                delivery_status._candidate_coverage_unknown(intent, inventory, tip)
+            )
+        finally:
+            directory.cleanup()
+
     def test_github_coverage_failure_blocks_local_ancestry_delivery(self) -> None:
         repo, base_oid, tip, directory = fixture_repo()
         try:
@@ -3575,7 +3656,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             directory.cleanup()
 
     def test_archive_accepts_verified_outcome_and_records_closed_receipt(self) -> None:
-        repo, _, tip, directory = fixture_repo()
+        repo, base_before_merge, tip, directory = fixture_repo()
         try:
             task_path = ".trellis/tasks/01-01-candidate"
             self.assertEqual(task_cli(repo, "start", task_path).returncode, 0)
@@ -3584,6 +3665,9 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             git(repo, "merge", "--ff-only", "candidate")
             base_after_merge = git(repo, "rev-parse", "HEAD")
             git(repo, "push", "origin", "master:refs/heads/master")
+            unrelated_worktree = Path(directory.name) / "unrelated-missing"
+            git(repo, "worktree", "add", "--detach", str(unrelated_worktree), base_before_merge)
+            shutil.rmtree(unrelated_worktree)
             evidence_path = Path(directory.name) / "evidence.json"
             evidence_path.write_text(
                 json.dumps(
@@ -3651,6 +3735,17 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             self.assertEqual(recorded.returncode, 0, recorded.stderr)
             closed = task_cli(repo, "delivery", "close", task_path, "--outcome", "delivered")
             self.assertEqual(closed.returncode, 0, closed.stderr)
+            audit = task_cli(repo, "delivery", "audit", "--format", "json", "--refresh")
+            self.assertEqual(audit.returncode, 0, audit.stderr)
+            audit_report = json.loads(audit.stdout)
+            self.assertFalse(audit_report["coverage"]["complete"])
+            self.assertTrue(
+                any(
+                    issue["code"] == "WORKTREE_COVERAGE_UNAVAILABLE"
+                    and issue["evidence_ref"] == str(unrelated_worktree.resolve())
+                    for issue in audit_report["issues"]
+                )
+            )
             archived = task_cli(repo, "archive", task_path, "--no-commit")
 
             self.assertEqual(archived.returncode, 0, archived.stderr)
