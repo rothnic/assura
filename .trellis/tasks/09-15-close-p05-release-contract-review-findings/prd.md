@@ -5,7 +5,7 @@
 This is the focused corrective task for the independent retrospective review of
 PR #340. The reviewed head was `34af5e35b9690469573bb20be05c8dc2c24884e6`,
 merged as `cb1dafcc198c4198e2580fc23e90f6ece2827858`. The current integrated
-base is `00f4f6abc47349f8d33418429471c0c7d0554642` (PR #344 merge commit).
+base is `47ca7080c84dc6349bf01f48f1c26c481bc63497` (PR #345 merge commit).
 
 PR #340's hosted checks passed, but GitHub recorded no reviews. The
 retrospective review is not a pre-merge approval. This task must produce a
@@ -44,10 +44,13 @@ release tag or publish assets.
 6. Test `validate_release_receipt` against a valid built receipt and a
    table-driven set of missing/mismatched required schema fields. Keep the
    fixture aligned with the shared `.trellis/spec/assura/delivery-lifecycle.md`
-   contract. The nested publication-OID predicate check is owned by the
-   integrated P01-P04 lane because that lane changes `delivery_status.py`; do
-   not edit that file in this task. The P05 coordinator must confirm that the
-   shared-lane check is integrated and tested before overall closure.
+   contract. The independent review found that the integrated P01-P04 lane
+   does not yet enforce the nested publication-OID predicate. To preserve one
+   owner, one receipt, and one integration path, this task now includes that
+   minimal shared-lane correction in `.trellis/scripts/common/delivery_status.py`
+   and its focused delivery regression tests. The correction must remain
+   limited to validating `publish.tag_oid` and `publish.commit_oid` against the
+   top-level receipt identities; it must not alter release publication behavior.
 7. Preserve the version-plus-full-source-SHA preview naming and prove the
    Unix and Windows installer smoke paths consume the produced versioned
    bundle/checksum. Existing workflow evidence may satisfy this requirement;
@@ -59,9 +62,9 @@ release tag or publish assets.
   installed Assura binary.
 - Do not modify the root checkout's A04 research note or
   `09-14-resolve-versioned-build-artifact-generation` task.
-- Do not inspect or edit the historical core-v2 diff. Coordinate any change to
-  `delivery_status.py` with its existing integrated owner; this task does not
-  edit that file.
+- Do not inspect or edit the historical core-v2 diff. The shared predicate
+  correction is coordinated through this task's current-base review and is
+  limited to the nested publication-identity check and its regression tests.
 - Do not claim runtime release-receipt or explicit/latest installer proof
   without a separately authorized release run. Report those as release holds.
 
