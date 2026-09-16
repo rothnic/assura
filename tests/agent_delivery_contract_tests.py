@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import copy
 import json
 import os
 import shutil
@@ -892,6 +893,8 @@ class DeliveryProjectionTests(unittest.TestCase):
                     "action": "verified",
                     "repository": "rothnic/assura",
                     "tag": "v0.4.0",
+                    "tag_oid": tip,
+                    "commit_oid": tip,
                     "verified_assets": list(RELEASE_ARCHIVES),
                 },
             }
@@ -915,6 +918,22 @@ class DeliveryProjectionTests(unittest.TestCase):
             self.assertTrue(
                 any(issue.code == "UNSUPPORTED_DELIVERY_CLAIM" for issue in status.issues)
             )
+            self.assertTrue(delivery_status.validate_release_receipt(receipt, intent, tip))
+            invalid_publication_ids = {
+                "tag_oid missing": lambda publish: publish.pop("tag_oid"),
+                "commit_oid missing": lambda publish: publish.pop("commit_oid"),
+                "tag_oid malformed": lambda publish: publish.update(tag_oid="short"),
+                "commit_oid malformed": lambda publish: publish.update(commit_oid="short"),
+                "tag_oid mismatched": lambda publish: publish.update(tag_oid="1" * 40),
+                "commit_oid mismatched": lambda publish: publish.update(commit_oid="1" * 40),
+            }
+            for label, mutate in invalid_publication_ids.items():
+                with self.subTest(label=label):
+                    candidate = copy.deepcopy(receipt)
+                    mutate(candidate["publish"])
+                    self.assertFalse(
+                        delivery_status.validate_release_receipt(candidate, intent, tip)
+                    )
 
             acceptance = {
                 "schema_version": "assura.delivery-evidence.v1",

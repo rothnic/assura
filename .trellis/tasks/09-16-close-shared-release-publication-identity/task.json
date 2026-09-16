@@ -3,7 +3,7 @@
   "name": "close-shared-release-publication-identity",
   "title": "Close shared release publication identity predicate",
   "description": "Require the shared delivery receipt predicate to validate nested publish.tag_oid and publish.commit_oid against the receipt identities, with focused regressions; preserve release and publication boundaries.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
