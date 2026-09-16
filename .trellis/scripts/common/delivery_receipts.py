@@ -63,7 +63,14 @@ def _attached_branch_ref(
     branch: Any = intent.branch_ref
     if branch is None and isinstance(data, dict):
         branch = data.get("branch")
-    return _normalise_ref(branch) if isinstance(branch, str) and branch.strip() else None
+    declared = _normalise_ref(branch) if isinstance(branch, str) and branch.strip() else None
+    if declared is None:
+        return None
+    head_oid = _git_oid(repo_root, "HEAD")
+    declared_oid = _git_oid(repo_root, declared)
+    if head_oid is None or declared_oid is None or head_oid != declared_oid:
+        return None
+    return declared
 
 
 def _initial_receipt(
@@ -105,13 +112,17 @@ def _validate_receipt_binding(
     data: dict[str, Any] | None = None,
     allow_base_checkout: bool = False,
     allow_missing_attachment: bool = False,
+    allow_missing_authority: bool = False,
+    use_declared_branch: bool = False,
 ) -> None:
-    """Reject an existing receipt bound to another task, owner, or branch.
+    """Reject an existing receipt whose task, owner, branch, or authority differs.
 
     Evidence recording and terminal closure may run from the canonical base
     checkout after integration. That checkout is allowed to observe the
     candidate's existing attachment, but it cannot create or repair a missing
-    attachment. A non-base checkout must match the live branch identity.
+    attachment. Inventory projections may select the task's declared branch
+    explicitly instead of using the coordinator's current branch. Missing
+    authority is accepted only by explicit registration recovery.
     """
     if receipt.get("repository") != intent.repository:
         raise DeliveryValidationError(
@@ -131,17 +142,54 @@ def _validate_receipt_binding(
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt task path does not match the delivery intent"
         )
-    expected_branch = _attached_branch_ref(repo_root, intent, data)
+    expected_authority = intent.authority_ref or None
+    receipt_authority = receipt.get("authority_ref") or None
+    if receipt_authority != expected_authority and not (
+        allow_missing_authority
+        and expected_authority is not None
+        and receipt_authority is None
+    ):
+        raise DeliveryValidationError(
+            "RECEIPT_BINDING_CONFLICT: receipt authority_ref does not match the delivery intent"
+        )
+    if use_declared_branch:
+        declared_branch: Any = intent.branch_ref
+        if declared_branch is None and isinstance(data, dict):
+            declared_branch = data.get("branch")
+        expected_branch = (
+            _normalise_ref(declared_branch)
+            if isinstance(declared_branch, str) and declared_branch.strip()
+            else None
+        )
+    else:
+        expected_branch = _attached_branch_ref(repo_root, intent, data)
     attached_branch = receipt.get("attached_branch_ref")
-    terminal_receipt = receipt.get("outcome") in _TERMINAL_OUTCOMES and receipt.get("closure") in {"verified", "closed"}
-    base_checkout = (
-        allow_base_checkout
-        and expected_branch
-        and intent.base_ref
-        and _branch_name(expected_branch) == _branch_name(intent.base_ref)
-    )
     has_attachment = isinstance(attached_branch, str) and bool(attached_branch.strip())
-    if expected_branch and not has_attachment and not terminal_receipt and not allow_missing_attachment:
+    attached_ref = _normalise_ref(attached_branch) if has_attachment else None
+    branch_matches = attached_ref == expected_branch
+    expected_oid: str | None = None
+    if (
+        expected_branch
+        and has_attachment
+        and not branch_matches
+        and _branch_name(attached_ref) == _branch_name(expected_branch)
+    ):
+        expected_oid = _git_oid(repo_root, expected_branch)
+        attached_oid = _git_oid(repo_root, attached_ref)
+        branch_matches = expected_oid is not None and expected_oid == attached_oid
+
+    base_ref = _normalise_ref(intent.base_ref)
+    base_checkout = False
+    if allow_base_checkout and expected_branch and base_ref and not branch_matches:
+        if expected_branch == base_ref:
+            base_checkout = True
+        elif _branch_name(expected_branch) == _branch_name(base_ref):
+            if expected_oid is None:
+                expected_oid = _git_oid(repo_root, expected_branch)
+            base_oid = _git_oid(repo_root, base_ref)
+            base_checkout = expected_oid is not None and expected_oid == base_oid
+
+    if expected_branch and not has_attachment and not allow_missing_attachment:
         raise DeliveryValidationError(
             "RECEIPT_BINDING_CONFLICT: receipt has no attached branch binding; "
             "recover the candidate explicitly before reusing it"
@@ -149,7 +197,7 @@ def _validate_receipt_binding(
     if (
         expected_branch
         and has_attachment
-        and _branch_name(attached_branch) != _branch_name(expected_branch)
+        and not branch_matches
         and not base_checkout
     ):
         raise DeliveryValidationError(
@@ -167,16 +215,14 @@ def _repair_missing_receipt_binding(
     attached_branch = receipt.get("attached_branch_ref")
     has_attachment = isinstance(attached_branch, str) and bool(attached_branch.strip())
     _validate_receipt_binding(
-        repo_root, intent, receipt, data, allow_missing_attachment=True
+        repo_root,
+        intent,
+        receipt,
+        data,
+        allow_missing_attachment=True,
+        allow_missing_authority=True,
     )
     receipt_authority = receipt.get("authority_ref")
-    if (
-        intent.authority_ref is not None
-        and receipt_authority not in (None, "", intent.authority_ref)
-    ):
-        raise DeliveryValidationError(
-            "RECEIPT_BINDING_CONFLICT: receipt authority_ref does not match the delivery intent"
-        )
     changes: dict[str, Any] = {}
     if intent.authority_ref is not None and not receipt_authority:
         changes["authority_ref"] = intent.authority_ref

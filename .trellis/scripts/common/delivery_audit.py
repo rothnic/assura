@@ -19,6 +19,7 @@ from .delivery import (
     load_delivery_intent,
 )
 from .delivery_store import DeliveryStore, DeliveryStoreError
+from .delivery_receipts import _validate_receipt_binding
 from .paths import FILE_TASK_JSON
 
 
@@ -129,6 +130,14 @@ def project_audit(
             elif task.get("branch"):
                 bound_branches.add(_branch_name(str(task["branch"])) or str(task["branch"]))
             receipt = _read_receipt(store, intent.candidate_id)
+            if receipt is not None:
+                _validate_receipt_binding(
+                    repo_root,
+                    intent,
+                    receipt,
+                    task,
+                    use_declared_branch=True,
+                )
             status = classify_candidate(intent, inventory, receipt)
             for worktree in inventory.worktrees:
                 if _worktree_matches_candidate(worktree, intent, task, status.tip):
@@ -192,7 +201,12 @@ def project_audit(
                 statuses.append(status)
         except (DeliveryValidationError, DeliveryStoreError) as error:
             issue = DeliveryIssue("CANDIDATE_UNRESOLVED", str(error), candidate_id, task["task_path"], "Preserve the task and resolve its schema or receipt before closure.")
-            status = CandidateStatus(candidate_id, str(task.get("assignee") or "unknown"), "unknown", task["task_path"], None, "held", None, "unknown", False, "open", issue.next_action, issues=(issue,))
+            status_owner = str(
+                intent_data.get("owner")
+                or task.get("assignee")
+                or "unknown"
+            )
+            status = CandidateStatus(candidate_id, status_owner, "unknown", task["task_path"], None, "held", None, "unknown", False, "open", issue.next_action, issues=(issue,))
             if owner is None or status.owner == owner:
                 statuses.append(status)
 
@@ -275,21 +289,53 @@ def project_audit(
         if branch and branch in bound_branches:
             continue
         if branch and branch in ignored_ref_names:
-            base_worktrees.append(
-                {
-                    **item,
-                    "scope": "base",
-                    "owner": "unknown",
-                    "candidate_id": None,
-                    "evidence_ref": item.get("path"),
-                    "disposition": "held" if item.get("dirty") is True else "retained_base",
-                    "next_action": (
-                        "Preserve dirty base-checkout content and resolve it before changing scope."
-                        if item.get("dirty") is True
-                        else "Retain the clean integration checkout as the base topology."
-                    ),
-                }
+            head_oid = item.get("head_oid")
+            exact_base = (
+                isinstance(inventory.base_oid, str)
+                and bool(inventory.base_oid)
+                and head_oid == inventory.base_oid
             )
+            if exact_base:
+                base_worktrees.append(
+                    {
+                        **item,
+                        "scope": "base",
+                        "classification": (
+                            "retained_base"
+                            if item.get("dirty") is not True
+                            else "dirty_base"
+                        ),
+                        "base_oid": inventory.base_oid,
+                        "owner": "unknown",
+                        "candidate_id": None,
+                        "evidence_ref": item.get("path"),
+                        "disposition": "held" if item.get("dirty") is True else "retained_base",
+                        "next_action": (
+                            "Preserve dirty base-checkout content and resolve it before changing scope."
+                            if item.get("dirty") is True
+                            else "Retain the clean checkout whose full tip exactly matches the configured base."
+                        ),
+                    }
+                )
+            else:
+                unowned_worktrees.append(
+                    {
+                        **item,
+                        "scope": "candidate",
+                        "classification": "stale_base",
+                        "base_oid": inventory.base_oid,
+                        "owner": "unknown",
+                        "candidate_id": None,
+                        "evidence_ref": item.get("path"),
+                        "disposition": "held" if item.get("dirty") is True else "unresolved",
+                        "next_action": (
+                            "Preserve this base-named worktree without checkout/ref changes. "
+                            f"Inspect full worktree OID {head_oid or 'unknown'} against configured "
+                            f"base OID {inventory.base_oid or 'unknown'}, assign an owner, and "
+                            "record its disposition before any topology change."
+                        ),
+                    }
+                )
             continue
         unowned_worktrees.append(
             {
