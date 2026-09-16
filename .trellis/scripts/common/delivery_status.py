@@ -540,6 +540,51 @@ def _required_facts(
     return facts, issues
 
 
+def _candidate_coverage_unknown(
+    intent: DeliveryIntent, inventory: Inventory, tip: str | None
+) -> bool:
+    """Return whether required inventory coverage is unknown for one candidate.
+
+    Fleet-wide coverage stays global for audit and checkpoint consumers. An
+    individual closure only needs complete identity coverage plus worktree
+    visibility for the candidate it is closing; unrelated unavailable
+    worktrees remain visible findings without becoming a false delivery hold.
+    """
+    if not inventory.coverage.get("base_resolved"):
+        return True
+    if inventory.coverage.get("refs") != "complete":
+        return True
+    if (
+        inventory.coverage.get("tasks") != "complete"
+        and _task_for_intent(intent, inventory) is None
+    ):
+        return True
+
+    if any(
+        issue.code == "WORKTREE_INVENTORY_UNAVAILABLE"
+        for issue in inventory.issues
+    ):
+        return True
+
+    task = _task_for_intent(intent, inventory)
+    if any(
+        worktree.get("state") != "available"
+        and _worktree_matches_candidate(
+            worktree, intent, task, tip, inventory.repo_root
+        )
+        for worktree in inventory.worktrees
+    ):
+        return True
+
+    if inventory.coverage.get("worktrees") != "complete":
+        if not any(
+            issue.code == "WORKTREE_COVERAGE_UNAVAILABLE"
+            for issue in inventory.issues
+        ):
+            return True
+    return False
+
+
 def _release_receipt_verified(
     value: Any,
     intent: DeliveryIntent,
@@ -733,7 +778,9 @@ def classify_candidate(
         and (receipt is None or receipt.get("outcome") in {None, "delivered"})
         and inventory.coverage.get("github") != "complete"
     )
-    coverage_unknown = not bool(inventory.coverage.get("base_resolved")) or inventory.coverage.get("git") != "complete" or inventory.coverage.get("tasks") != "complete" or remote_coverage_unknown
+    coverage_unknown = _candidate_coverage_unknown(
+        intent, inventory, tip
+    ) or remote_coverage_unknown
     issues: list[DeliveryIssue] = list(fact_issues)
     if intent.kind != "aggregate" and not tip:
         issues.append(DeliveryIssue("CANDIDATE_TIP_UNRESOLVED", "candidate branch or PR head is not present in the inventory", intent.candidate_id, next_action="Resolve the branch/PR identity without deleting historical refs."))
