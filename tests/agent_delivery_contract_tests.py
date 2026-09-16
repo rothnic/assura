@@ -37,6 +37,8 @@ from common.delivery import (  # noqa: E402
     _read_worktrees,
     render_checkpoint,
 )
+from common import delivery_cli, delivery_receipts, delivery_status
+from common.io import write_json
 from common.delivery_cli import (  # noqa: E402
     _load_evidence,
     ensure_receipt,
@@ -49,6 +51,20 @@ from common.delivery_store import (  # noqa: E402
     StaleGeneration,
 )
 from common.tasks import children_progress, get_all_statuses  # noqa: E402
+
+
+class CommonJsonIOTests(unittest.TestCase):
+    def test_failed_atomic_json_replace_preserves_prior_file(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "task.json"
+            path.write_text('{"prior": true}', encoding="utf-8")
+            before = path.read_bytes()
+
+            with mock.patch("os.replace", side_effect=OSError("simulated interruption")):
+                self.assertFalse(write_json(path, {"replacement": True}))
+
+            self.assertEqual(path.read_bytes(), before)
+            self.assertEqual(list(Path(directory).glob(".task.json.*.tmp")), [])
 
 
 class DeliveryIntentTests(unittest.TestCase):
@@ -82,6 +98,155 @@ class DeliveryIntentTests(unittest.TestCase):
             self.assertEqual(intent.kind, "integration")
             self.assertEqual(intent.owner, "nroth")
             self.assertEqual(intent.base_ref, "refs/heads/master")
+
+    def test_rejects_candidate_branch_equal_to_base_ref(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            task_json = Path(directory) / "task.json"
+            task_json.write_text(
+                json.dumps(
+                    {
+                        "meta": {
+                            "delivery": {
+                                "schema_version": 1,
+                                "kind": "integration",
+                                "candidate_id": "candidate-1",
+                                "owner": "nroth",
+                                "repository": "rothnic/assura",
+                                "base_ref": "refs/remotes/origin/master",
+                                "branch_ref": "refs/heads/master",
+                            }
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                DeliveryValidationError, "branch_ref must differ from base_ref"
+            ):
+                load_delivery_intent(task_json)
+
+    def test_rejects_candidate_branch_equal_to_non_origin_remote_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            task_json = Path(directory) / "task.json"
+            task_json.write_text(
+                json.dumps(
+                    {
+                        "meta": {
+                            "delivery": {
+                                "schema_version": 1,
+                                "kind": "integration",
+                                "candidate_id": "candidate-1",
+                                "owner": "nroth",
+                                "repository": "rothnic/assura",
+                                "base_ref": "refs/remotes/upstream/master",
+                                "branch_ref": "refs/heads/master",
+                            }
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                DeliveryValidationError, "branch_ref must differ from base_ref"
+            ):
+                load_delivery_intent(task_json)
+
+    def test_rejects_symbolic_remote_head_as_delivery_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            task_json = Path(directory) / "task.json"
+            task_json.write_text(
+                json.dumps(
+                    {
+                        "meta": {
+                            "delivery": {
+                                "schema_version": 1,
+                                "kind": "integration",
+                                "candidate_id": "candidate-1",
+                                "owner": "nroth",
+                                "repository": "rothnic/assura",
+                                "base_ref": "refs/remotes/origin/HEAD",
+                                "branch_ref": "refs/heads/master",
+                            }
+                        }
+                    }
+                ),
+                encoding="utf-8",
+            )
+
+            with self.assertRaisesRegex(
+                DeliveryValidationError, "base_ref must name an explicit remote branch"
+            ):
+                load_delivery_intent(task_json)
+
+    def test_rejects_literal_head_aliases_for_delivery_refs(self) -> None:
+        for field, value, base_ref, branch_ref in (
+            ("base_ref", "HEAD", "HEAD", "refs/heads/candidate"),
+            ("base_ref", "@", "@", "refs/heads/candidate"),
+            ("branch_ref", "HEAD", "refs/heads/master", "HEAD"),
+            ("branch_ref", "@", "refs/heads/master", "@"),
+        ):
+            with self.subTest(field=field, value=value):
+                with tempfile.TemporaryDirectory() as directory:
+                    task_json = Path(directory) / "task.json"
+                    task_json.write_text(
+                        json.dumps(
+                            {
+                                "meta": {
+                                    "delivery": {
+                                        "schema_version": 1,
+                                        "kind": "integration",
+                                        "candidate_id": "candidate-1",
+                                        "owner": "nroth",
+                                        "repository": "rothnic/assura",
+                                        "base_ref": base_ref,
+                                        "branch_ref": branch_ref,
+                                    }
+                                }
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    with self.assertRaisesRegex(
+                        DeliveryValidationError, f"{field} must name an explicit branch"
+                    ):
+                        load_delivery_intent(task_json)
+
+    def test_rejects_symbolic_remote_head_as_candidate_branch(self) -> None:
+        for branch_ref in (
+            "refs/remotes/origin/HEAD",
+            "refs/remotes/upstream/HEAD",
+            "origin/HEAD",
+        ):
+            with self.subTest(branch_ref=branch_ref):
+                with tempfile.TemporaryDirectory() as directory:
+                    task_json = Path(directory) / "task.json"
+                    task_json.write_text(
+                        json.dumps(
+                            {
+                                "meta": {
+                                    "delivery": {
+                                        "schema_version": 1,
+                                        "kind": "integration",
+                                        "candidate_id": "candidate-1",
+                                        "owner": "nroth",
+                                        "repository": "rothnic/assura",
+                                        "base_ref": "refs/heads/master",
+                                        "branch_ref": branch_ref,
+                                    }
+                                }
+                            }
+                        ),
+                        encoding="utf-8",
+                    )
+
+                    with self.assertRaisesRegex(
+                        DeliveryValidationError,
+                        "branch_ref must name an explicit remote branch",
+                    ):
+                        load_delivery_intent(task_json)
 
     def test_rejects_unsafe_candidate_identity(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
@@ -409,7 +574,11 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
     (repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json").write_text(
         json.dumps(task), encoding="utf-8"
     )
-    git(repo, "remote", "add", "origin", "https://github.com/rothnic/assura.git")
+    local_origin = repo / "rothnic" / "assura.git"
+    local_origin.parent.mkdir(parents=True)
+    git(repo, "init", "--bare", str(local_origin))
+    git(repo, "remote", "add", "origin", "rothnic/assura.git")
+    git(repo, "push", "origin", "master:refs/heads/master")
     fake_bin = repo / ".test-bin"
     fake_bin.mkdir()
     fake_gh = fake_bin / ("gh.py" if os.name == "nt" else "gh")
@@ -443,7 +612,10 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
     else:
         fake_gh.chmod(0o755)
     exclude = repo / ".git" / "info" / "exclude"
-    exclude.write_text(exclude.read_text(encoding="utf-8") + ".test-bin/\n", encoding="utf-8")
+    exclude.write_text(
+        exclude.read_text(encoding="utf-8") + ".test-bin/\nrothnic/\n",
+        encoding="utf-8",
+    )
     return repo, base_oid, tip, directory
 
 
@@ -660,6 +832,8 @@ class DeliveryProjectionTests(unittest.TestCase):
                     "owner": "tester",
                     "repository": "rothnic/assura",
                     "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "attached_branch_ref": "refs/heads/candidate",
+                    "authority_ref": "test:delivery-authority",
                     "outcome": "delivered",
                     "closure": "verified",
                     "phase": "verified",
@@ -717,8 +891,17 @@ class DeliveryProjectionTests(unittest.TestCase):
                 },
             )
 
+            tasks_dir = repo / ".trellis" / "tasks"
+            local_only_statuses = get_all_statuses(
+                tasks_dir, github=FakeGithub([])
+            )
+            self.assertEqual(
+                local_only_statuses["01-01-candidate"], "in_progress"
+            )
+
+            git(repo, "push", "origin", "master:refs/heads/master")
             statuses = get_all_statuses(
-                repo / ".trellis" / "tasks", github=FakeGithub([])
+                tasks_dir, github=FakeGithub([]), refresh_remote=True
             )
 
             self.assertEqual(
@@ -728,6 +911,36 @@ class DeliveryProjectionTests(unittest.TestCase):
             self.assertIn(
                 "1/1 delivered",
                 children_progress(("01-01-candidate",), statuses),
+            )
+
+            task_json = repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            task_bytes = task_json.read_bytes()
+            receipt = store.read("candidate-1")
+            store.update(
+                "candidate-1",
+                int(receipt["generation"]),
+                {"authority_ref": "test:other-authority"},
+            )
+            mismatched_receipt_bytes = receipt_path.read_bytes()
+            mismatched_generation = store.read("candidate-1")["generation"]
+            refs_before = git(repo, "show-ref", "--heads")
+            worktrees_before = git(repo, "worktree", "list", "--porcelain")
+
+            statuses = get_all_statuses(
+                repo / ".trellis" / "tasks", github=FakeGithub([])
+            )
+
+            self.assertNotEqual(statuses["01-01-candidate"], "outcome:delivered")
+            progress = children_progress(("01-01-candidate",), statuses)
+            self.assertIn("0/1 delivered", progress)
+            self.assertIn("unknown=1", progress)
+            self.assertEqual(task_json.read_bytes(), task_bytes)
+            self.assertEqual(receipt_path.read_bytes(), mismatched_receipt_bytes)
+            self.assertEqual(store.read("candidate-1")["generation"], mismatched_generation)
+            self.assertEqual(git(repo, "show-ref", "--heads"), refs_before)
+            self.assertEqual(
+                git(repo, "worktree", "list", "--porcelain"), worktrees_before
             )
         finally:
             directory.cleanup()
@@ -974,6 +1187,7 @@ class DeliveryProjectionTests(unittest.TestCase):
             git(repo, "checkout", "master")
             git(repo, "merge", "--ff-only", "candidate")
             merged_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
             provider_pr = {
                 "number": 14,
                 "state": "MERGED",
@@ -1066,7 +1280,10 @@ class DeliveryProjectionTests(unittest.TestCase):
                 },
             )
             inventory = collect_inventory(
-                repo, github=FakeGithub([provider_pr]), base_ref="refs/heads/master"
+                repo,
+                github=FakeGithub([provider_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
             )
 
             status = classify_candidate(intent, inventory, store.read("candidate-1"))
@@ -1079,6 +1296,7 @@ class DeliveryProjectionTests(unittest.TestCase):
                 repo,
                 github=FakeGithub([changed_provider_pr]),
                 base_ref="refs/heads/master",
+                refresh_remote=True,
             )
             changed_status = classify_candidate(
                 intent, changed_inventory, store.read("candidate-1")
@@ -1107,6 +1325,7 @@ class DeliveryProjectionTests(unittest.TestCase):
                 repo,
                 github=FakeGithub([changed_checks]),
                 base_ref="refs/heads/master",
+                refresh_remote=True,
             )
             changed_checks_status = classify_candidate(
                 intent, changed_checks_inventory, store.read("candidate-1")
@@ -1203,6 +1422,191 @@ class DeliveryProjectionTests(unittest.TestCase):
 
             self.assertEqual(first, second)
             self.assertEqual(before, after)
+        finally:
+            directory.cleanup()
+
+    def test_audit_next_checkpoint_validate_bindings_on_declared_branch_read_only(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            self.assertEqual(task_cli(repo, "start", task_path).returncode, 0)
+            self.assertEqual(task_cli(repo, "finish").returncode, 0)
+            git(repo, "checkout", "-b", "coordinator", "master")
+
+            valid_audit = task_cli(
+                repo, "delivery", "audit", "--owner", "tester", "--format", "json"
+            )
+            self.assertEqual(valid_audit.returncode, 0, valid_audit.stderr)
+            valid_report = json.loads(valid_audit.stdout)
+            candidate = next(
+                item for item in valid_report["candidates"]
+                if item["candidate_id"] == "candidate-1"
+            )
+            self.assertFalse(
+                any(
+                    "RECEIPT_BINDING_CONFLICT" in issue["message"]
+                    for issue in candidate["issues"]
+                )
+            )
+
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            task_json = repo / task_path / "task.json"
+            store = DeliveryStore(receipt_path.parent)
+            receipt = store.read("candidate-1")
+            store.update(
+                "candidate-1",
+                int(receipt["generation"]),
+                {"authority_ref": "test:other-authority"},
+            )
+            receipt_bytes = receipt_path.read_bytes()
+            task_bytes = task_json.read_bytes()
+            generation = store.read("candidate-1")["generation"]
+            refs_before = git(repo, "show-ref", "--heads")
+            worktrees_before = git(repo, "worktree", "list", "--porcelain")
+
+            projections = (
+                (
+                    "audit",
+                    ("delivery", "audit", "--owner", "tester", "--format", "json"),
+                ),
+                (
+                    "next",
+                    ("delivery", "next", "--owner", "tester", "--format", "json"),
+                ),
+                (
+                    "checkpoint",
+                    ("delivery", "checkpoint", "--owner", "tester"),
+                ),
+            )
+            for name, arguments in projections:
+                with self.subTest(projection=name):
+                    result = task_cli(repo, *arguments)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    if name == "checkpoint":
+                        self.assertIn("candidate-1: held", result.stdout)
+                        self.assertNotIn("terminal: 1", result.stdout)
+                    else:
+                        rows = json.loads(result.stdout)
+                        if name == "audit":
+                            rows = rows["candidates"]
+                        candidate = next(
+                            item for item in rows
+                            if item["candidate_id"] == "candidate-1"
+                        )
+                        self.assertTrue(
+                            any(
+                                "RECEIPT_BINDING_CONFLICT" in issue["message"]
+                                for issue in candidate["issues"]
+                            ),
+                            result.stdout,
+                        )
+                    self.assertEqual(task_json.read_bytes(), task_bytes)
+                    self.assertEqual(receipt_path.read_bytes(), receipt_bytes)
+                    self.assertEqual(store.read("candidate-1")["generation"], generation)
+                    self.assertEqual(git(repo, "show-ref", "--heads"), refs_before)
+                    self.assertEqual(
+                        git(repo, "worktree", "list", "--porcelain"),
+                        worktrees_before,
+                    )
+        finally:
+            directory.cleanup()
+
+    def test_aggregate_children_reject_misbound_receipt_before_classification(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            child_path = ".trellis/tasks/01-01-candidate"
+            self.assertEqual(task_cli(repo, "start", child_path).returncode, 0)
+            self.assertEqual(task_cli(repo, "finish").returncode, 0)
+            parent_dir = repo / ".trellis" / "tasks" / "01-02-aggregate"
+            parent_dir.mkdir(parents=True)
+            parent_json = parent_dir / "task.json"
+            parent_json.write_text(
+                json.dumps(
+                    {
+                        "id": "aggregate-parent",
+                        "name": "aggregate-parent",
+                        "status": "in_progress",
+                        "branch": "refs/heads/aggregate-parent",
+                        "base_branch": "master",
+                        "children": ["candidate"],
+                        "meta": {
+                            "delivery": {
+                                "schema_version": 1,
+                                "kind": "aggregate",
+                                "candidate_id": "aggregate-parent",
+                                "owner": "tester",
+                                "repository": "rothnic/assura",
+                                "base_ref": "refs/heads/master",
+                                "branch_ref": "refs/heads/aggregate-parent",
+                                "authority_ref": "test:parent-authority",
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            inventory = collect_inventory(repo, github=FakeGithub([]))
+            parent_intent = load_delivery_intent(parent_json)
+            delivered_child = CandidateStatus(
+                candidate_id="candidate-1",
+                owner="tester",
+                kind="integration",
+                task_path=child_path,
+                tip=None,
+                phase="verified",
+                outcome="delivered",
+                integration="pr_merged",
+                dirty=False,
+                closure="verified",
+                next_action="",
+            )
+
+            with mock.patch.object(
+                delivery_status,
+                "classify_candidate",
+                return_value=delivered_child,
+            ) as classify:
+                self.assertTrue(
+                    delivery_status._aggregate_children_satisfied(
+                        parent_intent, inventory
+                    )
+                )
+                classify.assert_called_once()
+
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            task_json = repo / child_path / "task.json"
+            store = DeliveryStore(receipt_path.parent)
+            receipt = store.read("candidate-1")
+            store.update(
+                "candidate-1",
+                int(receipt["generation"]),
+                {"authority_ref": "test:other-authority"},
+            )
+            receipt_bytes = receipt_path.read_bytes()
+            task_bytes = task_json.read_bytes()
+            generation = store.read("candidate-1")["generation"]
+            refs_before = git(repo, "show-ref", "--heads")
+            worktrees_before = git(repo, "worktree", "list", "--porcelain")
+
+            with mock.patch.object(
+                delivery_status,
+                "classify_candidate",
+                return_value=delivered_child,
+            ) as classify:
+                self.assertFalse(
+                    delivery_status._aggregate_children_satisfied(
+                        parent_intent, inventory
+                    )
+                )
+                classify.assert_not_called()
+
+            self.assertEqual(task_json.read_bytes(), task_bytes)
+            self.assertEqual(receipt_path.read_bytes(), receipt_bytes)
+            self.assertEqual(store.read("candidate-1")["generation"], generation)
+            self.assertEqual(git(repo, "show-ref", "--heads"), refs_before)
+            self.assertEqual(
+                git(repo, "worktree", "list", "--porcelain"), worktrees_before
+            )
         finally:
             directory.cleanup()
 
@@ -1497,6 +1901,186 @@ class DeliveryProjectionTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_exact_local_ref_tracks_follow_up_after_merged_remote_head(self) -> None:
+        branch = "goal/assura-delivery-closure-core-v2"
+        recovery_alias = "goal/assura-delivery-recovery-guard"
+        task_path = ".trellis/tasks/01-01-candidate"
+        repo, base_oid, reviewed_tip, directory = fixture_repo()
+        try:
+            git(repo, "branch", "-m", branch)
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            branch_ref = f"refs/heads/{branch}"
+            task["branch"] = branch_ref
+            task["meta"]["delivery"]["branch_ref"] = branch_ref
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            delivery_cli.ensure_receipt(
+                repo, load_delivery_intent(task_json), task
+            )
+            git(repo, "add", f"{task_path}/task.json")
+            git(repo, "commit", "-m", "bind exact candidate branch")
+
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--squash", reviewed_tip)
+            git(repo, "commit", "-m", "squash reviewed candidate")
+            merge_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "checkout", branch)
+            for index in range(2):
+                follow_up = repo / f"follow-up-{index}.txt"
+                follow_up.write_text(f"follow-up {index}\n", encoding="utf-8")
+                git(repo, "add", follow_up.name)
+                git(repo, "commit", "-m", f"follow-up {index}")
+            candidate_tip = git(repo, "rev-parse", "HEAD")
+            git(repo, "branch", recovery_alias, candidate_tip)
+            git(repo, "update-ref", f"refs/remotes/origin/{branch}", reviewed_tip)
+
+            pull_request = {
+                "number": 338,
+                "state": "MERGED",
+                "title": "Reviewed candidate",
+                "url": "https://github.com/rothnic/assura/pull/338",
+                "headRefName": branch,
+                "headRefOid": reviewed_tip,
+                "baseRefName": "master",
+                "baseRefOid": base_oid,
+                "mergeCommit": {"oid": merge_oid},
+                "mergedAt": "2026-09-14T00:00:00Z",
+            }
+            fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
+            fake_prs = json.dumps([pull_request])
+            fake_gh.write_text(
+                "#!/usr/bin/env python3\nprint(" + repr(fake_prs) + ")\n",
+                encoding="utf-8",
+            )
+            if os.name != "nt":
+                fake_gh.chmod(0o755)
+
+            inspected = task_cli(
+                repo, "delivery", "inspect", task_path, "--format", "json"
+            )
+            self.assertEqual(inspected.returncode, 0, inspected.stderr)
+            status = json.loads(inspected.stdout)
+            self.assertEqual(status["tip"], candidate_tip)
+            self.assertEqual(status["integration"], "post_review_commits")
+            issue_codes = {issue["code"] for issue in status["issues"]}
+            self.assertNotIn("CANDIDATE_REF_AMBIGUOUS", issue_codes)
+            self.assertIn("INTEGRATION_UNVERIFIED", issue_codes)
+            self.assertIn("RECEIPT_TIP_CHANGED", issue_codes)
+
+            advertised = sorted(
+                [
+                    {
+                        "name": branch_ref,
+                        "oid": reviewed_tip,
+                        "kind": "heads",
+                        "source": "remote-advertisement",
+                    },
+                    {
+                        "name": "refs/heads/master",
+                        "oid": merge_oid,
+                        "kind": "heads",
+                        "source": "remote-advertisement",
+                    },
+                ],
+                key=lambda ref: ref["name"],
+            )
+            with mock.patch(
+                "common.delivery._read_remote_refs",
+                return_value=(advertised, []),
+            ):
+                report, _ = project_audit(
+                    repo,
+                    owner="tester",
+                    github=FakeGithub([pull_request]),
+                    refresh_remote=True,
+                )
+            audited = next(
+                item
+                for item in report["candidates"]
+                if item["candidate_id"] == "candidate-1"
+            )
+            self.assertEqual(audited["tip"], candidate_tip)
+            self.assertNotIn(
+                "CANDIDATE_REF_AMBIGUOUS",
+                {issue["code"] for issue in audited["issues"]},
+            )
+            refs = {ref["name"]: ref["oid"] for ref in report["inventory"]["refs"]}
+            self.assertEqual(refs[branch_ref], candidate_tip)
+            self.assertEqual(
+                refs[f"refs/heads/{recovery_alias}"], candidate_tip
+            )
+            self.assertEqual(
+                refs[f"refs/remotes/origin/{branch}"], reviewed_tip
+            )
+            self.assertEqual(report["inventory"]["remote_refs"], advertised)
+        finally:
+            directory.cleanup()
+
+    def test_ahead_remote_advertisement_keeps_candidate_ref_ambiguous(self) -> None:
+        repo, base_oid, candidate_tip, directory = fixture_repo()
+        try:
+            git(repo, "update-ref", "refs/remotes/origin/candidate", candidate_tip)
+            git(repo, "branch", "remote-ahead", candidate_tip)
+            git(repo, "checkout", "remote-ahead")
+            ahead_file = repo / "remote-ahead.txt"
+            ahead_file.write_text("remote-only follow-up\n", encoding="utf-8")
+            git(repo, "add", ahead_file.name)
+            git(repo, "commit", "-m", "remote-only follow-up")
+            ahead_tip = git(repo, "rev-parse", "HEAD")
+            git(repo, "checkout", "candidate")
+
+            advertised = sorted(
+                [
+                    {
+                        "name": "refs/heads/candidate",
+                        "oid": ahead_tip,
+                        "kind": "heads",
+                        "source": "remote-advertisement",
+                    },
+                    {
+                        "name": "refs/heads/master",
+                        "oid": base_oid,
+                        "kind": "heads",
+                        "source": "remote-advertisement",
+                    },
+                ],
+                key=lambda ref: ref["name"],
+            )
+            with mock.patch(
+                "common.delivery._read_remote_refs",
+                return_value=(advertised, []),
+            ):
+                report, _ = project_audit(
+                    repo,
+                    owner="tester",
+                    github=FakeGithub([]),
+                    refresh_remote=True,
+                )
+
+            audited = next(
+                item
+                for item in report["candidates"]
+                if item["candidate_id"] == "candidate-1"
+            )
+            self.assertIsNone(audited["tip"])
+            self.assertIn(
+                "CANDIDATE_REF_AMBIGUOUS",
+                {issue["code"] for issue in audited["issues"]},
+            )
+            self.assertIsNone(audited["outcome"])
+            advertised_rows = [
+                row
+                for row in report["unowned_refs"]
+                if row["name"] == "refs/heads/candidate" and row["oid"] == ahead_tip
+            ]
+            self.assertEqual(len(advertised_rows), 1)
+            self.assertEqual(advertised_rows[0]["name"], "refs/heads/candidate")
+            self.assertEqual(advertised_rows[0]["oid"], ahead_tip)
+            self.assertEqual(advertised_rows[0]["disposition"], "unresolved")
+            self.assertEqual(report["inventory"]["remote_refs"], advertised)
+        finally:
+            directory.cleanup()
+
     def test_github_reader_rejects_a_full_page_as_incomplete_coverage(self) -> None:
         payload = json.dumps([{"number": index} for index in range(1000)])
         completed = subprocess.CompletedProcess(
@@ -1640,6 +2224,452 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_register_fills_authority_and_recovers_legacy_receipt_idempotently(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+
+            registered = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+                "--authority-ref",
+                "test:delivery-authority",
+            )
+
+            self.assertEqual(registered.returncode, 0, registered.stderr)
+            updated = json.loads(task_json.read_text(encoding="utf-8"))
+            self.assertEqual(
+                updated["meta"]["delivery"]["authority_ref"],
+                "test:delivery-authority",
+            )
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+            self.assertEqual(receipt["authority_ref"], "test:delivery-authority")
+            self.assertEqual(receipt["generation"], 1)
+
+            repeated = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+                "--authority-ref",
+                "test:delivery-authority",
+            )
+
+            self.assertEqual(repeated.returncode, 0, repeated.stderr)
+            self.assertEqual(store.read("candidate-1")["generation"], 1)
+        finally:
+            directory.cleanup()
+
+    def test_register_rejects_conflicting_receipt_authority_without_mutation(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                    "authority_ref": "test:older-authority",
+                },
+            )
+            before_receipt = store.read("candidate-1")
+
+            with self.assertRaisesRegex(
+                DeliveryValidationError, "receipt authority_ref does not match"
+            ):
+                delivery_cli.register_task(
+                    repo,
+                    task_json,
+                    "candidate-1",
+                    "tester",
+                    authority_ref="test:delivery-authority",
+                )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            self.assertEqual(store.read("candidate-1"), before_receipt)
+        finally:
+            directory.cleanup()
+
+    def test_register_retries_after_task_write_failure_without_advancing_receipt(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+
+            with mock.patch.object(delivery_cli, "write_json", return_value=False):
+                with self.assertRaisesRegex(
+                    DeliveryValidationError, "cannot write delivery intent"
+                ):
+                    delivery_cli.register_task(
+                        repo,
+                        task_json,
+                        "candidate-1",
+                        "tester",
+                        authority_ref="test:delivery-authority",
+                    )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["authority_ref"], "test:delivery-authority")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+            self.assertEqual(receipt["generation"], 1)
+
+            delivery_cli.register_task(
+                repo,
+                task_json,
+                "candidate-1",
+                "tester",
+                authority_ref="test:delivery-authority",
+            )
+
+            updated = json.loads(task_json.read_text(encoding="utf-8"))
+            self.assertEqual(
+                updated["meta"]["delivery"]["authority_ref"],
+                "test:delivery-authority",
+            )
+            self.assertEqual(store.read("candidate-1")["generation"], 1)
+        finally:
+            directory.cleanup()
+
+    def test_fresh_registration_writes_task_before_receipt_and_recovers_after_failure(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"].pop("delivery")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            candidate_id = "fresh-write-failure"
+            receipt_path = (
+                repo / ".git" / "assura" / "delivery-v1" / f"{candidate_id}.json"
+            )
+            original_write = delivery_cli.write_json
+
+            def write_then_report_failure(path: Path, value: dict) -> bool:
+                succeeded = original_write(path, value)
+                if path.resolve() == task_json.resolve():
+                    return False
+                return succeeded
+
+            with mock.patch.object(
+                delivery_cli, "write_json", side_effect=write_then_report_failure
+            ):
+                with self.assertRaisesRegex(
+                    DeliveryValidationError, "cannot write delivery intent"
+                ):
+                    delivery_cli.register_task(
+                        repo, task_json, candidate_id, "tester"
+                    )
+
+            self.assertFalse(
+                receipt_path.exists(),
+                "a failed fresh task write must not leave an orphan receipt",
+            )
+            persisted = json.loads(task_json.read_text(encoding="utf-8"))
+            self.assertEqual(
+                persisted["meta"]["delivery"]["candidate_id"], candidate_id
+            )
+
+            recovered = delivery_cli.register_task(
+                repo, task_json, candidate_id, "tester"
+            )
+            self.assertEqual(recovered.candidate_id, candidate_id)
+            self.assertTrue(receipt_path.is_file())
+        finally:
+            directory.cleanup()
+
+    def test_partial_registration_binding_blocks_retry_record_close_and_archive(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        commands = ("register-retry", "record", "close", "archive")
+        for command_name in commands:
+            with self.subTest(command=command_name):
+                repo, _, tip, directory = fixture_repo()
+                try:
+                    task_json = repo / task_path / "task.json"
+                    task = json.loads(task_json.read_text(encoding="utf-8"))
+                    task["meta"]["delivery"].pop("authority_ref")
+                    task_json.write_text(json.dumps(task), encoding="utf-8")
+                    before_task = task_json.read_bytes()
+                    receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+                    store = DeliveryStore(receipt_path.parent)
+                    store.create(
+                        "candidate-1",
+                        {
+                            "repository": "rothnic/assura",
+                            "owner": "tester",
+                            "task_path": f"{task_path}/task.json",
+                            "phase": "registered",
+                            "session_state": "attached",
+                            "outcome": None,
+                            "closure": "open",
+                            "evidence": {},
+                            "attached_branch_ref": "refs/heads/candidate",
+                        },
+                    )
+
+                    with mock.patch.object(delivery_cli, "write_json", return_value=False):
+                        with self.assertRaisesRegex(
+                            DeliveryValidationError, "cannot write delivery intent"
+                        ):
+                            delivery_cli.register_task(
+                                repo,
+                                task_json,
+                                "candidate-1",
+                                "tester",
+                                authority_ref="test:delivery-authority",
+                            )
+
+                    partial_receipt = store.read("candidate-1")
+                    self.assertEqual(
+                        partial_receipt["authority_ref"], "test:delivery-authority"
+                    )
+                    self.assertEqual(partial_receipt["generation"], 1)
+                    before_receipt = receipt_path.read_bytes()
+                    before_generation = partial_receipt["generation"]
+                    before_refs = git(repo, "show-ref", "--heads")
+                    before_worktrees = git(repo, "worktree", "list", "--porcelain")
+                    evidence_path = Path(directory.name) / "record-evidence.json"
+                    evidence_path.write_text(
+                        json.dumps({"observed_tip": tip}), encoding="utf-8"
+                    )
+
+                    if command_name == "register-retry":
+                        result = task_cli(
+                            repo,
+                            "delivery",
+                            "register",
+                            task_path,
+                            "--candidate",
+                            "candidate-1",
+                            "--owner",
+                            "tester",
+                        )
+                        expected_code = 2
+                    elif command_name == "record":
+                        result = task_cli(
+                            repo,
+                            "delivery",
+                            "record",
+                            task_path,
+                            "--evidence-file",
+                            str(evidence_path),
+                            "--expected-generation",
+                            str(before_generation),
+                        )
+                        expected_code = 2
+                    elif command_name == "close":
+                        result = task_cli(
+                            repo,
+                            "delivery",
+                            "close",
+                            task_path,
+                            "--outcome",
+                            "delivered",
+                        )
+                        expected_code = 2
+                    else:
+                        result = task_cli(
+                            repo, "archive", task_path, "--no-commit"
+                        )
+                        expected_code = 1
+
+                    self.assertEqual(
+                        result.returncode,
+                        expected_code,
+                        result.stdout + result.stderr,
+                    )
+                    self.assertIn(
+                        "RECEIPT_BINDING_CONFLICT", result.stdout + result.stderr
+                    )
+                    self.assertEqual(task_json.read_bytes(), before_task)
+                    self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                    receipt = store.read("candidate-1")
+                    self.assertEqual(receipt["generation"], before_generation)
+                    self.assertIsNone(receipt["outcome"])
+                    self.assertEqual(receipt["closure"], "open")
+                    self.assertTrue(task_json.is_file())
+                    self.assertEqual(git(repo, "show-ref", "--heads"), before_refs)
+                    self.assertEqual(
+                        git(repo, "worktree", "list", "--porcelain"),
+                        before_worktrees,
+                    )
+                finally:
+                    directory.cleanup()
+
+    def test_register_rejects_receipt_created_during_recovery_before_authority_write(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            original_read = delivery_receipts._read_receipt
+            reads = 0
+
+            def read_after_competing_create(
+                receipt_store: DeliveryStore, candidate_id: str
+            ) -> dict[str, object] | None:
+                nonlocal reads
+                reads += 1
+                if reads == 2:
+                    receipt_store.create(
+                        candidate_id,
+                        {
+                            "repository": "rothnic/assura",
+                            "task_path": f"{task_path}/task.json",
+                            "owner": "tester",
+                            "phase": "registered",
+                            "session_state": "attached",
+                            "outcome": None,
+                            "closure": "open",
+                            "evidence": {},
+                            "attached_branch_ref": "refs/heads/other",
+                            "authority_ref": "test:delivery-authority",
+                        },
+                    )
+                return original_read(receipt_store, candidate_id)
+
+            with mock.patch.object(
+                delivery_cli, "_read_receipt", side_effect=read_after_competing_create
+            ), mock.patch.object(
+                delivery_receipts, "_read_receipt", side_effect=read_after_competing_create
+            ):
+                with self.assertRaisesRegex(
+                    DeliveryValidationError, "receipt branch does not match"
+                ):
+                    delivery_cli.register_task(
+                        repo,
+                        task_json,
+                        "candidate-1",
+                        "tester",
+                        authority_ref="test:delivery-authority",
+                    )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/other")
+            self.assertEqual(receipt["generation"], 0)
+        finally:
+            directory.cleanup()
+
+    def test_register_new_intent_rejects_concurrent_receipt_before_task_write(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"].pop("delivery")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            original_read = delivery_receipts._read_receipt
+            reads = 0
+
+            def read_after_competing_create(
+                receipt_store: DeliveryStore, candidate_id: str
+            ) -> dict[str, object] | None:
+                nonlocal reads
+                reads += 1
+                if reads == 2:
+                    receipt_store.create(
+                        candidate_id,
+                        {
+                            "repository": "rothnic/assura",
+                            "task_path": f"{task_path}/task.json",
+                            "owner": "tester",
+                            "phase": "registered",
+                            "session_state": "attached",
+                            "outcome": None,
+                            "closure": "open",
+                            "evidence": {},
+                            "attached_branch_ref": "refs/heads/other",
+                            "authority_ref": "test:delivery-authority",
+                        },
+                    )
+                return original_read(receipt_store, candidate_id)
+
+            with mock.patch.object(
+                delivery_cli, "_read_receipt", side_effect=read_after_competing_create
+            ), mock.patch.object(
+                delivery_receipts, "_read_receipt", side_effect=read_after_competing_create
+            ):
+                with self.assertRaisesRegex(
+                    DeliveryValidationError, "receipt branch does not match"
+                ):
+                    delivery_cli.register_task(
+                        repo,
+                        task_json,
+                        "candidate-1",
+                        "tester",
+                        authority_ref="test:delivery-authority",
+                    )
+
+            self.assertEqual(task_json.read_bytes(), before_task)
+            receipt = store.read("candidate-1")
+            self.assertEqual(receipt["attached_branch_ref"], "refs/heads/other")
+            self.assertEqual(receipt["generation"], 0)
+        finally:
+            directory.cleanup()
+
     def test_register_repairs_legacy_receipt_from_declared_candidate_branch(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
@@ -1733,6 +2763,108 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             self.assertEqual(store.read("candidate-1")["generation"], 0)
             self.assertNotIn("attached_branch_ref", store.read("candidate-1"))
             self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
+    def test_register_rejects_detached_legacy_receipt_without_mutation_when_filling_authority(
+        self,
+    ) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"].pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+            before_receipt = store.read("candidate-1")
+            git(repo, "checkout", "--detach", "master")
+
+            rejected = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+                "--authority-ref",
+                "test:delivery-authority",
+            )
+
+            self.assertEqual(rejected.returncode, 2)
+            self.assertIn("explicit recovery requires a live checkout", rejected.stderr)
+            self.assertEqual(task_json.read_bytes(), before_task)
+            self.assertEqual(store.read("candidate-1"), before_receipt)
+        finally:
+            directory.cleanup()
+
+    def test_register_rejects_legacy_recovery_from_base_checkout_when_branch_ref_is_missing(
+        self,
+    ) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["branch"] = "refs/heads/master"
+            delivery = task["meta"]["delivery"]
+            delivery["base_ref"] = "refs/heads/master"
+            delivery.pop("branch_ref")
+            delivery.pop("authority_ref")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+            before_receipt = store.read("candidate-1")
+            git(repo, "checkout", "master")
+
+            rejected = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+                "--authority-ref",
+                "test:delivery-authority",
+            )
+
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertIn("base", rejected.stderr.lower())
+            self.assertEqual(task_json.read_bytes(), before_task)
+            self.assertEqual(store.read("candidate-1"), before_receipt)
         finally:
             directory.cleanup()
 
@@ -2040,6 +3172,386 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
         finally:
             directory.cleanup()
 
+    def test_start_guard_rejects_misbound_terminal_receipt(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            candidate_path = ".trellis/tasks/01-01-candidate"
+            candidate_json = repo / candidate_path / "task.json"
+            other_path = ".trellis/tasks/01-02-other"
+            other_json = repo / other_path / "task.json"
+            task = json.loads(candidate_json.read_text(encoding="utf-8"))
+            other_task = json.loads(json.dumps(task))
+            other_task.update(
+                {"id": "other", "name": "other", "title": "Other candidate"}
+            )
+            other_task["branch"] = "refs/heads/other-candidate"
+            other_task["meta"]["delivery"].update(
+                {
+                    "candidate_id": "candidate-2",
+                    "branch_ref": "refs/heads/other-candidate",
+                }
+            )
+            other_json.parent.mkdir(parents=True)
+            other_json.write_text(json.dumps(other_task), encoding="utf-8")
+
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-2",
+                {
+                    "repository": "rothnic/assura",
+                    "task_path": f"{other_path}/task.json",
+                    "owner": "tester",
+                    "attached_branch_ref": "refs/heads/candidate",
+                    "authority_ref": "test:delivery-authority",
+                    "phase": "verified",
+                    "outcome": "delivered",
+                    "closure": "verified",
+                    "evidence": {},
+                },
+            )
+            before_task = candidate_json.read_bytes()
+            before_other = other_json.read_bytes()
+            before_receipt = store.read("candidate-2")
+            candidate_receipt = store.path_for("candidate-1")
+
+            started = task_cli(repo, "start", candidate_path)
+
+            self.assertNotEqual(started.returncode, 0, started.stderr)
+            self.assertIn("UNFINISHED_OWNED_CANDIDATE", started.stderr)
+            self.assertIn("RECEIPT_BINDING_CONFLICT", started.stderr)
+            self.assertEqual(candidate_json.read_bytes(), before_task)
+            self.assertEqual(other_json.read_bytes(), before_other)
+            self.assertFalse(candidate_receipt.exists())
+            self.assertEqual(store.read("candidate-2"), before_receipt)
+        finally:
+            directory.cleanup()
+
+    def test_inspect_and_archive_reject_mismatched_receipt_bindings_read_only(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        mismatches = (
+            ("repository", "elsewhere/assura"),
+            ("owner", "other-owner"),
+            ("task_path", ".trellis/tasks/01-02-other/task.json"),
+            ("attached_branch_ref", "refs/heads/other-candidate"),
+            ("attached_branch_ref", None),
+            ("authority_ref", "test:other-authority"),
+            ("authority_ref", None),
+        )
+        for field, replacement in mismatches:
+            with self.subTest(field=field):
+                repo, _, _, directory = fixture_repo()
+                try:
+                    started = task_cli(repo, "start", task_path)
+                    self.assertEqual(started.returncode, 0, started.stderr)
+                    paused = task_cli(repo, "finish")
+                    self.assertEqual(paused.returncode, 0, paused.stderr)
+
+                    task_json = repo / task_path / "task.json"
+                    receipt_path = (
+                        repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+                    )
+                    store = DeliveryStore(receipt_path.parent)
+                    receipt = store.read("candidate-1")
+                    store.update(
+                        "candidate-1",
+                        int(receipt["generation"]),
+                        {field: replacement},
+                    )
+                    before_receipt = receipt_path.read_bytes()
+                    before_generation = store.read("candidate-1")["generation"]
+                    before_task = task_json.read_bytes()
+                    before_refs = git(repo, "show-ref", "--heads")
+                    before_worktrees = git(repo, "worktree", "list", "--porcelain")
+                    evidence_path = Path(directory.name) / "evidence.json"
+                    evidence_path.write_text(
+                        json.dumps({"observed_tip": git(repo, "rev-parse", "HEAD")}),
+                        encoding="utf-8",
+                    )
+
+                    commands = (
+                        (
+                            "inspect",
+                            lambda: task_cli(
+                                repo,
+                                "delivery",
+                                "inspect",
+                                task_path,
+                                "--format",
+                                "json",
+                            ),
+                            2,
+                        ),
+                        (
+                            "record",
+                            lambda: task_cli(
+                                repo,
+                                "delivery",
+                                "record",
+                                task_path,
+                                "--evidence-file",
+                                str(evidence_path),
+                                "--expected-generation",
+                                str(before_generation),
+                            ),
+                            2,
+                        ),
+                        (
+                            "close",
+                            lambda: task_cli(
+                                repo,
+                                "delivery",
+                                "close",
+                                task_path,
+                                "--outcome",
+                                "delivered",
+                            ),
+                            2,
+                        ),
+                        (
+                            "archive",
+                            lambda: task_cli(repo, "archive", task_path, "--no-commit"),
+                            1,
+                        ),
+                    )
+                    for name, run, expected_code in commands:
+                        result = run()
+                        with self.subTest(boundary=name):
+                            self.assertEqual(
+                                result.returncode,
+                                expected_code,
+                                result.stdout + result.stderr,
+                            )
+                            self.assertIn(
+                                "RECEIPT_BINDING_CONFLICT",
+                                result.stdout + result.stderr,
+                            )
+                            self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                            self.assertEqual(
+                                store.read("candidate-1")["generation"],
+                                before_generation,
+                            )
+                            self.assertEqual(task_json.read_bytes(), before_task)
+                            self.assertEqual(git(repo, "show-ref", "--heads"), before_refs)
+                            self.assertEqual(
+                                git(repo, "worktree", "list", "--porcelain"),
+                                before_worktrees,
+                            )
+                finally:
+                    directory.cleanup()
+
+    def test_remote_branch_binding_requires_same_ref_or_proven_oid_alias(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        repo, base_oid, tip, directory = fixture_repo()
+        try:
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["branch"] = "refs/remotes/origin/feature"
+            task["meta"]["delivery"]["branch_ref"] = "refs/remotes/origin/feature"
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            git(repo, "update-ref", "refs/remotes/origin/feature", tip)
+            git(repo, "update-ref", "refs/remotes/upstream/feature", tip)
+            git(repo, "checkout", "--detach", "refs/remotes/origin/feature")
+
+            started = task_cli(repo, "start", task_path)
+            self.assertEqual(started.returncode, 0, started.stderr)
+            paused = task_cli(repo, "finish")
+            self.assertEqual(paused.returncode, 0, paused.stderr)
+
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            store = DeliveryStore(receipt_path.parent)
+            receipt = store.read("candidate-1")
+            self.assertEqual(
+                receipt["attached_branch_ref"], "refs/remotes/origin/feature"
+            )
+
+            with mock.patch.object(
+                delivery_cli, "classify_candidate", wraps=classify_candidate
+            ) as classifier:
+                delivery_cli._status_for_task(
+                    repo, task_json, github=FakeGithub([])
+                )
+                classifier.assert_called_once()
+
+            receipt = store.read("candidate-1")
+            store.update(
+                "candidate-1",
+                int(receipt["generation"]),
+                {"attached_branch_ref": "refs/remotes/upstream/feature"},
+            )
+            self.assertEqual(
+                git(repo, "rev-parse", "refs/remotes/origin/feature"),
+                git(repo, "rev-parse", "refs/remotes/upstream/feature"),
+            )
+            with mock.patch.object(
+                delivery_cli, "classify_candidate", wraps=classify_candidate
+            ) as classifier:
+                delivery_cli._status_for_task(
+                    repo, task_json, github=FakeGithub([])
+                )
+                classifier.assert_called_once()
+
+            git(repo, "checkout", "master")
+            with mock.patch.object(
+                delivery_cli, "classify_candidate", wraps=classify_candidate
+            ) as classifier:
+                delivery_cli._status_for_task(
+                    repo,
+                    task_json,
+                    github=FakeGithub([]),
+                    allow_base_checkout=True,
+                )
+                classifier.assert_called_once()
+
+            git(repo, "checkout", "--detach", "refs/remotes/origin/feature")
+            git(repo, "update-ref", "refs/remotes/upstream/feature", base_oid)
+            receipt = store.read("candidate-1")
+            store.update(
+                "candidate-1",
+                int(receipt["generation"]),
+                {"attached_branch_ref": "refs/remotes/upstream/feature"},
+            )
+            self.assertNotEqual(
+                git(repo, "rev-parse", "refs/remotes/origin/feature"),
+                git(repo, "rev-parse", "refs/remotes/upstream/feature"),
+            )
+
+            with self.subTest(boundary="before-classification"):
+                with mock.patch.object(
+                    delivery_cli, "classify_candidate", wraps=classify_candidate
+                ) as classifier:
+                    with self.assertRaisesRegex(
+                        DeliveryValidationError, "RECEIPT_BINDING_CONFLICT"
+                    ):
+                        delivery_cli._status_for_task(
+                            repo, task_json, github=FakeGithub([])
+                        )
+                    classifier.assert_not_called()
+
+            before_task = task_json.read_bytes()
+            before_receipt = receipt_path.read_bytes()
+            before_generation = store.read("candidate-1")["generation"]
+            refs_before = git(repo, "show-ref")
+            worktrees_before = git(repo, "worktree", "list", "--porcelain")
+            archive_root = repo / ".trellis" / "tasks" / "archive"
+            archive_paths_before = (
+                sorted(path.relative_to(repo).as_posix() for path in archive_root.rglob("task.json"))
+                if archive_root.is_dir()
+                else []
+            )
+            evidence_path = Path(directory.name) / "remote-ref-evidence.json"
+            evidence_path.write_text(
+                json.dumps({"observed_tip": tip}), encoding="utf-8"
+            )
+            commands = (
+                (
+                    "inspect",
+                    ("delivery", "inspect", task_path, "--format", "json"),
+                    2,
+                ),
+                (
+                    "record",
+                    (
+                        "delivery",
+                        "record",
+                        task_path,
+                        "--evidence-file",
+                        str(evidence_path),
+                        "--expected-generation",
+                        str(before_generation),
+                    ),
+                    2,
+                ),
+                (
+                    "close",
+                    ("delivery", "close", task_path, "--outcome", "delivered"),
+                    2,
+                ),
+                ("archive", ("archive", task_path, "--no-commit"), 1),
+            )
+            for name, arguments, expected_code in commands:
+                with self.subTest(boundary=name):
+                    result = task_cli(repo, *arguments)
+                    self.assertEqual(
+                        result.returncode,
+                        expected_code,
+                        result.stdout + result.stderr,
+                    )
+                    self.assertIn(
+                        "RECEIPT_BINDING_CONFLICT", result.stdout + result.stderr
+                    )
+                    self.assertEqual(task_json.read_bytes(), before_task)
+                    self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                    receipt = store.read("candidate-1")
+                    self.assertEqual(receipt["generation"], before_generation)
+                    self.assertIsNone(receipt["outcome"])
+                    self.assertEqual(receipt["closure"], "open")
+                    self.assertEqual(git(repo, "show-ref"), refs_before)
+                    self.assertEqual(
+                        git(repo, "worktree", "list", "--porcelain"),
+                        worktrees_before,
+                    )
+                    archive_paths_after = (
+                        sorted(
+                            path.relative_to(repo).as_posix()
+                            for path in archive_root.rglob("task.json")
+                        )
+                        if archive_root.is_dir()
+                        else []
+                    )
+                    self.assertEqual(archive_paths_after, archive_paths_before)
+                    self.assertTrue(task_json.is_file())
+        finally:
+            directory.cleanup()
+
+    def test_delivery_inspect_keeps_missing_and_valid_receipt_behavior(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+
+            missing = task_cli(
+                repo, "delivery", "inspect", task_path, "--format", "json"
+            )
+            self.assertEqual(missing.returncode, 0, missing.stderr)
+            self.assertEqual(json.loads(missing.stdout)["candidate_id"], "candidate-1")
+            self.assertFalse(receipt_path.exists())
+
+            started = task_cli(repo, "start", task_path)
+            self.assertEqual(started.returncode, 0, started.stderr)
+            before_task = task_json.read_bytes()
+            before_receipt = receipt_path.read_bytes()
+            store = DeliveryStore(receipt_path.parent)
+            before_generation = store.read("candidate-1")["generation"]
+            valid = task_cli(
+                repo, "delivery", "inspect", task_path, "--format", "json"
+            )
+
+            self.assertEqual(valid.returncode, 0, valid.stderr)
+            self.assertEqual(json.loads(valid.stdout)["candidate_id"], "candidate-1")
+            self.assertEqual(store.read("candidate-1")["generation"], before_generation)
+            self.assertEqual(receipt_path.read_bytes(), before_receipt)
+            self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
+    def test_archive_missing_receipt_keeps_explicit_error(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            before_task = task_json.read_bytes()
+
+            archived = task_cli(repo, "archive", task_path, "--no-commit")
+
+            self.assertEqual(archived.returncode, 1, archived.stdout + archived.stderr)
+            self.assertIn("RECEIPT_MISSING", archived.stdout + archived.stderr)
+            self.assertFalse(receipt_path.exists())
+            self.assertEqual(task_json.read_bytes(), before_task)
+        finally:
+            directory.cleanup()
+
     def test_archive_rejects_unmerged_task_without_mutation(self) -> None:
         repo, _, _, directory = fixture_repo()
         try:
@@ -2071,6 +3583,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             git(repo, "checkout", "master")
             git(repo, "merge", "--ff-only", "candidate")
             base_after_merge = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
             evidence_path = Path(directory.name) / "evidence.json"
             evidence_path.write_text(
                 json.dumps(
@@ -2148,6 +3661,134 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             self.assertEqual(receipt["closure"], "closed")
         finally:
             directory.cleanup()
+
+    def test_archive_closure_helper_and_retry_reject_mismatched_authority(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for consumer in ("closure-helper", "archive-recovery"):
+            with self.subTest(consumer=consumer):
+                repo, _, _, directory = fixture_repo()
+                try:
+                    self.assertEqual(task_cli(repo, "start", task_path).returncode, 0)
+                    self.assertEqual(task_cli(repo, "finish").returncode, 0)
+                    git(repo, "checkout", "master")
+                    closed = task_cli(
+                        repo,
+                        "delivery",
+                        "close",
+                        task_path,
+                        "--outcome",
+                        "rejected",
+                        "--reason",
+                        "not selected",
+                    )
+                    self.assertEqual(closed.returncode, 0, closed.stderr)
+
+                    source = repo / task_path
+                    intent = load_delivery_intent(source / "task.json")
+                    destination = (
+                        repo
+                        / ".trellis"
+                        / "tasks"
+                        / "archive"
+                        / "2099-01"
+                        / source.name
+                    )
+                    destination.parent.mkdir(parents=True)
+                    shutil.move(str(source), str(destination))
+                    task_json = destination / "task.json"
+                    receipt_path = (
+                        repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+                    )
+                    store = DeliveryStore(receipt_path.parent)
+                    receipt = store.read("candidate-1")
+                    self.assertEqual(receipt["outcome"], "rejected")
+                    self.assertEqual(receipt["closure"], "verified")
+                    store.update(
+                        "candidate-1",
+                        int(receipt["generation"]),
+                        {"authority_ref": "test:other-authority"},
+                    )
+                    task_bytes = task_json.read_bytes()
+                    receipt_bytes = receipt_path.read_bytes()
+                    generation = store.read("candidate-1")["generation"]
+                    refs_before = git(repo, "show-ref", "--heads")
+                    worktrees_before = git(repo, "worktree", "list", "--porcelain")
+
+                    if consumer == "closure-helper":
+                        allowed, message = delivery_cli.record_archive_closure(
+                            repo, intent, destination
+                        )
+                        self.assertFalse(allowed, message)
+                        output = message
+                    else:
+                        retried = task_cli(
+                            repo, "archive", task_path, "--no-commit"
+                        )
+                        self.assertEqual(
+                            retried.returncode,
+                            1,
+                            retried.stdout + retried.stderr,
+                        )
+                        output = retried.stdout + retried.stderr
+
+                    self.assertIn("RECEIPT_BINDING_CONFLICT", output)
+                    self.assertEqual(task_json.read_bytes(), task_bytes)
+                    self.assertEqual(receipt_path.read_bytes(), receipt_bytes)
+                    current = store.read("candidate-1")
+                    self.assertEqual(current["generation"], generation)
+                    self.assertEqual(current["outcome"], "rejected")
+                    self.assertEqual(current["closure"], "verified")
+                    self.assertTrue(task_json.is_file())
+                    self.assertEqual(git(repo, "show-ref", "--heads"), refs_before)
+                    self.assertEqual(
+                        git(repo, "worktree", "list", "--porcelain"),
+                        worktrees_before,
+                    )
+                finally:
+                    directory.cleanup()
+
+    def test_archive_closure_reloads_archived_intent_before_receipt_update(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for field, value in (
+            ("candidate_id", "drifted-candidate"),
+            ("repository", "elsewhere/assura"),
+            ("branch_ref", "refs/heads/other-candidate"),
+            ("base_ref", "refs/heads/missing-base"),
+        ):
+            with self.subTest(field=field):
+                repo, _, _, directory = fixture_repo()
+                try:
+                    task_json = repo / task_path / "task.json"
+                    task_data = json.loads(task_json.read_text(encoding="utf-8"))
+                    intent = load_delivery_intent(task_json)
+                    ensure_receipt(repo, intent, task_data)
+                    receipt_path = (
+                        repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+                    )
+                    before_receipt = receipt_path.read_bytes()
+
+                    archive_path = (
+                        repo / ".trellis" / "tasks" / f"archive-copy-{field}" / "candidate"
+                    )
+                    archive_path.mkdir(parents=True)
+                    archived = json.loads(json.dumps(task_data))
+                    archived["meta"]["delivery"][field] = value
+                    archived_task_json = archive_path / "task.json"
+                    archived_task_json.write_text(
+                        json.dumps(archived), encoding="utf-8"
+                    )
+                    before_archived = archived_task_json.read_bytes()
+
+                    allowed, message = delivery_cli.record_archive_closure(
+                        repo, intent, archive_path
+                    )
+
+                    self.assertFalse(allowed, message)
+                    self.assertIn("ARCHIVE_INTENT_MISMATCH", message)
+                    self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                    self.assertEqual(archived_task_json.read_bytes(), before_archived)
+                finally:
+                    directory.cleanup()
 
     def test_archive_retry_recovers_after_the_task_move(self) -> None:
         repo, _, _, directory = fixture_repo()
@@ -2325,6 +3966,7 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             git(repo, "checkout", "master")
             git(repo, "merge", "--ff-only", "candidate")
             base_after_merge = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
             evidence_path = Path(directory.name) / "evidence.json"
             evidence_path.write_text(
                 json.dumps(
@@ -2400,5 +4042,646 @@ class DeliveryLifecycleCommandTests(unittest.TestCase):
             directory.cleanup()
 
 
+class DeliveryRepairRegressionTests(unittest.TestCase):
+    def test_register_rejects_raw_non_branch_base_refs_without_mutation(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for index, raw_base in enumerate(
+            ("HEAD", "candidate~1", "missing-branch", "refs/tags/v0.4.0")
+        ):
+            with self.subTest(base_ref=raw_base):
+                repo, _, _, directory = fixture_repo()
+                try:
+                    task_json = repo / task_path / "task.json"
+                    task = json.loads(task_json.read_text(encoding="utf-8"))
+                    task["meta"].pop("delivery")
+                    task_json.write_text(json.dumps(task), encoding="utf-8")
+                    before_task = task_json.read_bytes()
+                    candidate_id = f"invalid-base-{index}"
+
+                    result = task_cli(
+                        repo,
+                        "delivery",
+                        "register",
+                        task_path,
+                        "--candidate",
+                        candidate_id,
+                        "--owner",
+                        "tester",
+                        "--base-ref",
+                        raw_base,
+                    )
+
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertIn("BASE_REF_INVALID", result.stdout + result.stderr)
+                    self.assertEqual(task_json.read_bytes(), before_task)
+                    self.assertFalse(
+                        (repo / ".git/assura/delivery-v1" / f"{candidate_id}.json").exists()
+                    )
+                finally:
+                    directory.cleanup()
+
+    def test_legacy_registration_checks_repository_before_receipt_repair(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            task_json = repo / task_path / "task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"]["delivery"]["repository"] = "elsewhere/assura"
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            before_task = task_json.read_bytes()
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "repository": "elsewhere/assura",
+                    "task_path": f"{task_path}/task.json",
+                    "owner": "tester",
+                    "phase": "registered",
+                    "session_state": "attached",
+                    "outcome": None,
+                    "closure": "open",
+                    "evidence": {},
+                },
+            )
+            receipt_path = store.path_for("candidate-1")
+            before_receipt = receipt_path.read_bytes()
+
+            result = task_cli(
+                repo,
+                "delivery",
+                "register",
+                task_path,
+                "--candidate",
+                "candidate-1",
+                "--owner",
+                "tester",
+                "--authority-ref",
+                "test:delivery-authority",
+            )
+
+            self.assertNotEqual(result.returncode, 0, result.stdout)
+            self.assertIn("REPOSITORY_IDENTITY_MISMATCH", result.stdout + result.stderr)
+            self.assertEqual(task_json.read_bytes(), before_task)
+            self.assertEqual(receipt_path.read_bytes(), before_receipt)
+            self.assertEqual(store.read("candidate-1")["generation"], 0)
+        finally:
+            directory.cleanup()
+
+    def test_detached_fresh_registration_requires_exact_declared_branch_tip(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for label, detached_oid, should_register in (
+            ("different-tip", "base", False),
+            ("matching-tip", "candidate", True),
+        ):
+            with self.subTest(binding=label):
+                repo, base_oid, tip, directory = fixture_repo()
+                try:
+                    task_json = repo / task_path / "task.json"
+                    task = json.loads(task_json.read_text(encoding="utf-8"))
+                    task["meta"].pop("delivery")
+                    task_json.write_text(json.dumps(task), encoding="utf-8")
+                    before_task = task_json.read_bytes()
+                    actual_oid = base_oid if detached_oid == "base" else tip
+                    git(repo, "checkout", "--detach", actual_oid)
+                    candidate_id = f"detached-{label}"
+
+                    result = task_cli(
+                        repo,
+                        "delivery",
+                        "register",
+                        task_path,
+                        "--candidate",
+                        candidate_id,
+                        "--owner",
+                        "tester",
+                    )
+
+                    receipt_path = repo / ".git/assura/delivery-v1" / f"{candidate_id}.json"
+                    if should_register:
+                        self.assertEqual(result.returncode, 0, result.stderr)
+                        receipt = DeliveryStore(receipt_path.parent).read(candidate_id)
+                        self.assertEqual(receipt["attached_branch_ref"], "refs/heads/candidate")
+                        self.assertEqual(receipt["registered_tip"], tip)
+                        self.assertEqual(git(repo, "rev-parse", "HEAD"), tip)
+                    else:
+                        self.assertNotEqual(result.returncode, 0, result.stdout)
+                        self.assertIn("BRANCH_BINDING_UNPROVEN", result.stdout + result.stderr)
+                        self.assertEqual(task_json.read_bytes(), before_task)
+                        self.assertFalse(receipt_path.exists())
+                finally:
+                    directory.cleanup()
+
+    def test_fresh_registration_requires_exact_attached_ref_or_equal_oid_alias(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for label, declared_ref, declared_oid, should_register in (
+            ("divergent-remote", "refs/remotes/upstream/candidate", "base", False),
+            ("equal-origin-alias", "refs/remotes/origin/candidate", "tip", True),
+        ):
+            with self.subTest(binding=label):
+                repo, base_oid, tip, directory = fixture_repo()
+                try:
+                    task_json = repo / task_path / "task.json"
+                    task = json.loads(task_json.read_text(encoding="utf-8"))
+                    task["meta"].pop("delivery")
+                    task["branch"] = declared_ref
+                    task_json.write_text(json.dumps(task), encoding="utf-8")
+                    remote_oid = base_oid if declared_oid == "base" else tip
+                    remote_name = declared_ref.removeprefix("refs/remotes/")
+                    git(repo, "update-ref", f"refs/remotes/{remote_name}", remote_oid)
+                    candidate_id = f"attached-{label}"
+                    before_task = task_json.read_bytes()
+                    receipt_path = (
+                        repo / ".git" / "assura" / "delivery-v1" / f"{candidate_id}.json"
+                    )
+
+                    if should_register:
+                        intent = delivery_cli.register_task(
+                            repo, task_json, candidate_id, "tester"
+                        )
+                        self.assertEqual(intent.branch_ref, declared_ref)
+                        self.assertTrue(receipt_path.is_file())
+                    else:
+                        with self.assertRaisesRegex(
+                            DeliveryValidationError, "BRANCH_BINDING_UNPROVEN"
+                        ):
+                            delivery_cli.register_task(
+                                repo, task_json, candidate_id, "tester"
+                            )
+                        self.assertEqual(task_json.read_bytes(), before_task)
+                        self.assertFalse(receipt_path.exists())
+                finally:
+                    directory.cleanup()
+
+    def test_audit_keeps_divergent_remote_refs_distinct_from_local_candidate(self) -> None:
+        repo, base_oid, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            (repo / "foreign-ref.txt").write_text("foreign\n", encoding="utf-8")
+            git(repo, "add", "foreign-ref.txt")
+            git(repo, "commit", "-m", "foreign candidate ref")
+            foreign_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "checkout", "candidate")
+            git(repo, "update-ref", "refs/remotes/origin/candidate", base_oid)
+            git(repo, "update-ref", "refs/remotes/upstream/candidate", foreign_oid)
+
+            report, statuses = project_audit(repo, github=FakeGithub([]))
+
+            unowned = {row["name"]: row for row in report["unowned_refs"]}
+            self.assertEqual(unowned["refs/remotes/origin/candidate"]["oid"], base_oid)
+            self.assertEqual(
+                unowned["refs/remotes/upstream/candidate"]["oid"], foreign_oid
+            )
+            for ref_name in (
+                "refs/remotes/origin/candidate",
+                "refs/remotes/upstream/candidate",
+            ):
+                self.assertEqual(unowned[ref_name]["disposition"], "unresolved")
+                self.assertTrue(unowned[ref_name]["next_action"])
+            candidate = next(
+                status for status in statuses if status.candidate_id == "candidate-1"
+            )
+            self.assertEqual(candidate.tip, tip)
+            self.assertNotIn(
+                "CANDIDATE_REF_AMBIGUOUS",
+                {issue.code for issue in candidate.issues},
+            )
+            self.assertNotEqual(base_oid, tip)
+            self.assertNotEqual(foreign_oid, tip)
+        finally:
+            directory.cleanup()
+
+    def test_registration_serializes_distinct_candidate_ids_for_one_task(self) -> None:
+        repo, _, _, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            task = json.loads(task_json.read_text(encoding="utf-8"))
+            task["meta"].pop("delivery")
+            task_json.write_text(json.dumps(task), encoding="utf-8")
+            store = DeliveryStore(repo / ".git/assura/delivery-v1")
+            original_ensure = delivery_cli.ensure_receipt
+            attempted = False
+            competing_errors: list[ReceiptBusy] = []
+
+            def race_ensure(
+                repo_root: Path,
+                intent: object,
+                data: dict,
+                phase: str = "registered",
+            ) -> dict:
+                nonlocal attempted
+                if not attempted:
+                    attempted = True
+                    try:
+                        delivery_cli.register_task(
+                            repo_root, task_json, "candidate-second", "tester"
+                        )
+                    except ReceiptBusy as error:
+                        competing_errors.append(error)
+                return original_ensure(repo_root, intent, data, phase)
+
+            with mock.patch.object(delivery_cli, "ensure_receipt", side_effect=race_ensure):
+                delivery_cli.register_task(repo, task_json, "candidate-first", "tester")
+
+            stored_task = json.loads(task_json.read_text(encoding="utf-8"))
+            self.assertEqual(
+                stored_task["meta"]["delivery"]["candidate_id"], "candidate-first"
+            )
+            self.assertEqual(len(competing_errors), 1)
+            self.assertTrue(store.path_for("candidate-first").is_file())
+            self.assertFalse(store.path_for("candidate-second").exists())
+        finally:
+            directory.cleanup()
+
+    def test_local_codex_audit_is_not_independent_review_evidence(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merged_oid = git(repo, "rev-parse", "HEAD")
+            task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+            intent = load_delivery_intent(task_json)
+            inventory = collect_inventory(
+                repo, github=FakeGithub([]), base_ref="refs/heads/master"
+            )
+            evidence = {
+                "review": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "local",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "issue-comment:338-audit-fallback",
+                    "result": "approved",
+                    "head_oid": tip,
+                    "reviewer": "codex-local-audit",
+                    "reviewer_role": "audit-fallback",
+                    "review_id": "local-audit-338",
+                    "findings": [],
+                },
+                "checks": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "local",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "test:checks-338",
+                    "result": "passed",
+                    "conclusion": "success",
+                    "head_oid": tip,
+                    "base_oid": merged_oid,
+                    "run_id": "run-338",
+                    "job_id": "process-contracts",
+                },
+                "postmerge": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "local",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "test:postmerge-338",
+                    "result": "verified",
+                    "head_oid": tip,
+                    "base_oid": merged_oid,
+                    "merge_oid": merged_oid,
+                },
+                "acceptance": {
+                    "schema_version": "assura.delivery-evidence.v1",
+                    "source": "owner",
+                    "repository": "rothnic/assura",
+                    "evidence_ref": "test:acceptance-338",
+                    "result": "accepted",
+                    "head_oid": tip,
+                    "acceptance_ref": "prd.md#acceptance",
+                    "authority_ref": "test:delivery-authority",
+                    "approved_by": "release-authority",
+                    "artifact_sha256": "d" * 64,
+                },
+            }
+
+            facts, issues = delivery_status._required_facts(
+                intent,
+                inventory,
+                {"evidence": evidence},
+                tip,
+                "ancestry_integrated",
+                False,
+                None,
+            )
+
+            self.assertFalse(facts["review_resolved"])
+            self.assertTrue(facts["required_checks_pass"])
+            self.assertTrue(facts["postmerge_verified"])
+            self.assertTrue(facts["acceptance_verified"])
+            self.assertIn(
+                "REVIEW_PROVENANCE_UNVERIFIED", {issue.code for issue in issues}
+            )
+        finally:
+            directory.cleanup()
+
+    def test_github_review_requires_matching_provider_id_and_author(self) -> None:
+        provider_url = "https://github.com/rothnic/assura/pull/14#pullrequestreview-14"
+        pull_request = {
+            "number": 14,
+            "head_oid": "a" * 40,
+            "review_decision": "approved",
+            "reviews": [
+                {
+                    "id": "review-14",
+                    "url": provider_url,
+                    "author": None,
+                    "state": "approved",
+                }
+            ],
+        }
+        evidence = {
+            "source": "github",
+            "pr_number": 14,
+            "head_oid": "a" * 40,
+            "review_id": "review-14",
+            "review_url": provider_url,
+            "reviewer": "independent-reviewer",
+        }
+
+        with self.subTest(missing_provider_author=True):
+            self.assertFalse(
+                delivery_status._github_review_matches_pr(evidence, pull_request),
+                "a missing provider author cannot corroborate an approved review",
+            )
+
+        pull_request["reviews"][0]["author"] = "independent-reviewer"
+        wrong_id = {**evidence, "review_id": "stale-review-id"}
+        self.assertFalse(
+            delivery_status._github_review_matches_pr(wrong_id, pull_request),
+            "a matching URL cannot substitute for the exact provider review ID",
+        )
+
+
+class DeliveryRemoteFreshnessTests(unittest.TestCase):
+    def _stale_tracking_candidate(
+        self, terminal: bool
+    ) -> tuple[Path, tempfile.TemporaryDirectory[str], Path, DeliveryStore]:
+        repo, base_oid, tip, directory = fixture_repo()
+        git(repo, "update-ref", "refs/remotes/origin/master", tip)
+        repository = delivery_cli.repository_identity(repo)
+        task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+        task = json.loads(task_json.read_text(encoding="utf-8"))
+        intent_data = task["meta"]["delivery"]
+        intent_data["repository"] = repository
+        intent_data["base_ref"] = "refs/remotes/origin/master"
+        task_json.write_text(json.dumps(task), encoding="utf-8")
+        git(repo, "add", str(task_json.relative_to(repo)))
+        git(repo, "commit", "-m", "bind delivery freshness fixture")
+        tip = git(repo, "rev-parse", "HEAD")
+        git(repo, "update-ref", "refs/remotes/origin/master", tip)
+
+        provider_pr = {
+            "number": 14,
+            "state": "MERGED",
+            "title": "Candidate",
+            "url": "https://github.com/rothnic/assura/pull/14",
+            "headRefName": "candidate",
+            "headRefOid": tip,
+            "baseRefName": "master",
+            "baseRefOid": base_oid,
+            "mergeCommit": {"oid": tip},
+            "mergedAt": "2026-09-14T00:00:00Z",
+            "reviewDecision": "APPROVED",
+            "reviews": [
+                {
+                    "id": "review-14",
+                    "author": {"login": "independent-reviewer"},
+                    "state": "APPROVED",
+                }
+            ],
+            "statusCheckRollup": [
+                {
+                    "databaseId": "job-14",
+                    "name": "process-contracts",
+                    "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/job-14",
+                    "conclusion": "SUCCESS",
+                }
+            ],
+        }
+        fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
+        fake_gh.write_text(
+            "#!/usr/bin/env python3\nprint(" + repr(json.dumps([provider_pr])) + ")\n",
+            encoding="utf-8",
+        )
+        if os.name != "nt":
+            fake_gh.chmod(0o755)
+
+        evidence = {
+            "review": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "github",
+                "repository": repository,
+                "evidence_ref": "https://github.com/rothnic/assura/pull/14#pullrequestreview-14",
+                "result": "approved",
+                "head_oid": tip,
+                "pr_number": 14,
+                "reviewer": "independent-reviewer",
+                "reviewer_role": "architect",
+                "review_id": "review-14",
+                "findings": [],
+            },
+            "checks": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "github",
+                "repository": repository,
+                "evidence_ref": "https://github.com/rothnic/assura/actions/runs/run-14",
+                "result": "passed",
+                "conclusion": "success",
+                "head_oid": tip,
+                "base_oid": tip,
+                "pr_number": 14,
+                "run_id": "run-14",
+                "job_id": "job-14",
+                "check_name": "process-contracts",
+            },
+            "postmerge": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "local",
+                "repository": repository,
+                "evidence_ref": "test:postmerge-14",
+                "result": "verified",
+                "head_oid": tip,
+                "base_oid": tip,
+                "merge_oid": tip,
+            },
+            "acceptance": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "owner",
+                "repository": repository,
+                "evidence_ref": "test:acceptance-14",
+                "result": "accepted",
+                "head_oid": tip,
+                "acceptance_ref": "prd.md#acceptance",
+                "authority_ref": "test:delivery-authority",
+                "approved_by": "release-authority",
+                "artifact_sha256": "e" * 64,
+            },
+        }
+        store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+        store.create(
+            "candidate-1",
+            {
+                "repository": repository,
+                "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                "owner": "tester",
+                "attached_branch_ref": "refs/heads/candidate",
+                "authority_ref": "test:delivery-authority",
+                "phase": "verified" if terminal else "integrated_pending_verification",
+                "session_state": "paused",
+                "outcome": "delivered" if terminal else None,
+                "closure": "verified" if terminal else "open",
+                "observed_tip": tip,
+                "evidence": evidence,
+            },
+        )
+        return repo, directory, task_json, store
+
+    def test_close_and_archive_reject_stale_origin_tracking_base(self) -> None:
+        task_path = ".trellis/tasks/01-01-candidate"
+        for action, terminal in (("close", False), ("archive", True)):
+            with self.subTest(action=action):
+                repo, directory, task_json, store = self._stale_tracking_candidate(terminal)
+                try:
+                    self.assertEqual(
+                        git(repo, "rev-parse", "refs/remotes/origin/master"),
+                        git(repo, "rev-parse", "refs/heads/candidate"),
+                    )
+                    self.assertEqual(
+                        git(repo, "ls-remote", "origin", "refs/heads/master").split()[0],
+                        git(repo, "rev-parse", "refs/heads/master"),
+                    )
+                    before_task = task_json.read_bytes()
+                    receipt_path = store.path_for("candidate-1")
+                    before_receipt = receipt_path.read_bytes()
+                    if action == "close":
+                        result = task_cli(
+                            repo,
+                            "delivery",
+                            "close",
+                            task_path,
+                            "--outcome",
+                            "delivered",
+                        )
+                    else:
+                        result = task_cli(repo, "archive", task_path, "--no-commit")
+
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertIn(
+                        "REMOTE_BASE_REF_STALE", result.stdout + result.stderr
+                    )
+                    self.assertEqual(task_json.read_bytes(), before_task)
+                    self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                    self.assertTrue(task_json.is_file())
+                finally:
+                    directory.cleanup()
+
+
+class DeliveryAuditStaleBaseTests(unittest.TestCase):
+    def test_stale_master_worktree_is_unresolved_until_oid_matches_configured_base(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            temp_root = Path(directory)
+            repo = temp_root / "repo"
+            repo.mkdir()
+            git(repo, "init", "-b", "master")
+            git(repo, "config", "user.email", "delivery@example.test")
+            git(repo, "config", "user.name", "Delivery Test")
+            (repo / "README.md").write_text("local master\n", encoding="utf-8")
+            git(repo, "add", "README.md")
+            git(repo, "commit", "-m", "local master")
+            stale_master_oid = git(repo, "rev-parse", "HEAD")
+
+            git(repo, "checkout", "-b", "integration-base")
+            (repo / "README.md").write_text("configured base\n", encoding="utf-8")
+            git(repo, "commit", "-am", "configured base")
+            configured_base_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "remote", "add", "origin", "https://github.com/test/repo.git")
+            git(repo, "update-ref", "refs/remotes/origin/master", configured_base_oid)
+
+            stale_worktree = temp_root / "stale-master"
+            git(repo, "worktree", "add", str(stale_worktree), "master")
+
+            inventory = collect_inventory(repo, github=FakeGithub([]))
+            self.assertEqual(inventory.base_ref, "origin/master")
+            self.assertEqual(inventory.base_oid, configured_base_oid)
+            worktree = next(
+                item
+                for item in inventory.worktrees
+                if Path(item["path"]).resolve() == stale_worktree.resolve()
+            )
+            self.assertEqual(worktree["branch_ref"], "refs/heads/master")
+            self.assertFalse(worktree["dirty"])
+            self.assertEqual(worktree["head_oid"], stale_master_oid)
+            self.assertNotEqual(worktree["head_oid"], inventory.base_oid)
+
+            report, _ = project_audit(repo, github=FakeGithub([]))
+            classified = next(
+                item
+                for item in [*report["unowned_worktrees"], *report["base_worktrees"]]
+                if Path(item["path"]).resolve() == stale_worktree.resolve()
+            )
+            self.assertEqual(classified["scope"], "candidate")
+            self.assertEqual(classified["classification"], "stale_base")
+            self.assertEqual(classified["disposition"], "unresolved")
+            self.assertEqual(classified["head_oid"], stale_master_oid)
+            self.assertEqual(classified["base_oid"], inventory.base_oid)
+            self.assertIn(stale_master_oid, classified["next_action"])
+            self.assertIn(inventory.base_oid, classified["next_action"])
+
+            git(repo, "update-ref", "refs/remotes/origin/master", stale_master_oid)
+            matching_report, _ = project_audit(repo, github=FakeGithub([]))
+            matching_base = next(
+                item
+                for item in matching_report["base_worktrees"]
+                if Path(item["path"]).resolve() == stale_worktree.resolve()
+            )
+            self.assertEqual(matching_base["base_oid"], stale_master_oid)
+            self.assertEqual(matching_base["head_oid"], stale_master_oid)
+            self.assertEqual(matching_base["head_oid"], matching_base["base_oid"])
+            self.assertEqual(matching_base["classification"], "retained_base")
+            self.assertEqual(matching_base["disposition"], "retained_base")
+
+
+class DeliverySuiteSelectionGuardTests(unittest.TestCase):
+    def test_empty_delivery_suite_is_rejected_by_direct_entrypoint(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            sitecustomize = Path(directory) / "sitecustomize.py"
+            sitecustomize.write_text(
+                "import unittest\n"
+                "_run_tests = unittest.TestProgram.runTests\n"
+                "def _load_empty_suite(self, module, pattern=None):\n"
+                "    return unittest.TestSuite()\n"
+                "def _legacy_run_tests(self):\n"
+                "    self.exit = False\n"
+                "    return _run_tests(self)\n"
+                "unittest.TestLoader.loadTestsFromModule = _load_empty_suite\n"
+                "unittest.TestProgram.runTests = _legacy_run_tests\n",
+                encoding="utf-8",
+            )
+            environment = os.environ.copy()
+            environment["PYTHONPATH"] = os.pathsep.join(
+                value
+                for value in (directory, environment.get("PYTHONPATH", ""))
+                if value
+            )
+            environment["PYTHONDONTWRITEBYTECODE"] = "1"
+            result = subprocess.run(
+                [sys.executable, str(Path(__file__).resolve())],
+                cwd=ROOT,
+                env=environment,
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        output = result.stdout + result.stderr
+        self.assertNotEqual(result.returncode, 0, output)
+        self.assertIn("delivery contract suite selected zero tests", output)
+
+
+class NonEmptyTestRunner(unittest.TextTestRunner):
+    def run(self, test):
+        if test.countTestCases() == 0:
+            raise SystemExit("delivery contract suite selected zero tests")
+        return super().run(test)
+
+
 if __name__ == "__main__":
-    unittest.main(verbosity=2)
+    unittest.main(verbosity=2, testRunner=NonEmptyTestRunner)

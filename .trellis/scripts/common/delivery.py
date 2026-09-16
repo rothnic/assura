@@ -277,6 +277,27 @@ def validate_delivery_mapping(
     if _SAFE_ID.fullmatch(candidate_id) is None:
         raise DeliveryValidationError(f"unsafe delivery candidate id: {candidate_id!r}")
 
+    base_ref = _required_string(delivery, "base_ref")
+    branch_ref = _optional_string(delivery, "branch_ref")
+    if _is_symbolic_head_ref(base_ref):
+        raise DeliveryValidationError(
+            "delivery base_ref must name an explicit branch, not HEAD or @"
+        )
+    if _is_symbolic_head_ref(branch_ref):
+        raise DeliveryValidationError(
+            "delivery branch_ref must name an explicit branch, not HEAD or @"
+        )
+    if _is_remote_head_alias(base_ref):
+        raise DeliveryValidationError(
+            "delivery base_ref must name an explicit remote branch, not a remote HEAD alias"
+        )
+    if _is_remote_head_alias(branch_ref):
+        raise DeliveryValidationError(
+            "delivery branch_ref must name an explicit remote branch, not a remote HEAD alias"
+        )
+    if branch_ref and _branch_name(branch_ref) == _branch_name(base_ref):
+        raise DeliveryValidationError("delivery branch_ref must differ from base_ref")
+
     version = _optional_string(delivery, "version")
     if version is not None and _VERSION.fullmatch(version) is None:
         raise DeliveryValidationError(f"invalid delivery version: {version!r}")
@@ -309,8 +330,8 @@ def validate_delivery_mapping(
         candidate_id=candidate_id,
         owner=_required_string(delivery, "owner"),
         repository=_required_string(delivery, "repository"),
-        base_ref=_required_string(delivery, "base_ref"),
-        branch_ref=_optional_string(delivery, "branch_ref"),
+        base_ref=base_ref,
+        branch_ref=branch_ref,
         acceptance_ref=_optional_string(delivery, "acceptance_ref"),
         authority_ref=_optional_string(delivery, "authority_ref"),
         version=version,
@@ -395,20 +416,65 @@ def _choose_base_ref(repo_root: Path) -> str | None:
     return None
 
 
+def _normalise_ref(ref: str | None) -> str | None:
+    if not ref:
+        return None
+    value = ref.strip()
+    if value.startswith("refs/"):
+        return value
+    if value.startswith("origin/"):
+        return f"refs/remotes/{value}"
+    return f"refs/heads/{value}"
+
+
 def _branch_name(ref: str | None) -> str | None:
     if not ref:
         return None
     value = ref.strip()
-    for prefix in ("refs/remotes/origin/", "refs/heads/", "origin/"):
+    if value.startswith("refs/remotes/"):
+        remote_branch = value[len("refs/remotes/") :]
+        _, separator, branch = remote_branch.partition("/")
+        return branch if separator else value
+    for prefix in ("refs/heads/", "origin/"):
         if value.startswith(prefix):
             return value[len(prefix):]
     return value
 
 
+def _refs_match_or_proven_alias(
+    repo_root: Path, left_ref: str | None, right_ref: str | None
+) -> bool:
+    """Match full refs, or aliases whose current full OIDs prove equality."""
+    left = _normalise_ref(left_ref)
+    right = _normalise_ref(right_ref)
+    if left is None or right is None:
+        return False
+    if left == right:
+        return True
+    if _branch_name(left) != _branch_name(right):
+        return False
+    left_oid = _git_oid(repo_root, left)
+    right_oid = _git_oid(repo_root, right)
+    return left_oid is not None and left_oid == right_oid
+
+
+def _is_remote_head_alias(ref: str | None) -> bool:
+    return bool(
+        ref
+        and ref.startswith(("refs/remotes/", "origin/"))
+        and _branch_name(ref) == "HEAD"
+    )
+
+
+def _is_symbolic_head_ref(ref: str | None) -> bool:
+    """Reject Git's moving current-branch aliases where a stable branch is required."""
+    return bool(ref and ref.strip() in {"HEAD", "@"})
+
+
 def _worktree_branch_matches(worktree_branch: str | None, branch_ref: str | None) -> bool:
     if not worktree_branch or not branch_ref:
         return False
-    return _branch_name(worktree_branch) == _branch_name(branch_ref)
+    return _normalise_ref(worktree_branch) == _normalise_ref(branch_ref)
 
 
 def _worktree_matches_candidate(
@@ -416,10 +482,15 @@ def _worktree_matches_candidate(
     intent: DeliveryIntent,
     task: dict[str, Any] | None,
     tip: str | None,
+    repo_root: Path | None = None,
 ) -> bool:
     """Match attached, path-bound, or detached worktrees conservatively."""
     branch = intent.branch_ref or (task or {}).get("branch")
     if _worktree_branch_matches(worktree.get("branch_ref"), branch):
+        return True
+    if repo_root is not None and _refs_match_or_proven_alias(
+        repo_root, worktree.get("branch_ref"), branch
+    ):
         return True
 
     configured_path = (task or {}).get("worktree_path")

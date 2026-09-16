@@ -12,20 +12,28 @@ from .delivery import (
     DeliveryValidationError,
     Inventory,
     _ALLOWED_OUTCOMES,
-    _DELIVERY_EVIDENCE_SCHEMA,
-    _EVIDENCE_SOURCES,
-    _EVIDENCE_SOURCES_BY_SECTION,
-    _EVIDENCE_SUCCESS_RESULTS,
     _FULL_OID,
     _SHA256,
     _TERMINAL_OUTCOMES,
     _branch_name,
     _git_oid,
+    _normalise_ref,
     _worktree_matches_candidate,
     delivery_store_root,
     load_delivery_intent,
 )
 from .git import run_git
+from .delivery_evidence import (
+    _evidence_error,
+    _evidence_identifier,
+    _full_oid,
+    _full_sha256,
+    _github_checks_match_pr,
+    _github_evidence_matches_pr,
+    _github_review_matches_pr,
+    _nonempty_string,
+    _positive_identifier,
+)
 
 
 def _task_for_intent(intent: DeliveryIntent, inventory: Inventory) -> dict[str, Any] | None:
@@ -47,22 +55,30 @@ def _candidate_ref_matches(
     """Return refs that can identify this candidate, without guessing."""
     task = _task_for_intent(intent, inventory)
     branch = intent.branch_ref or (task or {}).get("branch")
-    branch_short = _branch_name(branch)
-    if not branch_short:
+    declared_ref = _normalise_ref(branch)
+    if not declared_ref:
         return []
+    declared_oid = _git_oid(inventory.repo_root, declared_ref)
     all_refs: list[dict[str, Any]] = []
+    exact_local_ref: dict[str, Any] | None = None
     for ref in (*inventory.refs, *inventory.remote_refs):
-        if (
-            ref.get("kind") in {"heads", "remotes"}
-            and _branch_name(ref.get("name")) == branch_short
-        ):
-            all_refs.append(ref)
+        if ref.get("kind") not in {"heads", "remotes"}:
+            continue
+        ref_name = _normalise_ref(ref.get("name"))
+        same_ref = ref_name == declared_ref
+        proven_alias = (
+            declared_oid is not None
+            and isinstance(ref.get("oid"), str)
+            and ref.get("oid") == declared_oid
+        )
+        if not (same_ref or proven_alias):
+            continue
+        all_refs.append(ref)
+        if same_ref and ref.get("kind") == "heads":
+            if ref.get("source") != "remote-advertisement":
+                exact_local_ref = ref
 
-    # A local head, its local tracking ref, and a read-only remote
-    # advertisement are three names for one logical branch when their OIDs
-    # agree. Collapse those aliases so ordinary current branches are not
-    # falsely ambiguous, but retain one representative per distinct OID so a
-    # local/remote disagreement remains a visible identity hold.
+    # Collapse equal-OID aliases, but keep distinct OIDs visible as an identity hold.
     by_oid: dict[str, dict[str, Any]] = {}
 
     def priority(ref: dict[str, Any]) -> tuple[int, str]:
@@ -82,12 +98,18 @@ def _candidate_ref_matches(
         if current is None or priority(ref) < priority(current):
             by_oid[oid] = ref
 
-    return [
-        ref
-        for _, ref in sorted(
-            by_oid.items(), key=lambda item: (priority(item[1]), item[0])
-        )
-    ]
+    matches = sorted(
+        by_oid.values(), key=lambda ref: (priority(ref), ref["oid"])
+    )
+    exact_oid = exact_local_ref.get("oid") if exact_local_ref else None
+    if isinstance(exact_oid, str) and exact_oid and all(
+        ref.get("oid") == exact_oid
+        or _is_ancestor(inventory.repo_root, ref.get("oid"), exact_oid)
+        for ref in matches
+    ):
+        # Keep the declared local tip only when no ref is ahead or divergent.
+        return [exact_local_ref]
+    return matches
 
 
 def _ref_for_candidate(intent: DeliveryIntent, inventory: Inventory) -> dict[str, Any] | None:
@@ -162,6 +184,7 @@ def _aggregate_children_satisfied(intent: DeliveryIntent, inventory: Inventory) 
 
     try:
         from .delivery_store import DeliveryStore, DeliveryStoreError
+        from .delivery_receipts import _validate_receipt_binding
 
         store = DeliveryStore(delivery_store_root(inventory.repo_root))
     except (DeliveryValidationError, OSError, ValueError):
@@ -183,166 +206,15 @@ def _aggregate_children_satisfied(intent: DeliveryIntent, inventory: Inventory) 
             if not receipt_path.is_file():
                 return False
             child_receipt = store.read(child_intent.candidate_id)
+            _validate_receipt_binding(
+                inventory.repo_root, child_intent, child_receipt, child, use_declared_branch=True
+            )
             child_status = classify_candidate(child_intent, inventory, child_receipt)
         except (DeliveryStoreError, DeliveryValidationError, OSError, ValueError):
             return False
         if not child_status.delivered:
             return False
     return True
-
-
-def _nonempty_string(value: Any) -> bool:
-    """Return whether a value is a non-empty string."""
-    return isinstance(value, str) and bool(value.strip())
-
-
-def _full_oid(value: Any) -> bool:
-    """Return whether a value is a complete Git object id."""
-    return isinstance(value, str) and _FULL_OID.fullmatch(value) is not None
-
-
-def _full_sha256(value: Any) -> bool:
-    """Return whether a value is a complete SHA-256 digest."""
-    return isinstance(value, str) and _SHA256.fullmatch(value) is not None
-
-
-def _evidence_identifier(value: Any) -> bool:
-    """Return whether an external identifier is present and bounded."""
-    return isinstance(value, (str, int)) and bool(str(value).strip())
-
-
-def _evidence_error(
-    section: str,
-    value: Any,
-    intent: DeliveryIntent | None,
-    tip: str | None,
-    base_oid: str | None,
-) -> str | None:
-    """Return a precise failure for the typed delivery-evidence envelope."""
-    if not isinstance(value, dict):
-        return "evidence section must be an object"
-    if value.get("schema_version") != _DELIVERY_EVIDENCE_SCHEMA:
-        return "evidence section has an unsupported schema_version"
-    source = value.get("source")
-    if source not in _EVIDENCE_SOURCES:
-        return "evidence section requires a supported source"
-    allowed_sources = _EVIDENCE_SOURCES_BY_SECTION.get(section)
-    if allowed_sources is not None and source not in allowed_sources:
-        return f"evidence source {source!r} is not valid for {section}"
-    if intent is not None and value.get("repository") != intent.repository:
-        return "evidence repository does not match the delivery intent"
-    if tip is None or not _full_oid(value.get("head_oid")) or value.get("head_oid") != tip:
-        return "evidence head_oid does not match the current full candidate tip"
-    if not _nonempty_string(value.get("evidence_ref")):
-        return "evidence section requires a bounded evidence_ref"
-    result = str(
-        value.get("result") or value.get("status") or value.get("conclusion") or ""
-    ).lower()
-    if result not in _EVIDENCE_SUCCESS_RESULTS and value.get("verified") is not True:
-        return "evidence section does not contain a successful result"
-
-    if section in {"checks", "postmerge"}:
-        if base_oid is None or value.get("base_oid") != base_oid:
-            return "evidence base_oid does not match the current full integration base"
-        if not _full_oid(value.get("base_oid")):
-            return "evidence base_oid must be a full Git object id"
-
-    if section == "review":
-        reviewer = value.get("reviewer") or value.get("reviewer_name") or value.get("reviewer_id")
-        if not _nonempty_string(reviewer):
-            return "review evidence requires reviewer identity"
-        if intent is not None and reviewer == intent.owner:
-            return "review evidence requires a reviewer distinct from the candidate owner"
-        if not _nonempty_string(value.get("reviewer_role") or value.get("role")):
-            return "review evidence requires reviewer role"
-        if not _nonempty_string(
-            value.get("review_id") or value.get("review_url") or value.get("review_ref")
-        ):
-            return "review evidence requires a review reference"
-        findings = value.get("findings", value.get("finding_dispositions"))
-        if not isinstance(findings, (list, dict, str)) or (
-            isinstance(findings, str) and not findings.strip()
-        ):
-            return "review evidence requires finding dispositions"
-        if source == "github":
-            if not _positive_identifier(value.get("pr_number")):
-                return "GitHub review evidence requires a positive pr_number"
-            if not _nonempty_string(value.get("review_id") or value.get("review_url")):
-                return "GitHub review evidence requires a review id or URL"
-
-    if section == "checks":
-        if not _evidence_identifier(value.get("run_id") or value.get("workflow_run_id")):
-            return "checks evidence requires a workflow run id"
-        if not _evidence_identifier(value.get("job_id") or value.get("check_id")):
-            return "checks evidence requires a check or job id"
-        conclusion = str(value.get("conclusion") or "").lower()
-        if conclusion not in {"success", "successful", "passed", "pass"}:
-            return "checks evidence requires a successful conclusion"
-        if source == "github" and not _positive_identifier(value.get("pr_number")):
-            return "GitHub checks evidence requires a positive pr_number"
-
-    if section == "postmerge":
-        merge_oid = value.get("merge_oid") or value.get("integrated_oid")
-        if not _full_oid(merge_oid):
-            return "postmerge evidence requires a full merge_oid"
-
-    if section == "acceptance":
-        if intent is None or not _nonempty_string(intent.authority_ref):
-            return "acceptance evidence requires an explicit intent authority_ref"
-        if value.get("authority_ref") != intent.authority_ref:
-            return "acceptance authority_ref does not match the delivery intent"
-        if not _nonempty_string(value.get("approved_by")):
-            return "acceptance evidence requires approved_by"
-        if value.get("approved_by") == intent.owner:
-            return "acceptance evidence requires an approver distinct from the candidate owner"
-        acceptance_ref = value.get("acceptance_ref") or value.get("criterion_ref")
-        if not _nonempty_string(acceptance_ref):
-            return "acceptance evidence requires acceptance_ref"
-        if intent.acceptance_ref and acceptance_ref != intent.acceptance_ref:
-            return "acceptance_ref does not match the delivery intent"
-        artifact_digest = value.get("artifact_sha256") or value.get("artifact_hash")
-        if not (_full_sha256(artifact_digest) or _nonempty_string(value.get("measurement"))):
-            return "acceptance evidence requires a full artifact digest or measurement"
-
-    if section == "durable":
-        digest = value.get("sha256") or value.get("artifact_sha256") or value.get("artifact_hash")
-        if not _full_sha256(digest):
-            return "durable evidence requires a full SHA-256 digest"
-
-    if section == "decision":
-        if intent is None or not _nonempty_string(intent.authority_ref):
-            return "decision evidence requires an explicit intent authority_ref"
-        if value.get("authority_ref") != intent.authority_ref:
-            return "decision authority_ref does not match the delivery intent"
-        if not _nonempty_string(value.get("decided_by")):
-            return "decision evidence requires decided_by"
-        if not _nonempty_string(value.get("reason")):
-            return "decision evidence requires a reason"
-        if not _nonempty_string(value.get("decision_ref")):
-            return "decision evidence requires decision_ref"
-
-    if section == "replacement":
-        if intent is None or not _nonempty_string(intent.authority_ref):
-            return "replacement evidence requires an explicit intent authority_ref"
-        if value.get("authority_ref") != intent.authority_ref:
-            return "replacement authority_ref does not match the delivery intent"
-        if not all(
-            _nonempty_string(value.get(field))
-            for field in ("reference", "recovery_ref", "remaining_diff")
-        ):
-            return "replacement evidence requires reference, recovery_ref, and remaining_diff"
-
-    return None
-
-
-def _positive_identifier(value: Any) -> bool:
-    """Return whether an identifier is a positive integer or numeric string."""
-    if isinstance(value, bool):
-        return False
-    try:
-        return int(value) > 0
-    except (TypeError, ValueError):
-        return False
 
 
 def validate_evidence_mapping(
@@ -369,93 +241,6 @@ def validate_evidence_mapping(
         error = _evidence_error(section, value, intent, tip, base_oid)
         if error:
             raise DeliveryValidationError(f"{section}: {error}")
-
-
-def _github_evidence_matches_pr(
-    value: Any, pull_request: dict[str, Any] | None
-) -> bool:
-    """Bind provider-sourced evidence to the PR selected by current inventory."""
-    if not isinstance(value, dict) or value.get("source") != "github":
-        return True
-    if pull_request is None or not _positive_identifier(value.get("pr_number")):
-        return False
-    try:
-        same_number = int(value["pr_number"]) == int(pull_request.get("number"))
-    except (KeyError, TypeError, ValueError):
-        return False
-    return same_number and value.get("head_oid") == pull_request.get("head_oid")
-
-
-def _github_review_matches_pr(
-    value: Any, pull_request: dict[str, Any] | None
-) -> bool:
-    """Require a bound approved review in the current provider payload."""
-    if not _github_evidence_matches_pr(value, pull_request):
-        return False
-    if not isinstance(value, dict) or not isinstance(pull_request, dict):
-        return False
-    if str(pull_request.get("review_decision") or "").lower() != "approved":
-        return False
-    reviews = pull_request.get("reviews")
-    if not isinstance(reviews, list):
-        return False
-    review_id = value.get("review_id")
-    review_url = value.get("review_url")
-    reviewer = value.get("reviewer") or value.get("reviewer_name") or value.get("reviewer_id")
-    for review in reviews:
-        if not isinstance(review, dict):
-            continue
-        if str(review.get("state") or "").lower() != "approved":
-            continue
-        same_id = review_id is not None and str(review.get("id")) == str(review_id)
-        same_url = review_url is not None and review.get("url") == review_url
-        if not (same_id or same_url):
-            continue
-        author = review.get("author")
-        if reviewer and author and str(author).lower() != str(reviewer).lower():
-            continue
-        return True
-    return False
-
-
-def _check_success(check: dict[str, Any]) -> bool:
-    """Return whether one provider check has a successful terminal result."""
-    conclusion = str(check.get("conclusion") or "").lower()
-    return conclusion in {"success", "successful", "passed", "pass"}
-
-
-def _github_checks_match_pr(
-    value: Any, pull_request: dict[str, Any] | None
-) -> bool:
-    """Require a passing provider check bound to its run, job, and name."""
-    if not _github_evidence_matches_pr(value, pull_request):
-        return False
-    if not isinstance(value, dict) or not isinstance(pull_request, dict):
-        return False
-    checks = pull_request.get("checks")
-    if not isinstance(checks, list) or not checks or not all(
-        isinstance(check, dict) and _check_success(check) for check in checks
-    ):
-        return False
-    run_id = value.get("run_id") or value.get("workflow_run_id")
-    job_id = value.get("job_id") or value.get("check_id")
-    check_name = value.get("check_name")
-    check_url = value.get("check_url")
-    if run_id is None or job_id is None:
-        return False
-    for check in checks:
-        provider_run_id = check.get("run_id") or check.get("workflow_run_id")
-        provider_job_id = check.get("job_id") or check.get("id")
-        if provider_run_id is None or provider_job_id is None:
-            continue
-        same_run = str(provider_run_id) == str(run_id)
-        same_job = str(provider_job_id) == str(job_id)
-        same_name = check_name is not None and check.get("name") == check_name
-        same_context = check_name is not None and check.get("context") == check_name
-        same_url = check_url is not None and check.get("url") == check_url
-        if same_run and same_job and (same_name or same_context or same_url):
-            return True
-    return False
 
 
 def _evidence_verified(
@@ -505,6 +290,90 @@ def _evidence_verified(
     return True
 
 
+def _remote_base_verification(
+    intent: DeliveryIntent, inventory: Inventory
+) -> tuple[bool, DeliveryIssue | None]:
+    """Corroborate the configured base OID against a fresh origin advertisement."""
+    if inventory.coverage.get("remote_refs") != "verified":
+        return False, DeliveryIssue(
+            "REMOTE_REF_COVERAGE_UNAVAILABLE",
+            "the configured base is backed only by local tracking state, not a fresh remote advertisement",
+            intent.candidate_id,
+            intent.base_ref,
+            "Read the relevant remote advertisement and corroborate the configured base OID before delivery closure.",
+        )
+    if inventory.repository != intent.repository:
+        return False, DeliveryIssue(
+            "REMOTE_BASE_REPOSITORY_MISMATCH",
+            f"inventory repository {inventory.repository!r} does not match intent {intent.repository!r}",
+            intent.candidate_id,
+            intent.base_ref,
+            "Restore the repository's exact origin identity and rerun closure validation.",
+        )
+
+    base_ref = _normalise_ref(intent.base_ref)
+    if not isinstance(base_ref, str):
+        base_ref = ""
+    if base_ref.startswith("refs/remotes/"):
+        remote_path = base_ref[len("refs/remotes/") :]
+        remote_name, separator, branch = remote_path.partition("/")
+        if not separator or remote_name != "origin":
+            return False, DeliveryIssue(
+                "REMOTE_BASE_REF_UNAVAILABLE",
+                f"configured base {intent.base_ref!r} is not covered by the origin advertisement",
+                intent.candidate_id,
+                intent.base_ref,
+                "Resolve the configured remote identity explicitly; only origin refs are queried for closure.",
+            )
+    elif base_ref.startswith("refs/heads/"):
+        branch = base_ref[len("refs/heads/") :]
+    else:
+        branch = ""
+    if not branch or branch == "HEAD":
+        return False, DeliveryIssue(
+            "REMOTE_BASE_REF_UNAVAILABLE",
+            f"configured base {intent.base_ref!r} has no corroboratable remote branch",
+            intent.candidate_id,
+            intent.base_ref,
+            "Bind the intent to an explicit origin branch before delivery closure.",
+        )
+
+    advertised_name = f"refs/heads/{branch}"
+    advertised_oid = next(
+        (
+            ref.get("oid")
+            for ref in inventory.remote_refs
+            if ref.get("name") == advertised_name and ref.get("kind") == "heads"
+        ),
+        None,
+    )
+    if not isinstance(advertised_oid, str) or not advertised_oid:
+        return False, DeliveryIssue(
+            "REMOTE_BASE_REF_UNAVAILABLE",
+            f"origin does not advertise configured base branch {advertised_name}",
+            intent.candidate_id,
+            advertised_name,
+            "Confirm the remote branch and intent binding before delivery closure; preserve local refs unchanged.",
+        )
+    if not inventory.base_oid:
+        return False, DeliveryIssue(
+            "REMOTE_BASE_REF_UNAVAILABLE",
+            f"configured base {intent.base_ref!r} does not resolve to a local OID",
+            intent.candidate_id,
+            intent.base_ref,
+            "Resolve the configured base ref locally, then compare it with the fresh remote advertisement.",
+        )
+    if advertised_oid != inventory.base_oid:
+        return False, DeliveryIssue(
+            "REMOTE_BASE_REF_STALE",
+            f"configured base OID {inventory.base_oid} differs from advertised origin OID {advertised_oid}",
+            intent.candidate_id,
+            advertised_name,
+            "Preserve both full OIDs; reconcile the configured tracking ref with the owner before retrying closure.",
+        )
+    return True, None
+
+
 def _required_facts(
     intent: DeliveryIntent,
     inventory: Inventory,
@@ -518,7 +387,24 @@ def _required_facts(
     if intent.kind == "integration":
         review_evidence = _evidence_section(receipt, "review")
         checks_evidence = _evidence_section(receipt, "checks")
-        review_verified = _evidence_verified(
+        remote_base_verified = True
+        if isinstance(receipt, dict) and receipt.get("outcome") == "delivered":
+            remote_base_verified, remote_issue = _remote_base_verification(
+                intent, inventory
+            )
+            if remote_issue is not None:
+                issues.append(remote_issue)
+        local_review_fallback = (
+            isinstance(review_evidence, dict)
+            and review_evidence.get("source") == "local"
+            and (
+                str(review_evidence.get("reviewer") or "").casefold()
+                == "codex-local-audit"
+                or str(review_evidence.get("reviewer_role") or "").casefold()
+                == "audit-fallback"
+            )
+        )
+        review_verified = not local_review_fallback and _evidence_verified(
             review_evidence,
             tip,
             inventory.base_oid,
@@ -542,6 +428,19 @@ def _required_facts(
             if isinstance(checks_evidence, dict)
             else False
         )
+        if (
+            isinstance(review_evidence, dict)
+            and local_review_fallback
+        ):
+            issues.append(
+                DeliveryIssue(
+                    "REVIEW_PROVENANCE_UNVERIFIED",
+                    "a local audit fallback is not independent review evidence",
+                    intent.candidate_id,
+                    review_evidence.get("evidence_ref"),
+                    "Obtain an independent review and record its provider-correlated review ID, author, state, PR, and head.",
+                )
+            )
         if (
             isinstance(review_evidence, dict)
             and review_evidence.get("source") == "github"
@@ -582,6 +481,7 @@ def _required_facts(
             "required_checks_pass": checks_verified,
             "postmerge_verified": _evidence_verified(_evidence_section(receipt, "postmerge"), tip, inventory.base_oid, require_base=True, section="postmerge", intent=intent),
             "acceptance_verified": _evidence_verified(_evidence_section(receipt, "acceptance"), tip, inventory.base_oid, section="acceptance", intent=intent),
+            "remote_base_verified": remote_base_verified,
         }
     elif intent.kind in {"artifact", "experiment"}:
         facts = {
@@ -743,7 +643,7 @@ def _may_deliver(intent: DeliveryIntent, facts: dict[str, bool], dirty: bool, co
     if coverage_unknown or dirty:
         return False
     if intent.kind == "integration":
-        return all(facts.get(key, False) for key in ("integration_verified", "review_resolved", "required_checks_pass", "postmerge_verified", "acceptance_verified"))
+        return all(facts.get(key, False) for key in ("integration_verified", "review_resolved", "required_checks_pass", "postmerge_verified", "acceptance_verified", "remote_base_verified"))
     if intent.kind in {"artifact", "experiment"}:
         return facts.get("acceptance_verified", False) and facts.get("durable_evidence_verified", False)
     if intent.kind == "release":
@@ -775,7 +675,7 @@ def classify_candidate(
 
     branch = intent.branch_ref or (task or {}).get("branch")
     dirty = any(
-        _worktree_matches_candidate(worktree, intent, task, tip)
+        _worktree_matches_candidate(worktree, intent, task, tip, inventory.repo_root)
         and worktree.get("dirty") is True
         for worktree in inventory.worktrees
     )
@@ -847,7 +747,7 @@ def classify_candidate(
         if inventory_issue.code != "WORKTREE_COVERAGE_UNAVAILABLE":
             continue
         if any(
-            _worktree_matches_candidate(worktree, intent, task, tip)
+            _worktree_matches_candidate(worktree, intent, task, tip, inventory.repo_root)
             and worktree.get("state") != "available"
             for worktree in inventory.worktrees
         ):
@@ -906,7 +806,7 @@ def classify_candidate(
         elif integration in {"ancestry_integrated", "pr_merged", "post_review_commits"}:
             phase = "integrated_pending_verification"
         if issues:
-            phase = "held" if any(issue.code.endswith("UNAVAILABLE") or issue.code in {"INTEGRATION_UNVERIFIED", "UNSUPPORTED_DELIVERY_CLAIM", "OWNED_WORKTREE_DIRTY", "RECEIPT_MISSING", "CANDIDATE_TIP_UNRESOLVED"} for issue in issues) else phase
+            phase = "held" if any(issue.code.endswith("UNAVAILABLE") or issue.code in {"INTEGRATION_UNVERIFIED", "UNSUPPORTED_DELIVERY_CLAIM", "OWNED_WORKTREE_DIRTY", "RECEIPT_MISSING", "CANDIDATE_TIP_UNRESOLVED", "REMOTE_BASE_REF_STALE", "REMOTE_BASE_REPOSITORY_MISMATCH"} for issue in issues) else phase
     else:
         phase = "verified"
 

@@ -38,7 +38,8 @@
       "goal/assura-delivery-closure-release-v2",
       "goal/assura-delivery-followup",
       "goal/assura-delivery-recovery-fix",
-      "goal/assura-delivery-execution-audit"
+      "goal/assura-delivery-execution-audit",
+      "goal/assura-delivery-recovery-guard"
     ]
   }
 }

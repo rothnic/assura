@@ -74,7 +74,11 @@ def iter_active_tasks(tasks_dir: Path) -> Iterator[TaskInfo]:
             yield info
 
 
-def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str, str]:
+def get_all_statuses(
+    tasks_dir: Path,
+    github: object | None = None,
+    refresh_remote: bool = False,
+) -> dict[str, str]:
     """Get current {dir_name: status} values for active and archived tasks.
 
     Useful for computing children progress without loading full TaskInfo.
@@ -82,6 +86,8 @@ def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str,
     Args:
         tasks_dir: Path to the tasks directory.
         github: Optional injectable GitHub reader for current-status checks.
+        refresh_remote: Read advertised origin refs before accepting delivered
+            child outcomes; the default remains local-tracking-only.
 
     Returns:
         Dict mapping directory names to status strings.
@@ -99,11 +105,14 @@ def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str,
             delivery_store_root,
             load_delivery_intent,
         )
+        from .delivery_receipts import _validate_receipt_binding
         from .delivery_store import DeliveryStore, DeliveryStoreError
 
         repo_root = tasks_dir.parent.parent
         store = DeliveryStore(delivery_store_root(repo_root))
-        inventory = collect_inventory(repo_root, github=github)
+        inventory = collect_inventory(
+            repo_root, github=github, refresh_remote=refresh_remote
+        )
     except Exception:
         store = None
         inventory = None
@@ -136,6 +145,13 @@ def get_all_statuses(tasks_dir: Path, github: object | None = None) -> dict[str,
                 if intent.candidate_id in duplicate_candidates:
                     continue
                 receipt = store.read(intent.candidate_id)
+                _validate_receipt_binding(
+                    repo_root,
+                    intent,
+                    receipt,
+                    task,
+                    use_declared_branch=True,
+                )
                 status = classify_candidate(intent, inventory, receipt)
             except (DeliveryStoreError, OSError, ValueError):
                 continue
