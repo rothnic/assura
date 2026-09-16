@@ -12,7 +12,7 @@
   "assignee": "Godel",
   "createdAt": "2026-09-16",
   "completedAt": null,
-  "branch": null,
+  "branch": "goal/assura-delivery-publication-oid-v1",
   "base_branch": "goal/assura-delivery-publication-oid-v1",
   "worktree_path": null,
   "commit": null,
@@ -30,7 +30,7 @@
       "owner": "Godel",
       "repository": "rothnic/assura",
       "base_ref": "refs/remotes/origin/master",
-      "branch_ref": null,
+      "branch_ref": "refs/heads/goal/assura-delivery-publication-oid-v1",
       "acceptance_ref": "prd.md#acceptance",
       "authority_ref": "goal:01a0a0af-5473-7413-8000-2d56a51ae24b"
     }
