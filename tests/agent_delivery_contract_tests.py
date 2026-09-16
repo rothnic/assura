@@ -1347,6 +1347,7 @@ class DeliveryProjectionTests(unittest.TestCase):
                 "baseRefName": "master",
                 "baseRefOid": base_oid,
                 "mergeCommit": {"oid": tip},
+                "mergeStateStatus": "CLEAN",
                 "reviewDecision": "APPROVED",
                 "reviews": [
                     {
@@ -1361,6 +1362,12 @@ class DeliveryProjectionTests(unittest.TestCase):
                         "name": "process-contracts",
                         "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/job-14",
                         "conclusion": "SUCCESS",
+                    },
+                    {
+                        "databaseId": "security-job-14",
+                        "name": "Security Audit",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/security-job-14",
+                        "conclusion": "SKIPPED",
                     }
                 ],
             }
@@ -1486,6 +1493,24 @@ class DeliveryProjectionTests(unittest.TestCase):
                 any(
                     issue.code == "GITHUB_CHECKS_UNVERIFIED"
                     for issue in changed_checks_status.issues
+                )
+            )
+
+            skipped_required = {**provider_pr, "mergeStateStatus": "BLOCKED"}
+            skipped_required_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([skipped_required]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+            skipped_required_status = classify_candidate(
+                intent, skipped_required_inventory, store.read("candidate-1")
+            )
+            self.assertNotEqual(skipped_required_status.outcome, "delivered")
+            self.assertTrue(
+                any(
+                    issue.code == "GITHUB_CHECKS_UNVERIFIED"
+                    for issue in skipped_required_status.issues
                 )
             )
         finally:
@@ -4667,6 +4692,7 @@ class DeliveryRemoteFreshnessTests(unittest.TestCase):
             "baseRefOid": base_oid,
             "mergeCommit": {"oid": tip},
             "mergedAt": "2026-09-14T00:00:00Z",
+            "mergeStateStatus": "CLEAN",
             "reviewDecision": "APPROVED",
             "reviews": [
                 {

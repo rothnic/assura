@@ -194,7 +194,7 @@ class SubprocessGithubReader:
         """Query all pull requests without invoking a shell."""
         executable = shutil.which(self.executable) or self.executable
         field_sets = (
-            "number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeCommit,mergedAt,reviewDecision",
+            "number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeCommit,mergedAt,reviewDecision,mergeStateStatus",
             "number,reviews",
             "number,statusCheckRollup",
         )
@@ -790,6 +790,9 @@ def _normalise_pr(raw: dict[str, Any]) -> dict[str, Any]:
         "merged": state == "merged" or bool(merged_at),
         "review_decision": str(
             raw.get("reviewDecision") or raw.get("review_decision") or ""
+        ).lower(),
+        "merge_state_status": str(
+            raw.get("mergeStateStatus") or raw.get("merge_state_status") or ""
         ).lower(),
         "reviews": [
             review

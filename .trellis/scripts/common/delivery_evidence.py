@@ -227,14 +227,28 @@ def _check_success(check: dict[str, Any]) -> bool:
 def _github_checks_match_pr(
     value: Any, pull_request: dict[str, Any] | None
 ) -> bool:
-    """Require a passing provider check bound to its run, job, and name."""
+    """Require a passing provider check and a clean provider merge state.
+
+    GitHub includes conditionally skipped jobs in statusCheckRollup. They are
+    not passes, but a skipped optional job is valid when GitHub reports the PR
+    clean and the recorded check itself is a successful, bound job.
+    """
     if not _github_evidence_matches_pr(value, pull_request):
         return False
     if not isinstance(value, dict) or not isinstance(pull_request, dict):
         return False
+    if str(pull_request.get("merge_state_status") or "").lower() != "clean":
+        return False
     checks = pull_request.get("checks")
-    if not isinstance(checks, list) or not checks or not all(
-        isinstance(check, dict) and _check_success(check) for check in checks
+    if not isinstance(checks, list) or not checks:
+        return False
+    if any(
+        not isinstance(check, dict)
+        or (
+            not _check_success(check)
+            and str(check.get("conclusion") or "").lower() != "skipped"
+        )
+        for check in checks
     ):
         return False
     run_id = value.get("run_id") or value.get("workflow_run_id")
@@ -253,6 +267,11 @@ def _github_checks_match_pr(
         same_name = check_name is not None and check.get("name") == check_name
         same_context = check_name is not None and check.get("context") == check_name
         same_url = check_url is not None and check.get("url") == check_url
-        if same_run and same_job and (same_name or same_context or same_url):
+        if (
+            same_run
+            and same_job
+            and _check_success(check)
+            and (same_name or same_context or same_url)
+        ):
             return True
     return False
