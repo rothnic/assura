@@ -674,6 +674,182 @@ def local_integration_evidence(tip: str, base_oid: str, label: str) -> dict:
 
 
 class DeliveryProjectionTests(unittest.TestCase):
+    def test_delivered_receipt_survives_unrelated_base_advance(self) -> None:
+        repo, original_base, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merge_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
+            (repo / "unrelated.txt").write_text("unrelated\n", encoding="utf-8")
+            git(repo, "add", "unrelated.txt")
+            git(repo, "commit", "-m", "unrelated base advance")
+            current_base = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
+
+            provider_pr = {
+                "number": 21,
+                "state": "MERGED",
+                "headRefName": "candidate",
+                "headRefOid": tip,
+                "baseRefName": "master",
+                "baseRefOid": original_base,
+                "mergeCommit": {"oid": merge_oid},
+                "mergeStateStatus": "CLEAN",
+                "statusCheckRollup": [
+                    {
+                        "databaseId": "job-base-advance",
+                        "name": "process-contracts",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-base-advance/job/job-base-advance",
+                        "conclusion": "SUCCESS",
+                    }
+                ],
+            }
+            intent = load_delivery_intent(
+                repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            )
+            evidence = local_integration_evidence(tip, merge_oid, "base-advance")
+            evidence["checks"].update(
+                {
+                    "source": "github",
+                    "pr_number": 21,
+                    "run_id": "run-base-advance",
+                    "job_id": "job-base-advance",
+                    "check_name": "process-contracts",
+                    "evidence_ref": "https://github.com/rothnic/assura/actions/runs/run-base-advance",
+                }
+            )
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            receipt = store.create(
+                "candidate-1",
+                {
+                    "owner": "tester",
+                    "phase": "verified",
+                    "outcome": "delivered",
+                    "closure": "verified",
+                    "observed_tip": tip,
+                    "evidence": evidence,
+                },
+            )
+            inventory = collect_inventory(
+                repo,
+                github=FakeGithub([provider_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+
+            self.assertEqual(inventory.base_oid, current_base)
+            status = classify_candidate(intent, inventory, receipt)
+            self.assertEqual(status.outcome, "delivered", status.issues)
+
+            changed_checks_pr = {
+                **provider_pr,
+                "statusCheckRollup": [
+                    {
+                        "databaseId": "other-job",
+                        "name": "process-contracts",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/other-run/job/other-job",
+                        "conclusion": "SUCCESS",
+                    }
+                ],
+            }
+            changed_checks_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([changed_checks_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+            self.assertNotEqual(
+                classify_candidate(intent, changed_checks_inventory, receipt).outcome,
+                "delivered",
+            )
+
+            failed_checks_pr = {
+                **provider_pr,
+                "statusCheckRollup": [
+                    {
+                        "databaseId": "job-base-advance",
+                        "name": "process-contracts",
+                        "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-base-advance/job/job-base-advance",
+                        "conclusion": "FAILURE",
+                    }
+                ],
+            }
+            failed_checks_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([failed_checks_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+            self.assertNotEqual(
+                classify_candidate(intent, failed_checks_inventory, receipt).outcome,
+                "delivered",
+            )
+
+            changed_tip = {**receipt, "observed_tip": "f" * 40}
+            self.assertNotEqual(
+                classify_candidate(intent, inventory, changed_tip).outcome,
+                "delivered",
+            )
+
+            missing_postmerge = {**receipt, "evidence": {**evidence, "postmerge": None}}
+            self.assertNotEqual(
+                classify_candidate(intent, inventory, missing_postmerge).outcome,
+                "delivered",
+            )
+
+            misbound_merge_evidence = {
+                **evidence,
+                "postmerge": {
+                    **evidence["postmerge"],
+                    "base_oid": original_base,
+                    "merge_oid": original_base,
+                },
+            }
+            misbound_merge = {**receipt, "evidence": misbound_merge_evidence}
+            self.assertNotEqual(
+                classify_candidate(intent, inventory, misbound_merge).outcome,
+                "delivered",
+            )
+
+            misbound_checks_evidence = {
+                **evidence,
+                "checks": {**evidence["checks"], "base_oid": "f" * 40},
+            }
+            self.assertNotEqual(
+                classify_candidate(
+                    intent,
+                    inventory,
+                    {**receipt, "evidence": misbound_checks_evidence},
+                ).outcome,
+                "delivered",
+            )
+
+            active_receipt = {**receipt, "outcome": None}
+            active_facts, _ = delivery_status._required_facts(
+                intent, inventory, active_receipt, tip, "pr_merged", False,
+                inventory.pull_requests[0],
+            )
+            self.assertFalse(active_facts["required_checks_pass"])
+            self.assertFalse(active_facts["postmerge_verified"])
+
+            git(repo, "checkout", "candidate")
+            (repo / "candidate-follow-up.txt").write_text("tip changed\n", encoding="utf-8")
+            git(repo, "add", "candidate-follow-up.txt")
+            git(repo, "commit", "-m", "candidate tip changed after delivery")
+            changed_tip_inventory = collect_inventory(
+                repo,
+                github=FakeGithub([provider_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+            self.assertNotEqual(
+                classify_candidate(intent, changed_tip_inventory, receipt).outcome,
+                "delivered",
+            )
+        finally:
+            directory.cleanup()
+
     def test_unrelated_unavailable_worktree_does_not_block_candidate_coverage(self) -> None:
         repo, _, tip, directory = fixture_repo()
         try:
