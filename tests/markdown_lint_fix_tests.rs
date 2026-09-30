@@ -460,6 +460,7 @@ structure:
     fs::set_permissions(&fail_path, permissions).unwrap();
 
     let output = Command::new(assura_bin())
+        .env("RUST_LOG", "off")
         .arg("fix")
         .arg("markdown")
         .arg("--apply")

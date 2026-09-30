@@ -44,7 +44,10 @@ where
 
 async fn run_full_cli(cli: Cli) -> ExitCode {
     // Initialize tracing
-    tracing_subscriber::fmt::init();
+    tracing_subscriber::fmt()
+        .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
+        .with_writer(std::io::stderr)
+        .init();
 
     // Set log level based on verbosity
     if cli.verbose {
