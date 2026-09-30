@@ -15,6 +15,7 @@ passes.
 
 ## v0.4.0 Release Delta
 
+- Full CLI tracing diagnostics go to stderr, preserving structured `--format json` output on stdout.
 - `assura watch` now performs continuous validation: one initial requested-path
   report followed by coalesced warm checks over affected paths or conservative
   full-scope fallbacks.
