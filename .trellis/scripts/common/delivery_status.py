@@ -387,6 +387,22 @@ def _required_facts(
     if intent.kind == "integration":
         review_evidence = _evidence_section(receipt, "review")
         checks_evidence = _evidence_section(receipt, "checks")
+        terminal_receipt = receipt.get("_terminal_receipt_verified", receipt.get("outcome") == "delivered" and receipt.get("closure") in {"verified", "closed"}) if isinstance(receipt, dict) else False
+        # A terminal receipt records checks against the base used at review
+        # time and post-merge evidence against the merge that closed it. Those
+        # identities remain historical facts after unrelated base advances.
+        # Active candidates still bind both sections to today's base below.
+        checks_base_oid = (
+            checks_evidence.get("base_oid")
+            if terminal_receipt and isinstance(checks_evidence, dict)
+            else inventory.base_oid
+        )
+        postmerge_evidence = _evidence_section(receipt, "postmerge")
+        postmerge_base_oid = (
+            (postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
+            if terminal_receipt and isinstance(postmerge_evidence, dict)
+            else inventory.base_oid
+        )
         remote_base_verified = True
         if isinstance(receipt, dict) and receipt.get("outcome") == "delivered":
             remote_base_verified, remote_issue = _remote_base_verification(
@@ -419,7 +435,7 @@ def _required_facts(
         checks_verified = _evidence_verified(
             checks_evidence,
             tip,
-            inventory.base_oid,
+            checks_base_oid,
             section="checks",
             intent=intent,
         ) and (
@@ -477,9 +493,46 @@ def _required_facts(
             )
         facts = {
             "integration_verified": integration in {"ancestry_integrated", "pr_merged"},
+            "candidate_tip_exact": isinstance(receipt, dict)
+            and receipt.get("observed_tip") == tip,
             "review_resolved": review_verified,
             "required_checks_pass": checks_verified,
-            "postmerge_verified": _evidence_verified(_evidence_section(receipt, "postmerge"), tip, inventory.base_oid, require_base=True, section="postmerge", intent=intent),
+            "postmerge_verified": _evidence_verified(postmerge_evidence, tip, postmerge_base_oid, require_base=True, section="postmerge", intent=intent)
+            and (
+                not terminal_receipt
+                or (
+                    isinstance(postmerge_evidence, dict)
+                    and _full_oid(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
+                    and (
+                        str(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
+                        == str(pull_request.get("merge_oid"))
+                        if pull_request and pull_request.get("merged")
+                        else _is_ancestor(
+                            inventory.repo_root,
+                            tip,
+                            str(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid")),
+                        )
+                    )
+                    and _is_ancestor(
+                        inventory.repo_root,
+                        str(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid")),
+                        inventory.base_oid,
+                    )
+                    and postmerge_evidence.get("base_oid")
+                    == (postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
+                )
+            ),
+            "historical_checks_base_verified": not terminal_receipt
+            or (
+                isinstance(checks_evidence, dict)
+                and _full_oid(checks_base_oid)
+                and isinstance(postmerge_evidence, dict)
+                and _is_ancestor(
+                    inventory.repo_root,
+                    str(checks_base_oid),
+                    str(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid")),
+                )
+            ),
             "acceptance_verified": _evidence_verified(_evidence_section(receipt, "acceptance"), tip, inventory.base_oid, section="acceptance", intent=intent),
             "remote_base_verified": remote_base_verified,
         }
@@ -700,7 +753,7 @@ def _may_deliver(intent: DeliveryIntent, facts: dict[str, bool], dirty: bool, co
     if coverage_unknown or dirty:
         return False
     if intent.kind == "integration":
-        return all(facts.get(key, False) for key in ("integration_verified", "review_resolved", "required_checks_pass", "postmerge_verified", "acceptance_verified", "remote_base_verified"))
+        return all(facts.get(key, False) for key in ("integration_verified", "candidate_tip_exact", "review_resolved", "required_checks_pass", "historical_checks_base_verified", "postmerge_verified", "acceptance_verified", "remote_base_verified"))
     if intent.kind in {"artifact", "experiment"}:
         return facts.get("acceptance_verified", False) and facts.get("durable_evidence_verified", False)
     if intent.kind == "release":
