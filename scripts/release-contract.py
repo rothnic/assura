@@ -165,11 +165,14 @@ def verify_archive(
 
     with tempfile.TemporaryDirectory(prefix="assura-release-archive-") as directory:
         extracted_root = Path(directory)
+        binaries: dict[str, Path] = {}
         for name in _expected_members(archive):
             binary = extracted_root / name
             binary.write_bytes(contents[name])
             if os.name != "nt":
                 binary.chmod(binary.stat().st_mode | 0o100)
+            binaries[name] = binary
+        for name, binary in binaries.items():
             result[name] = verify_binary_version(binary, expected_version)
     result["version"] = expected_version
     return result

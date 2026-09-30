@@ -11,9 +11,9 @@ agent handoffs, editor wrappers, a beta local VS Code package, and safe-fix
 previews. It does not require MCP, remote access, hosted services, or editor
 marketplace publication.
 
-This page describes the checked `v0.4.0` beta candidate. `v0.3.0` remains the
+This page describes the checked `v0.4.1` beta candidate. `v0.3.0` remains the
 latest published release, live-verified on 2026-07-02 with all expected
-archives and checksums reachable. The `v0.4.0` surfaces become publicly
+archives and checksums reachable. The `v0.4.1` surfaces become publicly
 installable only when its tag completes release verification. Assura remains
 pre-1.0 beta.
 
