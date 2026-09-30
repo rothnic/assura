@@ -762,6 +762,14 @@ def cmd_delivery_close(args: argparse.Namespace) -> int:
             data,
             allow_base_checkout=True,
         )
+        # Only the already persisted verified terminal receipt may use its
+        # historical checks/post-merge base identities. The prospective
+        # delivered outcome is not terminal until this close succeeds.
+        persisted_terminal_receipt = (
+            receipt.get("outcome") == "delivered"
+            and receipt.get("closure") in {"verified", "closed"}
+        )
+        prospective["_terminal_receipt_verified"] = persisted_terminal_receipt
         status = classify_candidate(intent, inventory, prospective)
         transition_issues = [*status.issues, *validate_transition(intent, status, "close")]
         seen_codes: set[str] = set()

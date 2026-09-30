@@ -2506,6 +2506,50 @@ class DeliveryProjectionTests(unittest.TestCase):
 
 
 class DeliveryLifecycleCommandTests(unittest.TestCase):
+    def test_first_delivered_close_cannot_reuse_historical_active_base(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            task_path = ".trellis/tasks/01-01-candidate"
+            self.assertEqual(task_cli(repo, "start", task_path).returncode, 0)
+            self.assertEqual(task_cli(repo, "finish").returncode, 0)
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merge_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
+
+            evidence_path = Path(directory.name) / "first-closure-evidence.json"
+            evidence_path.write_text(
+                json.dumps(local_integration_evidence(tip, merge_oid, "first-closure")),
+                encoding="utf-8",
+            )
+            recorded = task_cli(
+                repo,
+                "delivery",
+                "record",
+                task_path,
+                "--evidence-file",
+                str(evidence_path),
+                "--expected-generation",
+                "1",
+            )
+            self.assertEqual(recorded.returncode, 0, recorded.stderr)
+
+            (repo / "unrelated.txt").write_text("unrelated base advance\n", encoding="utf-8")
+            git(repo, "add", "unrelated.txt")
+            git(repo, "commit", "-m", "unrelated base advance")
+            git(repo, "push", "origin", "master:refs/heads/master")
+
+            receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+            before_receipt = receipt_path.read_bytes()
+            closed = task_cli(repo, "delivery", "close", task_path, "--outcome", "delivered")
+
+            self.assertNotEqual(closed.returncode, 0, closed.stdout + closed.stderr)
+            self.assertIn("UNSUPPORTED_DELIVERY_CLAIM", closed.stdout + closed.stderr)
+            self.assertEqual(receipt_path.read_bytes(), before_receipt)
+            self.assertIsNone(json.loads(before_receipt)["outcome"])
+        finally:
+            directory.cleanup()
+
     def test_close_rejects_candidate_unavailable_worktree_without_mutation(self) -> None:
         repo, _, tip, directory = fixture_repo()
         try:

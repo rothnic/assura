@@ -387,7 +387,7 @@ def _required_facts(
     if intent.kind == "integration":
         review_evidence = _evidence_section(receipt, "review")
         checks_evidence = _evidence_section(receipt, "checks")
-        terminal_receipt = isinstance(receipt, dict) and receipt.get("outcome") == "delivered"
+        terminal_receipt = receipt.get("_terminal_receipt_verified", receipt.get("outcome") == "delivered" and receipt.get("closure") in {"verified", "closed"}) if isinstance(receipt, dict) else False
         # A terminal receipt records checks against the base used at review
         # time and post-merge evidence against the merge that closed it. Those
         # identities remain historical facts after unrelated base advances.
