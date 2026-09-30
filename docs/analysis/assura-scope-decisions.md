@@ -1,7 +1,7 @@
 ---
 title: Assura scope decisions and release-surface ledger
 status: active
-updated: 2026-09-05
+updated: 2026-09-30
 ---
 
 # Assura scope decisions and release-surface ledger
@@ -16,7 +16,7 @@ until a consumer review makes a removal or deprecation decision. This is not a
 claim that every checked-source feature is publicly installable.
 
 The checked source is `0.4.1`; GitHub's latest published release is `v0.3.0`
-(rechecked 2026-09-05). A `v0.4.1` manifest row is therefore a candidate claim,
+(rechecked 2026-09-30). A `v0.4.1` manifest row is therefore a candidate claim,
 not a public-install claim. `docs/data/release-surfaces.json` remains the
 authoritative command inventory; this ledger adds the product decision,
 published-version state, consumer references, and owning backlog card rather

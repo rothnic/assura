@@ -46,7 +46,7 @@ Maturity Execution Train is the active iteration. Assura's growth priority is
 executable repository conventions for agent-assisted development: maintainable
 local policy, editable local patterns, safe initialization, bounded feedback,
 and deterministic local/CI gates. Existing supported behavior remains
-available pending consumer review; this does not make checked-source `0.4.0`
+available pending consumer review; this does not make checked-source `0.4.1`
 behavior publicly installable while the published release remains `v0.3.0`.
 
 Owning task:
