@@ -105,6 +105,32 @@ class ReleaseArchiveTests(unittest.TestCase):
 
             self.assertEqual(evidence["version"], "0.4.0")
 
+    def test_archive_launcher_can_run_with_staged_companion(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            archive = root / "assura-linux-amd64.tar.gz"
+            launcher = root / "assura"
+            full = root / "assura-full"
+            launcher.write_text(
+                '#!/bin/sh\nexec "$(dirname "$0")/assura-full" "$@"\n',
+                encoding="utf-8",
+            )
+            launcher.chmod(
+                launcher.stat().st_mode
+                | stat.S_IXUSR
+                | stat.S_IXGRP
+                | stat.S_IXOTH
+            )
+            _fake_binary(full, "0.4.1")
+            with tarfile.open(archive, "w:gz") as packaged:
+                packaged.add(launcher, arcname="assura")
+                packaged.add(full, arcname="assura-full")
+
+            evidence = verify_archive(archive, "0.4.1")
+
+            self.assertEqual(evidence["assura"]["output"], "assura 0.4.1")
+            self.assertEqual(evidence["assura-full"]["output"], "assura 0.4.1")
+
     def test_wrong_version_archive_is_rejected(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             archive = Path(directory) / "assura-linux-amd64.tar.gz"
