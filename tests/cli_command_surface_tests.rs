@@ -145,6 +145,23 @@ structure:
 }
 
 #[test]
+fn full_json_check_keeps_tracing_output_on_stderr() {
+    let project = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/fixtures/real-project-agentic-feedback/valid");
+    let output = Command::new(assura_full_bin())
+        .env("RUST_LOG", "info")
+        .args(["check", "--format", "json"])
+        .arg(project)
+        .output()
+        .unwrap();
+
+    assert!(output.status.success());
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["success"], true);
+    assert!(String::from_utf8_lossy(&output.stderr).contains("Starting Assura CLI"));
+}
+
+#[test]
 fn check_help_uses_lightweight_primary_path() {
     let output = Command::new(assura_bin())
         .arg("check")
