@@ -7,12 +7,13 @@ status: active
 
 This policy applies to Assura pre-1.0 releases.
 
-The policy describes the current checked source surface. `v0.3.0` was published
-and live-verified on 2026-07-02 with all expected archives and checksums
-reachable. The checked `v0.4.1` candidate assigns its supported additions in
-the release manifest; they are not retroactively part of `v0.3.0` and are not
-publicly installable until the release tag publishes. Assura remains pre-1.0
-beta.
+The policy describes the current checked source surface. The latest published
+release is [`v0.4.1`](https://github.com/rothnic/assura/releases/tag/v0.4.1),
+live-verified on 2026-10-01 from source commit
+[`7ab1d82`](https://github.com/rothnic/assura/commit/7ab1d82634221817e568bf697fb56af03552d58e)
+by [release workflow run 36799421108](https://github.com/rothnic/assura/actions/runs/36799421108).
+The release manifest assigns its supported additions to `v0.4.1`; those
+additions are not retroactively part of `v0.3.0`. Assura remains pre-1.0 beta.
 
 The current growth boundary is executable repository conventions for
 agent-assisted development: maintainable local policy, editable local patterns,

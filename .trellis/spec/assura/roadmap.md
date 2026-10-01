@@ -46,8 +46,11 @@ Maturity Execution Train is the active iteration. Assura's growth priority is
 executable repository conventions for agent-assisted development: maintainable
 local policy, editable local patterns, safe initialization, bounded feedback,
 and deterministic local/CI gates. Existing supported behavior remains
-available pending consumer review; this does not make checked-source `0.4.1`
-behavior publicly installable while the published release remains `v0.3.0`.
+available pending consumer review. The latest published release is
+[`v0.4.1`](https://github.com/rothnic/assura/releases/tag/v0.4.1),
+live-verified on 2026-10-01 from source commit
+[`7ab1d82`](https://github.com/rothnic/assura/commit/7ab1d82634221817e568bf697fb56af03552d58e)
+by [release workflow run 36799421108](https://github.com/rothnic/assura/actions/runs/36799421108).
 
 Owning task:
 `.trellis/tasks/09-04-maturity-portfolio-strategy/`.

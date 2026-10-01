@@ -5,11 +5,16 @@ status: active
 
 # Assura v0.4.1 Release Notes
 
-These notes describe the pre-1.0 public command surface prepared `v0.4.1` beta increment.
-`v0.3.0` remains the latest published release until
-the `v0.4.1` tag completes release verification. Assura publishes installable archives from
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) when a
-maintainer pushes an intentional `v*` tag after the release checklist in
+These notes describe the pre-1.0 public command surface published in the
+`v0.4.1` beta increment. The release was published and live-verified on
+2026-10-01 from source commit
+[`7ab1d82`](https://github.com/rothnic/assura/commit/7ab1d82634221817e568bf697fb56af03552d58e)
+by [release workflow run 36799421108](https://github.com/rothnic/assura/actions/runs/36799421108).
+The [published v0.4.1 release](https://github.com/rothnic/assura/releases/tag/v0.4.1)
+includes installable archives for all five supported platforms. Assura
+publishes installable archives from
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) after the
+release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
 passes.
 
@@ -303,5 +308,5 @@ ASSURA_VERSION=v0.4.1 cargo xtask release-live
 
 ## Next
 
-The parent post-beta capabilities program records `v0.4.1` release candidate
-evidence for this beta increment. Assura still remains pre-1.0 beta software.
+The parent post-beta capabilities program records the candidate evidence that
+preceded this published beta increment. Assura remains pre-1.0 beta software.
