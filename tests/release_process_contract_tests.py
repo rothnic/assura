@@ -282,6 +282,36 @@ class ReleaseRetryTests(unittest.TestCase):
                     "rothnic/assura", "v0.4.0", "1" * 40, "2" * 40
                 )
 
+    def test_v041_remote_tag_rejects_checkout_alias_and_mutated_source(self) -> None:
+        tag_oid = "9f45805cb47346ba8de50f09b7eabe0f230a9339"
+        commit_oid = "7ab1d82634221817e568bf697fb56af03552d58e"
+        responses = [
+            (
+                0,
+                json.dumps(
+                    {
+                        "ref": "refs/tags/v0.4.1",
+                        "object": {"sha": tag_oid, "type": "tag"},
+                    }
+                ),
+                "",
+            ),
+            (0, json.dumps({"object": {"sha": commit_oid, "type": "commit"}}), ""),
+        ]
+        for wrong_tag_oid, wrong_commit_oid in [
+            (commit_oid, commit_oid),
+            (tag_oid, "8ab1d82634221817e568bf697fb56af03552d58e"),
+        ]:
+            with self.subTest(tag_oid=wrong_tag_oid, commit_oid=wrong_commit_oid):
+                with mock.patch.object(_PUBLISHER, "_run_gh", side_effect=responses):
+                    with self.assertRaises(_PUBLISHER.ReleaseContractError):
+                        _PUBLISHER.verify_remote_tag(
+                            "rothnic/assura",
+                            "v0.4.1",
+                            wrong_tag_oid,
+                            wrong_commit_oid,
+                        )
+
     def _release_assets(self, root: Path) -> dict[str, dict[str, object]]:
         for name in RELEASE_ARCHIVES:
             archive = root / name
@@ -530,6 +560,32 @@ class ReleaseReceiptTests(unittest.TestCase):
         receipt["commit_oid"] = "3" * 40
         self.assertFalse(validate_release_receipt(receipt, self._intent(), "2" * 40))
 
+    def test_receipt_preserves_distinct_workflow_head_and_release_source(self) -> None:
+        receipt = self._receipt()
+        receipt["workflow_runs"] = [
+            {
+                "workflow": "Release",
+                "run_id": "123",
+                "run_head_sha": "3" * 40,
+                "release_source_commit_oid": "2" * 40,
+            }
+        ]
+        rebuilt = build_release_receipt(
+            repository="rothnic/assura",
+            version="0.4.0",
+            tag="v0.4.0",
+            tag_oid="1" * 40,
+            commit_oid="2" * 40,
+            workflow_runs=receipt["workflow_runs"],
+            assets={asset["name"]: asset for asset in receipt["assets"]},
+            install_proof=receipt["install"],
+            publish=receipt["publish"],
+        )
+        self.assertEqual(rebuilt["workflow_runs"][0]["run_head_sha"], "3" * 40)
+        self.assertEqual(
+            rebuilt["workflow_runs"][0]["release_source_commit_oid"], "2" * 40
+        )
+
     def test_receipt_requires_matching_full_publication_identities(self) -> None:
         cases = {
             "tag_oid mismatched": {"tag_oid": "3" * 40},
@@ -579,6 +635,143 @@ class ReleaseReceiptTests(unittest.TestCase):
                 build_asset_manifest(Path(directory), "0.4.0")
 
 class ReleaseWorkflowContractTests(unittest.TestCase):
+    @staticmethod
+    def _valid_tag_source() -> tuple[dict[str, object], dict[str, object]]:
+        return (
+            {
+                "ref": "refs/tags/v0.4.1",
+                "object": {
+                    "sha": "9f45805cb47346ba8de50f09b7eabe0f230a9339",
+                    "type": "tag",
+                },
+            },
+            {
+                "sha": "9f45805cb47346ba8de50f09b7eabe0f230a9339",
+                "tag": "v0.4.1",
+                "object": {
+                    "sha": "7ab1d82634221817e568bf697fb56af03552d58e",
+                    "type": "commit",
+                },
+            },
+        )
+
+    def test_resolver_binds_v041_fixture_to_annotated_tag_and_source(self) -> None:
+        ref_payload, tag_payload = self._valid_tag_source()
+        identity = _MODULE.validate_release_tag_identity(
+            "v0.4.1", "workflow_dispatch", "refs/heads/master", ref_payload, tag_payload
+        )
+        self.assertEqual(identity["tag_oid"], "9f45805cb47346ba8de50f09b7eabe0f230a9339")
+        self.assertEqual(identity["commit_oid"], "7ab1d82634221817e568bf697fb56af03552d58e")
+
+    def test_manual_resolver_rejects_non_master_workflow_revision(self) -> None:
+        ref_payload, tag_payload = self._valid_tag_source()
+        for workflow_ref in ("refs/heads/feature", "refs/tags/v0.4.1"):
+            with self.subTest(workflow_ref=workflow_ref):
+                with self.assertRaises(ReleaseContractError):
+                    _MODULE.validate_release_tag_identity(
+                        "v0.4.1", "workflow_dispatch", workflow_ref, ref_payload, tag_payload
+                    )
+
+    def test_resolver_accepts_other_annotated_semver_tags(self) -> None:
+        ref_payload = {
+            "ref": "refs/tags/v0.5.0",
+            "object": {"sha": "3" * 40, "type": "tag"},
+        }
+        tag_payload = {
+            "sha": "3" * 40,
+            "tag": "v0.5.0",
+            "object": {"sha": "4" * 40, "type": "commit"},
+        }
+        self.assertEqual(
+            _MODULE.validate_release_tag_identity(
+                "v0.5.0", "workflow_dispatch", "refs/heads/master", ref_payload, tag_payload
+            ),
+            {"release_tag": "v0.5.0", "tag_oid": "3" * 40, "commit_oid": "4" * 40},
+        )
+        prerelease_ref = {**ref_payload, "ref": "refs/tags/v0.5.0-rc.1"}
+        prerelease_tag = {**tag_payload, "tag": "v0.5.0-rc.1"}
+        self.assertEqual(
+            _MODULE.validate_release_tag_identity(
+                "v0.5.0-rc.1", "workflow_dispatch", "refs/heads/master", prerelease_ref, prerelease_tag
+            )["release_tag"],
+            "v0.5.0-rc.1",
+        )
+
+    def test_resolver_rejects_invalid_tag_wrong_ref_and_lightweight_tag(self) -> None:
+        ref_payload, tag_payload = self._valid_tag_source()
+        cases = [
+            ("v0.4.1/x", ref_payload, tag_payload),
+            (
+                "v0.4.1",
+                {**ref_payload, "ref": "refs/tags/v0.4.2"},
+                tag_payload,
+            ),
+            (
+                "v0.4.1",
+                {**ref_payload, "object": {"sha": "7ab1d82634221817e568bf697fb56af03552d58e", "type": "commit"}},
+                tag_payload,
+            ),
+            (
+                "v0.4.1",
+                {**ref_payload, "object": {"sha": "invalid", "type": "tag"}},
+                tag_payload,
+            ),
+            (
+                "v0.4.1",
+                {**ref_payload, "object": {"sha": "8f45805cb47346ba8de50f09b7eabe0f230a9339", "type": "tag"}},
+                tag_payload,
+            ),
+            (
+                "v0.4.1",
+                ref_payload,
+                {**tag_payload, "object": {"sha": "7ab1d82634221817e568bf697fb56af03552d58e", "type": "tree"}},
+            ),
+        ]
+        for tag, ref, annotated in cases:
+            with self.subTest(tag=tag, ref=ref, annotated=annotated):
+                with self.assertRaises(ReleaseContractError):
+                    _MODULE.validate_release_tag_identity(
+                        tag, "workflow_dispatch", "refs/heads/master", ref, annotated
+                    )
+
+    def test_resolver_rejects_missing_or_malformed_api_payloads(self) -> None:
+        ref_payload, tag_payload = self._valid_tag_source()
+        for ref, annotated in [({}, tag_payload), (ref_payload, {}), (None, tag_payload)]:
+            with self.subTest(ref=ref, annotated=annotated):
+                with self.assertRaises(ReleaseContractError):
+                    _MODULE.validate_release_tag_identity(
+                        "v0.4.1", "workflow_dispatch", "refs/heads/master", ref, annotated
+                    )
+
+    def test_checkout_tag_alias_does_not_define_authoritative_tag_object(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.name", "Test"], check=True)
+            subprocess.run(["git", "-C", str(root), "config", "user.email", "test@example.invalid"], check=True)
+            (root / "source.txt").write_text("source\n", encoding="utf-8")
+            subprocess.run(["git", "-C", str(root), "add", "source.txt"], check=True)
+            subprocess.run(["git", "-C", str(root), "commit", "-qm", "source"], check=True)
+            commit_oid = subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "HEAD"], text=True
+            ).strip()
+            subprocess.run(
+                ["git", "-C", str(root), "tag", "-a", "v0.4.1", "-m", "v0.4.1"],
+                check=True,
+            )
+            tag_oid = subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "refs/tags/v0.4.1"], text=True
+            ).strip()
+            subprocess.run(
+                ["git", "-C", str(root), "update-ref", "refs/tags/v0.4.1", commit_oid],
+                check=True,
+            )
+            checkout_alias = subprocess.check_output(
+                ["git", "-C", str(root), "rev-parse", "refs/tags/v0.4.1"], text=True
+            ).strip()
+            self.assertNotEqual(tag_oid, commit_oid)
+            self.assertEqual(checkout_alias, commit_oid)
+
     def test_release_workflow_has_no_unconditional_overwrite_path(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
             encoding="utf-8"
@@ -594,6 +787,18 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
         )
         self.assertIn("--tag-oid", workflow)
         self.assertIn("--commit-oid", workflow)
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("repos/${GITHUB_REPOSITORY}/git/ref/tags/${release_tag}", workflow)
+        self.assertIn("release-contract.py resolve-tag", workflow)
+        self.assertNotIn("github.ref_name", workflow)
+        self.assertIn("needs.validate-release-contract.outputs.commit_oid", workflow)
+        self.assertIn("run_head_sha", workflow)
+        self.assertIn("release_source_commit_oid", workflow)
+        self.assertLess(
+            workflow.index('test "${GITHUB_REF}" = "refs/heads/master"'),
+            workflow.index("gh api \"repos/${GITHUB_REPOSITORY}/git/ref/tags/${release_tag}\""),
+        )
+        self.assertIn("permissions:\n      contents: write", workflow)
 
     def test_ci_has_windows_negative_assert_version_contract(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
