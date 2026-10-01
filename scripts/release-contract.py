@@ -306,6 +306,7 @@ def _require_oid(value: Any, field: str) -> str:
 def validate_release_tag_identity(
     release_tag: str,
     event_name: str,
+    workflow_ref: str,
     ref_payload: Any,
     annotated_payload: Any,
 ) -> dict[str, str]:
@@ -317,6 +318,8 @@ def validate_release_tag_identity(
     _version(release_tag[1:])
     if event_name not in {"push", "workflow_dispatch"}:
         raise ReleaseContractError("release workflow event is not supported")
+    if event_name == "workflow_dispatch" and workflow_ref != "refs/heads/master":
+        raise ReleaseContractError("manual release dispatch must use the master workflow revision")
 
     if ref_payload.get("ref") != f"refs/tags/{release_tag}":
         raise ReleaseContractError("GitHub ref response does not match requested release tag")
@@ -516,6 +519,7 @@ def _parser() -> argparse.ArgumentParser:
     resolve_tag = subparsers.add_parser("resolve-tag")
     resolve_tag.add_argument("--tag", required=True)
     resolve_tag.add_argument("--event", required=True)
+    resolve_tag.add_argument("--workflow-ref", required=True)
     resolve_tag.add_argument("--ref-json", required=True)
     resolve_tag.add_argument("--annotated-tag-json", required=True)
     return parser
@@ -543,6 +547,7 @@ def main(argv: list[str] | None = None) -> int:
             result = validate_release_tag_identity(
                 args.tag,
                 args.event,
+                args.workflow_ref,
                 _read_json(Path(args.ref_json)),
                 _read_json(Path(args.annotated_tag_json)),
             )

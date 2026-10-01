@@ -17,7 +17,7 @@ env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   validate-release-contract:
@@ -47,6 +47,8 @@ jobs:
         run: |
           set -euo pipefail
           if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            test "${GITHUB_REF}" = "refs/heads/master"
+            test "${GITHUB_REF_NAME}" = "master"
             release_tag="${DISPATCH_TAG}"
           else
             release_tag="${GITHUB_REF_NAME}"
@@ -62,6 +64,7 @@ jobs:
           identity="$(python3 scripts/release-contract.py resolve-tag \
             --tag "${release_tag}" \
             --event "${GITHUB_EVENT_NAME}" \
+            --workflow-ref "${GITHUB_REF}" \
             --ref-json "${ref_path}" \
             --annotated-tag-json "${tag_path}")"
           tag_oid="$(jq -r '.tag_oid' <<<"${identity}")"
@@ -283,6 +286,8 @@ jobs:
     name: Publish GitHub Release
     runs-on: ubuntu-latest
     needs: [validate-release-contract, build-release]
+    permissions:
+      contents: write
     env:
       ASSURA_RELEASE_VERSION: ${{ needs.validate-release-contract.outputs.package_version }}
     steps:

@@ -658,10 +658,19 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
     def test_resolver_binds_v041_fixture_to_annotated_tag_and_source(self) -> None:
         ref_payload, tag_payload = self._valid_tag_source()
         identity = _MODULE.validate_release_tag_identity(
-            "v0.4.1", "workflow_dispatch", ref_payload, tag_payload
+            "v0.4.1", "workflow_dispatch", "refs/heads/master", ref_payload, tag_payload
         )
         self.assertEqual(identity["tag_oid"], "9f45805cb47346ba8de50f09b7eabe0f230a9339")
         self.assertEqual(identity["commit_oid"], "7ab1d82634221817e568bf697fb56af03552d58e")
+
+    def test_manual_resolver_rejects_non_master_workflow_revision(self) -> None:
+        ref_payload, tag_payload = self._valid_tag_source()
+        for workflow_ref in ("refs/heads/feature", "refs/tags/v0.4.1"):
+            with self.subTest(workflow_ref=workflow_ref):
+                with self.assertRaises(ReleaseContractError):
+                    _MODULE.validate_release_tag_identity(
+                        "v0.4.1", "workflow_dispatch", workflow_ref, ref_payload, tag_payload
+                    )
 
     def test_resolver_accepts_other_annotated_semver_tags(self) -> None:
         ref_payload = {
@@ -674,14 +683,16 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
             "object": {"sha": "4" * 40, "type": "commit"},
         }
         self.assertEqual(
-            _MODULE.validate_release_tag_identity("v0.5.0", "workflow_dispatch", ref_payload, tag_payload),
+            _MODULE.validate_release_tag_identity(
+                "v0.5.0", "workflow_dispatch", "refs/heads/master", ref_payload, tag_payload
+            ),
             {"release_tag": "v0.5.0", "tag_oid": "3" * 40, "commit_oid": "4" * 40},
         )
         prerelease_ref = {**ref_payload, "ref": "refs/tags/v0.5.0-rc.1"}
         prerelease_tag = {**tag_payload, "tag": "v0.5.0-rc.1"}
         self.assertEqual(
             _MODULE.validate_release_tag_identity(
-                "v0.5.0-rc.1", "workflow_dispatch", prerelease_ref, prerelease_tag
+                "v0.5.0-rc.1", "workflow_dispatch", "refs/heads/master", prerelease_ref, prerelease_tag
             )["release_tag"],
             "v0.5.0-rc.1",
         )
@@ -719,7 +730,9 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
         for tag, ref, annotated in cases:
             with self.subTest(tag=tag, ref=ref, annotated=annotated):
                 with self.assertRaises(ReleaseContractError):
-                    _MODULE.validate_release_tag_identity(tag, "workflow_dispatch", ref, annotated)
+                    _MODULE.validate_release_tag_identity(
+                        tag, "workflow_dispatch", "refs/heads/master", ref, annotated
+                    )
 
     def test_resolver_rejects_missing_or_malformed_api_payloads(self) -> None:
         ref_payload, tag_payload = self._valid_tag_source()
@@ -727,7 +740,7 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
             with self.subTest(ref=ref, annotated=annotated):
                 with self.assertRaises(ReleaseContractError):
                     _MODULE.validate_release_tag_identity(
-                        "v0.4.1", "workflow_dispatch", ref, annotated
+                        "v0.4.1", "workflow_dispatch", "refs/heads/master", ref, annotated
                     )
 
     def test_checkout_tag_alias_does_not_define_authoritative_tag_object(self) -> None:
@@ -781,6 +794,11 @@ class ReleaseWorkflowContractTests(unittest.TestCase):
         self.assertIn("needs.validate-release-contract.outputs.commit_oid", workflow)
         self.assertIn("run_head_sha", workflow)
         self.assertIn("release_source_commit_oid", workflow)
+        self.assertLess(
+            workflow.index('test "${GITHUB_REF}" = "refs/heads/master"'),
+            workflow.index("gh api \"repos/${GITHUB_REPOSITORY}/git/ref/tags/${release_tag}\""),
+        )
+        self.assertIn("permissions:\n      contents: write", workflow)
 
     def test_ci_has_windows_negative_assert_version_contract(self) -> None:
         workflow = (ROOT / ".github" / "workflows" / "ci.yml").read_text(
