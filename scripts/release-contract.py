@@ -303,6 +303,40 @@ def _require_oid(value: Any, field: str) -> str:
     return value.lower()
 
 
+def validate_release_tag_identity(
+    release_tag: str,
+    event_name: str,
+    ref_payload: Any,
+    annotated_payload: Any,
+) -> dict[str, str]:
+    """Bind a semantic-version release tag to GitHub's annotated-tag API objects."""
+    if not isinstance(ref_payload, dict) or not isinstance(annotated_payload, dict):
+        raise ReleaseContractError("GitHub API tag responses must be JSON objects")
+    if not isinstance(release_tag, str) or not release_tag.startswith("v"):
+        raise ReleaseContractError("release tag must begin with v and contain a package version")
+    _version(release_tag[1:])
+    if event_name not in {"push", "workflow_dispatch"}:
+        raise ReleaseContractError("release workflow event is not supported")
+
+    if ref_payload.get("ref") != f"refs/tags/{release_tag}":
+        raise ReleaseContractError("GitHub ref response does not match requested release tag")
+    ref_object = ref_payload.get("object")
+    if not isinstance(ref_object, dict) or ref_object.get("type") != "tag":
+        raise ReleaseContractError("release ref must point to an annotated tag object")
+    tag_oid = _require_oid(ref_object.get("sha"), "annotated tag object")
+
+    response_tag_oid = _require_oid(annotated_payload.get("sha"), "annotated tag response object")
+    if response_tag_oid != tag_oid:
+        raise ReleaseContractError("annotated tag response object differs from the GitHub ref object")
+    if annotated_payload.get("tag") != release_tag:
+        raise ReleaseContractError("annotated tag object name does not match requested release tag")
+    target = annotated_payload.get("object")
+    if not isinstance(target, dict) or target.get("type") != "commit":
+        raise ReleaseContractError("annotated release tag must target a commit")
+    commit_oid = _require_oid(target.get("sha"), "release source commit")
+    return {"release_tag": release_tag, "tag_oid": tag_oid, "commit_oid": commit_oid}
+
+
 def build_release_receipt(
     repository: str,
     version: str,
@@ -478,6 +512,12 @@ def _parser() -> argparse.ArgumentParser:
     receipt.add_argument("--install-dir", required=True)
     receipt.add_argument("--publish-json", required=True)
     receipt.add_argument("--output", required=True)
+
+    resolve_tag = subparsers.add_parser("resolve-tag")
+    resolve_tag.add_argument("--tag", required=True)
+    resolve_tag.add_argument("--event", required=True)
+    resolve_tag.add_argument("--ref-json", required=True)
+    resolve_tag.add_argument("--annotated-tag-json", required=True)
     return parser
 
 
@@ -499,6 +539,13 @@ def main(argv: list[str] | None = None) -> int:
                 args.version,
             )
             _write_json(Path(args.output), result)
+        elif args.command == "resolve-tag":
+            result = validate_release_tag_identity(
+                args.tag,
+                args.event,
+                _read_json(Path(args.ref_json)),
+                _read_json(Path(args.annotated_tag_json)),
+            )
         else:
             manifest = build_asset_manifest(Path(args.assets_dir), args.version)
             install_dir = Path(args.install_dir)

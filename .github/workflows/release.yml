@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Annotated release tag to republish from its immutable source
+        required: true
+        type: string
 
 env:
   CARGO_TERM_COLOR: always
@@ -19,11 +25,14 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       package_version: ${{ steps.release-source.outputs.package_version }}
+      release_tag: ${{ steps.release-source.outputs.release_tag }}
       tag_oid: ${{ steps.release-source.outputs.tag_oid }}
       commit_oid: ${{ steps.release-source.outputs.commit_oid }}
+      workflow_head_sha: ${{ steps.release-source.outputs.workflow_head_sha }}
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.sha }}
           fetch-depth: 0
 
       - name: Install Rust
@@ -31,18 +40,43 @@ jobs:
 
       - name: Match tag to package version and bind source
         id: release-source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DISPATCH_TAG: ${{ inputs.release_tag }}
         shell: bash
         run: |
+          set -euo pipefail
+          if [[ "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
+            release_tag="${DISPATCH_TAG}"
+          else
+            release_tag="${GITHUB_REF_NAME}"
+          fi
+          [[ "${release_tag}" =~ ^v[0-9A-Za-z.+-]+$ ]]
+          ref_path="${RUNNER_TEMP}/release-ref.json"
+          tag_path="${RUNNER_TEMP}/release-annotated-tag.json"
+          gh api "repos/${GITHUB_REPOSITORY}/git/ref/tags/${release_tag}" > "${ref_path}"
+          test "$(jq -r '.object.type // empty' "${ref_path}")" = "tag"
+          tag_oid="$(jq -r '.object.sha // empty' "${ref_path}")"
+          [[ "${tag_oid}" =~ ^[0-9a-fA-F]{40}$ ]]
+          gh api "repos/${GITHUB_REPOSITORY}/git/tags/${tag_oid}" > "${tag_path}"
+          identity="$(python3 scripts/release-contract.py resolve-tag \
+            --tag "${release_tag}" \
+            --event "${GITHUB_EVENT_NAME}" \
+            --ref-json "${ref_path}" \
+            --annotated-tag-json "${tag_path}")"
+          tag_oid="$(jq -r '.tag_oid' <<<"${identity}")"
+          commit_oid="$(jq -r '.commit_oid' <<<"${identity}")"
+          git fetch --force origin "${commit_oid}"
+          git checkout --detach "${commit_oid}"
+          test "$(git rev-parse HEAD)" = "${commit_oid,,}"
           package_version="$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[] | select(.name == "assura") | .version')"
-          test "v${package_version}" = "${GITHUB_REF_NAME}"
-          tag_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}")"
-          commit_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}^{commit}")"
-          test -n "${tag_oid}"
-          test -n "${commit_oid}"
+          test "v${package_version}" = "${release_tag}"
           {
             echo "package_version=${package_version}"
+            echo "release_tag=${release_tag}"
             echo "tag_oid=${tag_oid}"
             echo "commit_oid=${commit_oid}"
+            echo "workflow_head_sha=${GITHUB_SHA}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Validate marketed release claims
@@ -85,6 +119,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.validate-release-contract.outputs.commit_oid }}
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
@@ -252,6 +288,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ needs.validate-release-contract.outputs.commit_oid }}
           fetch-depth: 0
 
       - name: Download release archive artifacts
@@ -266,7 +303,7 @@ jobs:
         run: |
           python3 scripts/publish-release-assets.py \
             --repository "${{ github.repository }}" \
-            --tag "${{ github.ref_name }}" \
+            --tag "${{ needs.validate-release-contract.outputs.release_tag }}" \
             --version "$ASSURA_RELEASE_VERSION" \
             --tag-oid "${{ needs.validate-release-contract.outputs.tag_oid }}" \
             --commit-oid "${{ needs.validate-release-contract.outputs.commit_oid }}" \
@@ -286,24 +323,35 @@ jobs:
       - name: Write durable release receipt
         shell: bash
         run: |
-          tag_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}")"
-          commit_oid="$(git rev-parse --verify "refs/tags/${GITHUB_REF_NAME}^{commit}")"
           python3 scripts/release-contract.py receipt \
             --repository "${{ github.repository }}" \
             --version "$ASSURA_RELEASE_VERSION" \
-            --tag "${{ github.ref_name }}" \
-            --tag-oid "$tag_oid" \
-            --commit-oid "$commit_oid" \
+            --tag "${{ needs.validate-release-contract.outputs.release_tag }}" \
+            --tag-oid "${{ needs.validate-release-contract.outputs.tag_oid }}" \
+            --commit-oid "${{ needs.validate-release-contract.outputs.commit_oid }}" \
             --workflow-run-id "${{ github.run_id }}" \
             --assets-dir target/release-upload \
             --install-dir target/release-install \
             --publish-json target/release-publish.json \
             --output target/release-receipt.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path("target/release-receipt.json")
+          receipt = json.loads(path.read_text(encoding="utf-8"))
+          runs = receipt["workflow_runs"]
+          if len(runs) != 1:
+              raise SystemExit("expected exactly one release workflow run")
+          runs[0]["run_head_sha"] = "${{ needs.validate-release-contract.outputs.workflow_head_sha }}"
+          runs[0]["release_source_commit_oid"] = "${{ needs.validate-release-contract.outputs.commit_oid }}"
+          path.write_text(json.dumps(receipt, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+          PY
 
       - name: Upload durable release evidence
         uses: actions/upload-artifact@v4
         with:
-          name: assura-release-evidence-${{ github.ref_name }}
+          name: assura-release-evidence-${{ needs.validate-release-contract.outputs.release_tag }}
           path: |
             target/release-receipt.json
             target/release-publish.json

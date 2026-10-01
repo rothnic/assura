@@ -72,7 +72,10 @@ silently produce mixed artifacts:
 3. After the release PR is merged, verify the versioned preview artifacts and
    their full source SHA. Create the release task bound to the chosen merged
    commit only when publication authority is available.
-4. The tag-driven workflow verifies the tag/package version, both binary
+4. The tag-driven workflow resolves the requested tag through GitHub's ref and
+   annotated-tag APIs, rejects lightweight or mismatched tags, and checks out
+   the resolved commit for builds and publication. It verifies the
+   tag/package version, both binary
    `--version` outputs in every build matrix entry, both binaries again after
    archive extraction, checksums, and an installable Linux proof. It writes an
    `assura.release-receipt.v1` evidence artifact containing the tag
@@ -85,6 +88,24 @@ silently produce mixed artifacts:
    checks from the release-live procedure. Those checks are publication
    evidence, not a substitute for explicit release acceptance or release
    authority.
+
+### Publication Recovery
+
+The v0.4.1 tag is immutable. If its original tag-triggered publication run
+needs recovery, dispatch the release workflow from the repaired `master`
+workflow revision with:
+
+```bash
+gh workflow run release.yml --ref master --field release_tag=v0.4.1
+```
+
+The workflow accepts package-version tags only, resolves each
+annotated tag object and target commit from the GitHub API, and checks that the
+tag agrees with the package version before building. For the v0.4.1 recovery,
+the API-resolved identities must remain the existing tag object and source
+commit; both remain immutable. The receipt records the workflow run-head SHA
+separately from `release_source_commit_oid`. Ordinary releases can continue to
+use the tag-push path.
 
 ## Release Surface Manifest
 
