@@ -2,7 +2,7 @@
 import FocusedMarketingPage from '../../components/marketing/focused-marketing-page.astro';
 
 const title = 'Assura Changelog and Releases';
-const description = 'Follow Assura release milestones, checked v0.4.1 candidate contracts, performance evidence, and migration notes.';
+const description = 'Follow Assura release milestones, published v0.4.1 contracts, performance evidence, and migration notes.';
 const canonicalPath = '/changelog/';
 const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionPage', name: title, description, url: `https://assura.dev${canonicalPath}` };
 ---
@@ -12,22 +12,23 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionP
   imagePath="/social/changelog.webp"
   eyebrow="Changelog"
   heading="Release evidence, not just release notes."
-  intro="Assura is pre-1.0. Published releases stay distinct from the checked v0.4.1 candidate, and promotion requires current install, performance, compatibility, and command evidence."
+  intro="Assura is pre-1.0. Version v0.4.1 is the latest published release, live-verified on 2026-10-01 from source commit 7ab1d82 by release workflow run 36799421108."
   artifactTitle="release status"
   artifactLines={[
-    'v0.4.1 candidate',
-    'latest published  v0.3.0 (2026-07-02)',
+    'latest release     v0.4.1 (2026-10-01)',
+    'source commit      7ab1d82',
+    'release workflow   36799421108',
     'status            pre-1.0 beta',
     'platforms         Linux, macOS, Windows',
     'evidence          release-live + performance',
   ]}
   highlights={[
-    { label: 'Published v0.3', body: 'Structure checks, reports, initialization, status, LS-Lint migration, hooks, and performance evidence.' },
-    { label: 'v0.4.1 candidate', body: 'Review, Explain, onboarding, bounded event feedback, managed host activation, deterministic content checks, and local context surfaces are assigned to the candidate and await tag publication.' },
+    { label: 'Published v0.4.1', body: 'Review, Explain, onboarding, bounded event feedback, managed host activation, deterministic content checks, and local context surfaces are available in the latest release.' },
+    { label: 'Previous releases', body: 'Earlier published versions and their release notes remain available in the GitHub release archive.' },
     { label: 'Roadmap boundary', body: 'Automatic broad repair, hosted orchestration, semantic inference as policy, and public third-party plugin APIs are not part of the supported core contract.' },
   ]}
   sections={[
-    { label: '0.4.1 candidate', body: 'Checked release candidate for the current public command surface; tag publication is still required.' },
+    { label: '0.4.1 release', body: 'Published on 2026-10-01 from source commit 7ab1d82; the release workflow verified all five platform archives and checksums.' },
     { label: 'Compatibility policy', body: 'Before 1.0, Assura favors direct replacement of superseded internal contracts over long-lived compatibility shims.' },
     { label: 'Installation evidence', body: 'Release readiness verifies public install scripts and platform assets before a version is presented as current.' },
     { label: 'Performance evidence', body: 'Checked cold and warm reports retain their environment, fixture cohort, and version instead of carrying numbers forward manually.' },
@@ -38,6 +39,8 @@ const structuredData = { '@context': 'https://schema.org', '@type': 'CollectionP
   ]}
   docsLinks={[
     { label: 'Open GitHub releases', href: 'https://github.com/rothnic/assura/releases' },
+    { label: 'v0.4.1 release', href: 'https://github.com/rothnic/assura/releases/tag/v0.4.1' },
+    { label: 'v0.4.1 release workflow', href: 'https://github.com/rothnic/assura/actions/runs/36799421108' },
     { label: 'Read support policy', href: '/reference/release-readiness/' },
   ]}
 />
