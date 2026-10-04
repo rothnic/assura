@@ -457,7 +457,7 @@ jobs:
             archive_kind: tar
             linux_libc: musl
           - label: macos-arm64
-            os: macos-14
+            os: macos-15
             target: aarch64-apple-darwin
             archive_name: assura-macos-arm64.tar.gz
             archive_kind: tar
