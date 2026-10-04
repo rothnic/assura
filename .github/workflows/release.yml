@@ -115,7 +115,7 @@ jobs:
             target: x86_64-apple-darwin
             asset_name: assura-macos-amd64
             archive_name: assura-macos-amd64.tar.gz
-          - os: macos-14
+          - os: macos-15
             target: aarch64-apple-darwin
             asset_name: assura-macos-arm64
             archive_name: assura-macos-arm64.tar.gz
