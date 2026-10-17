@@ -19,11 +19,11 @@ that can be entered in Beads with real dependencies.
 
 ## Acceptance
 
-- [ ] Source, release, binary identity, workspace disposition are recorded.
-- [ ] Two existing-project trial reports include exact commands and exits.
-- [ ] Assura self-review and drift probes distinguish policy from product gaps.
-- [ ] Prior records and existing backlog have explicit dispositions.
-- [ ] Backlog IDs are unique, dependencies exist, and the graph is acyclic.
+- [x] Source, release, binary identity, workspace disposition are recorded.
+- [x] Two existing-project trial reports include exact commands and exits.
+- [x] Assura self-review and drift probes distinguish policy from product gaps.
+- [x] Prior records and existing backlog have explicit dispositions.
+- [x] Backlog IDs are unique, dependencies exist, and the graph is acyclic.
 - [ ] Independent review findings are adjudicated and limitations recorded.
 
 ## Approach
@@ -38,3 +38,12 @@ deliverable; it does not execute the resulting product backlog.
 
 Product fixes, release publication, global installation/configuration changes,
 modifying the two original projects, and cleanup of historical worktrees.
+
+## Workflow disposition
+
+Research artifacts were produced in planning. Task activation encountered the
+existing P05 integrated-pending-verification guard; its owner/receipt are
+preserved. Native artifact registration is supported independently of start.
+Spec review: no implemented contract changed; proposed acceptance cases remain
+in the backlog until a separately authorized implementation updates code/specs.
+The old execution backlog now links this current-source review for discovery.

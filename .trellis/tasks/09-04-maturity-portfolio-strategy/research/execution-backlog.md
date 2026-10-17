@@ -1,5 +1,11 @@
 # Assura Maturity Execution Backlog
 
+**2026-10-17 review:** Start with the [current-source new-user assessment](../../../../docs/analysis/2026-10-17-new-user-review.md)
+and its [proposed dependency backlog](../../10-17-new-user-review-backlog/research/backlog.json).
+It adds 12 reproduced findings and reconciles the 10 unfinished outcomes here.
+Recorded states below remain historical until their exact acceptance is
+revalidated; the review does not authorize execution or recreate terminal work.
+
 > For agentic workers: use `superpowers:executing-plans` when available and follow the repository's inline Trellis workflow. Execute one card at a time. The complete standalone instructions are in [executor-prompt.md](executor-prompt.md). For a cross-session release train, start with the [stable E2E goal prompt](e2e-goal-prompt.md).
 
 **Goal:** Deliver a dependable repository-policy tool and a credible demonstration of Nick Roth's technical product and AI systems leadership.
