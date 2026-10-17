@@ -1,0 +1,54 @@
+{
+  "result": "pass",
+  "scope": "research artifacts only",
+  "commands": [
+    {
+      "command": "cargo run --quiet -- check --format json .",
+      "exit": 0,
+      "nonblocking_violations": 13,
+      "new_artifact_violations": 0,
+      "raw_path": "/Users/nroth/workspace/.assura-review-20261017/evidence/current-source-final-check.json"
+    },
+    {
+      "command": "cargo xtask evidence",
+      "exit": 0
+    },
+    {
+      "command": "cargo xtask docs",
+      "exit": 0,
+      "marketed_surfaces": 20,
+      "yaml_examples": 54,
+      "website_pages": 48,
+      "raw_path": "/Users/nroth/workspace/.assura-review-20261017/evidence/docs-final.log"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "setup_recovery": {
+    "initial_docs_exit": 1,
+    "cause": "Astro missing in fresh worktree",
+    "repair": "pnpm --dir website install --frozen-lockfile",
+    "selected_pnpm": "10.25.0",
+    "node": "25.6.0",
+    "lockfile_changed": false
+  },
+  "independent_review": {
+    "reviewer": "/root/final_review",
+    "verdict": "ready within reviewed scope",
+    "required_findings": 0,
+    "reviewed_commits": [
+      "b8b2395e",
+      "5e416433"
+    ],
+    "small_nu04_delta": "confirmed no dependency needed"
+  },
+  "excluded": [
+    "full Rust tests/clippy/benchmarks",
+    "native Beads store dry-run/import",
+    "trusted host event delivery",
+    "cross-platform reruns",
+    "external pilot acceptance"
+  ]
+}

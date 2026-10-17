@@ -24,7 +24,7 @@ that can be entered in Beads with real dependencies.
 - [x] Assura self-review and drift probes distinguish policy from product gaps.
 - [x] Prior records and existing backlog have explicit dispositions.
 - [x] Backlog IDs are unique, dependencies exist, and the graph is acyclic.
-- [ ] Independent review findings are adjudicated and limitations recorded.
+- [x] Independent review findings are adjudicated and limitations recorded.
 
 ## Approach
 

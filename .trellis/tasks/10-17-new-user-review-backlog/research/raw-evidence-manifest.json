@@ -113,5 +113,25 @@
     "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/task-start-hold.txt",
     "bytes": 558,
     "sha256": "57eb43b16c02849d67dd004f9adf3e7cd4673c70e1693c4902f7735fb505d429"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/current-source-final-check.json",
+    "bytes": 6247,
+    "sha256": "55af6001faa1f49a089e20d73903c35e787fdb757373006bf3562f519113a1e4"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/docs-final.log",
+    "bytes": 4626,
+    "sha256": "81dcb63dda38c92bac3bef02d0f3597b8b90f9cb6bd1ae01108a29073781d914"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/review-files-check.json",
+    "bytes": 6247,
+    "sha256": "95699cf41f0fedd1c35f9be0b3a19b3054b02926e215bf2d95830aad1811a70a"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/evidence-final.log",
+    "bytes": 647,
+    "sha256": "6684eab82c53d0413a0d53349c8f2e434a97aeb7df9e3b9cc3fadd40b7447589"
   }
 ]

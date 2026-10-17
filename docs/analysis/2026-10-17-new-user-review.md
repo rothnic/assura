@@ -43,7 +43,8 @@ recreating them as open work. No product fixes or Beads writes were performed.
 - CLI experiments used explicit absolute executables and disk-backed scratch
   under `/Users/nroth/workspace/.assura-review-20261017`. Full raw receipts
   remain there; the [hash manifest](../../.trellis/tasks/10-17-new-user-review-backlog/research/raw-evidence-manifest.json)
-  makes them independently inspectable. No project dependencies were installed.
+  makes them independently inspectable. Neither trial project had dependencies installed. Website validation later
+  installed its frozen dependencies in the isolated Assura worktree.
 - The native [public installer](https://assura.dev/install.sh) was executed
   with an isolated `BIN_DIR` and passed. An initial Python HTTP client got
   403, while the documented curl path returned 200 and installed successfully;
@@ -189,8 +190,15 @@ implementation is authorized by this import artifact.
 - [Python-led monorepo trial](../../.trellis/tasks/10-17-new-user-review-backlog/research/python-trial.md)
 - [Backlog validation](../../.trellis/tasks/10-17-new-user-review-backlog/research/backlog-validation.json)
 
-Evidence checks passed via `cargo xtask evidence`. Product Rust/Cargo and
-integration sources were not changed. No full test/clippy/benchmark rebuild,
+Final checks passed: current-source `cargo run --quiet -- check --format json .`
+(with the same 13 nonblocking findings), `cargo xtask evidence`, and
+`cargo xtask docs` (20 release-surface mappings, 54 YAML examples, 48 website
+pages). The first docs run lacked Astro; the supported frozen install selected
+pnpm 10.25.0 and the unchanged gate then passed.
+[Independent artifact review](../../.trellis/tasks/10-17-new-user-review-backlog/research/independent-review.md)
+accepted the deliverables with no required corrections;
+[final validation](../../.trellis/tasks/10-17-new-user-review-backlog/research/final-validation.json)
+records the exact limits. Product Rust/Cargo and integration sources were not changed. No full test/clippy/benchmark rebuild,
 cross-platform rerun, daemon/content-runtime journey, live trusted host event,
 external pilot, publication or deployment was performed. Full existing-project
 receipts remain outside the repository to avoid copying unrelated source

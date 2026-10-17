@@ -108,7 +108,7 @@
       "acceptance_criteria": [
         "Execute published install/init/example/check in a disposable minimal project; clean example exits 0.",
         "Retain generated guidance and explicitly model its intended paths.",
-        "Add an unexpected root file: nonzero with the offending file identified; cleanup returns 0."
+        "Add an unexpected root file: Check exits nonzero; cleanup returns 0."
       ],
       "depends_on": [],
       "related_existing": [
