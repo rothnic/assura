@@ -105,6 +105,9 @@ and 18 unmerged goal branches. Those are ownership/recovery obligations,
 not permission to prune. `task start` for this research artifact was held by
 the older P05 `integrated_pending_verification` receipt. Its owner was not
 renamed and the old receipt was not closed to bypass that guard.
+This research artifact is registered separately. Independent review accepts
+the research evidence; it does not supply the owner acceptance required for
+formal native delivery closure. That closure remains open for Nick's review.
 
 ## Prioritized new work
 
