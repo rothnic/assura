@@ -1,0 +1,25 @@
+{
+  "result": "pass",
+  "new_findings": 12,
+  "carried_unfinished": 10,
+  "historical_terminal": 22,
+  "native_graph_nodes": 23,
+  "native_graph_edges": 15,
+  "cycles": 0,
+  "missing_dependencies": 0,
+  "ready_new_items": [
+    "NU01",
+    "NU02",
+    "NU03",
+    "NU04",
+    "NU05",
+    "NU06",
+    "NU07",
+    "NU08",
+    "NU09",
+    "NU10",
+    "NU11",
+    "NU12"
+  ],
+  "native_store_dry_run": "not_run_no_authoritative_store"
+}
