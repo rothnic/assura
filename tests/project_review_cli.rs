@@ -82,6 +82,15 @@ fn write_config(project: &TempDir, config: &str) {
     fs::write(project.path().join(".assura/config.yml"), config).expect("write config");
 }
 
+fn write_low_severity_max_lines_config(project: &TempDir, max_lines: usize) {
+    write_config(
+        project,
+        &format!(
+            "structure:\n  ./:\n    children:\n      src/:\n        files:\n          max_lines: {max_lines}\n          severity: low\nexclude:\n  - .assura/**\n"
+        ),
+    );
+}
+
 fn finding<'a>(review: &'a Value, id: &str) -> &'a Value {
     review["findings"]
         .as_array()
@@ -162,6 +171,195 @@ exclude:
     let blocking = finding(&review, "blocking:exists_count");
     assert_eq!(blocking["category"], "structure");
     assert_eq!(blocking["action_kind"], "fix-now");
+}
+
+#[test]
+fn review_tracks_configured_nonblocking_violations_without_changing_check_exit() {
+    let project = TempDir::new().expect("temp project");
+    write_low_severity_max_lines_config(&project, 500);
+    let source = project.path().join("src/oversized-probe.ts");
+    fs::create_dir_all(source.parent().expect("source directory")).expect("create source dir");
+    fs::write(&source, "line\n".repeat(501)).expect("write initial violation");
+
+    let check_501 = run_assura(&[
+        "check",
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(check_501.status.code(), Some(0));
+    let check_501 = json_from_output(&check_501);
+    assert_eq!(check_501["violations"][0]["blocking"], false);
+
+    let review_501 = run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(review_501.status.code(), Some(0));
+    let review_501 = json_from_output(&review_501);
+    let first = finding(&review_501, "configured:max_lines:src/oversized-probe.ts");
+    assert_eq!(first["state"], "new");
+    assert_eq!(first["severity"], "advisory");
+    assert_eq!(first["source"], "doctor.configured_nonblocking_violations");
+    assert_eq!(
+        first["detail"],
+        "src/oversized-probe.ts: File 'src/oversized-probe.ts' has 501 lines, exceeding limit 500"
+    );
+    assert_eq!(review_501["findings"][0]["id"], first["id"]);
+    assert!(review_501["next_actions"][0]["action"]
+        .as_str()
+        .expect("first next action")
+        .contains("configured `max_lines`"));
+    let fingerprint = first["fingerprint"].as_str().expect("fingerprint");
+    assert_eq!(fingerprint.len(), 64);
+
+    let repeated = run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(repeated.status.code(), Some(0));
+    let repeated = json_from_output(&repeated);
+    assert_eq!(
+        finding(&repeated, "configured:max_lines:src/oversized-probe.ts")["state"],
+        "unchanged"
+    );
+    let compact = run_review(&[project.path().to_str().expect("project path")]);
+    assert_eq!(compact.status.code(), Some(0));
+    let compact = String::from_utf8(compact.stdout).expect("review text");
+    assert!(!compact.contains("configured:max_lines:src/oversized-probe.ts"));
+    assert!(!compact.contains("Fix configured `max_lines` violation at `src/oversized-probe.ts`."));
+
+    let agent = json_from_success(run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "agent",
+    ]));
+    assert!(agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .all(|action| !action["action"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("oversized-probe.ts")));
+
+    fs::write(&source, "line\n".repeat(700)).expect("increase violation pressure");
+    let check_700 = run_assura(&[
+        "check",
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(check_700.status.code(), Some(0));
+    let check_700 = json_from_output(&check_700);
+    assert_eq!(check_700["violations"][0]["blocking"], false);
+
+    let review_700 = run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(review_700.status.code(), Some(0));
+    let review_700 = json_from_output(&review_700);
+    let worsened = finding(&review_700, "configured:max_lines:src/oversized-probe.ts");
+    assert_eq!(worsened["fingerprint"], fingerprint);
+    assert_eq!(worsened["state"], "worsened");
+    assert_eq!(
+        worsened["detail"],
+        "src/oversized-probe.ts: File 'src/oversized-probe.ts' has 700 lines, exceeding limit 500"
+    );
+    assert_eq!(review_700["finding_history"]["worsened"], 1);
+
+    fs::write(&source, "line\n".repeat(499)).expect("resolve violation");
+    let resolved = run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(resolved.status.code(), Some(0));
+    let resolved = json_from_output(&resolved);
+    let resolved_finding = finding(&resolved, "configured:max_lines:src/oversized-probe.ts");
+    assert_eq!(resolved_finding["fingerprint"], fingerprint);
+    assert_eq!(resolved_finding["state"], "resolved");
+    assert_eq!(resolved["finding_history"]["resolved"], 1);
+}
+
+#[test]
+fn review_text_reports_overflow_for_configured_advisories() {
+    let project = TempDir::new().expect("temp project");
+    write_low_severity_max_lines_config(&project, 1);
+    let source_dir = project.path().join("src");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    for index in 0..15 {
+        fs::write(source_dir.join(format!("probe-{index}.ts")), "one\ntwo\n")
+            .expect("write configured violation");
+    }
+
+    let output = run_review(&[project.path().to_str().expect("project path"), "--verbose"]);
+    assert_eq!(output.status.code(), Some(0));
+    let text = String::from_utf8(output.stdout).expect("review text");
+    assert!(
+        text.contains("configured:max_lines:src/probe-0.ts") && text.contains("+12 more"),
+        "{text}"
+    );
+
+    let full_json = run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(full_json.status.code(), Some(0));
+    let full_json = json_from_output(&full_json);
+    let configured = full_json["findings"]
+        .as_array()
+        .expect("findings")
+        .iter()
+        .filter(|finding| finding["source"] == "doctor.configured_nonblocking_violations")
+        .collect::<Vec<_>>();
+    assert_eq!(configured.len(), 15);
+    assert!(configured
+        .iter()
+        .all(|finding| finding["state"] == "unchanged"));
+    assert_eq!(
+        full_json["finding_history"]["unchanged"],
+        full_json["findings"].as_array().unwrap().len()
+    );
+    assert_eq!(full_json["summary"]["advisory"], 19);
+}
+
+#[test]
+fn review_agent_bounds_configured_findings_but_keeps_total_history() {
+    let project = TempDir::new().expect("temp project");
+    write_low_severity_max_lines_config(&project, 1);
+    let source_dir = project.path().join("src");
+    fs::create_dir_all(&source_dir).expect("create source dir");
+    for index in 0..15 {
+        fs::write(source_dir.join(format!("probe-{index}.ts")), "one\ntwo\n")
+            .expect("write configured violation");
+    }
+
+    let agent = json_from_success(run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "agent",
+    ]));
+    let findings = agent["findings"].as_array().expect("agent findings");
+    assert_eq!(findings.len(), 12);
+    assert!(findings
+        .iter()
+        .all(|finding| { finding["source"] == "doctor.configured_nonblocking_violations" }));
+    assert!(agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .any(|action| action["action"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("probe-0.ts")));
+    assert_eq!(agent["summary"]["advisory"], 19);
+    assert!(agent["finding_history"]["new"].as_u64().expect("new count") > 12);
 }
 
 #[test]
@@ -673,6 +871,7 @@ exclude:
     let second_stdout = String::from_utf8_lossy(&second_text.stdout);
     assert!(second_stdout.contains("Fix first"));
     assert!(second_stdout.contains("README.md"));
+    assert!(second_stdout.contains("Fix blocking configured check violations first."));
     let second_agent = json_from_output(&run_review(&[
         project.path().to_str().unwrap(),
         "--format",
@@ -682,6 +881,11 @@ exclude:
         finding(&second_agent, "blocking:exists_count")["state"],
         "unchanged"
     );
+    assert!(second_agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .any(|action| action["action"] == "Fix blocking configured check violations first."));
 
     fs::write(project.path().join("README.md"), "# Project\n").expect("README");
     let third = json_from_success(run_review(&[

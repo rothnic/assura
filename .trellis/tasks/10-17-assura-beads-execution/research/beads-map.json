@@ -1,0 +1,49 @@
+{
+  "schema": "assura.beads-source-map.v1",
+  "source_revision": "925ad07f478d5437e7f771254e83710bf556cbc9",
+  "graph_sha256": "8b9f383ba9dacca8069722dfe9503bb38b2e7cda81f3ffb08d1c84f4f7545af4",
+  "store": {
+    "beads_dir": "/Users/nroth/workspace/assura/.beads",
+    "database": "assura",
+    "prefix": "ae",
+    "project_id": "f1f6b559-0b78-4182-8b8d-bf26b8a3e6b3"
+  },
+  "ids": {
+    "A07": "ae-lxd",
+    "F01": "ae-v6j",
+    "F02": "ae-knz",
+    "F03": "ae-m32",
+    "F04": "ae-k2j",
+    "F05": "ae-220",
+    "NEWUSER": "ae-whr",
+    "NU01": "ae-d5d",
+    "NU02": "ae-r0t",
+    "NU03": "ae-7cd",
+    "NU04": "ae-xmu",
+    "NU05": "ae-8kr",
+    "NU06": "ae-e0q",
+    "NU07": "ae-dc7",
+    "NU08": "ae-4nm",
+    "NU09": "ae-436",
+    "NU10": "ae-bku",
+    "NU11": "ae-4s5",
+    "NU12": "ae-ej6",
+    "NU13": "ae-mvu",
+    "R06": "ae-we5",
+    "SP01": "ae-xsm",
+    "W02": "ae-mmh",
+    "W03": "ae-kqz",
+    "W04": "ae-p9m"
+  },
+  "discovered_ids": {
+    "NU14": "ae-fg4"
+  },
+  "discovered_relations": [
+    {
+      "dependent_source_key": "NU13",
+      "prerequisite_source_key": "NU14",
+      "type": "blocks",
+      "reason": "Actual native delivered-closure defect exposed after reviewed merge"
+    }
+  ]
+}

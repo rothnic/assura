@@ -1,0 +1,38 @@
+{
+  "id": "new-user-review-backlog",
+  "name": "new-user-review-backlog",
+  "title": "New-user review and dependency backlog",
+  "description": "Current-source new-user review, two project trials, Assura dogfood, and second-pass core-filesystem capability/performance and ecosystem assessment with a proposed Beads graph; product execution excluded.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "docs/assura-new-user-review-20261017",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "Research deliverables independently accepted. Task start held by legacy P05 receipt; native artifact registered without changing owner. Current-source check, evidence and docs gates pass. No Beads import or product/release acceptance claimed. Native owner acceptance remains open for Nick review; independent agent review is not relabeled as owner acceptance. Next: inspect delivered report/backlog, select authoritative Beads store and reconcile duplicate/status/owner state before applying. Second pass requested: core filesystem capability/performance and ecosystem fit. Added NU13 observed targeted relationship omission and SP01 one profiling spike; no product fixes, competitor benchmarks, evaluator/participant changes or Beads writes. Prior first-pass gates/review stay dated; second-pass structure/evidence/static checks pass; independent second-pass review passed with NU12 topology correction; owner acceptance remains open.",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "artifact",
+      "candidate_id": "10-17-new-user-review-backlog",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/docs/assura-new-user-review-20261017",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

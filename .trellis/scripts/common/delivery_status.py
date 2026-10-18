@@ -28,6 +28,7 @@ from .delivery_evidence import (
     _evidence_identifier,
     _full_oid,
     _full_sha256,
+    _historical_evidence_context,
     _github_checks_match_pr,
     _github_evidence_matches_pr,
     _github_review_matches_pr,
@@ -387,21 +388,20 @@ def _required_facts(
     if intent.kind == "integration":
         review_evidence = _evidence_section(receipt, "review")
         checks_evidence = _evidence_section(receipt, "checks")
-        terminal_receipt = receipt.get("_terminal_receipt_verified", receipt.get("outcome") == "delivered" and receipt.get("closure") in {"verified", "closed"}) if isinstance(receipt, dict) else False
         # A terminal receipt records checks against the base used at review
-        # time and post-merge evidence against the merge that closed it. Those
-        # identities remain historical facts after unrelated base advances.
-        # Active candidates still bind both sections to today's base below.
-        checks_base_oid = (
-            checks_evidence.get("base_oid")
-            if terminal_receipt and isinstance(checks_evidence, dict)
-            else inventory.base_oid
-        )
+        # time and post-merge evidence against its exact merge OID.
         postmerge_evidence = _evidence_section(receipt, "postmerge")
-        postmerge_base_oid = (
-            (postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
-            if terminal_receipt and isinstance(postmerge_evidence, dict)
-            else inventory.base_oid
+        (
+            historical_context,
+            checks_base_oid,
+            postmerge_base_oid,
+        ) = _historical_evidence_context(
+            receipt,
+            integration,
+            pull_request,
+            checks_evidence,
+            postmerge_evidence,
+            inventory.base_oid,
         )
         remote_base_verified = True
         if isinstance(receipt, dict) and receipt.get("outcome") == "delivered":
@@ -499,7 +499,7 @@ def _required_facts(
             "required_checks_pass": checks_verified,
             "postmerge_verified": _evidence_verified(postmerge_evidence, tip, postmerge_base_oid, require_base=True, section="postmerge", intent=intent)
             and (
-                not terminal_receipt
+                not historical_context
                 or (
                     isinstance(postmerge_evidence, dict)
                     and _full_oid(postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
@@ -522,7 +522,7 @@ def _required_facts(
                     == (postmerge_evidence.get("merge_oid") or postmerge_evidence.get("integrated_oid"))
                 )
             ),
-            "historical_checks_base_verified": not terminal_receipt
+            "historical_checks_base_verified": not historical_context
             or (
                 isinstance(checks_evidence, dict)
                 and _full_oid(checks_base_oid)

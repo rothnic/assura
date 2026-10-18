@@ -1,0 +1,14 @@
+{
+  "remote": "git+https://github.com/rothnic/assura.git",
+  "git_data_ref": "f3f6f5ede56ed56a82f7c7db1757600f579e225f",
+  "source_master_unchanged": "49d85358bae85de04f1ce7faa746b377687dcaf3",
+  "fresh_clone_issue_count": 87,
+  "identity_status_owner_matches_primary": true,
+  "relations": 116,
+  "database_head_matches": true,
+  "database_head": [
+    {
+      "head": "9bk1r8431obfkdr461d3e0b3g1iabh36"
+    }
+  ]
+}

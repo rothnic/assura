@@ -106,6 +106,11 @@ execute or record that exact next action.
 
 ## Context routing
 
+For an explicitly authorized Beads-backed goal, load
+[Beads execution](references/beads-execution.md). Beads owns that goal's live
+queue; Trellis retains specs, candidate contracts and native evidence. This
+scoped route replaces backlog status mirroring for that goal only.
+
 - Always: AGENTS, this index, selected card's current evidence and contract.
 - Phase transition/review/merge: execution contract and exact review delta.
 - Test/build/CI placement: validation routing; environment detail only on need.

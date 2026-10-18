@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/10-17-assura-beads-execution/prd.md", "reason": "Goal and intake acceptance"}
+{"file": ".trellis/spec/assura/delivery-lifecycle.md", "reason": "Independent review, current-source checks and closure"}
+{"file": ".trellis/spec/assura/structure-enforcement.md", "reason": "Narrow metadata/runtime policy boundary"}

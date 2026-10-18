@@ -5,7 +5,7 @@ use super::history::{apply_finding_history, FindingHistorySummary};
 use super::text::render_project_review_text;
 use crate::cli::args::CheckOutputFormat;
 use crate::cli::content_query::AgentQueryGapsOutput;
-use crate::cli::doctor::{DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorReport};
+use crate::cli::doctor::{DoctorItem, DoctorViolation, ProjectDoctorReport};
 use serde::Serialize;
 
 const PROJECT_REVIEW_SCHEMA: &str = "assura.project-review.v2";
@@ -50,12 +50,16 @@ pub(crate) struct ProjectReviewReport {
 impl ProjectReviewReport {
     pub(super) fn from_parts(
         doctor: ProjectDoctorReport,
+        configured_nonblocking_violations: Vec<DoctorViolation>,
         content_gaps: AgentQueryGapsOutput,
         heatmap: ProjectReviewHeatmap,
         persist_history: bool,
     ) -> Self {
         let mut findings = Vec::new();
         findings.extend(blocking_findings(&doctor.blocking_violations));
+        findings.extend(configured_advisory_findings(
+            &configured_nonblocking_violations,
+        ));
         findings.extend(advisory_findings(&doctor.gaps));
         findings.extend(inactive_findings(&doctor.inactive, &doctor.binary_custody));
         findings.extend(content_findings(&content_gaps));
@@ -63,6 +67,8 @@ impl ProjectReviewReport {
 
         let finding_history =
             apply_finding_history(&doctor.project_root, &mut findings, persist_history);
+        let next_actions =
+            super::review_next_actions(&doctor.next_actions, &findings, doctor.check.status);
         let omitted_noise = omitted_noise_policy();
         let summary = ProjectReviewSummary::from_findings(&findings, omitted_noise.len());
         let status = if summary.blocking > 0 {
@@ -91,7 +97,7 @@ impl ProjectReviewReport {
             content_gaps: ProjectReviewContentGaps::from(content_gaps),
             heatmap,
             omitted_noise,
-            next_actions: review_next_actions(&doctor.next_actions),
+            next_actions,
             lower_level_commands: vec![
                 "assura check --format json .",
                 "assura doctor --format json .",
@@ -122,7 +128,6 @@ impl ProjectReviewReport {
                     && finding.state != "resolved"
                     && (finding.state != "unchanged" || finding.severity == "blocking")
             })
-            .take(4)
             .collect()
     }
 }
@@ -170,6 +175,23 @@ pub(super) struct ProjectReviewFinding {
     pub(super) source: &'static str,
 }
 
+impl ProjectReviewFinding {
+    pub(super) fn configured_fix_action(&self, priority: u32) -> Option<ProjectReviewAction> {
+        if self.source != "doctor.configured_nonblocking_violations"
+            || !matches!(self.state, "new" | "worsened")
+        {
+            return None;
+        }
+        let identity = self.id.strip_prefix("configured:")?;
+        let (rule, path) = identity.split_once(':')?;
+        Some(ProjectReviewAction {
+            priority,
+            action: format!("Fix configured `{rule}` violation at `{path}`."),
+            command: "assura check --format json .".to_string(),
+        })
+    }
+}
+
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct ProjectReviewContentGaps {
     pub(super) diagnostics: usize,
@@ -202,7 +224,7 @@ struct ProjectReviewOmission {
 
 #[derive(Debug, Clone, Serialize)]
 pub(super) struct ProjectReviewAction {
-    priority: u32,
+    pub(super) priority: u32,
     pub(super) action: String,
     pub(super) command: String,
 }
@@ -260,6 +282,27 @@ fn blocking_findings(violations: &[DoctorViolation]) -> Vec<ProjectReviewFinding
             detail: format!("{}: {}", violation.path, violation.message),
             command: "assura check --format agent .",
             source: "doctor.blocking_violations",
+        })
+        .collect()
+}
+
+fn configured_advisory_findings(violations: &[DoctorViolation]) -> Vec<ProjectReviewFinding> {
+    violations
+        .iter()
+        .map(|violation| {
+            let path = violation.path.replace('\\', "/");
+            ProjectReviewFinding {
+                fingerprint: String::new(),
+                state: "new",
+                id: format!("configured:{}:{path}", violation.rule),
+                category: violation_category(&violation.rule),
+                severity: "advisory",
+                action_kind: "fix-now",
+                title: format!("Fix configured `{}` violation", violation.rule),
+                detail: format!("{path}: {}", violation.message),
+                command: "assura check --format json .",
+                source: "doctor.configured_nonblocking_violations",
+            }
         })
         .collect()
 }
@@ -403,24 +446,6 @@ fn structure_fit_finding() -> ProjectReviewFinding {
         command: "assura explain <path> --format json",
         source: "review.structure_fit_guidance",
     }
-}
-
-fn review_next_actions(actions: &[DoctorNextAction]) -> Vec<ProjectReviewAction> {
-    let mut next_actions = actions
-        .iter()
-        .map(|action| ProjectReviewAction {
-            priority: action.priority,
-            action: action.action.clone(),
-            command: action.follow_up.clone(),
-        })
-        .collect::<Vec<_>>();
-    next_actions.push(ProjectReviewAction {
-        priority: (next_actions.len() + 1) as u32,
-        action: "Before adding a new top-level path, inspect whether it fits the current repository contract."
-            .to_string(),
-        command: "assura explain <path> --format json".to_string(),
-    });
-    next_actions
 }
 
 fn omitted_noise_policy() -> Vec<ProjectReviewOmission> {

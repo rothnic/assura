@@ -1533,6 +1533,8 @@ structure:
 
 # Global exclusions
 exclude:
+  - ".beads"
+  - ".beads/**"
   - "target/**"
   - ".git/**"
   - ".trellis/.developer"

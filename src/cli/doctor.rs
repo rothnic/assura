@@ -78,10 +78,29 @@ pub(super) fn build_project_doctor_with_structure_report(
         run_structure_check_with_target_mode(path, config, false, CheckTargetMode::Recursive)?;
     let config = ConfigLoader::load(&report.config_path)?;
     let doctor = ProjectDoctorReport::from_check(&report, &config);
+    let configured_nonblocking_violations = configured_nonblocking_violations(&report);
     Ok(ProjectDoctorBuild {
         doctor,
         structure_report: report,
+        configured_nonblocking_violations,
     })
+}
+
+fn configured_nonblocking_violations(
+    report: &super::check::StructureCheckReport,
+) -> Vec<DoctorViolation> {
+    report
+        .violations
+        .iter()
+        .filter(|violation| !violation.blocking)
+        .map(|violation| DoctorViolation {
+            path: violation.path.display().to_string(),
+            rule: violation.rule.clone(),
+            severity: violation.severity.clone(),
+            blocking: false,
+            message: violation.message.clone(),
+        })
+        .collect()
 }
 
 fn render_doctor(report: &ProjectDoctorReport, format: CheckOutputFormat) -> String {

@@ -6,12 +6,16 @@ mod report;
 mod text;
 
 use self::heatmap::build_project_review_heatmap;
-use self::report::{render_project_review, ProjectReviewReport};
+use self::report::{
+    render_project_review, ProjectReviewAction, ProjectReviewFinding, ProjectReviewReport,
+};
 use super::args::CheckOutputFormat;
 use super::check::CheckError;
 use super::content_query::context::{ContentQueryError, QueryContext};
 use super::content_query::{content_gap_summary, AgentQueryGapsOutput};
-use super::doctor::{build_project_doctor_with_structure_report, exit_code_for_check_error};
+use super::doctor::{
+    build_project_doctor_with_structure_report, exit_code_for_check_error, DoctorNextAction,
+};
 use super::ExitCode;
 use std::path::PathBuf;
 
@@ -49,10 +53,42 @@ pub(crate) fn build_project_review(
         .map_err(ProjectReviewError::Git)?;
     Ok(ProjectReviewReport::from_parts(
         doctor_build.doctor,
+        doctor_build.configured_nonblocking_violations,
         content_gaps,
         heatmap,
         persist_history,
     ))
+}
+
+fn review_next_actions(
+    actions: &[DoctorNextAction],
+    findings: &[ProjectReviewFinding],
+    check_status: &str,
+) -> Vec<ProjectReviewAction> {
+    let insertion = usize::from(check_status == "fail" && !actions.is_empty());
+    let configured = findings
+        .iter()
+        .find_map(|finding| finding.configured_fix_action((insertion + 1) as u32));
+    let has_violation = configured.is_some();
+    let mut next_actions = actions
+        .iter()
+        .enumerate()
+        .map(|(index, action)| ProjectReviewAction {
+            priority: (index + 1 + usize::from(has_violation && index >= insertion)) as u32,
+            action: action.action.clone(),
+            command: action.follow_up.clone(),
+        })
+        .collect::<Vec<_>>();
+    if let Some(action) = configured {
+        next_actions.insert(insertion, action);
+    }
+    next_actions.push(ProjectReviewAction {
+        priority: (next_actions.len() + 1) as u32,
+        action: "Before adding a new top-level path, inspect whether it fits the current repository contract."
+            .to_string(),
+        command: "assura explain <path> --format json".to_string(),
+    });
+    next_actions
 }
 
 fn requested_base(base: &str) -> Option<&str> {
