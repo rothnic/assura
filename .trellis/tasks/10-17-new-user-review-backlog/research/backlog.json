@@ -345,7 +345,7 @@
       "priority": 1,
       "issue_type": "bug",
       "review_state": "runtime-fix-and-evidence-independently-reviewed",
-      "execution_state": "verified-integration-held",
+      "execution_state": "verified-awaiting-deployment-authority",
       "area": "core-correctness",
       "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
       "evidence": [
@@ -367,7 +367,7 @@
         "A06"
       ],
       "owner": "/root/nu13_implement",
-      "next_action": "Observe final-head PR355 gates and obtain Cloudflare production-branch/deploy-command evidence or explicit authority for a production-coupled merge; integrate only after both gates and authority resolve, then prove post-merge outcome and native closure.",
+      "next_action": "Await Nick authority for PR355 merge with any Cloudflare website production deployment, or obtain production-branch/deploy-command evidence proving separation; all30 checks pass. After authorized integration, verify merged/push-triggered outcome and native delivery closure.",
       "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.",
       "execution": {
         "task": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage",
@@ -378,7 +378,7 @@
         "coordinator": "/root",
         "owner_liveness": "Implementation worker /root/nu13_implement completed and handed off; coordinator /root owns validation, integration decision and closure.",
         "phase": "integrate",
-        "acceptance": "Engineering behavior and applicable local gates proven; hosted checks, integration, post-merge outcome and native delivery closure remain open.",
+        "acceptance": "Engineering behavior, independent review and all30 hosted checks proven; integration, production authority, post-merge outcome and native delivery closure remain open.",
         "authority": "Nick2026-10-17: Orchestrate the first bit of work that would be most beneficial to implement",
         "held_independent_action": "P05 generation5 remains owner nroth, integrated_pending_verification; reconstruct/disposition missing owned checkout and genuinely refresh current-base verification before native closure; receipt unchanged.",
         "candidate_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
@@ -410,10 +410,20 @@
           "observed": "External Workers Builds created version33213860-a566-42c2-a356-20cf5480fa35 and an explicit candidate branch preview; production deployment is not proven.",
           "unknown": "Cloudflare service production branch and deploy command; repository GitHub workflows and empty deployment API do not cover the external integration.",
           "access": "wrangler auth refresh400/not logged in; no browser provider; independent Luna dashboard read challenged. No settings changed.",
-          "resolution": "Read-only authorized settings evidence, or Nick authorization for the production-coupled merge after all required checks pass.",
+          "resolution": "Nick authority requested for production-coupled PR355 merge after all30 checks passed; no approval received or inferred. Read-only configuration evidence remains an alternative.",
           "reviewer": "/root/nu13_luna_final_review",
           "evidence": "/Users/nroth/workspace/.assura-review-20261017/nu13-cloudflare-check.json",
           "correction": "Pre-push trigger inspection covered GitHub workflows but missed the external Cloudflare preview integration; retain the observed publication and hold further affected actions."
+        },
+        "hosted_validation": {
+          "result": "30pass,0fail,0pending,0skipped",
+          "candidate_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+          "tested_merge_revision": "90569f5bafd1f2e5d878fc26198d8e5f42e15a1a",
+          "tree_oid": "14642456c3cb5162d9f4724fe26d76be76c92131",
+          "tree_proof": "Test merge parents are f3540d4a and4dc727dc; its tree exactly matches candidate4dc727dc.",
+          "performance": "No-slower,native,warm gates each executed and passed; reports retained with392comparison,150native,5warm rows. This is no regression proof, not a NU13 speedup claim.",
+          "headline_limit": "Cold realistic-equivalent cohort has3/8 two-x successes and5misses; existing no-slower gate passes. Warm session results do not establish cold startup or owner productivity.",
+          "receipt": "/Users/nroth/workspace/.assura-review-20261017/nu13-hosted-checks-final.json"
         }
       }
     },
