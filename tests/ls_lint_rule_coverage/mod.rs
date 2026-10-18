@@ -58,6 +58,8 @@ fn native_ls_lint_binary() -> &'static Path {
                     "--no-fund",
                     "@ls-lint/ls-lint@2.3.1",
                 ])
+                .arg("--prefix")
+                .arg(&install_dir)
                 .status()
                 .expect("npm install for native LS-Lint should run");
             assert!(status.success(), "npm install for native LS-Lint failed");

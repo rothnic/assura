@@ -563,8 +563,9 @@ If `src/components/Button.tsx` exists, Assura requires
 `src/components/Button.test.tsx`. If no component exists, no test file is
 required.
 
-Ordinary `assura check <path>` checks captured relationships for the selected
-producer itself and producers below it, respecting exclusions. Providers can
+**Unreleased scoped-check behavior:** Ordinary `assura check <path>` checks
+captured relationships for the selected producer itself and producers below
+it, respecting exclusions. Providers can
 reside elsewhere in the project. For example,
 `assura check src/components/Button.tsx` reports its missing test counterpart.
 Selecting only `Button.test.tsx` does not check incoming producers, and a
