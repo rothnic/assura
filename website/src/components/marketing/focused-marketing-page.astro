@@ -8,6 +8,11 @@ import {
   installCommand,
   marketingNav,
   onboardingCommand,
+  checkCommand,
+  reviewCommand,
+  releaseScope,
+  releaseStatus,
+  verificationCommand,
 } from '../../data/marketing';
 
 interface Item {
@@ -37,6 +42,8 @@ interface Props {
   intro: string;
   artifactTitle: string;
   artifactLines: Array<string | ArtifactLine>;
+  artifactProvenance: 'generated-cli' | 'authored' | 'historical-performance';
+  artifactSourceRevision?: string;
   artifactKind?: 'review' | 'check' | 'onboarding' | 'neutral';
   highlights: Item[];
   sections: Item[];
@@ -54,6 +61,13 @@ const artifactLines = props.artifactLines.map((line) => {
   const tone = artifactTones.has(line.tone as ArtifactTone) ? line.tone as ArtifactTone : 'plain';
   return { text: line.text, tone };
 });
+const qualifiedCommand = props.artifactKind === 'review'
+  ? reviewCommand
+  : props.artifactKind === 'check'
+    ? checkCommand
+    : props.artifactKind === 'onboarding'
+      ? onboardingCommand
+      : undefined;
 ---
 
 <MarketingLayout
@@ -80,12 +94,25 @@ const artifactLines = props.artifactLines.map((line) => {
           </a>
         </div>
       </div>
-      <TerminalCard
-        title={props.artifactTitle}
-        lines={artifactLines}
-        className="focused-artifact"
-        variant={props.artifactKind ?? 'neutral'}
-      />
+      <div class="focused-evidence-example">
+        {props.artifactProvenance === 'generated-cli' ? <div class="release-route-status">
+          <strong>Recorded source example</strong>
+          <span>CLI, generator and fixture input revision: <code>{props.artifactSourceRevision ?? 'unavailable'}</code>.</span>
+          <small>Source checkout output; published release output may differ.</small>
+          {qualifiedCommand && <code>{qualifiedCommand}</code>}
+          <small>Example output below preserves the raw generated CLI evidence.</small>
+        </div> : <p class="artifact-provenance">
+          {props.artifactProvenance === 'historical-performance'
+            ? 'Historical performance summary; not raw CLI output.'
+            : 'Authored summary; not raw CLI output.'}
+        </p>}
+        <TerminalCard
+          title={props.artifactTitle}
+          lines={artifactLines}
+          className="focused-artifact"
+          variant={props.artifactKind ?? 'neutral'}
+        />
+      </div>
     </section>
 
     <section class="focused-band" aria-label="Key points">
@@ -128,5 +155,17 @@ const artifactLines = props.artifactLines.map((line) => {
     prompt={agentSetupPrompt}
     onboardingCommand={onboardingCommand}
     installCommand={installCommand}
+    releaseStatus={releaseStatus}
+    releaseScope={releaseScope}
+    verificationCommand={verificationCommand}
   />
 </MarketingLayout>
+
+<style>
+  .focused-evidence-example, .release-route-status { display: grid; gap: 0.75rem; min-width: 0; }
+  .release-route-status { color: var(--muted); line-height: 1.45; }
+  .release-route-status strong { color: var(--text); }
+  .release-route-status code { overflow-wrap: anywhere; color: var(--text); }
+  .release-route-status small { color: var(--soft); }
+  .artifact-provenance { margin: 0; color: var(--muted); line-height: 1.45; }
+</style>

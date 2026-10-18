@@ -3,7 +3,8 @@ import FocusedMarketingPage from '../../../components/marketing/focused-marketin
 import performance from '../../../data/performance-summary.json';
 
 const title = 'Assura vs LS-Lint: Repository Validation Beyond Naming';
-const description = 'Compare LS-Lint naming checks with Assura structure, content, reusable policy, agent feedback, and measured cold and warm performance.';
+const description = 'Compare LS-Lint naming checks with Assura structure, content, reusable policy, and agent feedback. Historical cold and warm measurements are preserved; current performance evidence is under review.';
+const historicalContext = `Historical report: recorded version ${performance.assura_version} · ${performance.timestamp.slice(0, 10)} UTC.`;
 const canonicalPath = '/compare/ls-lint/';
 const structuredData = [
   { '@context': 'https://schema.org', '@type': 'TechArticle', headline: title, description, url: `https://assura.dev${canonicalPath}`, author: { '@type': 'Person', name: 'Nick Roth', url: 'https://www.nickroth.com/' } },
@@ -20,31 +21,33 @@ const structuredData = [
   {canonicalPath}
   releaseSurface="structure-validation-cli markdown-common-lints markdown-local-link-checks repository-reference-checks agent-guidance-contracts codex-agent-report cold-ls-lint-comparison warm-session-performance"
   imagePath="/social/ls-lint-comparison.webp"
-  eyebrow="LS-Lint comparison"
-  heading="A faster path from naming checks to agent-ready project validation."
-  intro="LS-Lint is a focused filesystem naming tool. Assura preserves that fast starting point, then adds project structure, language-agnostic file content, reusable rules, and repair guidance agents can act on."
-  artifactTitle="current performance evidence"
+  eyebrow="Performance evidence under review"
+  heading="Extend naming checks with repository policy and agent feedback."
+  intro={`LS-Lint supports naming, regex and file or directory cardinality. Keep it when that policy is sufficient. Try Assura for an additional repository convention or useful repair workflow. ${historicalContext} These measurements do not establish current performance or published-version availability.`}
+  artifactTitle="historical performance evidence"
+  artifactProvenance="historical-performance"
   artifactLines={[
     `cold accepted fixtures   ${performance.cold.assura_faster_count} / ${performance.cold.fixture_count} faster`,
     `cold aggregate           ${performance.cold.aggregate_speedup_ratio.toFixed(2)}x`,
     `warm 2x target           ${performance.warm.two_x_pass_count} / ${performance.warm.fixture_count} met`,
     `warm aggregate           ${performance.warm.aggregate_speedup_ratio.toFixed(2)}x`,
     '',
-    `evidence                 Assura ${performance.assura_version}`,
+    `recorded version         ${performance.assura_version}`,
+    `recorded date            ${performance.timestamp.slice(0, 10)} UTC`,
   ]}
   highlights={[
-    { label: 'What LS-Lint does well', body: 'Fast, direct file and folder naming checks with a small configuration surface.' },
+    { label: 'What LS-Lint does well', body: 'Direct naming, regex substitutions and cardinality checks for files and folders.' },
     { label: 'Where Assura starts', body: 'The same repository-level naming and placement concerns, with an LS-Lint migration path.' },
-    { label: 'Where Assura expands', body: 'Line limits, Markdown, config, references, reusable policy layers, agent reports, and warm sessions.' },
+    { label: 'Where Assura fits', body: 'Configured content conventions, local references and actionable feedback alongside native linters and tests.' },
   ]}
   sections={[
     { label: 'Beyond filesystem operations', body: 'Assura can inspect language-agnostic concerns inside files, including line counts, document structure, frontmatter, links, and references.' },
     { label: 'Less repeated policy', body: 'Reusable rule fragments and inherited project structure reduce duplication when the same expectations apply across multiple paths.' },
     { label: 'Repair guidance for agents', body: 'Rule-specific findings carry path and policy context so an agent can understand the expected repair instead of parsing a generic failure.' },
-    { label: 'Performance claims stay bounded', body: 'Cold one-shot comparisons and warm persistent-session results are reported separately from checked release evidence.' },
+    { label: 'Performance claims stay bounded', body: 'Historical cold one-shot comparisons and warm persistent-session results describe separate execution paths. Current claims require verified provenance and passing regression gates; a recorded version is not proof of a published release.' },
   ]}
   adjacentLinks={[
-    { label: 'See current performance evidence', href: '/performance/' },
+    { label: 'Inspect historical performance evidence', href: '/performance/' },
     { label: 'Explore repository validation', href: '/repository-validation/' },
   ]}
   docsLinks={[
