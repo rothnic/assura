@@ -1,0 +1,38 @@
+{
+  "id": "nu15-trajectory-deadline",
+  "name": "nu15-trajectory-deadline",
+  "title": "Diagnose Windows trajectory refresh deadline",
+  "description": "Owned by /root/nu15_trajectory_deadline. Diagnose the post-merge Windows trajectory refresh deadline failure and make the smallest supported correction without changing the 2-second default or weakening coverage. No Beads mutation, push, PR, merge, release, or global binary change in this task.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nu15-trajectory-deadline",
+  "assignee": "nu15-trajectory-deadline",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "refs/heads/fix/nu15-trajectory-deadline",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu15-trajectory-deadline",
+      "owner": "nu15-trajectory-deadline",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu15-trajectory-deadline",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal/acceptance"
+    }
+  }
+}

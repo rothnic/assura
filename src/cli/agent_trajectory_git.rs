@@ -7,9 +7,49 @@ use crate::config::config::AgentFeedbackTrajectoryConfig;
 use glob::Pattern;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use exec::{run_git, GitOutput};
+
+thread_local! {
+    static LAST_GIT_PHASE: std::cell::Cell<Option<&'static str>> = const { std::cell::Cell::new(None) };
+    static GIT_DIAGNOSTICS: std::cell::RefCell<Vec<(&'static str, u128, &'static str)>> = const { std::cell::RefCell::new(Vec::new()) };
+}
+
+pub(super) fn diagnostic_label() -> Option<String> {
+    std::env::var("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL")
+        .ok()
+        .filter(|label| {
+            !label.is_empty()
+                && label
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+        })
+}
+
+pub(super) fn flush_diagnostics(label: &str, stage: &str, elapsed: Duration) {
+    if diagnostic_label().as_deref() != Some(label) {
+        return;
+    }
+    GIT_DIAGNOSTICS.with(|events| {
+        for (phase, elapsed_ms, outcome) in events.borrow_mut().drain(..) {
+            eprintln!("trajectory-diagnostic label={label} phase={phase} elapsed_ms={elapsed_ms} outcome={outcome}");
+        }
+    });
+    let last_phase = LAST_GIT_PHASE.with(|phase| phase.get()).unwrap_or("none");
+    eprintln!("trajectory-diagnostic label={label} stage={stage} elapsed_ms={} last_git_phase={last_phase}", elapsed.as_millis());
+}
+
+fn record_diagnostic(phase: &'static str, elapsed: Duration, outcome: &'static str) {
+    if diagnostic_label().is_some() {
+        LAST_GIT_PHASE.with(|last| last.set(Some(phase)));
+        GIT_DIAGNOSTICS.with(|events| {
+            events
+                .borrow_mut()
+                .push((phase, elapsed.as_millis(), outcome));
+        });
+    }
+}
 
 pub(super) fn reset_refresh_cancellation() {
     exec::reset_refresh_cancellation();
@@ -196,6 +236,7 @@ pub(super) fn discover(
         &["rev-parse", "--show-toplevel"],
         8 * 1024,
         deadline,
+        "discover.repo_root",
     ) else {
         return Ok(unavailable(
             worktree_root,
@@ -217,17 +258,25 @@ pub(super) fn discover(
             &["rev-parse", "--git-common-dir"],
             8 * 1024,
             deadline,
+            "discover.common_dir",
         ),
     );
     let git_dir = resolve_git_path(
         &repo_root,
-        git_text(&repo_root, &["rev-parse", "--git-dir"], 8 * 1024, deadline),
+        git_text(
+            &repo_root,
+            &["rev-parse", "--git-dir"],
+            8 * 1024,
+            deadline,
+            "discover.git_dir",
+        ),
     );
     let branch = git_text(
         &repo_root,
         &["symbolic-ref", "--quiet", "--short", "HEAD"],
         8 * 1024,
         deadline,
+        "discover.branch",
     )
     .map(|value| value.trim().to_string());
     let head_sha = git_text(
@@ -235,6 +284,7 @@ pub(super) fn discover(
         &["rev-parse", "--verify", "HEAD"],
         8 * 1024,
         deadline,
+        "discover.head",
     )
     .map(|value| value.trim().to_string());
     let (integration_ref, integration_sha) =
@@ -247,6 +297,7 @@ pub(super) fn discover(
                 &["merge-base", "HEAD", reference],
                 8 * 1024,
                 deadline,
+                "discover.merge_base",
             )
         })
         .map(|value| value.trim().to_string());
@@ -255,6 +306,7 @@ pub(super) fn discover(
         &["rev-parse", "--is-shallow-repository"],
         8 * 1024,
         deadline,
+        "discover.shallow",
     )
     .is_some_and(|value| value.trim() == "true");
     let status = status_facts(&repo_root, deadline);
@@ -460,7 +512,13 @@ fn collect_history_with_paths(
     }
     args.push(reference.to_string());
     let borrowed = args.iter().map(String::as_str).collect::<Vec<_>>();
-    let text = match run_git(repo_root, &borrowed, MAX_HISTORY_BYTES, deadline) {
+    let text = match run_git(
+        repo_root,
+        &borrowed,
+        MAX_HISTORY_BYTES,
+        deadline,
+        "collect.history",
+    ) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("history_output_truncated".to_string()),
         GitOutput::Failed => return Err("history_unavailable".to_string()),
@@ -553,6 +611,7 @@ fn collect_pending(
                 ],
                 8 * 1024,
                 input.deadline,
+                "collect.pending_count",
             )
         })
         .and_then(|value| value.trim().parse::<u64>().ok());
@@ -585,7 +644,13 @@ fn collect_pending(
         diff_base,
         "--",
     ];
-    let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES, input.deadline) {
+    let text = match run_git(
+        repo_root,
+        &args,
+        MAX_HISTORY_BYTES,
+        input.deadline,
+        "collect.pending_diff",
+    ) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("pending_diff_output_truncated".to_string()),
         GitOutput::Failed => return Err("pending_diff_unavailable".to_string()),
@@ -638,6 +703,7 @@ fn trees_match(
         ],
         MAX_STATUS_BYTES,
         deadline,
+        "collect.tree_match",
     ) {
         GitOutput::Text(text) => Some(text.trim().is_empty()),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
@@ -730,6 +796,7 @@ fn status_facts(repo_root: &Path, deadline: Option<Instant>) -> StatusFacts {
         &["status", "--porcelain=v1", "--untracked-files=normal"],
         MAX_STATUS_BYTES,
         deadline,
+        "discover.status",
     );
     let (text, truncated, files_available, unavailable, timed_out) = match output {
         GitOutput::Text(text) => (text, false, true, false, false),
@@ -781,6 +848,7 @@ fn resolve_integration_ref(
             &["rev-parse", "--verify", "--quiet", candidate],
             8 * 1024,
             deadline,
+            "discover.integration_ref",
         ) {
             return (Some(candidate.to_string()), Some(sha.trim().to_string()));
         }
@@ -805,8 +873,9 @@ fn git_text(
     args: &[&str],
     limit: usize,
     deadline: Option<Instant>,
+    phase: &'static str,
 ) -> Option<String> {
-    match run_git(repo_root, args, limit, deadline) {
+    match run_git(repo_root, args, limit, deadline, phase) {
         GitOutput::Text(text) => Some(text),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
     }

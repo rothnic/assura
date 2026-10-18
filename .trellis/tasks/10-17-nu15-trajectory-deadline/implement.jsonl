@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Preserve the existing shared agent-feedback surface and output contract while adding diagnostic observability."}
+{"file":".agents/skills/assura-rust-quality/references/errors-and-effects.md","reason":"Subprocess diagnostics and timeout errors must preserve observable failure behavior."}
+{"file":".agents/skills/assura-rust-quality/references/performance.md","reason":"Keep timing evidence bounded and avoid unsupported performance claims or budget changes."}
+{"file":".agents/skills/assura-rust-quality/references/tests-and-review.md","reason":"Retain integration-level coverage and negative controls for the focused Rust change."}
+{"file":".trellis/tasks/10-17-nu15-trajectory-deadline/research/discriminating-plan.md","reason":"Bounded diagnostic protocol and decision rules for the observed Windows deadline failure."}

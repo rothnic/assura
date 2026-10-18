@@ -442,7 +442,9 @@ pub(super) fn run_git(
     args: &[&str],
     limit: usize,
     deadline: Option<Instant>,
+    phase: &'static str,
 ) -> GitOutput {
+    let started = Instant::now();
     let mut command = Command::new("git");
     command
         .env("GIT_OPTIONAL_LOCKS", "0")
@@ -451,14 +453,22 @@ pub(super) fn run_git(
         .args(args)
         .stdout(Stdio::piped())
         .stderr(Stdio::null());
-    run_bounded_until_internal(
+    let result = run_bounded_until_internal(
         command,
         limit,
         refresh_timeout(),
         deadline,
         std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none(),
         true,
-    )
+    );
+    let outcome = match &result {
+        GitOutput::Text(_) => "text",
+        GitOutput::Failed => "failed",
+        GitOutput::Truncated => "truncated",
+        GitOutput::TimedOut => "timed_out",
+    };
+    super::record_diagnostic(phase, started.elapsed(), outcome);
+    result
 }
 
 fn refresh_timeout() -> Duration {

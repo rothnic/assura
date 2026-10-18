@@ -58,19 +58,36 @@ fn fixture() -> TempDir {
 }
 
 fn inspect(project: &Path) -> Value {
-    let output = Command::new(assura_bin())
-        .args([
-            "agent",
-            "nudge",
-            project.to_str().expect("project path"),
-            "--delivery",
-            "inspect",
-            "--format",
-            "json",
-        ])
-        .output()
-        .expect("assura inspect runs");
+    let output = inspect_output(project, None);
+    assert!(
+        !String::from_utf8_lossy(&output.stderr).contains("trajectory-diagnostic"),
+        "diagnostics are opt-in"
+    );
     json_success(output)
+}
+
+fn inspect_labeled(project: &Path, label: &str) -> (Value, String) {
+    let output = inspect_output(project, Some(label));
+    let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    (json_success(output), stderr)
+}
+
+fn inspect_output(project: &Path, diagnostic_label: Option<&str>) -> Output {
+    let mut command = Command::new(assura_bin());
+    command.args([
+        "agent",
+        "nudge",
+        project.to_str().expect("project path"),
+        "--delivery",
+        "inspect",
+        "--format",
+        "json",
+    ]);
+    command.env_remove("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL");
+    if let Some(label) = diagnostic_label {
+        command.env("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL", label);
+    }
+    command.output().expect("assura inspect runs")
 }
 
 fn json_success(output: Output) -> Value {
@@ -349,7 +366,10 @@ fn shallow_clones_and_multiple_worktrees_keep_coverage_honest() {
         .output()
         .expect("shallow clone runs");
     assert!(clone_output.status.success());
-    let shallow = inspect(clone.path());
+    let (shallow, shallow_diagnostic) = inspect_labeled(clone.path(), "shallow_clone");
+    assert!(shallow_diagnostic.contains("label=shallow_clone stage=collection"));
+    assert!(shallow_diagnostic.contains("last_git_phase="));
+    assert!(shallow_diagnostic.contains("phase=discover.status elapsed_ms="));
     assert_eq!(shallow["trajectory"]["coverage"], "partial");
     assert!(shallow["trajectory"]["coverage_reasons"]
         .as_array()
@@ -370,8 +390,10 @@ fn shallow_clones_and_multiple_worktrees_keep_coverage_honest() {
             "master",
         ],
     );
-    let primary = inspect(source.path());
-    let secondary = inspect(&worktree_path);
+    let (primary, primary_diagnostic) = inspect_labeled(source.path(), "primary_worktree");
+    let (secondary, secondary_diagnostic) = inspect_labeled(&worktree_path, "secondary_worktree");
+    assert!(primary_diagnostic.contains("label=primary_worktree stage=collection"));
+    assert!(secondary_diagnostic.contains("label=secondary_worktree stage=collection"));
     assert_ne!(
         primary["trajectory"]["worktree"]["git_dir"],
         secondary["trajectory"]["worktree"]["git_dir"]

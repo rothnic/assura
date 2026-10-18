@@ -363,7 +363,10 @@ fn inspect_at(
         .map(|value| value.collection.timeout_ms)
         .unwrap_or(DEFAULT_INSPECT_TIMEOUT_MS)
         .clamp(1, 10_000);
-    let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+    let refresh_started = Instant::now();
+    let deadline = refresh_started + Duration::from_millis(timeout_ms);
+    let diagnostic_label = git::diagnostic_label();
+    let discovery_started = Instant::now();
     let input = git::discover(
         project_root,
         now,
@@ -371,6 +374,9 @@ fn inspect_at(
         config.map_or(500, |value| u64::from(value.collection.max_commits)),
         Some(deadline),
     )?;
+    if let Some(label) = diagnostic_label.as_deref() {
+        git::flush_diagnostics(label, "discovery", discovery_started.elapsed());
+    }
     let generation = git::generation(&input, CLASSIFICATION_VERSION, now);
     let cache_key = snapshot::CacheKey::new(&input, CLASSIFICATION_VERSION);
     let cache_read = snapshot::read(&cache_key);
@@ -405,7 +411,11 @@ fn inspect_at(
         return Err("trajectory refresh already in flight".to_string());
     };
 
+    let collection_started = Instant::now();
     let collection = git::collect(&input, now);
+    if let Some(label) = diagnostic_label.as_deref() {
+        git::flush_diagnostics(label, "collection", collection_started.elapsed());
+    }
     let cache_source = if cache_read.snapshot.is_some() {
         "stale"
     } else {
@@ -421,6 +431,9 @@ fn inspect_at(
         config,
     );
     if Instant::now() >= deadline || super::agent_nudge_delivery::refresh_deadline_expired() {
+        if let Some(label) = diagnostic_label.as_deref() {
+            git::flush_diagnostics(label, "deadline", refresh_started.elapsed());
+        }
         return Err("trajectory refresh deadline exceeded".to_string());
     }
     if let Err(error) = snapshot::write(&cache_key, &snapshot) {
