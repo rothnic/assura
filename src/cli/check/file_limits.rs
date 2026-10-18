@@ -21,7 +21,10 @@ impl StructureChecker {
         });
         let matched_pattern = matched.map(|(pattern, _)| pattern);
         let max_size = matched.map(|(_, value)| value).or(files.max_size.as_ref());
-        let (Some(max_size), Ok(metadata)) = (max_size, fs::metadata(path)) else {
+        let Some(max_size) = max_size else {
+            return;
+        };
+        let Ok(metadata) = fs::metadata(path) else {
             return;
         };
         let Some(max_bytes) = parse_size(max_size) else {
