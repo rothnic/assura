@@ -103,3 +103,23 @@ payloads and protected performance/history bytes are unchanged. Its exact
 receipts and before/after copies are under external `mobile-order-corrected/`.
 Changed-source focused/strict/build checks and the complete production browser
 matrix remain pending at this data/evidence commit.
+
+## Narrow performance metadata correction
+
+At `fb2fa94f`, focused 13/13, strict released check and production build passed;
+the four prior qualification-order cases also passed. The browser matrix then
+stopped at a distinct 320px third-cell overflow of 5px: 50 passed, 1 failed,
+1 interrupted, 100 unrun. Its 52 captures, selected visual inspection and full
+teardown remain under external `mobile-order-corrected/production-checkpoint/`.
+Three read-only diagnoses supported wrapping the metadata children at the
+existing narrow breakpoint. Source commit
+`0a1fdbac72f6ea50259d614019929617b884960f` adds only `flex-wrap: wrap` to that
+rule, preserving all content, assertions and desktop declarations.
+
+One canonical generation at clean `0a1fdbac` passed; only the five CLI JSON
+source revisions changed. Their CLI/repair payloads and all protected
+performance/history bytes remain identical. Receipts are under external
+`performance-wrap-corrected/`. Changed-source gates and the complete unchanged
+152-case matrix are pending at this data/evidence commit. Root admitted
+`maxFailures=0` with workers=2 and retries=0 for the next run, to collect the
+remaining failure frontier without converting a nonzero result into success.
