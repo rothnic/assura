@@ -95,20 +95,42 @@ commands until `/root` explicitly releases the resource/method hold.
 
 ## Current phase
 
-The coordinator accepted the independent design and starts bounded TDD. Keep
-one small private listener/receive seam; do not make the watch engine generic
-for test injection. Explicitly distinguish deterministic lifecycle-model
-controls from a direct unchanged-production or OS-driver reproduction. Review
-both actual call sites to ensure they retain and borrow the same listener.
+Implementation and focused verification are complete; the candidate awaits
+independent review and the coordinator's readiness decision. The production
+change constructs one private platform listener before the initial event,
+retains it across synchronous work, and borrows its `recv` operation at both
+select sites. A private `ShutdownSignal` seam supports two deterministic model
+controls: cancellation followed by delivery on the same retained subscription,
+and the dropped/recreated negative control. These tests establish lifecycle
+wiring only.
 
-Safe real Windows Ctrl-C coverage is a pre-existing proof gap: the current
-process-group setup disables Ctrl-C, and a console-wide broadcast could affect
-the harness. Preserve the existing real Ctrl-Break integration, compile and
-review the retained Ctrl-C path, and record the isolated-console proof as a
-separate follow-up. Do not build or broadcast a new console-control harness in
-this candidate. The original Mac timeout remains causally unproven.
+Validation was run against working-tree source based on `c10d12f4` with
+`CARGO_TARGET_DIR=/Users/nroth/workspace/.nu16-watch-build.qlMSs0/target`,
+`TMPDIR=/Users/nroth/workspace/.nu16-watch-build.qlMSs0`, one Cargo job, and one
+Rust test thread:
 
-The root admits focused unit/integration validation with one Cargo job and
-explicit test threads under a fresh resource gate; a separate SP04 full PR
-uses two jobs. No benchmark or full NU16 PR run is admitted yet. Stop on an
-unexpected gate failure and preserve the exact process handle and receipt.
+- The existing `watch_stops_cleanly_without_runtime_artifacts` child test
+  passed: 1 passed, 0 failed, 0 ignored, 15 filtered out; 1.31 seconds. Its
+  original ten-second bound, success assertion, no-artifact assertion, and
+  child cleanup are unchanged.
+- The two lifecycle controls passed: 2 passed, 0 failed, 0 ignored, 554
+  filtered out.
+- Scoped `cargo clippy --lib --test watch_cli -- -D warnings` passed with no
+  warnings.
+
+Durable launch metadata, raw outputs, atomic exits and teardown records are in
+`/Users/nroth/workspace/.assura-review-20261017/nu16/run-watch-stop-20261018T113819Z`,
+`run-lifecycle-tests-20261018T113919Z`, and
+`run-scoped-clippy-20261018T114058Z`. An earlier invocation lost its session
+handle; its PID is gone and its dedicated target has no holders, but it has no
+durable exit status and remains unknown/uncredited. Its old process-group ID
+was unavailable and is not inferred.
+
+Safe real Windows Ctrl-C coverage remains a separately tracked follow-up. This
+candidate retains both Windows listeners and reviews the Ctrl-C path, while the
+existing real owned-child integration continues to exercise Ctrl-Break. No new
+console-control harness was built or broadcast. Windows execution/compilation
+and the broader readiness matrix remain unrun. The original Mac timeout also
+remains causally unproven. Do not describe either model controls or this Mac
+owned-child pass as proving the historic timeout's cause. No full NU16 PR gate,
+push, or integration was run.
