@@ -3,7 +3,7 @@
   "name": "nu10-local-links",
   "title": "NU10 maintained documentation local links",
   "description": "Enable existing deterministic local file and anchor checks for two active policy documents, preserving current Markdown rules and proving selected/unselected behavior in a disposable tracked archive after root registration and implementation release.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": ".assura/config.yml two-doc Markdown selector; docs/support-policy.md and docs/compatibility-and-surface.md only if confirmed current link debt; this Trellis task",
   "package": null,

@@ -139,3 +139,16 @@ change is exactly the append-only union of its prior three children and this
 child. Config and both selected docs remain unchanged. Task remains planning;
 no native task start, registration or receipt mutation was performed. Root's next action is native
 registration/start and explicit implementation release after this clean commit.
+
+## Root implementation release
+
+Root registered and started this task through the supported helper at prepared
+commit `3f41be386eead96eca79b6838b95b0eb4fddf265`; the native receipt is
+generation 0, with original identities preserved. The independent design review
+is accepted. This release supersedes the preparation-only hold above and admits
+the exact config-only edit and disposable controls in this contract, using the
+absolute source-bound companion and unchanged checker inputs. It admits no
+Cargo/build, dependency, browser, website, network, native or Beads mutations by
+the worker. Root retains review, integration and closure authority. Keep the
+original performance failure under NU11 unresolved; every eventual candidate
+requires its own applicable final-head hosted gates.
