@@ -31,6 +31,10 @@ is reported, not cleaned. Metadata and identity probes are not build/test credit
 
 ## Capture a validation invocation
 
+`capture-validation.py` supports POSIX systems (macOS and Linux). It rejects
+other platforms before creating evidence or launching the command; the mode
+0700 evidence-directory contract is POSIX-only.
+
 Use `capture-validation.py` when a task needs a durable record of one command's
 exact argv, raw stdout/stderr bytes and observed direct-child exit. The caller
 must provide existing repo and evidence root directories that it owns. Set any
@@ -55,9 +59,13 @@ session result.
 
 On handled INT/TERM the wrapper signals only its direct child and waits up to
 five seconds. Interruption always returns nonzero; a null child return code
-means the wrapper could not observe the child's exit. A `claimed` or `running`
-receipt without a terminal observation is unknown, including the spawn-to-PID
-write window. Descendants are not signalled or claimed as reaped. Run focused
+means the wrapper could not observe the child's exit. If evidence persistence
+fails after launch, the wrapper sends a bounded termination to that direct
+child, records capture failure separately from the child's observed result,
+and returns nonzero. When the evidence store also rejects the fallback receipt,
+stderr reports the run ID, PID, child result and persistence error. A `claimed`
+or `running` receipt without a terminal observation is unknown, including the
+spawn-to-PID write window. Descendants are not signalled or claimed as reaped. Run focused
 controls with:
 
 ```bash
@@ -65,7 +73,9 @@ python3 .agents/skills/assura-local-build/scripts/capture-validation-tests.py
 ```
 
 Capture records invocation evidence only; interpret test counts, artifacts and
-command-specific success from the owning validation workflow.
+command-specific success from the owning validation workflow. Focused controls
+include mocked platform rejection and fault injection for running and terminal
+receipt writes; they do not establish Windows execution behavior.
 
 Choose profiles for the actual route: socket checks for Unix-socket tests,
 `--require-bash-mapfile` for evidence/pr/full (the CI scope classifier), and

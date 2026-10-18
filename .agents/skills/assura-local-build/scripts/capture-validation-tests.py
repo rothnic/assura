@@ -4,6 +4,9 @@
 from __future__ import annotations
 
 import json
+import contextlib
+import importlib.util
+import io
 import os
 from pathlib import Path
 import shutil
@@ -13,6 +16,7 @@ import sys
 import tempfile
 import time
 import uuid
+from unittest import mock
 
 
 HERE = Path(__file__).resolve().parent
@@ -75,12 +79,15 @@ def process_state(pid: int) -> str | None:
     return value or None
 
 
-def stop_owned_fixture(pid: int | None) -> str:
+def stop_owned_fixture(pid: int | None, nonce: str | None = None) -> str:
     if pid is None:
         return "no child PID observed"
     state = process_state(pid)
     if state is None or state.startswith("Z"):
         return f"stopped ({state or 'absent'})"
+    command = subprocess.run(["ps", "-o", "command=", "-p", str(pid)], capture_output=True, text=True, check=False).stdout
+    if nonce is None or nonce not in command:
+        return f"not signalled (PID identity did not contain fixture nonce; state={state})"
     os.kill(pid, signal.SIGKILL)
     deadline = time.monotonic() + 3
     while time.monotonic() < deadline:
@@ -88,7 +95,7 @@ def stop_owned_fixture(pid: int | None) -> str:
         if state is None or state.startswith("Z"):
             return f"stopped ({state or 'absent'})"
         time.sleep(0.02)
-    raise AssertionError(f"owned fixture PID {pid} still active in state {state}")
+        raise AssertionError(f"nonce-verified fixture PID {pid} still active in state {state}")
 
 
 def finish_wrapper(root: Path, label: str, wrapper: subprocess.Popen | None) -> None:
@@ -144,7 +151,7 @@ def start_interrupt_case(
         try:
             finish_wrapper(root, label, wrapper)
         finally:
-            stop_owned_fixture(child_pid)
+            stop_owned_fixture(child_pid, nonce)
         raise
 
 
@@ -179,12 +186,12 @@ def interrupted_case(
         assert wrapper.returncode == expected_shell_status
         assert saved["state"] == "interrupted" and saved["returncode"] == expected_return
         assert saved["child_live"] is expected_live
-        return stop_owned_fixture(child_pid)
+        return stop_owned_fixture(child_pid, nonce)
     finally:
         try:
             finish_wrapper(root, label, wrapper)
         finally:
-            stop_owned_fixture(child_pid)
+            stop_owned_fixture(child_pid, nonce)
 
 
 def main() -> int:
@@ -274,8 +281,17 @@ def main() -> int:
             unknown_teardown = interrupted_case(root, "interrupt-unknown", stubborn, None, True)
             print(f"fixture teardown: known={known_teardown}; signal={signal_teardown}; unknown={unknown_teardown}")
 
+        platform_guard_control()
+        print("platform guard control: PASS (mocked non-POSIX; no Windows execution claimed)")
+        fault_evidence = Path(os.environ.get("DX03_FAULT_EVIDENCE_ROOT", root / "fault-evidence"))
+        fault_evidence.mkdir(mode=0o700)
+        running_fault = fault_injection_control("running", fault_evidence)
+        terminal_fault = fault_injection_control("complete", fault_evidence)
+        assert running_fault == "running_receipt" and terminal_fault == "terminal_receipt"
+        print("receipt persistence fault controls: running and terminal PASS")
         succeeded = True
-        print("CONTROL_GROUPS=13")
+        print("CONTROL_GROUPS=16")
+        print("FAULT_STATES=2")
         print("capture-validation focused controls: PASS")
         print(f"owned fixture PID: {os.getpid()}; retained root: {root}")
         return 0
@@ -286,6 +302,129 @@ def main() -> int:
         if succeeded:
             shutil.rmtree(root)
             print(f"cleaned exact owned fixture root after teardown: {root}")
+
+
+def fault_injection_control(fail_state: str, evidence: Path) -> str:
+    """Inject one receipt persistence failure while retaining child diagnostics."""
+    if fail_state not in {"running", "complete"}:
+        raise ValueError(f"unsupported fault state: {fail_state}")
+    evidence.mkdir(parents=True, exist_ok=True)
+    root = Path(tempfile.mkdtemp(prefix=f"receipt-{fail_state}-"))
+    (root / "evidence").mkdir(mode=0o700)
+    snapshots: list[dict] = []
+    child_holder: list[subprocess.Popen] = []
+    capture_spec = importlib.util.spec_from_file_location("capture_validation", CAPTURE)
+    assert capture_spec and capture_spec.loader
+    capture = importlib.util.module_from_spec(capture_spec)
+    capture_spec.loader.exec_module(capture)
+    original_save = capture.save_receipt
+    real_popen = subprocess.Popen
+
+    def injected_save(run_dir: Path, record: dict) -> None:
+        snapshots.append(json.loads(json.dumps(record)))
+        if record.get("state") == fail_state:
+            raise OSError(f"injected {fail_state} receipt write failure")
+        original_save(run_dir, record)
+
+    def tracked_popen(*args: object, **kwargs: object) -> subprocess.Popen:
+        child = real_popen(*args, **kwargs)
+        child_holder.append(child)
+        return child
+
+    command = [sys.executable, "-c", "import time; time.sleep(30)"] if fail_state == "running" else [sys.executable, "-c", "pass"]
+    sys.argv = [str(CAPTURE), "--repo", str(root), "--evidence-root", str(root / "evidence"),
+                "--label", f"fault-{fail_state}", "--", *command]
+    stdout_capture, stderr_capture = io.StringIO(), io.StringIO()
+    returned: int | None = None
+    raised: str | None = None
+    run_dir: Path | None = None
+    try:
+        with mock.patch.object(capture, "save_receipt", injected_save), \
+             mock.patch.object(capture.subprocess, "Popen", tracked_popen), \
+             contextlib.redirect_stdout(stdout_capture), contextlib.redirect_stderr(stderr_capture):
+            try:
+                returned = capture.main()
+            except BaseException as exc:
+                raised = f"{type(exc).__name__}: {exc}"
+        runs = list((root / "evidence").iterdir())
+        run_dir = runs[0] if len(runs) == 1 else None
+        child = child_holder[0] if child_holder else None
+        # Observe the wrapper's cleanup before the fixture can help it. The
+        # finally block owns emergency cleanup when this control fails.
+        observed_rc = child.poll() if child is not None else None
+        child_live: bool | None = observed_rc is None if child is not None else None
+        raw_dir = evidence / f"{fail_state}-{uuid.uuid4()}"
+        raw_dir.mkdir(mode=0o700)
+        (raw_dir / "wrapper.stdout.bin").write_bytes(stdout_capture.getvalue().encode())
+        (raw_dir / "wrapper.stderr.bin").write_bytes(stderr_capture.getvalue().encode())
+        (raw_dir / "attempted-receipts.json").write_text(json.dumps(snapshots, indent=2) + "\n")
+        if run_dir is not None:
+            for name in ("receipt.json", "stdout.bin", "stderr.bin"):
+                if (run_dir / name).exists():
+                    (raw_dir / name).write_bytes((run_dir / name).read_bytes())
+        final_receipt = None
+        if run_dir is not None and (run_dir / "receipt.json").exists():
+            final_receipt = json.loads((run_dir / "receipt.json").read_text())
+        record = {
+            "fault_state": fail_state,
+            "wrapper_return": returned,
+            "wrapper_raised": raised,
+            "actual_child_returncode": observed_rc,
+            "child_live_before_fixture_cleanup": child_live,
+            "run_dir": str(run_dir) if run_dir else None,
+            "final_receipt": final_receipt,
+            "raw_dir": str(raw_dir),
+        }
+        (raw_dir / "result.json").write_text(json.dumps(record, indent=2) + "\n")
+        print(json.dumps(record, sort_keys=True))
+        assert returned is not None and returned != 0, "capture failure must return a nonzero wrapper status"
+        assert raised is None, f"capture failure escaped wrapper: {raised}"
+        assert child_live is False, "wrapper must stop its child before fixture cleanup"
+        assert final_receipt is not None and final_receipt["state"] == "interrupted"
+        expected_phase = {"running": "running_receipt", "complete": "terminal_receipt"}[fail_state]
+        assert final_receipt["capture_failure_phase"] == expected_phase
+        assert final_receipt["capture_error"] == f"injected {fail_state} receipt write failure"
+        assert final_receipt["returncode"] == observed_rc and final_receipt["child_live"] is False
+        if fail_state == "running":
+            assert observed_rc is not None and child_live is False, "child must be stopped after running receipt failure"
+        else:
+            assert observed_rc == 0 and child_live is False, "actual child success must remain separate from capture failure"
+        print(f"fault control {fail_state}: PASS; evidence: {raw_dir}")
+        return expected_phase
+    finally:
+        child = child_holder[0] if child_holder else None
+        if child is not None and child.poll() is None:
+            child.kill()
+            child.wait(timeout=2)
+        sys.argv = [str(CAPTURE)]
+        if run_dir is not None:
+            shutil.rmtree(run_dir)
+        shutil.rmtree(root)
+
+
+def platform_guard_control() -> None:
+    root = Path(tempfile.mkdtemp(prefix="dx03-platform-guard-"))
+    (root / "evidence").mkdir(mode=0o700)
+    capture_spec = importlib.util.spec_from_file_location("capture_validation_platform", CAPTURE)
+    assert capture_spec and capture_spec.loader
+    capture = importlib.util.module_from_spec(capture_spec)
+    capture_spec.loader.exec_module(capture)
+    old_argv = sys.argv
+    sys.argv = [str(CAPTURE), "--repo", str(root), "--evidence-root", str(root / "evidence"),
+                "--label", "platform-guard", "--", sys.executable, "-c", "raise SystemExit(99)"]
+    stderr_capture = io.StringIO()
+    try:
+        with mock.patch.object(capture.os, "name", "nt"), \
+             mock.patch.object(capture.subprocess, "Popen") as popen, \
+             contextlib.redirect_stderr(stderr_capture):
+            returned = capture.main()
+        assert returned == 2
+        assert "POSIX platforms only" in stderr_capture.getvalue()
+        assert not list((root / "evidence").iterdir())
+        popen.assert_not_called()
+    finally:
+        sys.argv = old_argv
+        shutil.rmtree(root)
 
 
 if __name__ == "__main__":

@@ -46,6 +46,8 @@ def sha256_file(path: Path) -> str:
 
 
 def main() -> int:
+    if os.name != "posix":
+        return fail("capture-validation supports POSIX platforms only")
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--repo", required=True)
     parser.add_argument("--evidence-root", required=True)
@@ -133,6 +135,61 @@ def main() -> int:
             handled_signal_time = time.monotonic()
             handled_signal_at = timestamp()
 
+    def capture_failure(phase: str, error: BaseException) -> int:
+        """Bound cleanup of the one direct child and report capture failure honestly."""
+        returncode: int | None = None
+        child_live: bool | None = None
+        if child is not None:
+            child_live = True
+            try:
+                if child.poll() is None:
+                    os.kill(child.pid, handled_signal or signal.SIGTERM)
+                returncode = child.wait(timeout=5)
+                child_live = False
+            except ProcessLookupError:
+                try:
+                    returncode = child.wait(timeout=0)
+                    child_live = False
+                except subprocess.TimeoutExpired:
+                    returncode = None
+                    child_live = True
+            except subprocess.TimeoutExpired:
+                returncode = None
+                child_live = True
+            except OSError:
+                try:
+                    returncode = child.wait(timeout=5)
+                    child_live = False
+                except subprocess.TimeoutExpired:
+                    returncode = None
+                    child_live = True
+
+        receipt["state"] = "interrupted"
+        receipt["capture_error"] = str(error)
+        receipt["capture_failure_phase"] = phase
+        receipt["returncode"] = returncode
+        receipt["child_live"] = child_live
+        receipt["ended_at"] = timestamp()
+        if child is not None:
+            receipt["direct_child_pid"] = child.pid
+            receipt["target_started"] = True
+        if handled_signal is not None:
+            receipt["signal"] = handled_signal
+            receipt["signal_received_at"] = handled_signal_at
+
+        receipt_error: str | None = None
+        try:
+            save_receipt(run_dir, receipt)
+        except OSError as save_error:
+            receipt_error = str(save_error)
+        print(
+            f"capture-validation: capture failed during {phase}; run_id={run_id}; run_dir={run_dir}; "
+            f"pid={receipt['direct_child_pid']}; child_returncode={returncode}; "
+            f"child_live={child_live}; error={error}; fallback_receipt_error={receipt_error}",
+            file=sys.stderr,
+        )
+        return 125
+
     previous_handlers = {}
     for signum in (signal.SIGINT, signal.SIGTERM):
         previous_handlers[signum] = signal.signal(signum, on_signal)
@@ -145,12 +202,24 @@ def main() -> int:
                     child = subprocess.Popen(command, stdout=stdout, stderr=stderr)
                 except OSError as exc:
                     receipt["launch_error"] = str(exc)
-                    save_receipt(run_dir, receipt)
+                    receipt["ended_at"] = timestamp()
+                    try:
+                        save_receipt(run_dir, receipt)
+                    except OSError as save_error:
+                        print(
+                            f"capture-validation: launch failed and receipt update failed; "
+                            f"run_id={run_id}; error={exc}; receipt_error={save_error}",
+                            file=sys.stderr,
+                        )
+                        return 125
                     print(f"capture-validation: launch failed: {exc}", file=sys.stderr)
                     return 127
                 receipt["state"] = "running"
                 receipt["direct_child_pid"] = child.pid
-                save_receipt(run_dir, receipt)
+                try:
+                    save_receipt(run_dir, receipt)
+                except OSError as exc:
+                    return capture_failure("running_receipt", exc)
                 if handled_signal is not None and child.poll() is None:
                     try:
                         os.kill(child.pid, handled_signal)
@@ -191,7 +260,10 @@ def main() -> int:
                     receipt["signal_received_at"] = handled_signal_at
                     receipt["child_live"] = returncode is None
                 receipt["ended_at"] = timestamp()
-                save_receipt(run_dir, receipt)
+                try:
+                    save_receipt(run_dir, receipt)
+                except OSError as exc:
+                    return capture_failure("terminal_receipt", exc)
                 if handled_signal is not None:
                     return 128 + handled_signal
                 return 128 - returncode if returncode is not None and returncode < 0 else int(returncode or 0)
@@ -200,7 +272,11 @@ def main() -> int:
             receipt["signal"] = handled_signal
             receipt["target_started"] = False
             receipt["ended_at"] = timestamp()
-            save_receipt(run_dir, receipt)
+            try:
+                save_receipt(run_dir, receipt)
+            except OSError as exc:
+                print(f"capture-validation: interruption receipt failed; run_id={run_id}; error={exc}", file=sys.stderr)
+                return 125
             return 128 + int(handled_signal or signal.SIGTERM)
     finally:
         for signum, handler in previous_handlers.items():
