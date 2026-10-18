@@ -2,7 +2,7 @@
 
 ## Objective
 
-Evaluate the smallest possible reuse of test-relationship file enumeration when `checked_path` and `project_root` identify the same root during one check. SP01 source attribution found the two calls at `test_relationship.rs:18-19`; its accepted root fixture observed both walks visiting the same 10,472 entries and returning the same sorted file collection. This is a bounded hypothesis only. No public speedup, OS syscall reduction, or cache defect is established.
+Evaluate the smallest possible reuse of test-relationship file enumeration when `checked_path` and `project_root` identify the same root during one check. SP01 source attribution found the two calls at `test_relationship.rs:18-19`. Its accepted `rich-root` counters record 2 walk requests and 10,472 yielded entries / 10,256 file entries in aggregate across those calls. The probe does not decompose entries by call; source-level equal roots motivate the identical-root hypothesis but do not prove measured per-walk values or public benefit. This is a bounded hypothesis only. No public speedup, OS syscall reduction, or cache defect is established.
 
 The eventual candidate may reuse a collection only when both roots are identical within a single `validate_test_relationships` call. A nested checked subtree and the project root have different scopes and both traversals must remain. Keep the candidate in `src/cli/check/test_relationship.rs` and necessary adjacent existing tests. Do not add public APIs, modules, dependencies, persistent/shared indexes, daemons, or incremental eligibility changes.
 
