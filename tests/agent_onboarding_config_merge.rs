@@ -194,6 +194,182 @@ structure:
 }
 
 #[test]
+fn agent_onboard_reports_existing_agents_closure_conflicts_without_relaxing_it() {
+    let project = TempDir::new().unwrap();
+    let project_policy = project.path().join(".agents/project-policy.json");
+    let custom_skill = project.path().join(".agents/skills/custom-ops/SKILL.md");
+    let colliding_assura_skill = project
+        .path()
+        .join(".agents/skills/assura-structure-fit/SKILL.md");
+    fs::create_dir_all(project_policy.parent().unwrap()).unwrap();
+    fs::create_dir_all(custom_skill.parent().unwrap()).unwrap();
+    fs::create_dir_all(colliding_assura_skill.parent().unwrap()).unwrap();
+    fs::write(&project_policy, "{\"policy\":\"project-owned\"}\n").unwrap();
+    fs::write(
+        &custom_skill,
+        "# Existing custom skill\n\n## Local workflow\n",
+    )
+    .unwrap();
+    fs::write(
+        &colliding_assura_skill,
+        "# Project-owned skill at an Assura path\n",
+    )
+    .unwrap();
+
+    let config_path = project.path().join(".assura/config.yml");
+    fs::create_dir_all(config_path.parent().unwrap()).unwrap();
+    fs::write(
+        &config_path,
+        r#"version: "2.0"
+
+rules:
+  closed-entry:
+    exists: 0
+    severity: medium
+  closed:
+    ./*/: $closed-entry
+    ./*: $closed-entry
+
+structure:
+  .agents/:
+    ./: exists:0-1 | $closed
+"#,
+    )
+    .unwrap();
+
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(
+        output.status.code(),
+        Some(1),
+        "onboarding must not claim a pass"
+    );
+    let report: Value = serde_json::from_slice(&output.stdout).expect("JSON onboarding report");
+    assert_eq!(report["rule_recommendations"][0]["status"], "conflict");
+    let reason = report["rule_recommendations"][0]["reason"]
+        .as_str()
+        .expect("conflict reason");
+    assert!(
+        reason.contains(".agents"),
+        "reason should identify the affected policy scope: {reason}"
+    );
+    assert!(
+        reason.contains("assura check"),
+        "reason should give a recovery action: {reason}"
+    );
+    assert_eq!(report["verified"][0]["status"], "fail");
+    assert_eq!(
+        fs::read_to_string(&project_policy).unwrap(),
+        "{\"policy\":\"project-owned\"}\n"
+    );
+    assert_eq!(
+        fs::read_to_string(&custom_skill).unwrap(),
+        "# Existing custom skill\n\n## Local workflow\n"
+    );
+    assert_eq!(
+        fs::read_to_string(&colliding_assura_skill).unwrap(),
+        "# Project-owned skill at an Assura path\n"
+    );
+    assert!(report["files"]
+        .as_array()
+        .expect("file actions")
+        .iter()
+        .any(
+            |item| item["path"] == ".agents/skills/assura-structure-fit/SKILL.md"
+                && item["action"] == "conflict"
+        ));
+
+    let merged: serde_yaml::Value =
+        serde_yaml::from_str(&fs::read_to_string(config_path).unwrap()).unwrap();
+    assert_eq!(merged["rules"]["closed-entry"]["exists"], 0);
+    assert_eq!(
+        merged["structure"][".agents/"]["./"],
+        "exists:0-1 | $closed"
+    );
+}
+
+#[test]
+fn agent_onboard_preserves_unmanaged_guidance_conventions() {
+    let project = TempDir::new().unwrap();
+    let agents = project.path().join("AGENTS.md");
+    let custom_skill = project.path().join(".agents/skills/ProjectX/SKILL.md");
+    fs::create_dir_all(custom_skill.parent().unwrap()).unwrap();
+    let agents_contents = "# Team Handbook\n\nOur headings and workflow are project-specific.\n";
+    let skill_contents =
+        "# Deployment Notes\n\n## Team-owned steps\n\nNo Assura frontmatter here.\n";
+    fs::write(&agents, agents_contents).unwrap();
+    fs::write(&custom_skill, skill_contents).unwrap();
+
+    let onboarding = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(onboarding["verified"][0]["status"], "pass");
+    assert_eq!(fs::read_to_string(&agents).unwrap(), agents_contents);
+    assert_eq!(fs::read_to_string(&custom_skill).unwrap(), skill_contents);
+
+    let check = json_from_success(run_assura(&[
+        "check",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(check["success"], true);
+    assert!(!check["violations"]
+        .as_array()
+        .expect("check violations")
+        .iter()
+        .any(|item| item["path"] == "AGENTS.md"
+            || item["path"] == ".agents/skills/ProjectX/SKILL.md"));
+
+    let before = fs::read_to_string(&custom_skill).unwrap();
+    let second = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(second["verified"][0]["status"], "pass");
+    assert_eq!(fs::read_to_string(custom_skill).unwrap(), before);
+}
+
+#[test]
+fn agent_onboard_keeps_strict_defaults_for_an_empty_project() {
+    let project = TempDir::new().unwrap();
+    let onboarding = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(onboarding["verified"][0]["status"], "pass");
+    assert_eq!(onboarding["rule_recommendations"][0]["status"], "applied");
+
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        config["structure"][".agents/"]["./"],
+        "exists:0-1 | $closed"
+    );
+    assert_eq!(
+        config["extensions"]["agent_guidance"][0]["skill_paths"][0],
+        ".agents/skills/*/SKILL.md"
+    );
+}
+
+#[test]
 fn agent_onboard_recognizes_composed_entrypoint_as_applied() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();

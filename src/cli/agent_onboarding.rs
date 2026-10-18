@@ -12,7 +12,10 @@ use super::agent_onboarding_report::{
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
 use super::agent_onboarding_specialization::{inactive_capabilities, write_specialization_profile};
-use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
+use super::agent_onboarding_templates::{
+    baseline_files, has_unmanaged_agent_surface, rule_recommendations_file, GeneratedFile,
+};
+use super::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
 use super::{
@@ -75,6 +78,8 @@ fn run_agent_onboarding(
     let project_root = resolve_project_root(options.path)?;
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
     let detected = detect_project(&project_root, options.agent, options.activate)?;
+    let strict_agent_surface =
+        !has_unmanaged_agent_surface(&project_root, &detected, options.content_template);
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
     let recipe_file = options.recipe_file;
     let had_config = config_path.is_file();
@@ -87,7 +92,7 @@ fn run_agent_onboarding(
     }
     let mut files = Vec::new();
     let quality_advice = onboarding_quality_advice(&project_root);
-    for file in baseline_files(&detected, options.content_template) {
+    for file in baseline_files(&detected, options.content_template, strict_agent_surface) {
         if had_config && options.preserve_existing_config && file.path == ".assura/config.yml" {
             files.push(FileAction {
                 path: file.path,
@@ -99,11 +104,8 @@ fn run_agent_onboarding(
             files.push(materialize_baseline_file(&project_root, file)?);
         }
     }
-    let rule_recommendations = recommended_rules(&detected, &config_path)?;
-    files.push(materialize_managed_file(
-        &project_root,
-        rule_recommendations_file(&detected, rule_recommendations[0].status),
-    )?);
+    let mut rule_recommendations =
+        recommended_rules(&detected, &config_path, strict_agent_surface)?;
 
     let integration_target = target_from_harness(detected.agent_harness);
     let integration = install_integration(
@@ -112,7 +114,26 @@ fn run_agent_onboarding(
         integration_target,
         options.activate,
     )?;
-    let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
+    let (verified, review, mut policy_conflicts) =
+        verify_project(&project_root, Some(config_path.clone()))?;
+    policy_conflicts.extend(files.iter().filter_map(|file| {
+        (file.action == "conflict" && file.path.starts_with(".agents/skills/assura-"))
+            .then_some(file.path.to_string())
+    }));
+    policy_conflicts.sort();
+    policy_conflicts.dedup();
+    if !policy_conflicts.is_empty() {
+        let paths = policy_conflicts.join(", ");
+        rule_recommendations[0].status = "conflict";
+        rule_recommendations[0].reason = format!(
+            "{} project detected; existing agent policy or generated-file conflicts affect {paths}. Preserve those values and inspect `assura check --format json .` before resolving the paths.",
+            detected.project_type
+        );
+    }
+    files.push(materialize_managed_file(
+        &project_root,
+        rule_recommendations_file(&detected, rule_recommendations[0].status),
+    )?);
     write_specialization_profile(
         &project_root,
         &detected,
@@ -351,7 +372,15 @@ fn materialize_baseline_file(
 fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
     let existed = path.exists();
-    let action = if existed { "existing" } else { "write" };
+    let action = if !existed {
+        "write"
+    } else if file.path.starts_with(".agents/skills/assura-")
+        && fs::read_to_string(&path).ok().as_deref() != Some(file.contents.as_str())
+    {
+        "conflict"
+    } else {
+        "existing"
+    };
     if !existed {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|error| error.to_string())?;
@@ -561,8 +590,31 @@ fn install_integration(
 fn verify_project(
     project_root: &Path,
     config: Option<PathBuf>,
-) -> Result<(Vec<CheckItem>, OnboardingReview), String> {
+) -> Result<(Vec<CheckItem>, OnboardingReview, Vec<String>), String> {
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let check = run_structure_check_with_target_mode(
+        Some(project_root.to_path_buf()),
+        Some(config_path.clone()),
+        false,
+        CheckTargetMode::Recursive,
+    )
+    .map_err(|error| error.to_string())?;
+    let mut policy_conflicts = check
+        .violations
+        .iter()
+        .filter_map(|violation| {
+            let path = violation
+                .path
+                .strip_prefix(project_root)
+                .unwrap_or(&violation.path);
+            (path == Path::new(".agents")
+                || path.starts_with(".agents")
+                || path == Path::new("AGENTS.md"))
+            .then(|| format!("{} ({})", path.display(), violation.rule))
+        })
+        .collect::<Vec<_>>();
+    policy_conflicts.sort();
+    policy_conflicts.dedup();
     let report = build_project_review(
         Some(project_root.to_path_buf()),
         Some(config_path),
@@ -602,7 +654,7 @@ fn verify_project(
         inactive,
         next_command: "assura review --format agent .",
     };
-    Ok((verified, review))
+    Ok((verified, review, policy_conflicts))
 }
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {

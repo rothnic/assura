@@ -78,6 +78,10 @@ Public evaluator output exposes only aggregate state, not paths, ids, or text.
 | Project evidence identifies stable paths | Tell the agent to model those paths and close the stable scope against unexpected entries. |
 | Current tree conflicts with expected tech | Keep the conflict visible; do not treat every observed path as intended policy. |
 | Evidence is ambiguous | Leave the scope open and ask a focused question instead of guessing. |
+| Existing unmanaged `AGENTS.md` or `.agents` files | Preserve their bytes and conventions; do not apply Assura-specific headings, frontmatter, names, or parent closures based on path alone. |
+| Existing `.agents` surface contains only proven generated artifacts | Assura may retain its strict managed defaults; a familiar filename by itself is not proof of ownership. |
+| New config is generated beside unmanaged guidance | Scope structure and guidance rules to the exact Assura-generated skill paths; leave user-owned paths out of inferred whitelists. |
+| Existing closure or generated-path collision prevents compatible output | Preserve the existing value/file, report `conflict` with the affected path and a `check` follow-up, and retain the failed verification result. |
 | Guidance assertion has an empty/unsafe path | Reject the evaluator contract. |
 | Guidance assertion path traverses a symlink | Fail the assertion without reading external content. |
 | Guidance assertion file or fragment is absent | Fail the requested guidance dimension. |
@@ -86,6 +90,12 @@ Public evaluator output exposes only aggregate state, not paths, ids, or text.
 
 - Good: the project receives editable `agent-entrypoint`, `skill`,
   `folder-health`, and closed-directory rules plus explicit structure uses.
+- Good: an empty or entirely Assura-managed agent surface keeps the strict
+  generated defaults and validates generated skills.
+- Good: existing unmanaged guidance remains byte-identical, while new Assura
+  skills receive policy only at their exact generated paths.
+- Good: an explicit closure that rejects an onboarding path remains unchanged;
+  the report exposes `conflict` and keeps the failed check visible.
 - Good: the handoff directs the agent to turn detected stack evidence into an
   explicit expected shape and verify it with `review` and `check`.
 - Base: an empty repository receives the same broad rules without invented
@@ -98,6 +108,8 @@ Public evaluator output exposes only aggregate state, not paths, ids, or text.
 
 - JSON report coverage for every recommendation field.
 - Existing-config merge and conflict coverage.
+- Existing unmanaged guidance preservation, scoped generated-artifact policy,
+  explicit closure conflict, and repeated-onboarding idempotency coverage.
 - Dynamic skill-directory contract coverage.
 - Generated config verification through `assura check`.
 - Binary source-document custody coverage.
