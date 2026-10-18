@@ -6,14 +6,23 @@
   "checks": [
     {
       "command": "cargo xtask evidence",
-      "exit": 0
+      "exit": 0,
+      "final_rerun": {
+        "exit": 0,
+        "result": "all evidence scope, prefix, policy-review and retention checks passed"
+      }
     },
     {
       "command": "published v0.4.1 assura check --format json . on complete clean source export plus owned changes",
       "exit": 0,
-      "files_checked": 1931,
+      "files_checked": 1933,
       "pre_existing_nonblocking": 13,
-      "new_artifact_findings": 0
+      "new_artifact_findings": 0,
+      "source_scope": "clean Git archive of reviewed candidate plus review record and task-note overlay",
+      "receipt": {
+        "path": "/Users/nroth/workspace/.assura-review-20261017/second-pass-final-structure.json",
+        "sha256": "a2f03c571313e8d9922fffacf65e07187fd351b465c77409bb943663ba079b2b"
+      }
     },
     {
       "command": "JSON parse, graph integrity/cycles, acceptance-description equality, report/index local links",
@@ -48,5 +57,14 @@
     "installed host event delivery",
     "native Beads dry-run/import",
     "external adopter retention"
-  ]
+  ],
+  "reviewed_candidate_revision": "d770a036396f81016b719d8f3faadc7607bb4173",
+  "independent_review": {
+    "reviewer": "/root/second_pass_reviewer",
+    "verdict": "ready within research scope",
+    "resolved_finding": "SR01: NU12 current topology8; dated first-pass18 retained",
+    "record": "second-pass-independent-review.md",
+    "native_owner_acceptance": "open"
+  },
+  "workspace_context": "Canonical pre-commit reports five blocking findings from preserved foreign ignored .superpowers/.worktrees paths plus13 prior nonblocking findings. Clean source export has13 nonblocking findings and zero new research findings. No policy or unknown work was changed."
 }
