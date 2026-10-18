@@ -2,7 +2,7 @@
 
 use super::patterns::{best_file_pattern_match, matches_single_compiled_pattern};
 use super::rules::{
-    count_satisfies, display_rel, file_matches_any_extension, severity_for_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, rel_to_string, severity_for_bundle,
     severity_for_directory_bundle,
 };
 use super::{StructureCheckReport, StructureChecker};
@@ -104,14 +104,20 @@ impl StructureChecker {
         if count <= max {
             return;
         }
-        let message = limit.message.clone().unwrap_or_else(|| {
-            format!(
+        let message = match limit.message.as_deref() {
+            Some(guidance) => format!(
+                "{}. Actual child count: {}; configured maximum: {}.",
+                guidance.trim_end_matches('.'),
+                count,
+                max
+            ),
+            None => format!(
                 "Directory '{}' has {} direct children, exceeding limit {}",
                 display_rel(rel),
                 count,
                 max
-            )
-        });
+            ),
+        };
         self.push_violation(
             report,
             rel.to_path_buf(),
@@ -164,8 +170,10 @@ impl StructureChecker {
             return;
         };
 
-        for (pattern, expected) in exists {
-            let matches = filenames
+        let mut rules = exists.iter().collect::<Vec<_>>();
+        rules.sort_by_key(|(pattern, _)| *pattern);
+        for (pattern, expected) in rules {
+            let mut matches = filenames
                 .iter()
                 .filter(|name| {
                     matches_count_target(
@@ -177,7 +185,9 @@ impl StructureChecker {
                         &self.glob_patterns,
                     )
                 })
+                .map(String::as_str)
                 .collect::<Vec<_>>();
+            matches.sort_unstable();
             let count = matches.len();
             if !count_satisfies(count, expected) {
                 let target = join_pattern_rel(rel, pattern);
@@ -186,13 +196,7 @@ impl StructureChecker {
                     rel.to_path_buf(),
                     "exists_count",
                     append_repair_message(
-                        format!(
-                            "Directory '{}' has {} files matching '{}', expected {}",
-                            display_rel(rel),
-                            count,
-                            pattern,
-                            expected
-                        ),
+                        count_diagnostic_message(rel, "files", count, pattern, expected, &matches),
                         pattern_repair_message(
                             files.message_patterns.as_ref(),
                             pattern,
@@ -223,8 +227,10 @@ impl StructureChecker {
             return;
         };
 
-        for (pattern, expected) in exists {
-            let matches = names
+        let mut rules = exists.iter().collect::<Vec<_>>();
+        rules.sort_by_key(|(pattern, _)| *pattern);
+        for (pattern, expected) in rules {
+            let mut matches = names
                 .iter()
                 .filter(|name| {
                     matches_count_target(
@@ -236,37 +242,9 @@ impl StructureChecker {
                         &self.glob_patterns,
                     )
                 })
+                .map(String::as_str)
                 .collect::<Vec<_>>();
-            if expected == "0" && !matches.is_empty() {
-                for name in matches {
-                    let child = rel.join(name);
-                    self.push_violation(
-                        report,
-                        child.clone(),
-                        "exists_count",
-                        append_repair_message(
-                            format!(
-                                "Directory '{}' exists 1 times, expected 0",
-                                display_rel(&child)
-                            ),
-                            pattern_repair_message(
-                                directories.message_patterns.as_ref(),
-                                pattern,
-                                &child,
-                                &self.glob_patterns,
-                            ),
-                        ),
-                        pattern_severity(
-                            directories.severity_patterns.as_ref(),
-                            pattern,
-                            &child,
-                            &self.glob_patterns,
-                            || severity_for_directory_bundle(directories),
-                        ),
-                    );
-                }
-                continue;
-            }
+            matches.sort_unstable();
             let count = matches.len();
             if !count_satisfies(count, expected) {
                 let target = join_pattern_rel(rel, pattern);
@@ -275,12 +253,13 @@ impl StructureChecker {
                     rel.to_path_buf(),
                     "exists_count",
                     append_repair_message(
-                        format!(
-                            "Directory '{}' has {} directories matching '{}', expected {}",
-                            display_rel(rel),
+                        count_diagnostic_message(
+                            rel,
+                            "directories",
                             count,
                             pattern,
-                            expected
+                            expected,
+                            &matches,
                         ),
                         pattern_repair_message(
                             directories.message_patterns.as_ref(),
@@ -330,7 +309,7 @@ impl StructureChecker {
     }
 }
 
-fn matches_count_target(
+pub(super) fn matches_count_target(
     exists: &HashMap<String, String>,
     allowed_patterns: Option<&[String]>,
     pattern: &str,
@@ -374,6 +353,50 @@ fn join_pattern_rel(parent: &Path, pattern: &str) -> PathBuf {
     } else {
         parent.join(pattern)
     }
+}
+
+pub(super) fn count_diagnostic_message(
+    rel: &Path,
+    item_kind: &str,
+    count: usize,
+    pattern: &str,
+    expected: &str,
+    matches: &[&str],
+) -> String {
+    let mut message = format!(
+        "Directory '{}' has {} {} matching '{}', expected {}",
+        display_rel(rel),
+        count,
+        item_kind,
+        pattern,
+        expected
+    );
+    if matches.is_empty() {
+        return message;
+    }
+
+    let shown = matches
+        .iter()
+        .take(5)
+        .map(|name| {
+            if rel.as_os_str().is_empty() {
+                format!("./{name}")
+            } else {
+                format!("{}/{name}", rel_to_string(rel))
+            }
+        })
+        .collect::<Vec<_>>();
+    message.push_str(if expected == "0" {
+        ". Unexpected paths: "
+    } else {
+        ". Matching paths (sample): "
+    });
+    message.push_str(&shown.join(", "));
+    let omitted = count.saturating_sub(shown.len());
+    if omitted > 0 {
+        message.push_str(&format!("; {omitted} more omitted"));
+    }
+    message
 }
 
 fn pattern_repair_message<'a>(
