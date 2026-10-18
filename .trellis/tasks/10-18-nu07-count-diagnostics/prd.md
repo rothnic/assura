@@ -9,6 +9,7 @@ Acceptance authority: active Bead `ae-dc7`, owned by `/root/nu07_count_diagnosti
 ## Scope
 
 - `src/cli/check/direct_contents.rs`
+- `src/cli/check/ls_fast_counts.rs`
 - Focused integration modules `tests/count_diagnostics_tests.rs` and `tests/fast_count_diagnostics_tests.rs`
 
 Use names already collected for direct children; do not enumerate again. Keep the existing count matcher, allowance/refinement behavior, thresholds, severities, parent path, and output schema. Fast direct-child file/directory wildcard checks and suffix-selected counts finalized by explicit file-target checks use the same count-target allowance/refinement predicate as the general route. Self-directory target checks remain scalar 0/1 presence checks without a child-path sample. Root remains serialized as an empty path; diagnostic messages render root as `.`. Preserve authored custom folder-health guidance and show actual child count and configured maximum. Keep one shared corrective context per failed count constraint. Do not change generic renderer, Fix/Next routing, Doctor, Review, history, public API/schema, or dependencies.
