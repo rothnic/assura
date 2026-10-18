@@ -9,8 +9,8 @@ omission before extending incremental coverage or claiming a speed improvement.
 
 Authority: Nick's 2026-10-17 instruction, "Orchestrate the first bit of work
 that would be most beneficial to implement." Selection is NU13 from the
-independently reviewed new-user backlog at `ebeba97d`; runtime source is
-unchanged from current integration `f3540d4a11d36afa43f69c96fd7f1c233599822a`.
+independently reviewed new-user backlog at `ebeba97d`. Implementation starts
+from integration `f3540d4a11d36afa43f69c96fd7f1c233599822a`.
 
 ## Ownership and prerequisites
 

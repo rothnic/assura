@@ -1,1 +1,3 @@
-{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file":".trellis/tasks/10-17-nu13-targeted-relationship-coverage/prd.md","reason":"Observable acceptance and review boundary"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Scope, provider alternatives and unchanged explicit LS-Lint behavior"}
+{"file":".trellis/spec/assura/tooling-stabilization.md","reason":"Validation gates and honest evidence"}

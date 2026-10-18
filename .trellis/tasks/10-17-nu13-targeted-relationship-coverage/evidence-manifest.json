@@ -1,0 +1,383 @@
+{
+  "schema": "assura.nu13-evidence-manifest.v1",
+  "source_revision": "6e49d8c1a9143058802ab8beab6321eb1897037e",
+  "base_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+  "raw_files": [
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-cli-green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-cli-green.log",
+      "sha256": "e7ff1362c14693b88c3f5593b8de92382bda4d389f6ee458cb80bc78b0842ef9",
+      "bytes": 1976
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-cli-red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-cli-red.log",
+      "sha256": "d0671043ddfdfcd02db78c338059db2554c2170096c5a5f27476a9a60cd308ca",
+      "bytes": 3260
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-green.source",
+      "sha256": "295aef80f65cdd7bc95fdfcb6e9eed56c3bd2d92f271895893d6ff539e709bcf",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-red.source",
+      "sha256": "8961e173e2992e7dd3623fce1b18f58e7f546d3c2193e8b50ba38ea936c40680",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-root-green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-root-green.log",
+      "sha256": "1caad7fe092b8c1e5bc6ad5958e1464a0fc6e6f7cf9d4098d087a79b674693e7",
+      "bytes": 1672
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-root-red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-root-red.log",
+      "sha256": "96fefc1eef9549d3f2d7de34753f332ed4d9a69f24734fdc0c73b052ba8d5a07",
+      "bytes": 2006
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cache-shadow-discriminators.json",
+      "sha256": "71ebbea67afcd68df9d587e6ad560bf7cc760d3b47a473480c8d36548b5be587",
+      "bytes": 2094
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cli-cache-failure.json",
+      "sha256": "7168dd1b6ee683a117d0bf3e294b6629902b5673298435e89d530606611812d8",
+      "bytes": 13439
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cli-probe-progress.json",
+      "sha256": "6c8d828cebe0700444fc153e92f23311f3bf70642679cfe5a145ebabff5d1a55",
+      "bytes": 17555
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cli-probe.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/cli-probe.json",
+      "sha256": "2a40837d20021018e0b31e262da7333eca92cdfe2b6237e3a6d0b1ef6b748aa4",
+      "bytes": 18827
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/discovery-green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/discovery-green.log",
+      "sha256": "1733db51aef5fe5f906027eb37539fca422cb4647c0941fc3a58f5cda2dbec6d",
+      "bytes": 2061
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/discovery-red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/discovery-red.log",
+      "sha256": "7e686de001cab50ce8a5b87d26859a1387e75272fab0c6e8178bf94cb12ade0e",
+      "bytes": 2717
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-controls.json",
+      "sha256": "e64228467bc253665f9acf21209b9ab8cffd9403df30f2d3fea77ed01f9bb692",
+      "bytes": 2573
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-discovery-green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-discovery-green.log",
+      "sha256": "616b6ec2aaa657b4e58cd42965b3f1a6738953106c5e7ca9bc9b5280eae01603",
+      "bytes": 2162
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.final-source",
+      "sha256": "4409efbe58f7bd1cfee79763d3f8fa1323ed2f3eabeec12ea0e62050752fb5b5",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.final-status",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.log",
+      "sha256": "9ddfeb9cdc0ed805a20dceb422f006032e5f7dab478ef48f3fefaef58dec8bda",
+      "bytes": 25993
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.pid",
+      "sha256": "d7e48c5bd12cee434aa438659687a5335f0b84ba21007ccfcafadbf34f516f34",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.source",
+      "sha256": "4409efbe58f7bd1cfee79763d3f8fa1323ed2f3eabeec12ea0e62050752fb5b5",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr-short.started",
+      "sha256": "9cfc1c8c161d02eef27e1a8930a7384444fcd240be82175f86502f5971fc432e",
+      "bytes": 21
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.final-source",
+      "sha256": "4409efbe58f7bd1cfee79763d3f8fa1323ed2f3eabeec12ea0e62050752fb5b5",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.final-status",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.log",
+      "sha256": "f60ebe4cf0d3682e746cf338551f08316e37f9c4fc49df4f524ae384e8c55763",
+      "bytes": 18754
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.pid",
+      "sha256": "0be689c104cca9a6e0705599512c0a3eb60e52f0eafa2623901b4fc211e02ef5",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final-pr.started",
+      "sha256": "e063dee2ebde388b655c06825decfe72b9035a770e84ff257ad065fb6ef6e679",
+      "bytes": 21
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/final.source",
+      "sha256": "4409efbe58f7bd1cfee79763d3f8fa1323ed2f3eabeec12ea0e62050752fb5b5",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/green.log",
+      "sha256": "7e9f37eb23ac5e5669774ebc429fb227951357fc687e1a8f1278727f0e7758ce",
+      "bytes": 2970
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/green.pid",
+      "sha256": "9c19b9436545e405b8245c91c5a652a7e064fbdb837ec012423efa7bffcb4ea8",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/green.source",
+      "sha256": "609fa8f71e0d3aa044df558f9b3cd2a04c482889c1553e6c9dbf661ec36650ba",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/green.started",
+      "sha256": "1e49fa16a8a39744a59ea21f6fd01ca40cf716116e1891b355fd28ae8f9abc31",
+      "bytes": 21
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/invalid-red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/invalid-red.log",
+      "sha256": "15fe531161e0e013880b5e6a90775d8241fe3f1dd378982c9397f55a72dbcdb2",
+      "bytes": 2005
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/invalid-red.source",
+      "sha256": "e34ced95e4b4fd35e9120ff5eb7afa18cc129e39e423cc256361f077dca7c2bb",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/maintenance.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/maintenance.log",
+      "sha256": "93a5b2c206945131ea3bad64d90c16ca2a5e16f98f1affe1f119ee0d03714dd4",
+      "bytes": 1257
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/native.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/native.log",
+      "sha256": "dbbe64b3005bb0e2dabe1a11a8bf8b5d4e4739038394cf9f29629d81c0a86b4c",
+      "bytes": 5861
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/native.pid",
+      "sha256": "7d9e9440fab201c51091bc8c6172856e1dc32ec540e313ed08fc96236f63678d",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/native.source",
+      "sha256": "dd80b2f6e1fb6c6f629b72189d9d02b571921e894644548c65d00a5fb152f52a",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/npm-parent-after.txt",
+      "sha256": "a32ae4c9b24b2f1f20b4b474750a8ec8283c6e3b3257e59833c548e0c75deb6a",
+      "bytes": 65
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/npm-parent-before.sha256",
+      "sha256": "5d4008c3b38aab7f50fd408208edd46f8895e8c451267b21a2a60ae9b5cdff6e",
+      "bytes": 189
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/npm-parent-final.txt",
+      "sha256": "a32ae4c9b24b2f1f20b4b474750a8ec8283c6e3b3257e59833c548e0c75deb6a",
+      "bytes": 65
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr-final-6e49.log",
+      "sha256": "2a83d7d8fb654f65883ca49bd72494d4deb9cc960728bb9d7d6f5b0dadb881d0",
+      "bytes": 33211
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.exit",
+      "sha256": "4355a46b19d348dc2f57c046f8ef63d4538ebb936000f3c9ee954a27460dd865",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.final-source",
+      "sha256": "609fa8f71e0d3aa044df558f9b3cd2a04c482889c1553e6c9dbf661ec36650ba",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.final-status",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.log",
+      "sha256": "6633016c39ef3f28101aaf4ac7fa6a8badf7a6b1575d990d4e6eabf51240ce3f",
+      "bytes": 32513
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.pid",
+      "sha256": "9926c308d36c1b9bb19ed639b7e4d770be04a25c07b5617175fbe6190e2d4d58",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.source",
+      "sha256": "609fa8f71e0d3aa044df558f9b3cd2a04c482889c1553e6c9dbf661ec36650ba",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/pr.started",
+      "sha256": "944680a98160ad2d8a5c76afe40b9735ee0ecb10e1355c5db2eb1a9e0ff361ae",
+      "bytes": 21
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/red.exit",
+      "sha256": "39b8dc3fc8b44765c8e6f1adee04c5b465e555ab791cc42d0d9e810d5b64297c",
+      "bytes": 4
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/red.log",
+      "sha256": "aba68587bbd393dc37ad53f887d98ebdc09c30fb6bb89bc86c72e934e25c2022",
+      "bytes": 19560
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/red.pid",
+      "sha256": "fc55fcd76b0a88c9a4e5c10d405ec738c5948b11aa0b23fe1ddc610d41985315",
+      "bytes": 8
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/red.source",
+      "sha256": "e73fed5ce2a5087d8f274a18f05e894e7e39be6935159030fde84f9cf9899600",
+      "bytes": 41
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/red.started",
+      "sha256": "07f2323cae5667a7004462bd9b8218f6a49d1830a716f8684650d6542c6c65e8",
+      "bytes": 21
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/socket-green.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/socket-green.log",
+      "sha256": "dfd131657e0836039de0fe36340576f6e36b993cf9b86c2d2a3c67155a1e4373",
+      "bytes": 1827
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/structure-final-6e49.json",
+      "sha256": "49cec1f135f45f94934d973800da9e4f6b0424644fb2694d1f676f526f28f4d3",
+      "bytes": 7155
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/website-install.exit",
+      "sha256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "bytes": 2
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-vps-logs/website-install.log",
+      "sha256": "70754a2297ded424a085bf2522ab16d4aea131051b6ab773b9149882d69bd714",
+      "bytes": 1389
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-cli-probe.py",
+      "sha256": "2c5a2b0722f801d752f2fe5bb5fff7e3958509c024afc048827296b3289c544d",
+      "bytes": 4143
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-final-controls.py",
+      "sha256": "3409ce4f0e1eeb646eb8fd9b88909debb1e14610097e755b0e50e5e6132590cb",
+      "bytes": 3228
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-review-topology.txt",
+      "sha256": "47000ca2787e74edd5e776962690e232c1cd9332e6932c40da35a9cb473d7275",
+      "bytes": 11909
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/nu13-admission.json",
+      "sha256": "cb3d127b9073c689e075a9e3d380cc6557c80e39e5c362a7f61c60819d11e832",
+      "bytes": 937
+    }
+  ],
+  "limits": "Local evidence retention; hosted final-candidate checks and delivery closure are separate."
+}
