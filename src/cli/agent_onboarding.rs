@@ -513,6 +513,9 @@ pub(super) fn ensure_generated_path_is_safe(root: &Path, path: &Path) -> Result<
         .take(components.len().saturating_sub(1))
         .find_map(|(index, _)| {
             prefix.push(components[index].as_os_str());
+            if matches!(components[index], std::path::Component::Prefix(_)) {
+                return None;
+            }
             if components[index + 1..]
                 .iter()
                 .any(|component| matches!(component, std::path::Component::ParentDir))
@@ -531,6 +534,9 @@ pub(super) fn ensure_generated_path_is_safe(root: &Path, path: &Path) -> Result<
     };
     for (index, component) in components.iter().enumerate().skip(start_index) {
         current.push(component.as_os_str());
+        if matches!(component, std::path::Component::Prefix(_)) {
+            continue;
+        }
         let is_leaf = index + 1 == components.len();
         let metadata = match fs::symlink_metadata(&current) {
             Ok(metadata) => metadata,
