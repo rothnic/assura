@@ -601,9 +601,6 @@ fn targeted_captured_relationships_match_compiled_checks() {
             fs::write(&producer, "").unwrap();
         }
         let config_path = project.path().join(".assura/config.yml");
-        let artifact = CompiledStructureConfigArtifact::new(
-            ConfigLoader::load_validated(&config_path).unwrap(),
-        );
         for provided in [false, true] {
             if provided {
                 let provider = project.path().join(provider);
@@ -615,7 +612,9 @@ fn targeted_captured_relationships_match_compiled_checks() {
                 project.path().to_path_buf(),
                 config_path.clone(),
                 producer.clone(),
-                artifact.clone(),
+                CompiledStructureConfigArtifact::new(
+                    ConfigLoader::load_validated(&config_path).unwrap(),
+                ),
                 false,
             )
             .unwrap();
