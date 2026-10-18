@@ -372,7 +372,7 @@ fn session_check_reloads_external_config_without_watcher_event() {
     // Preserve enough evidence to distinguish dirty, unreadable, invalid, and
     // clean-but-nonzero status records if the hosted assertion fails. Read at
     // most one byte beyond the existing 14-byte format to detect extra data.
-    let status_file_diagnostic = (|| -> String {
+    let status_file_diagnostic = {
         let mut bytes = Vec::with_capacity(15);
         let read_result = std::fs::File::open(&status_file)
             .and_then(|file| file.take(15).read_to_end(&mut bytes));
@@ -407,7 +407,7 @@ fn session_check_reloads_external_config_without_watcher_event() {
                 format!("{fields}; raw_hex={hex}")
             }
         }
-    })();
+    };
     let clean_status_code = clean_status.status.code();
     let clean_status_stdout = String::from_utf8_lossy(&clean_status.stdout).into_owned();
     let clean_status_stderr = String::from_utf8_lossy(&clean_status.stderr).into_owned();

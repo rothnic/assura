@@ -82,3 +82,28 @@ The complete `cargo xtask pr` result remains historically bound to
 merge. This local focused proof does not resolve or explain the separate hosted
 macOS hot-status failure, whose cause remains unknown. Final independent review
 and the changed-source hosted diagnostic remain outstanding.
+
+## Changed hosted diagnostic and focused lint correction
+
+The single changed-source push at `b422c52d` ran against main `74d9917d`.
+The exact external-config hot-status test passed in hosted macOS stable job
+117653724888; that observation does not identify the earlier failure's cause.
+Stable Clippy job 117653725092 and Rust 1.86 job 117653724818 both rejected
+the diagnostic's immediately invoked closure with `redundant_closure_call`.
+The MSRV language check and launcher build had passed; this was a source lint.
+Official logs and all three independent read-only triages remain external.
+
+The correction replaces only the closure delimiters with a plain block.
+Its entire snapshot body is byte-identical: same 15-byte bound, read timing,
+error/decoded text, `Some(0)` expectation and cleanup order; no lint allow or
+policy/version change. The affected numeric Rust 1.94.1 package/test Clippy
+check passed with warnings denied, offline and one compile job. This check
+executes no behavior tests and does not replace the required hosted stable
+and Rust 1.86 gates. Formatting/diff checks passed. The existing Rust review
+reference now calls for this focused lint check on diagnostic-only changes.
+
+Evidence is under external `nu03/diagnostic-clippy-correction/`. The focused
+70-test result and original four-case composition proof retain their recorded
+source and limits; neither is relabeled as freshly executed here. Independent
+scoped rereview, corrected-head hosted checks, final current-source full PR
+and disposition of the earlier unknown macOS failure remain outstanding.
