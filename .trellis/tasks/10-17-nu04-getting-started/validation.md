@@ -3,6 +3,8 @@
 Candidate worktree: `/Users/nroth/.codex/worktrees/assura-nu04-quickstart/assura`
 Base: `origin/master` `49d85358bae85de04f1ce7faa746b377687dcaf3`
 Branch: `fix/nu04-getting-started`
+Native owner: `/root/nu04_quickstart` (local Trellis identity alias:
+`nu04_quickstart`).
 
 ## Published install and reproduction
 
@@ -42,3 +44,15 @@ project is `final-doc-example/`; the original red reproduction is
 No existing documentation test specifically checks this guide's first-run
 YAML. No new test code was added; the published released-CLI journey validates
 the behavior of the exact page snippet directly.
+
+Trellis delivery registration uses candidate
+`10-17-nu04-getting-started`, owner `nu04_quickstart`, base ref
+`refs/remotes/origin/master`, branch ref `refs/heads/fix/nu04-getting-started`,
+and authority `prd.md#goal`. The base ref resolves locally to
+`49d85358bae85de04f1ce7faa746b377687dcaf3`. The native `/root/...` path is an
+owner identity; Trellis uses the supported local alias `nu04_quickstart`.
+
+The delivery intent is registered and local refs resolve. Full
+`task.py delivery inspect` was stopped after 24 seconds because it waited on
+`gh pr list --repo rothnic/assura --state all --limit 1000` without returning;
+the hosted pull-request snapshot remains for coordinator validation.

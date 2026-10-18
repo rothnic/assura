@@ -44,6 +44,7 @@ change is in scope.
 ## Context
 
 - Base: `origin/master` at `49d85358bae85de04f1ce7faa746b377687dcaf3`.
-- Owner: `/root/nu04_quickstart`.
+- Native owner: `/root/nu04_quickstart`; Trellis uses the supported local
+  identity alias `nu04_quickstart` for this owner.
 - Candidate branch: `fix/nu04-getting-started`.
 - No Rust build is needed for frozen docs using the released binary.

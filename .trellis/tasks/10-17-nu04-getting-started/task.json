@@ -13,7 +13,7 @@
   "createdAt": "2026-10-17",
   "completedAt": null,
   "branch": "fix/nu04-getting-started",
-  "base_branch": "origin/master",
+  "base_branch": "refs/remotes/origin/master",
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
@@ -29,10 +29,10 @@
       "candidate_id": "10-17-nu04-getting-started",
       "owner": "nu04_quickstart",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/origin/master",
+      "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/fix/nu04-getting-started",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "prd.md#goal"
     }
   }
 }
