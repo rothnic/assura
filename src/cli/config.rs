@@ -466,6 +466,34 @@ mod tests {
         }
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn config_discovery_retains_dangling_or_non_directory_policy_candidates() {
+        let project = tempdir().unwrap();
+        std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+        std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+        let nested = project.path().join("nested");
+        let marker = nested.join(".assura");
+        let nearest = marker.join("config.yml");
+        std::fs::create_dir_all(&marker).unwrap();
+        let selected = nested.join("source.ts");
+        std::fs::write(&selected, "").unwrap();
+        std::os::unix::fs::symlink("missing-policy.yml", &nearest).unwrap();
+
+        for non_directory in [false, true] {
+            if non_directory {
+                std::fs::remove_file(&nearest).unwrap();
+                std::fs::remove_dir(&marker).unwrap();
+                std::fs::write(&marker, "not a directory\n").unwrap();
+            }
+            assert_eq!(
+                ConfigDiscovery::find_config_path(&selected),
+                Some(nearest.clone())
+            );
+            assert!(crate::cli::run_structure_check(Some(selected.clone()), None, false).is_err());
+        }
+    }
+
     #[test]
     fn config_discovery_stops_at_git_boundary_without_borrowing_outer_policy() {
         let project = tempdir().unwrap();
