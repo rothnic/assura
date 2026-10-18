@@ -1,0 +1,38 @@
+{
+  "id": "dx03-validation-capture",
+  "name": "dx03-validation-capture",
+  "title": "Capture validation commands and observed exits once",
+  "description": "Bead ae-whr.3 DX03. Small skill-local command capture wrapper; independently approved corrected designv2, exact invocation/raw streams/observed exit, explicit interruption limits.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": "assura-local-build skill local capture wrapper and focused controls only",
+  "package": null,
+  "priority": "P2",
+  "creator": "dx03-validation-capture",
+  "assignee": "dx03-validation-capture",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "chore/dx03-validation-capture",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-17-assura-beads-execution",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-dx03-validation-capture",
+      "owner": "dx03-validation-capture",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/chore/dx03-validation-capture",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
