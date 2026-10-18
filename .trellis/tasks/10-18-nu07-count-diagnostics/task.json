@@ -1,0 +1,38 @@
+{
+  "id": "nu07-count-diagnostics",
+  "name": "nu07-count-diagnostics",
+  "title": "NU07 count diagnostics",
+  "description": "Objective: fix count violations so users see bounded deterministic offender paths and actual count/limit, while preserving authored guidance and existing policy semantics. Acceptance authority: active Bead ae-dc7; do not edit its receipt. Scope limited to src/cli/check/direct_contents.rs and a new focused CLI integration test module. No public API/schema, extra enumeration, parser/matcher threshold/severity, Review/Doctor/history, or generic renderer changes.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "NU07 bounded count diagnostics in direct_contents.rs and focused CLI tests; no API/schema, extra enumeration, generic renderer changes, or receipt edits",
+  "package": null,
+  "priority": "P2",
+  "creator": "nu07-count-diagnostics",
+  "assignee": "nu07-count-diagnostics",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/nu07-count-diagnostics",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu07-count-diagnostics",
+      "owner": "nu07-count-diagnostics",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/master",
+      "branch_ref": "refs/heads/fix/nu07-count-diagnostics",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
