@@ -20,7 +20,8 @@
   "next_action": "At every continuation fetch origin/master and rerun release/tag, PR/CI, topology and the revision-pinned ledger. The latest observed current-source reconciliation is PR #324 at 74f565c119c9b8db4262ab26bb17163ffc1111d9 with tree 72064d387f09d48f5fbe3fe3e9db329397a24bd2; PR #323 at b286c8272466ca980267c4b3858833bd7da74f8b and earlier pointers are historical and must not be used as the live route. The origin/release head is absent and no release tag points at this head. R01 is not_needed under Nick's explicit H01 archive decision; its failed run and missing causal callback fields remain preserved and do not imply a product fix. The A07 exact-toolchain candidate/packet remains candidate-base/no-credit with no live candidate; its persisted validator, reviewer and coordinator pre/post hashes remain historical evidence. Keep A07 ahead of empty ready-pending rows without declaring the goal blocked. Confirm explicit no-credit preparation authority before building one fresh candidate from the fetched source and running identity, sibling-free canary, current holdout/manifest rebind and isolated protocol review in order. Without that authority, continue the independently audited W02/F01 held-action routes. Never allocate or credit cells from canary or protocol metadata; keep screening/allocation/credit/acceptance false and preserve unknown or user-owned topology findings.",
   "subtasks": [],
   "children": [
-    "09-16-close-shared-release-publication-identity"
+    "09-16-close-shared-release-publication-identity",
+    "10-18-w02-release-story"
   ],
   "parent": null,
   "relatedFiles": [

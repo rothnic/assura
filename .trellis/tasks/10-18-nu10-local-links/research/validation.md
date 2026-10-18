@@ -128,3 +128,43 @@ descendant cleanup claim is made. Scratch, original archive, fixtures, raw
 outputs and any TMPDIR entries are retained. No W02 runtime/global binary was
 modified or archived. Its final matching hash is recorded above; this worker
 has finished its trial runtime use and returns custody to root.
+
+## Current-base refresh: 775eb057
+
+Root admitted a normal merge of `origin/master` at
+`775eb0577dd6f5ed33d36219096df71749b52993` into candidate 341d before final
+review. The merge was retained intact without conflicts, reset or replay.
+W02's inherited xtask/website changes are from that reviewed base, not authored
+NU10 source changes. Actual tree/byte comparison confirms all 397 recorded
+checker/build inputs, the tested config and both selected document bytes still
+match the original trial. The existing 19 captured invocations therefore remain
+applicable; the 13 controls were not repeated. The original 2,040/432 counts
+remain historical trial observations, not counts claimed for the refreshed tree.
+
+The new source-bound full check used the same absolute frozen companion and
+`check --format json .`, with fresh private APFS TMPDIR/raw directories. It
+exited 0, checking **2,046 files and 434 directories** with exactly the same
+16 low advisory findings as the original trial. Strict receipt validation
+passed. Actual outer session `53028`, terminal exit 0, completion chunk
+`d521b9`; direct PID `44536`. No extra explanation command was run and no
+visibility claim is inferred from prior explain output.
+
+A refresh preflight first failed an unsupported hardcoded expectation of five
+execution-parent children. Root's contract requires the four preserved NU10,
+DX02, DX03 and NU16 entries; W02 belongs to the separate maturity parent. The
+ordinary merge was correct. The original exit-1 assertion, raw three parent
+blobs and unknown/not-launched product outcome of that preflight are preserved.
+It is **not** an intentional negative or product test result. Root read three
+independent diagnostic triages and admitted exact union plus uniqueness,
+required-four IDs and nonchildren parity. The corrected assertions passed on
+the retained merge without adding a fake child. The triages receive diagnosis
+credit only; the new actual full-check receipt supplies the product observation.
+
+- [Current-base byte/parent reuse proof](/Users/nroth/workspace/.assura-review-20261017/nu10/refresh-775-20261018T150147Z/proof-reuse.json).
+- [Fresh full-check summary and raw receipt](/Users/nroth/workspace/.assura-review-20261017/nu10/refresh-775-20261018T150147Z/structure-summary.json).
+- [Original failed assertion](/Users/nroth/workspace/.assura-review-20261017/nu10/refresh-775-20261018T150147Z/refresh-assertion-failure.json).
+- [Root four-child continuation disposition](/Users/nroth/workspace/.assura-review-20261017/nu10/refresh-parent-root-disposition.json).
+
+Root's historical gen0 registration at preparation tip/base was not rebound.
+All tracker/native/GitHub writes and final review/integration remain root
+ownership. No Cargo/build/install/browser work or control rerun occurred.

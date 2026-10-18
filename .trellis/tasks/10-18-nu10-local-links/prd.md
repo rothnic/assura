@@ -27,7 +27,9 @@ applicable final integration gates remain root responsibilities.
 
 ## Source and reviewed decisions
 
-- Candidate base: `46e1e13b9f66012dd07ffeed0a0272b31582b374`.
+- Original integration base: `46e1e13b9f66012dd07ffeed0a0272b31582b374`.
+- Current-base refresh: `775eb0577dd6f5ed33d36219096df71749b52993`;
+  ordinary merge preserves original native registration history and scope.
 - Branch: `fix/nu10-maintained-doc-links`; owner: `nu10-local-links`.
 - Parent: `.trellis/tasks/10-17-assura-beads-execution`; preserve every existing
   child when adding this child.
@@ -173,3 +175,17 @@ harness/source fix. No Cargo/build/install/browser/GitHub/Beads/native writes
 were performed. Root's next action is independent review of the committed diff
 and receipts, then applicable current-base/hosted/performance gates. NU11's
 unresolved performance gate is not satisfied by this slice's local controls.
+
+## Current-base checkpoint
+
+Root admitted an ordinary refresh to current base
+`775eb0577dd6f5ed33d36219096df71749b52993` before final review. The retained
+merge preserves the exact four execution-parent children and all other parent
+fields. All 397 checker inputs, the two selected docs and policy config remain
+byte-identical to the prior proof; the 19 captured invocations are reused
+without repeating the 13 controls. One admitted fresh source-bound structure
+check exits 0 with the same 16 low findings across the updated 2,046-file /
+434-directory tree. See the validation evidence for the preserved unsupported
+parent-count assertion and root's three-triage disposition; it is not product
+negative-control credit. Independent final review and integration gates remain
+root ownership; no native receipt or task lifecycle was rewritten.
