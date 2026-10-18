@@ -48,11 +48,13 @@ Coordinate shared onboarding tests/call sites with NU02 before implementation.
   temporary directory and checkout-local Cargo target when the focused lane is
   admitted. Preserve exact commands, exits, and negative-control results.
 
-## Phase constraint
+## Validation phases
 
-Current phase is focused implementation and red/green preparation. Run only the
-coordinator-admitted focused jobs2 lane, after verifying the supplied private
-scratch directory and checkout-local Cargo target. Do not run a full PR gate.
+The initial implementation phase used the coordinator-admitted focused jobs2
+lane. The coordinator subsequently admitted the complete PR tier and four
+controlled composition cases at `3498274b`; their results and recorder limitation
+are recorded in `validation.md`. The current phase is final independent review
+and exact-head hosted validation before authorized integration.
 
 ## Design proposal
 
