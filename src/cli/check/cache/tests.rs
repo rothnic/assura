@@ -3,6 +3,40 @@
 use super::*;
 
 #[test]
+fn default_cache_uses_discovered_non_git_policy_root_for_file_and_directory_targets() {
+    let project = tempfile::tempdir().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+    let nested = project.path().join("src/components");
+    let poisoned_cache = nested.join(".assura/cache/check");
+    fs::create_dir_all(&poisoned_cache).unwrap();
+    fs::write(poisoned_cache.join("keep.json"), "{}\n").unwrap();
+    let file = nested.join("Button.tsx");
+    fs::write(&file, "").unwrap();
+    let expected = project
+        .path()
+        .canonicalize()
+        .unwrap()
+        .join(".assura/cache/check");
+    for selected in [&nested, &file] {
+        assert_eq!(default_check_cache_dir(selected), expected);
+    }
+    assert!(poisoned_cache.join("keep.json").is_file());
+}
+
+#[test]
+fn default_cache_keeps_non_git_fallback_when_no_policy_exists() {
+    let project = tempfile::tempdir().unwrap();
+    let nested = project.path().join("src");
+    fs::create_dir(&nested).unwrap();
+    let file = nested.join("file.ts");
+    fs::write(&file, "").unwrap();
+    let expected = nested.canonicalize().unwrap().join(".assura/cache/check");
+    assert_eq!(default_check_cache_dir(&nested), expected);
+    assert_eq!(default_check_cache_dir(&file), expected);
+}
+
+#[test]
 fn config_hash_is_stable_across_git_line_ending_conversion() {
     assert_eq!(
         stable_config_hash("structure: {}\n"),

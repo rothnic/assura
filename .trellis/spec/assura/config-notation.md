@@ -253,6 +253,24 @@ Severity belongs to the composed constraint; an advisory threshold must not
 weaken a blocking existence or naming rule. Text, JSON, agent output, hooks, and
 explain preserve the concrete threshold and append bounded repair context.
 
+## Captured Relationship Scope
+
+Ordinary `check <path>` evaluates generated captured relationships for the
+nonexcluded producer at the selected path and its traversed descendants. The
+project-root container is not a producer. Providers are resolved relative to
+the project root and may reside outside the selected subtree.
+
+Selecting a provider alone does not check incoming producers, and a passing
+scoped check does not prove whole-project success. Explicit
+`--ls-lint-target-semantics` preserves its compatibility behavior. Prepared
+changed-path checks retain their full-project fallback for relationship policy.
+Counterpart existence proves presence, not test execution or adequacy.
+
+Configuration discovery skips cache-only `.assura` directories while retaining
+the nearest existing config and Git boundary. In non-Git projects, default
+check caches live under the discovered policy root, including for file targets.
+Existing nested cache directories remain untouched and do not shadow policy.
+
 ## Project-Owned Recipes
 
 First-party recipes are authoring sources, not hidden runtime dependencies:
