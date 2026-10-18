@@ -183,3 +183,30 @@ executed RED proof. Current checked-history census, checked-current replay math,
 hardware comparability, source/patch provenance, the 1,000-row retention cap,
 holdout selection, and baseline promotion are separate work and are not
 silently accepted by this task.
+
+## Current-base integration checkpoint
+
+The reviewed59f2f062 candidate is refreshed onto master31c043eb. Its Rust,
+Cargo/config, benchmark and protected performance-history/report bytes remain
+unchanged. The existing full PR boundary proof is reused:1476 passed,0 failed,
+1 manual ignore across110 harnesses, with8 empty harnesses uncredited. Local
+focused17, scoped Clippy and xtask4 controls remain distinct. A read-only census
+comparison confirms these counts match the historical source, rather than the
+different NU16/W02 candidate counts.
+
+Fresh structure/task/workflow/diff checks passed. The unchanged prebuilt xtask
+matched all seven compile inputs and revalidated the retained150-row positive
+report and expected seeded-slowdown rejection; this is gate compatibility, not
+a new benchmark or history promotion. Eighteen low line findings remain
+advisory, including the two SP04 files tracked for later NU09 maintenance.
+
+External integration evidence is
+`/Users/nroth/workspace/.assura-review-20261017/sp04/current-base-31c-20261018T133726Z/`.
+Its root correction distinguishes historical registered base29f32078 from
+registered tip74d9917d and current integration base31c043eb. The native receipt
+is unchanged at generation0. Keep executable context entries repository-relative;
+this Markdown reference preserves external raw evidence discovery.
+
+Independent current-base/correction review, exact final-head hosted checks and
+root native delivery acceptance/close remain before merge and bead closure.
+SP03 fixed-host experiments remain separately gated and unrun.
