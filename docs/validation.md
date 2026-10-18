@@ -71,6 +71,13 @@ The default text format is optimized for humans: aligned rows, concise action
 buckets, and terminal color when interactive. Piped output stays plain; use
 `ASSURA_FORCE_COLOR=1` when a script or screenshot needs ANSI color.
 
+When `check`, `doctor`, or `review` cannot find `.assura/config.yml`, the
+command exits with status `4`, leaves JSON stdout empty, and writes the
+diagnostic to stderr. The diagnostic identifies the project directory and
+provides `assura init --no-git-hooks` as the recovery command to run from that
+directory. A malformed existing config remains a configuration error and does
+not receive missing-config guidance.
+
 Use it in three common places:
 
 | Moment | Command | What to look for |

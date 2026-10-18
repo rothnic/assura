@@ -14,6 +14,12 @@ consumer-visible regression. Prefer an integration fixture whose expected
 finding, ordering, exit status, or rendered report would change if the contract
 were broken.
 
+For human-readable path diagnostics, assert the producer's actual formatting
+and canonicalization (for example, `format!("{:?}", canonical_path)`) on every
+platform. Keep this separate from serialized path fields that intentionally use
+normalized separators; `Path::display()` text is not interchangeable with Rust
+`Debug` output.
+
 Run the focused test first. For Rust behavior, then run `cargo xtask fast`; use
 `cargo xtask pr` and any relevant feature, OS, or release gate before review.
 Record the candidate SHA, cwd, binary, command exits, negative control, and
