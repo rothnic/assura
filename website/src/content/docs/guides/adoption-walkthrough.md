@@ -74,11 +74,21 @@ config directory is not validated by the converted policy.
 Missing config:
 
 ```bash
-assura status --format json
+assura check --format json .
+assura doctor --format json .
+assura review --format json .
+```
+
+Each command exits with status `4`, leaves JSON stdout empty, and writes a
+diagnostic to stderr with the project directory and recovery command. From the
+reported directory, create the starter config with:
+
+```bash
 assura init --no-git-hooks
 ```
 
-`status` exits nonzero until `.assura/config.yml` exists.
+The diagnostic is read-only. An existing malformed config is reported as a
+configuration error so it can be repaired without replacing it.
 
 Existing config:
 
