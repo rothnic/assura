@@ -326,8 +326,9 @@ impl ConfigDiscovery {
         };
         loop {
             let config = current.join(ASSURA_DIR).join(CONFIG_FILE);
-            if config.exists() {
-                return Some(config);
+            match std::fs::symlink_metadata(&config) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                _ => return Some(config),
             }
             if current.join(".git").exists() {
                 return None;
