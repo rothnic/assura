@@ -28,6 +28,7 @@ pub(super) struct ProjectDoctorReport {
 pub(super) struct ProjectDoctorBuild {
     pub(super) doctor: ProjectDoctorReport,
     pub(super) structure_report: StructureCheckReport,
+    pub(super) configured_nonblocking_violations: Vec<DoctorViolation>,
 }
 
 impl ProjectDoctorReport {
