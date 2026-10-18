@@ -397,14 +397,24 @@
           "public_cli": "11calls passed; exact project/config and binary identities retained",
           "extra_controls": "three missing markers rejected, restored pass, existing poisoned cache recovery, inaccessible nearest config exit4",
           "metadata": "context/workflow/evidence/structure/diff checks pass; runtime inputs unchanged after tested source",
-          "native_push": "Mac candidate4dc built with Rust1.94.1; normal pre-push check passed via one-command candidate PATH; no hook bypass or global binary replacement"
+          "native_push": "Mac candidate4dc built with Rust1.94.1; normal pre-push check passed via candidate PATH with no bypass. Published CLI upkeep occurred separately afterward."
         },
         "hosted_runs": {
           "rust": "https://github.com/rothnic/assura/actions/runs/39085547048",
           "documentation": "https://github.com/rothnic/assura/actions/runs/39085547003",
           "security": "https://github.com/rothnic/assura/actions/runs/39085547054"
         },
-        "local_maintenance": "Installed /usr/local/bin Assura0.4.0 is stale and unchanged; published0.4.1 pair upgrade is separate local maintenance, with checksum/rollback/fresh-shell verification.",
+        "local_maintenance": {
+          "scope": "Original workspace-upkeep request; installed current published release, not the unreleased NU13 candidate.",
+          "published_version": "v0.4.1",
+          "destination": "/usr/local/bin/assura and assura-full",
+          "archive_sha256": "eec2107ede8e45a87e28bffb7d4fcbf00b33892c02b3bfb7803e1c57b2756f2f",
+          "procedure_ref": "website/public/install.sh; docs/release-candidate-checklist.md",
+          "verification": "Official archive+sidecar verified; installed pair hashes match staged pair; fresh zsh discovers0.4.1 and hooks run; missing-check/blocking-missing/provided canaries exit1/1/0.",
+          "rollback": "/Users/nroth/workspace/.assura-review-20261017/rollback-cli-v040; both originals copied before replacement. Launcher hash matches independent pre-update diagnosis; companion pre-update hash was not separately observed.",
+          "receipt": "/Users/nroth/workspace/.assura-review-20261017/nu13-published-cli-update.json",
+          "reviewer": "/root/nu13_socket_environment (GPT-6 Luna), independently verified installed/staged/archive/fresh-shell identities; original companion hash evidence limit retained."
+        },
         "deployment_boundary": {
           "held_action": "merge PR355 to master; any further affected remote push",
           "observed": "External Workers Builds created version33213860-a566-42c2-a356-20cf5480fa35 and an explicit candidate branch preview; production deployment is not proven.",
