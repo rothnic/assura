@@ -2351,7 +2351,7 @@
 
     .performance-proof > div {
       border-bottom: 1px solid var(--border);
-      padding: 0.82rem 0.62rem 0.76rem;
+      padding: 0.5rem 0.62rem;
     }
 
     .performance-proof > div:not(.proof-meta) {
