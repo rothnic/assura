@@ -285,5 +285,84 @@ class LocalPreflightControls(unittest.TestCase):
         self.assertEqual(json.loads(package.read_text()), document)
 
 
+    def test_forwarded_assura_config_does_not_change_metadata_arguments(self):
+        command = ('cargo', 'run', '--bin', 'assura', '--', 'check',
+                   '--config', '.assura/config.yml', '.')
+        result, record = self.invoke(command=command)
+        self.assertEqual(result.returncode, 37, result.stderr)
+        self.assertEqual(json.loads(self.metadata_log.read_text()),
+                         ['metadata', '--offline', '--locked', '--no-deps', '--format-version', '1'])
+        self.assertEqual(json.loads(self.command_log.read_text())['argv'], list(command[1:]))
+
+    def test_forwarded_target_option_does_not_change_effective_cargo_target(self):
+        command = ('cargo', 'run', '--bin', 'assura', '--', '--target-dir', 'application-value')
+        result, record = self.invoke(command=command)
+        self.assertEqual(result.returncode, 37, result.stderr)
+        self.assertEqual(record['target']['canonical'], str(self.repo / 'target'))
+        self.assertEqual(json.loads(self.command_log.read_text())['argv'], list(command[1:]))
+
+    def test_unsupported_source_routing_rejects_before_metadata_and_command(self):
+        other = self.root / 'other-source'
+        other.mkdir()
+        manifest = other / 'Cargo.toml'
+        manifest.write_text('[package]\nname = "other"\n')
+        for command in [('cargo', '+nightly', '-Z', 'unstable-options', '-C', str(other), 'build'),
+                        ('cargo', 'build', '--manifest-path', str(manifest)),
+                        ('cargo', 'build', '--manifest-path=' + str(manifest))]:
+            with self.subTest(command=command):
+                try:
+                    self.rejected(command=command, text='source routing')
+                    self.assertFalse(self.metadata_log.exists())
+                finally:
+                    self.command_log.unlink(missing_ok=True)
+                    self.metadata_log.unlink(missing_ok=True)
+
+    def test_non_cargo_wrapper_route_is_rejected_without_unrelated_metadata(self):
+        executable(self.bin / 'xtask', CARGO)
+        self.rejected(command=('xtask', 'docs'), text='direct Cargo')
+        self.assertFalse(self.metadata_log.exists())
+
+    def test_xtask_alias_expansions_preserve_local_target_constraint(self):
+        target = self.root / 'dedicated-target'
+        target.mkdir(mode=0o700)
+        self.env['RESOLVED_TARGET'] = str(target)
+        forms = [('--package', 'xtask'), ('-p', 'xtask'), ('--package=xtask',), ('-pxtask',),
+                 ('--manifest-path', 'xtask/Cargo.toml')]
+        for options in forms:
+            with self.subTest(options=options):
+                try:
+                    self.rejected(['--target-dir', str(target)],
+                                  command=('cargo', 'run', *options, '--', 'docs'),
+                                  text='checkout-local target')
+                finally:
+                    self.command_log.unlink(missing_ok=True)
+
+    def test_xtask_alias_expansion_accepts_local_target_and_preserves_argv(self):
+        command = ('cargo', 'run', '--package', 'xtask', '--', 'docs')
+        result, record = self.invoke(command=command)
+        self.assertEqual(result.returncode, 37, result.stderr)
+        self.assertEqual(json.loads(self.command_log.read_text())['argv'], list(command[1:]))
+
+    @unittest.skipUnless(sys.platform == 'darwin', 'Darwin socket rejection is platform-specific')
+    def test_socket_budget_uses_literal_inherited_spelling(self):
+        with tempfile.TemporaryDirectory(prefix='dx01.', dir='/private/var/tmp') as temp:
+            self.env['TMPDIR'] = temp + '/.' * 45
+            self.rejected(['--socket-relative'], text='Darwin capacity')
+
+    def test_socket_profile_rejects_unset_or_empty_tmpdir_even_with_private_temp(self):
+        with tempfile.TemporaryDirectory(prefix='dx01.', dir='/private/var/tmp' if sys.platform == 'darwin' else '/var/tmp') as temp:
+            self.env.update(TEMP=temp, TMP=temp)
+            for inherited in (None, ''):
+                with self.subTest(TMPDIR=inherited):
+                    if inherited is None:
+                        self.env.pop('TMPDIR', None)
+                    else:
+                        self.env['TMPDIR'] = inherited
+                    try:
+                        self.rejected(['--socket-relative'], text='nonempty inherited TMPDIR')
+                    finally:
+                        self.command_log.unlink(missing_ok=True)
+
+
 if __name__ == '__main__':
     unittest.main(verbosity=2)

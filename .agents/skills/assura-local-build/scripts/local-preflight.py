@@ -11,7 +11,6 @@ import shutil
 import stat
 import subprocess
 import sys
-import tempfile
 
 
 SOCKET_SUFFIX = '.tmpXXXXXX/hot-session-external-config-project.sock'
@@ -38,31 +37,61 @@ def probe(argv, cwd, record):
     return result.stdout.strip()
 
 
-def cargo_target(repo, command, requested, record):
-    cargo = command[0] if Path(command[0]).name == 'cargo' else shutil.which('cargo')
-    if not cargo:
-        raise ValueError('cargo is required to resolve the effective target')
-    metadata_args = [cargo]
-    manifest_args = []
-    options = command[1:] if Path(command[0]).name == 'cargo' else []
+def cargo_route(repo, command):
+    if Path(command[0]).name != 'cargo':
+        raise ValueError('only direct Cargo commands are supported; prebuilt xtask/wrapper routes are unsupported')
+    options = command[1:]
+    delimiter = options.index('--') if '--' in options else len(options)
+    forwarded = options[delimiter + 1:]
+    options = options[:delimiter]
+    metadata = [command[0]]
     if options and options[0].startswith('+'):
-        metadata_args.append(options[0])
-    target_override = None
-    for index, option in enumerate(options):
-        if option == '--config':
-            metadata_args.extend([option, options[index + 1]])
-        elif option.startswith('--config='):
-            metadata_args.append(option)
-        elif option == '--manifest-path':
-            manifest_args.extend([option, options[index + 1]])
-        elif option.startswith('--manifest-path='):
-            manifest_args.append(option)
-        elif option == '--target-dir':
-            target_override = options[index + 1]
-        elif option.startswith('--target-dir='):
-            target_override = option.split('=', 1)[1]
-    metadata_args.extend(['metadata', '--offline', '--locked', '--no-deps', '--format-version', '1'])
-    metadata_args.extend(manifest_args)
+        metadata.append(options.pop(0))
+    manifest_args, target, package, binary, subcommand, xtask_mode = [], None, None, None, None, None
+    index = 0
+    while index < len(options):
+        option = options[index]
+        if option.startswith('-C') or option.startswith('--directory'):
+            raise ValueError('Cargo source routing with -C/--directory is unsupported')
+        name, separator, value = option.partition('=')
+        if name in ('--config', '--manifest-path', '--target-dir', '--package', '-p', '--bin'):
+            if not separator:
+                index += 1
+                value = options[index]
+            if name == '--config':
+                metadata.extend(['--config', value])
+            elif name == '--manifest-path':
+                manifest = (repo / value).resolve()
+                if not manifest.is_relative_to(repo):
+                    raise ValueError('external manifest source routing is unsupported')
+                manifest_args = ['--manifest-path', value]
+                if manifest == (repo / 'xtask/Cargo.toml').resolve():
+                    package = 'xtask'
+            elif name == '--target-dir':
+                target = value
+            elif name in ('--package', '-p'):
+                package = value
+            else:
+                binary = value
+        elif option.startswith('-p') and not option.startswith('--'):
+            package = option[2:]
+        elif not option.startswith('-'):
+            if subcommand is None:
+                subcommand = option
+            elif subcommand == 'xtask' and xtask_mode is None:
+                xtask_mode = option
+        index += 1
+    if subcommand not in ('build', 'test', 'check', 'clippy', 'fmt', 'run', 'bench', 'doc', 'metadata', 'xtask'):
+        raise ValueError('unsupported Cargo command route; no source/target suitability proof was made')
+    if subcommand == 'run' and (package and package.split('@', 1)[0] == 'xtask' or binary == 'xtask'):
+        xtask_mode = forwarded[0] if forwarded else None
+    metadata.extend(['metadata', '--offline', '--locked', '--no-deps', '--format-version', '1', *manifest_args])
+    return metadata, target, {'subcommand': subcommand, 'xtask_mode': xtask_mode}
+
+
+def cargo_target(repo, command, requested, record):
+    metadata_args, target_override, route = cargo_route(repo, command)
+    record['cargo_route'] = route
     metadata = json.loads(probe(metadata_args, repo, record))
     if Path(metadata['workspace_root']).resolve() != repo:
         raise ValueError('Cargo workspace differs from the selected repository')
@@ -83,11 +112,9 @@ def cargo_target(repo, command, requested, record):
             raise ValueError('external target must exist, be caller-owned and not writable by others')
         record['target']['dedication'] = 'caller-declared task directory; ownership and mode checked'
     # These routes reach website_demo, which reads checkout-local target/debug/assura-full.
-    if 'xtask' in command:
-        mode = command[command.index('xtask') + 1:command.index('xtask') + 2]
-        if mode and mode[0] in ('docs', 'pr', 'full', 'website-demo-data', 'website-config-examples'):
-            if target != (repo / 'target').resolve():
-                raise ValueError('this xtask website-demo route requires the checkout-local target')
+    if route['xtask_mode'] in ('docs', 'pr', 'full', 'website-demo-data', 'website-config-examples'):
+        if target != (repo / 'target').resolve():
+            raise ValueError('this xtask website-demo route requires the checkout-local target')
     return target
 
 
@@ -96,7 +123,7 @@ def socket_tmpdir(selected, suffix, record):
     if not path.is_absolute() or not path.is_dir():
         raise ValueError('socket TMPDIR must be an existing absolute task directory')
     info = path.stat()
-    record['temporary'] = {'path': str(path), 'canonical': str(path.resolve()),
+    record['temporary'] = {'path': selected, 'canonical': str(path.resolve()),
                            'device': info.st_dev, 'mode': format(stat.S_IMODE(info.st_mode), '04o')}
     if info.st_uid != os.getuid() or stat.S_IMODE(info.st_mode) != 0o700:
         raise ValueError('socket TMPDIR must be caller-owned with mode 0700')
@@ -106,9 +133,10 @@ def socket_tmpdir(selected, suffix, record):
     if not source.startswith('/dev/') or source.startswith(('/dev/ram', '/dev/zram')):
         raise ValueError(f'TMPDIR disk backing is unproven ({source}); select a verified disk-backed directory')
     relative = Path(suffix)
-    if relative.is_absolute() or '..' in relative.parts:
+    if not suffix or relative.is_absolute() or '..' in relative.parts:
         raise ValueError('socket suffix must stay under TMPDIR')
-    projected = str(path / relative)
+    # Rust PathBuf::push keeps the inherited spelling, adding a separator only when needed.
+    projected = selected + ('' if selected.endswith(os.sep) else os.sep) + suffix
     size = len(os.fsencode(projected)) + 1
     record['temporary'].update(socket_path=projected, socket_bytes_with_nul=size,
                                darwin_capacity=104 if sys.platform == 'darwin' else None)
@@ -192,10 +220,12 @@ def main():
                             'tree': probe(['git', 'rev-parse', 'HEAD^{tree}'], repo, record),
                             'dirty': probe(['git', 'status', '--porcelain=v1'], repo, record)}
         cargo_target(repo, command, args.target_dir, record)
-        selected_tmp = os.environ.get('TMPDIR') or tempfile.gettempdir()
-        if args.tmpdir and Path(args.tmpdir).resolve() != Path(selected_tmp).resolve():
+        selected_tmp = os.environ.get('TMPDIR')
+        if args.tmpdir is not None and (not selected_tmp or Path(args.tmpdir).resolve() != Path(selected_tmp).resolve()):
             raise ValueError('--tmpdir differs from inherited TMPDIR; inputs were not changed')
-        if args.socket_relative:
+        if args.socket_relative is not None:
+            if not selected_tmp:
+                raise ValueError('socket profile requires a nonempty inherited TMPDIR; Rust fallback is not established')
             socket_tmpdir(selected_tmp, args.socket_relative, record)
         if args.require_bash_mapfile:
             bash_mapfile(repo, record)

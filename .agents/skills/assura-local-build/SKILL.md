@@ -19,7 +19,12 @@ python3 .agents/skills/assura-local-build/scripts/local-preflight.py \
 ```
 
 The helper resolves the effective target with offline, locked, no-dependency
-Cargo metadata. It emits one JSON record to stderr, then execs the command with
+Cargo metadata. Supported entries are direct Cargo build/test/check/clippy/fmt/
+run/bench/doc/metadata commands and the repository's xtask alias. Cargo options
+stop at `--`; forwarded application options remain untouched. External manifests,
+`-C` source routing, custom command aliases and prebuilt xtask/wrapper launchers
+are unsupported and rejected rather than given unrelated metadata proof.
+It emits one JSON record to stderr, then execs the command with
 its inherited environment and exit behavior; capture the command's exit in your
 outer receipt. A rejected preflight never launches that command. Dirty source
 is reported, not cleaned. Metadata and identity probes are not build/test credit.
@@ -27,9 +32,12 @@ is reported, not cleaned. Metadata and identity probes are not build/test credit
 Choose profiles for the actual route: socket checks for Unix-socket tests,
 `--require-bash-mapfile` for evidence/pr/full (the CI scope classifier), and
 `--website-tools` for docs/pr/full. Omit unrelated profiles for ordinary Cargo.
-Socket checks require an existing caller-owned `0700` TMPDIR with verified disk
-backing; the projected default socket includes `.tmpXXXXXX` and the hot-session
-filename. Darwin's 104-byte capacity includes NUL and applies only on Darwin.
+Socket checks require an explicit, nonempty, absolute inherited `TMPDIR` that
+is an existing caller-owned `0700` directory with verified disk backing. Python's
+TEMP/TMP/default fallback is not used to guess Rust's temp root. The socket budget
+uses the literal inherited spelling, preserving `.` and repeated separators.
+Canonical paths are used only for filesystem checks. The projected default socket
+includes `.tmpXXXXXX` and the hot-session filename. Darwin's 104-byte capacity includes NUL and applies only on Darwin.
 `--socket-relative <suffix>` selects another known test suffix, not a shorter
 stand-in for the command's actual longest path.
 
@@ -42,7 +50,9 @@ before invoking the helper; it creates no directories or global configuration.
 
 Targets inside another Assura checkout are rejected. General Cargo commands may
 use a declared external target. `xtask docs`, `pr`, `full`, `website-demo-data`
-and `website-config-examples` require the local target: `run_pr` reaches
+and `website-config-examples` require the local target. Equivalent direct xtask
+package and local-manifest launches are recognized, including separated,
+attached and equal package-value forms. `run_pr` reaches
 `run_docs` in `xtask/src/main.rs`, and the demo/example helpers read
 `target/debug/assura-full` in `xtask/src/website_demo.rs`.
 

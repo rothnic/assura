@@ -47,3 +47,31 @@ This is binary reuse, not a fresh Cargo build. Raw command/identity/exit receipt
 are under `/Users/nroth/workspace/.assura-review-20261017/dx01/` outside Git.
 No Rust/website build, install or full Rust tier ran. Independent review and
 integration remain coordinator-owned; task stays in progress until delivery.
+
+## Independent review correction
+
+Coordinator accepted three blockers in the independent review of b3647c8d:
+Cargo/application argument boundaries, equivalent xtask routes, and literal
+Rust socket temp-root/spelling. Added eight focused controls before changing the
+helper: all 25 ran against the unchanged b3647c8d helper and produced 14 expected
+failing subcases. Failed receipts are retained outside Git. The same 25 controls
+then passed after the bounded fixes; 42 helper invocations distinguish metadata
+probes from supplied-command execution and preserve tracked fixture bytes.
+
+Cargo parsing stops at `--`, consumes the supported option pairs and recognizes
+common local xtask run/package/manifest forms. External manifests, -C source
+routing, unknown command aliases and non-Cargo wrappers are explicitly rejected.
+The socket profile requires nonempty inherited TMPDIR and measures its literal
+byte spelling; it never substitutes Python TEMP/TMP/defaults or canonicalizes
+the socket address. Ordinary canonical filesystem aliases remain permitted;
+Node identity remains observational with no invented engine/version policy.
+
+Current correction receipts: `/Users/nroth/workspace/.assura-review-20261017/dx01/correction-b364/`.
+Scoped independent rereview of the committed correction remains coordinator-owned.
+
+The first correction structure check rejected a literal command placeholder in
+the skill. The failed receipt is preserved. Three read-only diagnoses supported
+removing only that example and describing the equivalent xtask launches in
+prose; canonical `cargo xtask pr` and `cargo xtask docs` examples remain. Helper
+and control hashes still match the 25-control GREEN run. Final document checks
+are recorded separately in `correction-b364/doc-recovery/` to retain the failure.
