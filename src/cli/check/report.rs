@@ -356,7 +356,10 @@ pub enum CheckError {
     #[error("checked path does not exist: {0:?}")]
     MissingPath(PathBuf),
     /// No Assura configuration was found.
-    #[error("no .assura/config.yml found for {0:?}")]
+    #[error(
+        "no .assura/config.yml found for {0:?}; initialize project directory {project_path:?} by running `assura init --no-git-hooks` there",
+        project_path = missing_config_project_path(.0)
+    )]
     NoConfig(PathBuf),
     /// The configured project root could not be determined.
     #[error("could not determine project root for config {0:?}")]
@@ -382,4 +385,18 @@ pub enum CheckError {
     /// Configuration loading failed.
     #[error(transparent)]
     Config(#[from] ConfigError),
+}
+
+impl CheckError {
+    pub(super) fn no_config(checked_path: &Path) -> Self {
+        Self::NoConfig(checked_path.to_path_buf())
+    }
+}
+
+fn missing_config_project_path(checked_path: &Path) -> PathBuf {
+    if checked_path.is_file() {
+        checked_path.parent().unwrap_or(checked_path).to_path_buf()
+    } else {
+        checked_path.to_path_buf()
+    }
 }
