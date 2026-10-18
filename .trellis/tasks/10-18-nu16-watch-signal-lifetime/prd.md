@@ -95,6 +95,21 @@ commands until `/root` explicitly releases the resource/method hold.
 
 ## Current phase
 
-Preparation/design only. The test protocol and safe Windows Ctrl-C feasibility
-remain to be adjudicated after resource/method release; no implementation or
-test process is currently authorized by the coordinator.
+The coordinator accepted the independent design and starts bounded TDD. Keep
+one small private listener/receive seam; do not make the watch engine generic
+for test injection. Explicitly distinguish deterministic lifecycle-model
+controls from a direct unchanged-production or OS-driver reproduction. Review
+both actual call sites to ensure they retain and borrow the same listener.
+
+Safe real Windows Ctrl-C coverage is a pre-existing proof gap: the current
+process-group setup disables Ctrl-C, and a console-wide broadcast could affect
+the harness. Preserve the existing real Ctrl-Break integration, compile and
+review the retained Ctrl-C path, and record the isolated-console proof as a
+separate follow-up. Do not build or broadcast a new console-control harness in
+this candidate. The original Mac timeout remains causally unproven.
+
+The root admits focused unit/integration validation with one Cargo job and
+explicit test threads under a fresh resource gate; a separate SP04 full PR
+uses two jobs. No benchmark or full NU16 PR run is admitted yet. Stop on an
+unexpected gate failure and preserve the exact process handle and receipt.
+

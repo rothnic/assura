@@ -3,7 +3,7 @@
   "name": "nu16-watch-signal-lifetime",
   "title": "NU16 watch signal listener lifetime",
   "description": "Retain platform shutdown listeners for the watch runtime; define and implement deterministic lifecycle/cancellation controls plus owned child signal coverage after resource and method release.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "src/cli/watch.rs; src/cli/watch_signal.rs; focused watch signal tests; tests/watch_cli.rs only for justified safe platform coverage",
   "package": null,
