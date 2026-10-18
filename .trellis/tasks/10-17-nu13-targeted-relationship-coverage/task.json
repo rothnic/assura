@@ -1,0 +1,38 @@
+{
+  "id": "nu13-targeted-relationship-coverage",
+  "name": "nu13-targeted-relationship-coverage",
+  "title": "Enforce targeted captured-relationship coverage",
+  "description": "NU13: ordinary scoped Check evaluates selected captured producers without broadening traversal or changing explicit LS-Lint semantics.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "/root/nu13_implement",
+  "assignee": "/root/nu13_implement",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "fix/nu13-targeted-relationships",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu13-targeted-relationship-coverage",
+      "owner": "/root/nu13_implement",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/master",
+      "branch_ref": "refs/heads/fix/nu13-targeted-relationships",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}
