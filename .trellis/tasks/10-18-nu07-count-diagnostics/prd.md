@@ -9,13 +9,15 @@ Acceptance authority: active Bead `ae-dc7`, owned by `/root/nu07_count_diagnosti
 ## Scope
 
 - `src/cli/check/direct_contents.rs`
-- New focused integration test module `tests/count_diagnostics_tests.rs`
+- Focused integration modules `tests/count_diagnostics_tests.rs` and `tests/fast_count_diagnostics_tests.rs`
 
-Use names already collected for direct children; do not enumerate again. Keep the existing count matcher, allowance/refinement behavior, thresholds, severities, parent path, and output schema. Root remains serialized as an empty path; diagnostic messages render root as `.`. Preserve authored custom folder-health guidance and show actual child count and configured maximum. Keep one shared corrective context per failed count constraint. Do not change generic renderer, Fix/Next routing, Doctor, Review, history, public API/schema, or dependencies.
+Use names already collected for direct children; do not enumerate again. Keep the existing count matcher, allowance/refinement behavior, thresholds, severities, parent path, and output schema. Fast direct-child file/directory wildcard checks and suffix-selected counts finalized by explicit file-target checks use the same count-target allowance/refinement predicate as the general route. Self-directory target checks remain scalar 0/1 presence checks without a child-path sample. Root remains serialized as an empty path; diagnostic messages render root as `.`. Preserve authored custom folder-health guidance and show actual child count and configured maximum. Keep one shared corrective context per failed count constraint. Do not change generic renderer, Fix/Next routing, Doctor, Review, history, public API/schema, or dependencies.
 
 ## Acceptance
 
 - Root and nested file and directory count failures include a deterministic sorted sample capped at five matching paths and the exact omitted count when applicable.
+- Fast-eligible root and multi-component nested wildcard counts match general-route findings and bounded messages across text, JSON, and agent formats; passing constraints allocate no path sample, while failed constraints retain at most five borrowed names from the already collected entries.
+- An explicit suffix-based file-target count failure retains its serialized index-parent path and adds the same bounded sample of matching sibling paths; exact and scalar target modes keep their existing scope.
 - Allowed/refinement patterns remain excluded from zero-count offender paths according to `matches_count_target`.
 - Count failures emit one aggregate finding per failed rule, including zero-count directory rules.
 - A zero-count directory rule failed by the onboarding fixture's `tmp` child keeps one `exists_count` at serialized parent path `.agents/skills/missing-skill-md`; its message includes `expected 0` and the unexpected path `.agents/skills/missing-skill-md/tmp`, with no duplicate child-path count finding.

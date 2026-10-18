@@ -185,6 +185,7 @@ impl StructureChecker {
                         &self.glob_patterns,
                     )
                 })
+                .map(String::as_str)
                 .collect::<Vec<_>>();
             matches.sort_unstable();
             let count = matches.len();
@@ -241,6 +242,7 @@ impl StructureChecker {
                         &self.glob_patterns,
                     )
                 })
+                .map(String::as_str)
                 .collect::<Vec<_>>();
             matches.sort_unstable();
             let count = matches.len();
@@ -307,7 +309,7 @@ impl StructureChecker {
     }
 }
 
-fn matches_count_target(
+pub(super) fn matches_count_target(
     exists: &HashMap<String, String>,
     allowed_patterns: Option<&[String]>,
     pattern: &str,
@@ -353,13 +355,13 @@ fn join_pattern_rel(parent: &Path, pattern: &str) -> PathBuf {
     }
 }
 
-fn count_diagnostic_message(
+pub(super) fn count_diagnostic_message(
     rel: &Path,
     item_kind: &str,
     count: usize,
     pattern: &str,
     expected: &str,
-    matches: &[&String],
+    matches: &[&str],
 ) -> String {
     let mut message = format!(
         "Directory '{}' has {} {} matching '{}', expected {}",
@@ -390,7 +392,7 @@ fn count_diagnostic_message(
         ". Matching paths (sample): "
     });
     message.push_str(&shown.join(", "));
-    let omitted = matches.len() - shown.len();
+    let omitted = count.saturating_sub(shown.len());
     if omitted > 0 {
         message.push_str(&format!("; {omitted} more omitted"));
     }
