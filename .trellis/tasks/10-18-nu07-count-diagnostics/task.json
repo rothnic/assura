@@ -13,7 +13,7 @@
   "createdAt": "2026-10-18",
   "completedAt": null,
   "branch": "fix/nu07-count-diagnostics",
-  "base_branch": "master",
+  "base_branch": "refs/remotes/origin/master",
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
@@ -29,10 +29,10 @@
       "candidate_id": "10-18-nu07-count-diagnostics",
       "owner": "nu07-count-diagnostics",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/master",
+      "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/fix/nu07-count-diagnostics",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "prd.md#acceptance"
     }
   }
 }
