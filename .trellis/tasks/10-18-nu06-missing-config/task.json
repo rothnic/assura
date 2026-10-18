@@ -5,7 +5,7 @@
   "description": "Implement reviewed recovery guidance for missing Assura config in check, review, and doctor JSON modes.",
   "status": "in_progress",
   "dev_type": null,
-  "scope": "src/cli/check/report.rs; tests/cli_command_surface_tests.rs; docs/validation.md; website/src/content/docs/guides/adoption-walkthrough.md; .trellis/tasks/10-18-nu06-missing-config",
+  "scope": "src/cli/check.rs; src/cli/check/report.rs; tests/doctor_explain_cli.rs; docs/validation.md; website/src/content/docs/guides/adoption-walkthrough.md; .trellis/tasks/10-18-nu06-missing-config",
   "package": null,
   "priority": "P1",
   "creator": "codex-nu06",

@@ -266,10 +266,10 @@ pub(super) fn discover_project(
     }
 
     let config_path = ConfigDiscovery::find_config_path(checked_path)
-        .ok_or_else(|| CheckError::NoConfig(checked_path.to_path_buf()))?;
+        .ok_or_else(|| CheckError::no_config(checked_path))?;
 
     if !config_path.exists() {
-        return Err(CheckError::NoConfig(checked_path.to_path_buf()));
+        return Err(CheckError::no_config(checked_path));
     }
 
     let project_root = config_path
