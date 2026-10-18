@@ -1,0 +1,3 @@
+{"file": ".trellis/tasks/10-18-nu17-windows-ctrl-c/prd.md", "reason": "Exact Windows isolation, proof, ownership and no-Cargo phase contract."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Preserve CI/test validation contracts and scoped platform proof."}
+{"file": ".trellis/spec/assura/delivery-lifecycle.md", "reason": "Independent review, native evidence and root-owned merge closure."}
