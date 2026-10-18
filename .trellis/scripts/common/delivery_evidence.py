@@ -2,17 +2,23 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from .delivery import (
-    DeliveryIntent,
-    _DELIVERY_EVIDENCE_SCHEMA,
-    _EVIDENCE_SOURCES,
-    _EVIDENCE_SOURCES_BY_SECTION,
-    _EVIDENCE_SUCCESS_RESULTS,
-    _FULL_OID,
-    _SHA256,
-)
+if TYPE_CHECKING:
+    from .delivery import DeliveryIntent, Inventory
+
+
+def _candidate_github_coverage(intent: DeliveryIntent, inventory: Inventory) -> bool:
+    """Accept fleet coverage or current details bound to this exact candidate."""
+    if inventory.coverage.get("github") == "complete":
+        return True
+    return (
+        inventory.coverage.get("github_candidate") == intent.candidate_id
+        and inventory.coverage.get("github_candidate_details") == "complete"
+        and len(inventory.pull_requests) == 1
+        and inventory.coverage.get("github_candidate_pr_number")
+        == inventory.pull_requests[0].get("number")
+    )
 
 
 def _nonempty_string(value: Any) -> bool:
@@ -22,11 +28,15 @@ def _nonempty_string(value: Any) -> bool:
 
 def _full_oid(value: Any) -> bool:
     """Return whether a value is a complete Git object id."""
+    from .delivery import _FULL_OID
+
     return isinstance(value, str) and _FULL_OID.fullmatch(value) is not None
 
 
 def _full_sha256(value: Any) -> bool:
     """Return whether a value is a complete SHA-256 digest."""
+    from .delivery import _SHA256
+
     return isinstance(value, str) and _SHA256.fullmatch(value) is not None
 
 
@@ -43,6 +53,13 @@ def _evidence_error(
     base_oid: str | None,
 ) -> str | None:
     """Return a precise failure for the typed delivery-evidence envelope."""
+    from .delivery import (
+        _DELIVERY_EVIDENCE_SCHEMA,
+        _EVIDENCE_SOURCES,
+        _EVIDENCE_SOURCES_BY_SECTION,
+        _EVIDENCE_SUCCESS_RESULTS,
+    )
+
     if not isinstance(value, dict):
         return "evidence section must be an object"
     if value.get("schema_version") != _DELIVERY_EVIDENCE_SCHEMA:
