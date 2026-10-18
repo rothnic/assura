@@ -13,6 +13,7 @@ import tempfile
 import types
 import unittest
 from dataclasses import replace
+from dataclasses import replace
 from unittest import mock
 from pathlib import Path
 
@@ -38,6 +39,7 @@ from common.delivery import (  # noqa: E402
     collect_inventory,
     load_delivery_intent,
     _read_worktrees,
+    collect_candidate_inventory,
     render_checkpoint,
 )
 from common import delivery_cli, delivery_receipts, delivery_status
@@ -53,6 +55,7 @@ from common.delivery_store import (  # noqa: E402
     ReceiptCorrupt,
     StaleGeneration,
 )
+from common.delivery_github import GithubIdentityMismatch  # noqa: E402
 from common.tasks import children_progress, get_all_statuses  # noqa: E402
 
 
@@ -505,6 +508,22 @@ class FakeGithub:
         return self.pull_requests
 
 
+def write_fake_github(path: Path, pull_requests: list[dict]) -> None:
+    rows = repr(json.dumps(pull_requests))
+    source = (
+        "#!/usr/bin/env python3\nimport json,sys\n"
+        f"rows=json.loads({rows})\n"
+        "number=int(sys.argv[3]) if len(sys.argv)>3 and sys.argv[2]=='view' else None\n"
+        "detail=next((row.copy() for row in rows if row.get('number')==number), {}) if number else None\n"
+        "detail and detail.setdefault('reviews', [])\n"
+        "detail and detail.setdefault('statusCheckRollup', [])\n"
+        "print(json.dumps(detail if number else rows))\n"
+    )
+    path.write_text(source, encoding="utf-8")
+    if os.name != "nt":
+        path.chmod(0o755)
+
+
 class UnavailableGithub:
     def list_pull_requests(self, repository: str) -> list[dict]:
         raise GithubUnavailable("GitHub evidence unavailable")
@@ -601,10 +620,7 @@ def fixture_repo() -> tuple[Path, str, str, tempfile.TemporaryDirectory[str]]:
             }
         ]
     )
-    fake_gh.write_text(
-        "#!/usr/bin/env python3\nprint(" + repr(fake_pull_requests) + ")\n",
-        encoding="utf-8",
-    )
+    write_fake_github(fake_gh, json.loads(fake_pull_requests))
     if os.name == "nt":
         # Windows does not execute extensionless scripts from PATH. Keep the
         # same fixture command while providing its native command shim.
@@ -697,17 +713,12 @@ class DeliveryProjectionTests(unittest.TestCase):
                 "reviewDecision": "APPROVED",
                 "reviews": [{"id": "review-21", "author": {"login": "reviewer"}, "state": "APPROVED"}],
                 "statusCheckRollup": [
-                    {"databaseId": "job-21", "name": "process-contracts", "detailsUrl": check_url, "conclusion": "SUCCESS"},
-                    {"databaseId": "security-job-21", "name": "Security Audit", "conclusion": "SKIPPED"},
+                    {"__typename": "CheckRun", "databaseId": "job-21", "name": "process-contracts", "status": "COMPLETED", "detailsUrl": check_url, "conclusion": "SUCCESS"},
+                    {"__typename": "CheckRun", "databaseId": "security-job-21", "name": "Security Audit", "status": "COMPLETED", "conclusion": "SKIPPED"},
                 ],
             }
             fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
-            fake_gh.write_text(
-                "#!/usr/bin/env python3\nprint(" + repr(json.dumps([provider_pr])) + ")\n",
-                encoding="utf-8",
-            )
-            if os.name != "nt":
-                fake_gh.chmod(0o755)
+            write_fake_github(fake_gh, [provider_pr])
 
             evidence = local_integration_evidence(tip, merge_oid, "initial-close")
             evidence["review"].update(
@@ -2449,13 +2460,7 @@ class DeliveryProjectionTests(unittest.TestCase):
                 "mergedAt": "2026-09-14T00:00:00Z",
             }
             fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
-            fake_prs = json.dumps([pull_request])
-            fake_gh.write_text(
-                "#!/usr/bin/env python3\nprint(" + repr(fake_prs) + ")\n",
-                encoding="utf-8",
-            )
-            if os.name != "nt":
-                fake_gh.chmod(0o755)
+            write_fake_github(fake_gh, [pull_request])
 
             inspected = task_cli(
                 repo, "delivery", "inspect", task_path, "--format", "json"
@@ -2591,7 +2596,7 @@ class DeliveryProjectionTests(unittest.TestCase):
             stdout=payload,
             stderr="",
         )
-        with mock.patch("common.delivery.subprocess.run", return_value=completed):
+        with mock.patch("common.delivery_github.subprocess.run", return_value=completed):
             with self.assertRaises(GithubUnavailable):
                 SubprocessGithubReader().list_pull_requests("rothnic/assura")
 
@@ -2628,7 +2633,7 @@ class DeliveryProjectionTests(unittest.TestCase):
             subprocess.CompletedProcess(["gh"], 0, stdout=payload, stderr="")
             for payload in responses
         ]
-        with mock.patch("common.delivery.subprocess.run", side_effect=completed) as run:
+        with mock.patch("common.delivery_github.subprocess.run", side_effect=completed) as run:
             rows = SubprocessGithubReader().list_pull_requests("rothnic/assura")
 
         self.assertEqual(len(rows), 1)
@@ -2636,6 +2641,278 @@ class DeliveryProjectionTests(unittest.TestCase):
         self.assertIn("reviews", rows[0])
         self.assertIn("statusCheckRollup", rows[0])
         self.assertEqual(run.call_count, 3)
+
+    def test_candidate_reader_queries_complete_identity_then_exact_pr_details(self) -> None:
+        identity = {
+            "number": 14,
+            "state": "MERGED",
+            "headRefName": "candidate",
+            "headRefOid": "a" * 40,
+            "baseRefName": "master",
+            "baseRefOid": "b" * 40,
+            "mergeCommit": {"oid": "c" * 40},
+            "mergedAt": "2026-10-17T12:34:56Z",
+        }
+        details = {
+            **identity,
+            "title": "Candidate PR",
+            "url": "https://github.com/rothnic/assura/pull/14",
+            "reviews": [{"id": "review-14", "author": {"login": "reviewer"}, "state": "APPROVED"}],
+            "statusCheckRollup": [{"__typename": "CheckRun", "databaseId": "job-14", "name": "build", "status": "COMPLETED", "conclusion": "SUCCESS"}],
+        }
+        completed = [
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps([identity]), stderr=""),
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps(details), stderr=""),
+        ]
+        with mock.patch("common.delivery_github.subprocess.run", side_effect=completed) as run:
+            cohort, current = SubprocessGithubReader().candidate_pull_request(
+                "rothnic/assura", "candidate", "master", "a" * 40
+            )
+
+        self.assertEqual([row["number"] for row in cohort], [14])
+        self.assertEqual(current["number"], 14)
+        self.assertEqual(current["mergedAt"], "2026-10-17T12:34:56Z")
+        self.assertIn("reviews", current)
+        self.assertIn("statusCheckRollup", current)
+        self.assertEqual(run.call_count, 2)
+        commands = [call.args[0] for call in run.call_args_list]
+        self.assertEqual(commands[0][1:3], ["pr", "list"])
+        self.assertNotIn("reviews", commands[0][-1])
+        self.assertNotIn("statusCheckRollup", commands[0][-1])
+        self.assertEqual(commands[1][1:4], ["pr", "view", "14"])
+
+    def test_candidate_reader_rejects_incoherent_merge_snapshots(self) -> None:
+        open_snapshot = {
+            "number": 14,
+            "state": "OPEN",
+            "headRefName": "candidate",
+            "headRefOid": "a" * 40,
+            "baseRefName": "master",
+            "baseRefOid": "b" * 40,
+            "mergeCommit": None,
+            "mergedAt": None,
+        }
+        merged_snapshot = {
+            **open_snapshot,
+            "state": "MERGED",
+            "mergeCommit": {"oid": "c" * 40},
+            "mergedAt": "2026-10-17T12:34:56Z",
+        }
+        invalid_cases = (
+            ("open object timestamp", open_snapshot, {"mergedAt": {"value": "x"}}),
+            ("open timestamp", open_snapshot, {"mergedAt": "2026-10-17T12:34:56Z"}),
+            ("closed timestamp", {**open_snapshot, "state": "CLOSED"}, {"mergedAt": "2026-10-17T12:34:56Z"}),
+            ("merged missing timestamp", merged_snapshot, {"mergedAt": None}),
+            ("merged invalid timestamp", merged_snapshot, {"mergedAt": "2026-02-30T12:34:56Z"}),
+            ("merged missing OID", merged_snapshot, {"mergeCommit": None}),
+            ("merged invalid OID", merged_snapshot, {"mergeCommit": {"oid": "short"}}),
+            ("merged arbitrary timestamp", merged_snapshot, {"mergedAt": "yesterday"}),
+        )
+        for label, valid_snapshot, invalid_fields in invalid_cases:
+            for invalid_stage in ("identity", "details", "both"):
+                with self.subTest(case=label, invalid_stage=invalid_stage):
+                    invalid_snapshot = {**valid_snapshot, **invalid_fields}
+                    identity = (
+                        valid_snapshot if invalid_stage == "details" else invalid_snapshot
+                    )
+                    details = (
+                        valid_snapshot if invalid_stage == "identity" else invalid_snapshot
+                    )
+                    details = {
+                        **details,
+                        "title": "Candidate PR",
+                        "url": "https://github.com/rothnic/assura/pull/14",
+                        "reviews": [],
+                        "statusCheckRollup": [],
+                    }
+                    responses = [
+                        subprocess.CompletedProcess(
+                            ["gh"], 0, stdout=json.dumps([identity]), stderr=""
+                        ),
+                        subprocess.CompletedProcess(
+                            ["gh"], 0, stdout=json.dumps(details), stderr=""
+                        ),
+                    ]
+                    with mock.patch(
+                        "common.delivery_github.subprocess.run", side_effect=responses
+                    ):
+                        with self.assertRaisesRegex(
+                            GithubIdentityMismatch, "mergedAt|merge OID|mergeCommit|merge state"
+                        ):
+                            SubprocessGithubReader().candidate_pull_request(
+                                "rothnic/assura", "candidate", "master", "a" * 40
+                            )
+
+    def test_candidate_reader_accepts_status_context_rollup_member(self) -> None:
+        identity = {
+            "number": 14, "state": "OPEN", "headRefName": "candidate",
+            "headRefOid": "a" * 40, "baseRefName": "master",
+            "baseRefOid": "b" * 40, "mergeCommit": None, "mergedAt": None,
+        }
+        details = {
+            **identity, "title": "Candidate PR",
+            "url": "https://github.com/rothnic/assura/pull/14",
+            "reviews": [], "statusCheckRollup": [{
+                "__typename": "StatusContext", "context": "legacy-ci",
+                "state": "SUCCESS", "targetUrl": "https://ci.example/run/14",
+            }],
+        }
+        responses = [
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps([identity]), stderr=""),
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps(details), stderr=""),
+        ]
+        with mock.patch("common.delivery_github.subprocess.run", side_effect=responses):
+            _, current = SubprocessGithubReader().candidate_pull_request(
+                "rothnic/assura", "candidate", "master", "a" * 40
+            )
+        self.assertEqual(current["statusCheckRollup"][0]["__typename"], "StatusContext")
+
+    def test_candidate_reader_accepts_pending_check_without_conclusion(self) -> None:
+        identity = {
+            "number": 14, "state": "OPEN", "headRefName": "candidate",
+            "headRefOid": "a" * 40, "baseRefName": "master",
+            "baseRefOid": "b" * 40, "mergeCommit": None, "mergedAt": None,
+        }
+        details = {
+            **identity, "title": "Candidate PR",
+            "url": "https://github.com/rothnic/assura/pull/14",
+            "reviews": [], "statusCheckRollup": [{
+                "__typename": "CheckRun", "databaseId": "job-14",
+                "name": "build", "status": "IN_PROGRESS", "conclusion": None,
+                "detailsUrl": "https://github.com/rothnic/assura/actions/runs/101/job/202",
+            }],
+        }
+        responses = [
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps([identity]), stderr=""),
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps(details), stderr=""),
+        ]
+        with mock.patch("common.delivery_github.subprocess.run", side_effect=responses):
+            _, current = SubprocessGithubReader().candidate_pull_request(
+                "rothnic/assura", "candidate", "master", "a" * 40
+            )
+        self.assertIsNone(current["statusCheckRollup"][0]["conclusion"])
+
+    def test_candidate_reader_rejects_malformed_rollup_union_members(self) -> None:
+        identity = {
+            "number": 14, "state": "OPEN", "headRefName": "candidate",
+            "headRefOid": "a" * 40, "baseRefName": "master",
+            "baseRefOid": "b" * 40, "mergeCommit": None, "mergedAt": None,
+        }
+        malformed_rows = [
+            {"__typename": "CheckRun", "name": "build", "conclusion": "SUCCESS"},
+            {"__typename": "CheckRun", "name": "build", "status": "IN_PROGRESS", "conclusion": "SUCCESS"},
+            {"__typename": "OtherType", "name": "build", "status": "COMPLETED", "conclusion": "SUCCESS"},
+            {"__typename": "StatusContext", "context": "", "state": "SUCCESS"},
+        ]
+        for row in malformed_rows:
+            with self.subTest(row=row):
+                details = {
+                    **identity, "title": "Candidate PR",
+                    "url": "https://github.com/rothnic/assura/pull/14",
+                    "reviews": [], "statusCheckRollup": [row],
+                }
+                responses = [
+                    subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps([identity]), stderr=""),
+                    subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps(details), stderr=""),
+                ]
+                with mock.patch("common.delivery_github.subprocess.run", side_effect=responses):
+                    with self.assertRaisesRegex(GithubIdentityMismatch, "malformed check identity"):
+                        SubprocessGithubReader().candidate_pull_request(
+                            "rothnic/assura", "candidate", "master", "a" * 40
+                        )
+
+    def test_candidate_reader_rejects_identity_races_and_sanitizes_provider_errors(self) -> None:
+        identity = {
+            "number": 14, "state": "MERGED", "headRefName": "candidate",
+            "headRefOid": "a" * 40, "baseRefName": "master",
+            "baseRefOid": "b" * 40, "mergeCommit": {"oid": "c" * 40},
+            "mergedAt": "2026-10-17T12:34:56Z",
+        }
+        raced = {**identity, "headRefOid": "d" * 40, "reviews": [], "statusCheckRollup": []}
+        responses = [
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps([identity]), stderr=""),
+            subprocess.CompletedProcess(["gh"], 0, stdout=json.dumps(raced), stderr=""),
+        ]
+        with mock.patch("common.delivery_github.subprocess.run", side_effect=responses):
+            with self.assertRaisesRegex(GithubIdentityMismatch, "changed headRefOid"):
+                SubprocessGithubReader().candidate_pull_request(
+                    "rothnic/assura", "candidate", "master", "a" * 40
+                )
+
+        failed = subprocess.CompletedProcess(
+            ["gh"], 1, stdout="", stderr="token=secret\ncontrol\x01detail"
+        )
+        with mock.patch("common.delivery_github.subprocess.run", return_value=failed):
+            with self.assertRaises(GithubUnavailable) as caught:
+                SubprocessGithubReader().candidate_pull_request(
+                    "rothnic/assura", "candidate", "master", "a" * 40
+                )
+        self.assertIn("identity cohort unavailable", str(caught.exception))
+        self.assertNotIn("secret", str(caught.exception))
+        self.assertNotIn("\x01", str(caught.exception))
+
+    def test_candidate_inventory_marks_only_candidate_scoped_github_coverage(self) -> None:
+        repo, _, tip, directory = fixture_repo()
+        try:
+            task_json = repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json"
+            intent = load_delivery_intent(task_json)
+            pr = {
+                "number": 18, "state": "OPEN", "headRefName": "candidate",
+                "headRefOid": tip, "baseRefName": "master", "baseRefOid": "b" * 40,
+                "reviews": [], "statusCheckRollup": [],
+            }
+
+            class CandidateReader:
+                def candidate_pull_request(self, repository, head_ref, base_ref, head_oid):
+                    self.args = (repository, head_ref, base_ref, head_oid)
+                    return [pr], pr
+
+            reader = CandidateReader()
+            inventory = collect_candidate_inventory(repo, intent, github=reader)
+            self.assertEqual(reader.args[-1], tip)
+            self.assertEqual(inventory.coverage["github"], "unavailable")
+            self.assertEqual(inventory.coverage["github_candidate"], intent.candidate_id)
+            self.assertEqual(len(inventory.pull_requests), 1)
+            self.assertTrue(delivery_status._candidate_github_coverage(intent, inventory))
+            self.assertFalse(
+                delivery_status._candidate_github_coverage(
+                    replace(intent, candidate_id="other"), inventory
+                )
+            )
+
+            class MismatchReader:
+                def candidate_pull_request(self, repository, head_ref, base_ref, head_oid):
+                    raise GithubIdentityMismatch("PR identity mismatch: changed head")
+
+            with self.assertRaisesRegex(DeliveryValidationError, "PR identity mismatch: changed head"):
+                collect_candidate_inventory(repo, intent, github=MismatchReader())
+        finally:
+            directory.cleanup()
+
+    def test_delivery_provider_and_evidence_import_orders_in_fresh_processes(self) -> None:
+        import_orders = (
+            "import common.delivery_github; import common.delivery; import common.delivery_status",
+            "import common.delivery_evidence; import common.delivery; import common.delivery_status",
+            "import common.delivery; import common.delivery_github; import common.delivery_evidence",
+        )
+        for imports in import_orders:
+            with self.subTest(imports=imports):
+                code = (
+                    "import sys; "
+                    f"sys.path.insert(0, {str(ROOT / '.trellis' / 'scripts')!r}); "
+                    f"{imports}; "
+                    "from common.delivery import GithubUnavailable; "
+                    "from common.delivery_github import GithubUnavailable as ProviderUnavailable; "
+                    "assert GithubUnavailable is ProviderUnavailable"
+                )
+                result = subprocess.run(
+                    [sys.executable, "-c", code],
+                    cwd=ROOT,
+                    capture_output=True,
+                    text=True,
+                    check=False,
+                )
+                self.assertEqual(result.returncode, 0, result.stderr)
 
     def test_github_reader_resolves_cli_through_path(self) -> None:
         completed = [
@@ -2647,8 +2924,8 @@ class DeliveryProjectionTests(unittest.TestCase):
             )
             for _ in range(3)
         ]
-        with mock.patch("common.delivery.shutil.which", return_value="/tmp/gh.cmd") as which:
-            with mock.patch("common.delivery.subprocess.run", side_effect=completed) as run:
+        with mock.patch("common.delivery_github.shutil.which", return_value="/tmp/gh.cmd") as which:
+            with mock.patch("common.delivery_github.subprocess.run", side_effect=completed) as run:
                 SubprocessGithubReader().list_pull_requests("rothnic/assura")
 
         which.assert_called_once_with("gh")
@@ -2656,6 +2933,100 @@ class DeliveryProjectionTests(unittest.TestCase):
 
 
 class DeliveryLifecycleCommandTests(unittest.TestCase):
+    def test_record_and_close_reject_invalid_merge_snapshots_without_writes(self) -> None:
+        cases = (
+            ("malformed OPEN timestamp", "record", "OPEN", {"value": "not-a-time"}, None, None, None, "PR identity mismatch"),
+            ("contradictory CLOSED timestamp", "close", "CLOSED", "2026-10-17T12:34:56Z", None, None, None, "PR identity mismatch"),
+            ("MERGED missing timestamp", "record", "MERGED", None, "tip", None, None, "PR identity mismatch"),
+            ("MERGED missing merge OID", "close", "MERGED", "2026-10-17T12:34:56Z", None, None, None, "PR identity mismatch"),
+            ("unfinished CheckRun with SUCCESS", "record", "OPEN", None, None, "IN_PROGRESS", "SUCCESS", "PR identity mismatch"),
+            ("pending CheckRun remains unresolved", "record", "OPEN", None, None, "IN_PROGRESS", None, "not verified by the current GitHub pull request"),
+        )
+        for label, command, state, merged_at, merge_oid, check_status, conclusion, expected_error in cases:
+            with self.subTest(case=label):
+                repo, base_oid, tip, directory = fixture_repo()
+                try:
+                    task_path = ".trellis/tasks/01-01-candidate"
+                    # The task fixture is created after the initial commit and
+                    # Trellis task data is intentionally ignored by the repo.
+                    # Track it in this disposable repository so CLI state checks
+                    # reach candidate-provider validation instead of rejecting
+                    # the fixture as an untracked task directory.
+                    git(repo, "add", "-f", f"{task_path}/task.json")
+                    git(repo, "commit", "-m", "add delivery task fixture")
+                    tip = git(repo, "rev-parse", "HEAD")
+                    self.assertEqual(task_cli(repo, "start", task_path).returncode, 0)
+                    self.assertEqual(task_cli(repo, "finish").returncode, 0)
+                    task_json = repo / task_path / "task.json"
+                    receipt_path = repo / ".git" / "assura" / "delivery-v1" / "candidate-1.json"
+                    store = DeliveryStore(receipt_path.parent)
+                    fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
+                    pull_request = {
+                        "number": 1,
+                        "state": state,
+                        "title": "Candidate",
+                        "url": "https://github.com/rothnic/assura/pull/1",
+                        "headRefName": "candidate",
+                        "headRefOid": tip,
+                        "baseRefName": "master",
+                        "baseRefOid": base_oid,
+                        "mergeCommit": {"oid": tip} if merge_oid == "tip" else None,
+                        "mergedAt": merged_at,
+                    }
+                    check_evidence = check_status is not None
+                    if check_status is not None:
+                        pull_request.update({
+                            "mergeStateStatus": "CLEAN",
+                            "statusCheckRollup": [{
+                                "__typename": "CheckRun", "databaseId": "202",
+                                "name": "build", "status": check_status,
+                                "conclusion": conclusion,
+                                "detailsUrl": "https://github.com/rothnic/assura/actions/runs/101/job/202",
+                            }],
+                        })
+                    write_fake_github(fake_gh, [pull_request])
+                    evidence_path = Path(directory.name) / "record-evidence.json"
+                    evidence = {"observed_tip": tip}
+                    if check_evidence:
+                        evidence = {
+                            "checks": {
+                                "schema_version": "assura.delivery-evidence.v1",
+                                "source": "github",
+                                "repository": "rothnic/assura",
+                                "evidence_ref": "https://github.com/rothnic/assura/actions/runs/101",
+                                "result": "passed",
+                                "conclusion": "success",
+                                "head_oid": tip,
+                                "base_oid": base_oid,
+                                "pr_number": 1,
+                                "run_id": "101",
+                                "job_id": "202",
+                                "check_name": "build",
+                            }
+                        }
+                    evidence_path.write_text(json.dumps(evidence), encoding="utf-8")
+                    before_task = task_json.read_bytes()
+                    before_receipt = receipt_path.read_bytes()
+                    before_generation = store.read("candidate-1")["generation"]
+                    if command == "record":
+                        result = task_cli(
+                            repo, "delivery", "record", task_path,
+                            "--evidence-file", str(evidence_path),
+                            "--expected-generation", str(before_generation),
+                        )
+                    else:
+                        result = task_cli(
+                            repo, "delivery", "close", task_path,
+                            "--outcome", "delivered",
+                        )
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    self.assertIn(expected_error, result.stdout + result.stderr)
+                    self.assertEqual(task_json.read_bytes(), before_task)
+                    self.assertEqual(receipt_path.read_bytes(), before_receipt)
+                    self.assertEqual(store.read("candidate-1")["generation"], before_generation)
+                finally:
+                    directory.cleanup()
+
     def test_first_delivered_close_cannot_reuse_historical_active_base(self) -> None:
         repo, _, tip, directory = fixture_repo()
         try:
@@ -5073,20 +5444,17 @@ class DeliveryRemoteFreshnessTests(unittest.TestCase):
             ],
             "statusCheckRollup": [
                 {
+                    "__typename": "CheckRun",
                     "databaseId": "job-14",
                     "name": "process-contracts",
+                    "status": "COMPLETED",
                     "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/job-14",
                     "conclusion": "SUCCESS",
                 }
             ],
         }
         fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
-        fake_gh.write_text(
-            "#!/usr/bin/env python3\nprint(" + repr(json.dumps([provider_pr])) + ")\n",
-            encoding="utf-8",
-        )
-        if os.name != "nt":
-            fake_gh.chmod(0o755)
+        write_fake_github(fake_gh, [provider_pr])
 
         evidence = {
             "review": {
