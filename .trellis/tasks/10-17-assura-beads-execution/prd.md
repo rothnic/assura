@@ -30,20 +30,29 @@ external outreach and acceptance evidence still require their actual contracts.
 
 ## Store adoption
 
-Independent inspection found no project/parent `.beads`, no Beads environment
-override and no Assura mapping in the inspected user registry. Leave the
-separate global store untouched. Use installed `bd 1.2.2` with a project-local
-store at `/Users/nroth/workspace/assura/.beads`, prefix `assura`, explicit actor
-and `BEADS_DIR` for coordinator commands. Inspect actual backend/server mode
-after initialization; keep issue writes serialized.
+The initial local/registry audit found no resolved store, but supported init
+subsequently discovered `origin`'s `refs/dolt/data` at `9dcb270a`. A verified
+preserved-copy inspection found 61 existing `ae`-prefixed issues. The fresh
+empty-store plan is superseded: reuse this tracker, preserve all existing
+issues/history, reconcile source keys/titles before importing missing nodes.
 
-Use supported noninteractive init with `--skip-agents --skip-hooks` and
-repository-local `--setup-exclude`; preserve
-Assura's hooks and agent instructions. Do not upgrade, reinitialize, force,
-migrate or select a shared server to bypass identity checks. Verify an empty
-target and duplicates before graph import; retain dry-run and actual key/ID,
-edge, parent and readiness readback. Use Dolt-native backup for recovery;
-JSONL exports are interchange, not canonical sync or database backup.
+Installed `bd 1.2.2` auto-cloned the remote, then its embedded engine failed
+reading schema (`Error 1105: table has unknown fields`). Original and two
+hash-verified copies remain intact. Installed Dolt 2.3.1 can query a copy.
+Investigate a supported existing-server backend on a copy before selecting
+runtime mode; no force, reinit, upgrade or migration to bypass identity.
+
+The init skip flags preserved AGENTS and hooks. Contrary to the help-based
+plan, `--setup-exclude` appended broad patterns to tracked `.gitignore` before
+the failure; its exact owned suffix was preserved and removed. Do not repeat
+that flag or claim it changes only `.git/info/exclude`. Leave the unrelated
+global store untouched; init changed an events-directory mtime, with no
+content change established. See `research/store-recovery.json` for evidence.
+
+After compatible readback, use explicit actor and verified `BEADS_DIR` for
+all serialized coordinator writes. Freeze reviewed source/hash, check existing
+identities, retain dry-run and key/ID/edge/readiness proof, and verify native
+Dolt backup before/after import. JSONL is interchange, not canonical sync.
 
 The standard `.beads` path is tool-managed local database/runtime state,
 excluded from source control by supported setup. Exclude that exact directory
@@ -99,3 +108,22 @@ are live observations, not yet passing acceptance. Finish that reconciliation
 before closing NU13. In parallel prepare store adoption and its independent
 review. SP01 remains the next proposed core filesystem attribution slice;
 measure repeated metadata/enumeration/discovery before retaining optimization.
+
+## Discovered closure prerequisite
+
+PR #355's 29 exact-merge checks now pass and canonical website routes respond
+200. Native closure still falsely rejects GitHub MERGED/UNKNOWN, and initial
+close applies historical-base rules only after a verified terminal receipt
+already exists. Three read-only Luna vendor/environment/adversarial probes
+support a narrow correction, with command-level transition and identity
+negative controls. Keep NU13 open until actual supported close/readback.
+
+The coordinator-owned active aggregate owns this prerequisite and its intake
+contract. A separate live Luna implementer owns only the existing delivery
+helper/status/necessary CLI files, existing delivery contract tests and scoped
+delivery spec. Coordinator owns this goal's documentation/research/config and
+Beads writes. No receipt edits, provider-source fallback, gate weakening, new
+public API/dependency, generic owner-transfer feature or broad refactor.
+Independent final Luna review and affected script/structure/evidence/hosted
+checks precede merge. Register the discovered prerequisite in the recovered
+Beads graph and preserve original source snapshots.

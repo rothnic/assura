@@ -1,0 +1,43 @@
+{
+  "attempt": {
+    "command": "bd --actor codex-assura-coordinator init --prefix assura --non-interactive --skip-agents --skip-hooks --setup-exclude",
+    "cwd": "/Users/nroth/workspace/assura",
+    "exit": 1,
+    "result": "Automatic bootstrap of git+https://github.com/rothnic/assura.git completed; embedded schema load failed: Error1105 table has unknown fields"
+  },
+  "identity_correction": {
+    "remote_ref": "refs/dolt/data",
+    "oid": "9dcb270a73653eac4bc3dc71002bbf41473f421a",
+    "issues": 61,
+    "statuses": {
+      "open": 25,
+      "closed": 30,
+      "in_progress": 5,
+      "blocked": 1
+    },
+    "prefix": "ae",
+    "schema_migrations": 53,
+    "fresh_empty_store_plan": "superseded; reuse and reconcile existing tracker"
+  },
+  "preservation": {
+    "original": "/Users/nroth/workspace/assura/.beads",
+    "manifest": "/Users/nroth/workspace/.assura-review-20261017/beads-failed-init-manifest.json",
+    "file_count": 45,
+    "bytes": 4227855,
+    "native_sql_probe": "Dolt2.3.1 SHOW TABLES and SELECT queries succeeded on a verified independent copy; original never reopened",
+    "remote_writes": "none issued; remote head read-only observation retained"
+  },
+  "side_effects": {
+    "AGENTS_and_hooks": "before/after hashes equal",
+    "tracked_gitignore": "Exact generated suffix preserved then removed after asserting bytes equal HEAD plus suffix and verified pre-init clean state",
+    "global_events_directory": "mtime changed during init; no content change proven; no cleanup attempted"
+  },
+  "reviews": {
+    "vendor": "/root/nu13_socket_vendor",
+    "environment": "/root/nu13_socket_environment",
+    "adversarial": "/root/nu13_luna_final_review",
+    "model": "gpt-6-luna",
+    "disposition": "Preserve partial clone, no fresh parallel tracker, no force/reinit/upgrade/migration. Investigate supported existing-server backend on a copy."
+  },
+  "source": "https://raw.githubusercontent.com/gastownhall/beads/v1.2.2/cmd/bd/init.go"
+}

@@ -15,14 +15,24 @@ primary Git checkout and any existing registry/redirect. A missing local folder
 alone does not authorize another database. Reuse the verified project store;
 leave unrelated/global stores and registrations intact.
 
-When adoption is authorized and absence is established, initialize once using
-supported skip flags for agent instructions and hooks. The installed 1.2.2
-supports `--non-interactive --skip-agents --skip-hooks --setup-exclude`; the
-last option uses repository-local Git exclusion, without stealth/global setup.
-Verify actual backend/server mode afterward. Keep one coordinator writer and
-pass the verified `BEADS_DIR` and actor explicitly across worktrees. Read-only
-workers do not claim or mutate issues. Do not upgrade/migrate/repair a store
-as a substitute for identifying it.
+Before initializing, inspect the Git remote's `refs/dolt/data` as well as
+local stores/registries: `bd 1.2.2` automatically bootstraps that remote from
+cwd even with an explicit `BEADS_DIR`. Existing remote history must be reused,
+not replaced by an independent empty tracker. Inspect a preserved copy using
+compatible native Dolt tooling if the embedded engine cannot decode it.
+
+Use installed help and exact source before selecting backend/recovery flags.
+In observed 1.2.2 behavior, `--skip-agents --skip-hooks` preserved those files,
+but `--setup-exclude` added broad patterns to tracked `.gitignore`; do not
+assume help guarantees repository-local info/exclude only. Preserve/review
+any owned side effect. No force, reinit, upgrade, schema repair or migration
+as a substitute for identity and compatibility proof.
+
+Verify actual backend/server mode and issue prefix after recovery. Keep one
+coordinator writer and pass verified `BEADS_DIR` and actor across worktrees.
+Read-only workers do not claim or mutate issues. A local copy of a configured
+remote is distinct from a successfully synchronized write; verify native
+backup/sync and remote identity under the installed version's contract.
 
 ## Import and retries
 
