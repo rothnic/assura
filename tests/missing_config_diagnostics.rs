@@ -15,6 +15,7 @@ fn missing_config_json_diagnostics_offer_read_only_init_recovery() {
     let scratch = TempDir::new().unwrap();
     let project = scratch.path().join("project with 'quotes'");
     fs::create_dir_all(&project).unwrap();
+    let project_debug = format!("{:?}", project.canonicalize().unwrap());
 
     let cases = [
         (
@@ -40,7 +41,7 @@ fn missing_config_json_diagnostics_offer_read_only_init_recovery() {
         assert_eq!(output.status.code(), Some(4), "{name} stderr:\n{stderr}");
         assert!(output.stdout.is_empty(), "{name} stdout was not empty");
         assert!(
-            stderr.contains(&project.display().to_string()),
+            stderr.contains(&project_debug),
             "{name} did not identify the project path: {stderr}"
         );
         assert!(
@@ -59,6 +60,7 @@ fn missing_config_json_diagnostics_offer_read_only_init_recovery() {
 
     let file = project.join("example.ts");
     fs::write(&file, "export {};\n").unwrap();
+    let file_debug = format!("{:?}", file.canonicalize().unwrap());
     let file_check = Command::new(assura_full_bin())
         .args(["check", "--format", "json"])
         .arg(&file)
@@ -68,11 +70,11 @@ fn missing_config_json_diagnostics_offer_read_only_init_recovery() {
     assert_eq!(file_check.status.code(), Some(4), "stderr:\n{stderr}");
     assert!(file_check.stdout.is_empty());
     assert!(
-        stderr.contains(&project.display().to_string()),
+        stderr.contains(&project_debug),
         "file target recovery must identify its parent project: {stderr}"
     );
     assert!(
-        stderr.contains(&file.display().to_string()),
+        stderr.contains(&file_debug),
         "file target diagnostic must retain the checked path: {stderr}"
     );
     assert!(stderr.contains("assura init"));
