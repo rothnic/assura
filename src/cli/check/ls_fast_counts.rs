@@ -1,10 +1,9 @@
 //! Direct count helpers for the LS-Lint-compatible fast path.
 
+use super::direct_contents::{count_diagnostic_message, matches_count_target};
 use super::ls_fast::join_rel;
 use super::ls_fast_plan::FastRules;
-use super::patterns::{
-    best_lslint_suffix_pair, is_lslint_extension_pattern, matches_single_compiled_pattern,
-};
+use super::patterns::{best_lslint_suffix_pair, is_lslint_extension_pattern};
 use super::rules::{
     count_satisfies, display_rel, is_excluded_rel_with, severity_for_bundle,
     severity_for_directory_bundle,
@@ -49,27 +48,21 @@ impl StructureChecker {
             return;
         };
 
-        let count = entries
-            .iter()
-            .filter(|entry| {
-                entry.file_type.is_file()
-                    && entry.name.to_str().is_some_and(|name| {
-                        matches_single_compiled_pattern(pattern, name, &self.glob_patterns)
-                    })
-            })
-            .count();
+        let (count, sample) = fast_count_and_sample(
+            entries,
+            true,
+            exists,
+            files.allowed_patterns.as_deref(),
+            pattern,
+            expected,
+            &self.glob_patterns,
+        );
         if !count_satisfies(count, expected) {
             self.push_violation(
                 report,
                 index_rel.to_path_buf(),
                 "exists_count",
-                format!(
-                    "Directory '{}' has {} files matching '{}', expected {}",
-                    display_rel(index_rel),
-                    count,
-                    pattern,
-                    expected
-                ),
+                count_diagnostic_message(index_rel, "files", count, pattern, expected, &sample),
                 severity_for_bundle(files),
             );
         }
@@ -119,30 +112,22 @@ impl StructureChecker {
         if let Some(files) = rules.effective.files.as_ref() {
             if let Some(exists) = files.exists.as_ref() {
                 for (pattern, expected) in exists {
-                    let count = entries
-                        .iter()
-                        .filter(|entry| {
-                            entry.file_type.is_file()
-                                && entry.name.to_str().is_some_and(|name| {
-                                    matches_single_compiled_pattern(
-                                        pattern,
-                                        name,
-                                        &self.glob_patterns,
-                                    )
-                                })
-                        })
-                        .count();
+                    let (count, sample) = fast_count_and_sample(
+                        entries,
+                        true,
+                        exists,
+                        files.allowed_patterns.as_deref(),
+                        pattern,
+                        expected,
+                        &self.glob_patterns,
+                    );
                     if !count_satisfies(count, expected) {
                         self.push_violation(
                             report,
                             rel.to_path_buf(),
                             "exists_count",
-                            format!(
-                                "Directory '{}' has {} files matching '{}', expected {}",
-                                display_rel(rel),
-                                count,
-                                pattern,
-                                expected
+                            count_diagnostic_message(
+                                rel, "files", count, pattern, expected, &sample,
                             ),
                             severity_for_bundle(files),
                         );
@@ -154,30 +139,27 @@ impl StructureChecker {
         if let Some(directories) = rules.effective.directories.as_ref() {
             if let Some(exists) = directories.exists.as_ref() {
                 for (pattern, expected) in exists {
-                    let count = entries
-                        .iter()
-                        .filter(|entry| {
-                            entry.file_type.is_dir()
-                                && entry.name.to_str().is_some_and(|name| {
-                                    matches_single_compiled_pattern(
-                                        pattern,
-                                        name,
-                                        &self.glob_patterns,
-                                    )
-                                })
-                        })
-                        .count();
+                    let (count, sample) = fast_count_and_sample(
+                        entries,
+                        false,
+                        exists,
+                        directories.allowed_patterns.as_deref(),
+                        pattern,
+                        expected,
+                        &self.glob_patterns,
+                    );
                     if !count_satisfies(count, expected) {
                         self.push_violation(
                             report,
                             rel.to_path_buf(),
                             "exists_count",
-                            format!(
-                                "Directory '{}' has {} directories matching '{}', expected {}",
-                                display_rel(rel),
+                            count_diagnostic_message(
+                                rel,
+                                "directories",
                                 count,
                                 pattern,
-                                expected
+                                expected,
+                                &sample,
                             ),
                             severity_for_directory_bundle(directories),
                         );
@@ -247,6 +229,48 @@ impl StructureChecker {
 
         Ok(children)
     }
+}
+
+fn fast_count_and_sample<'a>(
+    entries: &'a [FastDirEntry],
+    files: bool,
+    exists: &std::collections::HashMap<String, String>,
+    allowed_patterns: Option<&[String]>,
+    pattern: &str,
+    expected: &str,
+    compiled: &std::collections::HashMap<String, glob::Pattern>,
+) -> (usize, Vec<&'a str>) {
+    let matches = |entry: &&FastDirEntry| {
+        let right_kind = if files {
+            entry.file_type.is_file()
+        } else {
+            entry.file_type.is_dir()
+        };
+        right_kind
+            && entry.name.to_str().is_some_and(|name| {
+                matches_count_target(exists, allowed_patterns, pattern, expected, name, compiled)
+            })
+    };
+
+    let total = entries.iter().filter(matches).count();
+    if count_satisfies(total, expected) {
+        return (total, Vec::new());
+    }
+
+    let mut sample = Vec::with_capacity(5);
+    for entry in entries.iter().filter(matches) {
+        let Some(name) = entry.name.to_str() else {
+            continue;
+        };
+        let insert_at = sample.binary_search(&name).unwrap_or_else(|index| index);
+        if insert_at < 5 {
+            sample.insert(insert_at, name);
+            if sample.len() > 5 {
+                sample.pop();
+            }
+        }
+    }
+    (total, sample)
 }
 
 pub(super) fn fast_rules_have_direct_counts(rules: Option<&FastRules>) -> bool {
