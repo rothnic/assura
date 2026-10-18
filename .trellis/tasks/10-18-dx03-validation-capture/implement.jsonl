@@ -1,0 +1,3 @@
+{"file": ".agents/skills/assura-local-build/SKILL.md", "reason": "Existing helper composition and resource ownership contract"}
+{"file": ".agents/skills/assura-goal-execution/references/validation-routing.md", "reason": "Proportional checks and proof reuse"}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "Compose existing helper without duplicated policy"}
