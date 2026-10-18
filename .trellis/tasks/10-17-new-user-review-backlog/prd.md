@@ -39,6 +39,29 @@ deliverable; it does not execute the resulting product backlog.
 Product fixes, release publication, global installation/configuration changes,
 modifying the two original projects, and cleanup of historical worktrees.
 
+## Second pass: efficiency, capability and ecosystem
+
+Nick requested a stronger assessment of efficiency, actual capability and
+ecosystem fit, including a dedicated agent identifying systemic performance
+opportunities in the core filesystem linter. Continue this research task;
+do not start product implementation or a second execution queue.
+
+- Measure bounded cold/repeated workflow latency, report bytes and coverage;
+  distinguish these from dated synthetic cold/warm benchmark claims.
+- Inspect core traversal, rule resolution, repeated reads/scans and incremental
+  invalidation for systemic improvements with discriminating proof plans.
+- Verify ecosystem capability claims against primary current documentation;
+  identify where Assura complements existing tools and when to skip adoption.
+- Reconcile proposed changes with completed CF01-CF04 and existing A07/F02;
+  preserve completed work and true external evidence requirements.
+- Reprioritize the proposed backlog by user value, evidence and dependencies;
+  keep product/runtime changes and Beads import outside scope.
+
+Second-pass acceptance requires an inspected capability/cost matrix, bounded
+measurement receipts, explicit evidence gaps, an independently reviewed
+dependency graph, and no performance improvement claimed from source review
+alone. Existing first-pass evidence remains dated and unchanged.
+
 ## Workflow disposition
 
 Research artifacts were produced in planning. Task activation encountered the

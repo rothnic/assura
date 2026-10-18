@@ -1,5 +1,5 @@
 {
-  "schema": "assura.new-user-review-backlog.v1",
+  "schema": "assura.new-user-review-backlog.v2",
   "updated": "2026-10-17",
   "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
   "release": "v0.4.1",
@@ -38,7 +38,8 @@
         "A06"
       ],
       "owner": "unassigned",
-      "next_action": "A passing explicit low max_lines fixture emits a bounded named advisory and new/worsened/resolved history."
+      "next_action": "A passing explicit low max_lines fixture emits a bounded named advisory and new/worsened/resolved history.",
+      "priority_rationale": "Missing configured findings undermines working feedback, irrespective of command speed."
     },
     {
       "id": "NU02",
@@ -65,7 +66,8 @@
         "A03"
       ],
       "owner": "unassigned",
-      "next_action": "Reproduce existing .agents files and custom skill conventions in a disposable existing-project fixture."
+      "next_action": "Reproduce existing .agents files and custom skill conventions in a disposable existing-project fixture.",
+      "priority_rationale": "Setup can impose a failing policy on existing agent infrastructure."
     },
     {
       "id": "NU03",
@@ -82,7 +84,8 @@
       "acceptance_criteria": [
         "Next/Bun fixture changes in app/components/lib select applicable native lint/test phases.",
         "Generated and dependency outputs stay excluded; src-based projects still route correctly.",
-        "Derive coverage from explicit evidence and preserve user-authored scopes on repeat onboarding."
+        "Derive coverage from explicit evidence and preserve user-authored scopes on repeat onboarding.",
+        "Demonstrate composition under one existing hook runner: native checks execute for real source changes and preserve their failures/order after adding/removing Assura, without duplicate invocations; do not implement a new runner."
       ],
       "depends_on": [],
       "related_existing": [
@@ -90,7 +93,8 @@
         "A03"
       ],
       "owner": "unassigned",
-      "next_action": "Next/Bun fixture changes in app/components/lib select applicable native lint/test phases."
+      "next_action": "Next/Bun fixture changes in app/components/lib select applicable native lint/test phases.",
+      "priority_rationale": "A complementary-tool story requires real source coverage and preserved native checks."
     },
     {
       "id": "NU04",
@@ -116,7 +120,8 @@
         "W02"
       ],
       "owner": "unassigned",
-      "next_action": "Execute published install/init/example/check in a disposable minimal project; clean example exits 0."
+      "next_action": "Execute published install/init/example/check in a disposable minimal project; clean example exits 0.",
+      "priority_rationale": "The documented first-run path must pass before a meaningful negative control."
     },
     {
       "id": "NU05",
@@ -143,7 +148,8 @@
         "R06"
       ],
       "owner": "unassigned",
-      "next_action": "Seed old and new bin directories with old first and both present on PATH."
+      "next_action": "Seed old and new bin directories with old first and both present on PATH.",
+      "priority_rationale": "A successful install must identify the executable users actually run."
     },
     {
       "id": "NU06",
@@ -168,7 +174,8 @@
         "Q07"
       ],
       "owner": "unassigned",
-      "next_action": "All three commands provide the applicable project path and a usable onboard/init next action."
+      "next_action": "All three commands provide the applicable project path and a usable onboard/init next action.",
+      "priority_rationale": "Concrete recovery reduces first-run discovery cost."
     },
     {
       "id": "NU07",
@@ -186,7 +193,8 @@
       "acceptance_criteria": [
         "Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count.",
         "Actual count and configured threshold remain visible alongside custom guidance.",
-        "Allowed patterns are excluded from offender lists and text/JSON/agent outputs agree."
+        "Allowed patterns are excluded from offender lists and text/JSON/agent outputs agree.",
+        "One bounded result retains project-specific guidance while deduplicating repeated generic repair boilerplate; count the additional discovery steps needed to identify the offender."
       ],
       "depends_on": [],
       "related_existing": [
@@ -194,7 +202,8 @@
         "A06"
       ],
       "owner": "unassigned",
-      "next_action": "Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count."
+      "next_action": "Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count.",
+      "priority_rationale": "Repairable core diagnostics reduce attention and extra investigation."
     },
     {
       "id": "NU08",
@@ -219,7 +228,8 @@
         "A03"
       ],
       "owner": "unassigned",
-      "next_action": "Provide consistent supported source-health coverage or explicitly enumerate uncovered types with a supported specialization path."
+      "next_action": "Provide consistent supported source-health coverage or explicitly enumerate uncovered types with a supported specialization path.",
+      "priority_rationale": "Supported starter coverage needs explicit boundaries."
     },
     {
       "id": "NU09",
@@ -244,7 +254,8 @@
         "R07"
       ],
       "owner": "unassigned",
-      "next_action": "Record every current violation with fix or evidence-backed scoped exception, owner and review date."
+      "next_action": "Record every current violation with fix or evidence-backed scoped exception, owner and review date.",
+      "priority_rationale": "Current dogfood debt needs intentional disposition, without mechanical refactors."
     },
     {
       "id": "NU10",
@@ -271,7 +282,8 @@
         "P01"
       ],
       "owner": "unassigned",
-      "next_action": "Select maintained documentation scopes and configure deterministic local file/anchor checks."
+      "next_action": "Select maintained documentation scopes and configure deterministic local file/anchor checks.",
+      "priority_rationale": "Scoped link policy proves intended local documentation coverage."
     },
     {
       "id": "NU11",
@@ -289,7 +301,8 @@
       "acceptance_criteria": [
         "Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction.",
         "Preserve the accepted fixture/threshold contract; do not retry unchanged until it passes or label noise without evidence.",
-        "Record the smallest supported resolution and exact-head hosted gate outcome, including unfavorable results."
+        "Record the smallest supported resolution and exact-head hosted gate outcome, including unfavorable results.",
+        "Reconcile dated July matrix, September30 retained benchmark and current hosted gate in public claim provenance: cold/warm, startup, scope, source/profile/platform and synthetic-fixture labels stay distinct."
       ],
       "depends_on": [],
       "related_existing": [
@@ -297,7 +310,8 @@
         "R03"
       ],
       "owner": "unassigned",
-      "next_action": "Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction."
+      "next_action": "Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction.",
+      "priority_rationale": "The current required performance gate remains failed; historical faster rows do not clear it."
     },
     {
       "id": "NU12",
@@ -321,7 +335,75 @@
       "depends_on": [],
       "related_existing": [],
       "owner": "unassigned",
-      "next_action": "Classify each retained path/ref with live owner, source identity, evidence and next action."
+      "next_action": "Classify each retained path/ref with live owner, source identity, evidence and next action.",
+      "priority_rationale": "Ownership and native holds need resolution independently of product value."
+    },
+    {
+      "id": "NU13",
+      "title": "Make targeted captured-relationship checks correct and explicit",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "runtime-and-source-verified-omission; scoped contract requires clarification",
+      "execution_state": "proposed",
+      "area": "core-correctness",
+      "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
+      "evidence": [
+        "core-capability-probe.json",
+        "raw capability-pass/transcript.json: missing-test-full and missing-test-file-target",
+        "systemic-filesystem-review.md: P4",
+        "src/cli/check/custom_constraints.rs:330-334"
+      ],
+      "acceptance_criteria": [
+        "Define the supported ordinary file-target relationship contract before changing behavior; distinguish it from explicit LS-Lint target semantics and whole-project coverage.",
+        "A selected captured producer with a missing counterpart/provider must not silently disappear: enforce its required relation or explicitly report that check as omitted with a full-project follow-up.",
+        "Prove full/file/directory, provided/missing counterpart, producer deletion, configuration changes, cache and prepared fallback cases with exact findings and exits.",
+        "Retain presence-versus-behavior semantics: an existing test filename does not prove a test executed or is adequate."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "A03",
+        "R01",
+        "A06"
+      ],
+      "owner": "unassigned",
+      "next_action": "Freeze a failing file-target/full-target counterpart fixture and resolve its coverage contract.",
+      "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks."
+    },
+    {
+      "id": "SP01",
+      "title": "Attribute core filesystem work and select one systemic optimization",
+      "priority": 1,
+      "issue_type": "task",
+      "review_state": "source-proven repeated work; latency gain unmeasured",
+      "execution_state": "proposed-research-spike",
+      "area": "core-performance",
+      "problem": "Rich full-engine checks eagerly fetch metadata without a size limit, independently walk overlapping scopes, and scan all scopes per uncached directory. Existing static fast-path indexes and prepared reuse already exist. No current wall-time fraction or causal speedup is established.",
+      "evidence": [
+        "systemic-filesystem-review.md",
+        "systemic-performance-hypotheses.json",
+        "src/cli/check/file_limits.rs:19-25",
+        "src/cli/check/test_relationship.rs:18-19",
+        "src/cli/check/rule_plan.rs:58-82"
+      ],
+      "acceptance_criteria": [
+        "Profile ordinary public check with a source/binary/policy-bound rich repository and controlled wide-tree case; count stat-family calls, directory enumerations, reads/bytes, allocations or peak RSS, CPU and wall time by consumer.",
+        "First discriminate no-size-policy eager metadata; then attribute identical-scope test/lifecycle enumeration. Preserve a naming-only negative control and full result/exit equivalence.",
+        "Produce one smallest supported keep/defer decision; do not implement a shared inventory, index rewrite, daemon, new entrypoint or parallel traversal merely because source work is repeated.",
+        "For any later performance candidate, use uninstrumented balanced same-host before/after public-command samples, exact quiet comparison, existing keep/stop criteria, accepted-fixture spillover and unchanged no-slower/native/warm gates.",
+        "Keep literal/glob scope indexing conditional on measured dominance. Incremental eligibility expansion additionally requires NU13 coverage resolution and deletion/rename/provider/config invalidation proof; source review alone proves no gain."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R02",
+        "R03",
+        "R01",
+        "CF01",
+        "CF03",
+        "CF04"
+      ],
+      "owner": "unassigned",
+      "next_action": "Run one bounded full-engine filesystem-I/O attribution spike on an idle admitted host.",
+      "priority_rationale": "Explicit user focus on systemic filesystem performance; one investigation, not four speculative implementation cards."
     }
   ],
   "carried_unfinished": [
@@ -339,7 +421,10 @@
       "owner": "Codex goal: A07 acceptance coordinator; all prior candidates, canaries, packets and protocol records are historical or candidate-base no-credit; refresh current source/ledger, build a fresh candidate and rebind before separately authorized screening",
       "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
       "reviewed_state": "needs-revalidation",
-      "next_action": "Existing active, no-credit evaluator outcome. These unblinded field trials do not satisfy independent/blinded/holdout acceptance. Refresh source identity; retain protocol and evaluate new failure cases separately."
+      "next_action": "Existing active, no-credit evaluator outcome. These unblinded field trials do not satisfy independent/blinded/holdout acceptance. Refresh source identity; retain protocol and evaluate new failure cases separately.",
+      "proposed_acceptance_additions": [
+        "For public nonsealed follow-up examples, preserve checked scope and collect setup/repair cost alongside correctness. No private protocol, screening, holdout, allocation or credit changes are authorized."
+      ]
     },
     {
       "id": "W02",
@@ -355,7 +440,12 @@
       "owner": "Codex goal/w02-release-aware-installation; local packet complete at7cebab8 after independent review,158browser and covering VPS docs/released checks; unchanged Rust/xtask passed1303test PR tier at3cebe325; source/public installation proof audited; hosted integration remains pending; latest evidence preserved at 790b0a9:research/evidence/W02.md in the same task, not imported behavior",
       "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
       "reviewed_state": "needs-revalidation",
-      "next_action": "Refresh release story, integration next-release labels at website/src/content/docs/reference/agent-feedback.md:257-270, and dated public-roadmap copy against the release manifest. Reassess the old Sep 8 deployment hold; do not invent current deployment authority."
+      "next_action": "Refresh release story, integration next-release labels at website/src/content/docs/reference/agent-feedback.md:257-270, and dated public-roadmap copy against the release manifest. Reassess the old Sep 8 deployment hold; do not invent current deployment authority.",
+      "proposed_acceptance_additions": [
+        "Resolve release-surfaces.json current_published_release v0.3.0 versus live/latest/support v0.4.1, plus next-release labels, against actual source/release evidence.",
+        "Document fit/non-fit and composition with LS-Lint, source linters, dependency tools and existing hook runners; avoid uniqueness/speed claims without equivalent evidence.",
+        "Label generated naming fixtures, resident-session startup exclusions and absolute workload times; do not turn synthetic speedups into user productivity or retention claims."
+      ]
     },
     {
       "id": "R06",
@@ -438,7 +528,12 @@
       "owner": null,
       "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
       "reviewed_state": "needs-revalidation",
-      "next_action": "External independent pilot and retention; internal project trials do not satisfy this acceptance. Preserve R06/A07/F01 dependencies."
+      "next_action": "External independent pilot and retention; internal project trials do not satisfy this acceptance. Preserve R06/A07/F01 dependencies.",
+      "proposed_acceptance_additions": [
+        "Use the maintainer existing-tool setup as the explicit comparison; record costly conventions already covered and at least one material unmet convention or cheaper repair outcome.",
+        "Record time to first correctly configured negative control, policy authoring/maintenance, manual decisions, repair commands, false positives, total workflow latency/bytes and model-token cost only when observable.",
+        "Include participant/dropout and continued-use evidence under the existing pilot target; internal unblinded trials do not satisfy it. No invitations authorized here."
+      ]
     },
     {
       "id": "F03",
@@ -490,296 +585,28 @@
     }
   ],
   "historical_terminal": [
-    {
-      "id": "B00",
-      "title": "Current-source baseline",
-      "state": "done",
-      "depends_on": [],
-      "evidence": "evidence/B00.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "P01",
-      "title": "Scope and roadmap contract",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/P01.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R01",
-      "title": "Watch scope correctness",
-      "state": "not_needed",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/R01.md",
-      "blocker": null,
-      "owner": "Codex goal/r01-diagnostic-association; owner-approved H01 archive decision in PR #185",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R02",
-      "title": "Independent performance evidence",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/R02.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R03",
-      "title": "Many-scope performance repair",
-      "state": "done",
-      "depends_on": [
-        "R02"
-      ],
-      "evidence": "evidence/R03.md",
-      "blocker": null,
-      "owner": "Codex goal/r03-fast-rules-clone; reviewed PR #197 merged after current-master hosted gates",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R04",
-      "title": "Verified Rust minimum",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/R04.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R05",
-      "title": "Installer work completion",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/R05.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "R07",
-      "title": "Self-check advisory closure",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/R07.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q01",
-      "title": "Rust quality skill",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/Q01.md",
-      "blocker": null,
-      "owner": "codex",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q02",
-      "title": "Contribution and review contract",
-      "state": "done",
-      "depends_on": [
-        "P01",
-        "Q01",
-        "R04"
-      ],
-      "evidence": "evidence/Q02.md",
-      "blocker": null,
-      "owner": "Codex goal/a05-current-audit; current-master integration merged in PR #158",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A01",
-      "title": "Independent init evaluator",
-      "state": "done",
-      "depends_on": [
-        "P01"
-      ],
-      "evidence": "evidence/A01.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A02",
-      "title": "Reusable local patterns",
-      "state": "done",
-      "depends_on": [
-        "A01"
-      ],
-      "evidence": "evidence/A02.md",
-      "blocker": null,
-      "owner": "Codex goal/a02-init-discovery-correction; follow-up merged in PR #231",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A03",
-      "title": "Agent-led specialization",
-      "state": "done",
-      "depends_on": [
-        "A02"
-      ],
-      "evidence": "evidence/A03.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A04",
-      "title": "Verified hook lifecycle",
-      "state": "done",
-      "depends_on": [
-        "A03"
-      ],
-      "evidence": "evidence/A04.md",
-      "blocker": null,
-      "owner": "Codex goal/a04-pre-commit-adapter; reviewed PR #220 merged after current-master hosted gates",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A05",
-      "title": "Native quality gates",
-      "state": "done",
-      "depends_on": [
-        "A03"
-      ],
-      "evidence": "evidence/A05.md",
-      "blocker": null,
-      "owner": "Codex goal/a05-current-audit; A05 acceptance closed through independently reviewed PRs #200, #202, #204, and #206; preserved historical work remains untouched",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "A06",
-      "title": "Bounded efficient feedback",
-      "state": "done",
-      "depends_on": [
-        "R01",
-        "A04"
-      ],
-      "evidence": "evidence/A06.md",
-      "blocker": null,
-      "owner": "Codex goal/a06-observation-contract; reviewed PR #222 merged after current-master hosted gates",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q03",
-      "title": "Config authority consolidation",
-      "state": "done",
-      "depends_on": [
-        "Q01",
-        "P01"
-      ],
-      "evidence": "evidence/Q03.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q04",
-      "title": "Cohesive policy modules",
-      "state": "done",
-      "depends_on": [
-        "Q03"
-      ],
-      "evidence": "evidence/Q04.md",
-      "blocker": null,
-      "owner": "Codex goal/q04-policy-naming; independently reviewed and merged via PR #164 (9f1b8e3)",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q05",
-      "title": "Maturity score containment",
-      "state": "done",
-      "depends_on": [
-        "P01",
-        "Q01"
-      ],
-      "evidence": "evidence/Q05.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q06",
-      "title": "Maintenance command simplification",
-      "state": "done",
-      "depends_on": [
-        "Q01",
-        "R02"
-      ],
-      "evidence": "evidence/Q06.md",
-      "blocker": null,
-      "owner": "Codex goal/q06-release-readiness; independently reviewed and merged via PR #166 (50e131e)",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "Q07",
-      "title": "Error and fallback contracts",
-      "state": "done",
-      "depends_on": [
-        "Q01"
-      ],
-      "evidence": "evidence/Q07.md",
-      "blocker": null,
-      "owner": "Codex goal/q07-error-contract",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    },
-    {
-      "id": "W01",
-      "title": "Working marketing CTAs",
-      "state": "done",
-      "depends_on": [
-        "B00"
-      ],
-      "evidence": "evidence/W01.md",
-      "blocker": null,
-      "owner": "Codex goal: Assura Maturity Execution Train",
-      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
-      "reviewed_state": "historical-terminal-not-recertified"
-    }
+    {"id": "B00", "title": "Current-source baseline", "state": "done", "depends_on": [], "evidence": "evidence/B00.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "P01", "title": "Scope and roadmap contract", "state": "done", "depends_on": ["B00"], "evidence": "evidence/P01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R01", "title": "Watch scope correctness", "state": "not_needed", "depends_on": ["B00"], "evidence": "evidence/R01.md", "blocker": null, "owner": "Codex goal/r01-diagnostic-association; owner-approved H01 archive decision in PR #185", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R02", "title": "Independent performance evidence", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R02.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R03", "title": "Many-scope performance repair", "state": "done", "depends_on": ["R02"], "evidence": "evidence/R03.md", "blocker": null, "owner": "Codex goal/r03-fast-rules-clone; reviewed PR #197 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R04", "title": "Verified Rust minimum", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R04.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R05", "title": "Installer work completion", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R05.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R07", "title": "Self-check advisory closure", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R07.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q01", "title": "Rust quality skill", "state": "done", "depends_on": ["B00"], "evidence": "evidence/Q01.md", "blocker": null, "owner": "codex", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q02", "title": "Contribution and review contract", "state": "done", "depends_on": ["P01", "Q01", "R04"], "evidence": "evidence/Q02.md", "blocker": null, "owner": "Codex goal/a05-current-audit; current-master integration merged in PR #158", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A01", "title": "Independent init evaluator", "state": "done", "depends_on": ["P01"], "evidence": "evidence/A01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A02", "title": "Reusable local patterns", "state": "done", "depends_on": ["A01"], "evidence": "evidence/A02.md", "blocker": null, "owner": "Codex goal/a02-init-discovery-correction; follow-up merged in PR #231", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A03", "title": "Agent-led specialization", "state": "done", "depends_on": ["A02"], "evidence": "evidence/A03.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A04", "title": "Verified hook lifecycle", "state": "done", "depends_on": ["A03"], "evidence": "evidence/A04.md", "blocker": null, "owner": "Codex goal/a04-pre-commit-adapter; reviewed PR #220 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A05", "title": "Native quality gates", "state": "done", "depends_on": ["A03"], "evidence": "evidence/A05.md", "blocker": null, "owner": "Codex goal/a05-current-audit; A05 acceptance closed through independently reviewed PRs #200, #202, #204, and #206; preserved historical work remains untouched", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A06", "title": "Bounded efficient feedback", "state": "done", "depends_on": ["R01", "A04"], "evidence": "evidence/A06.md", "blocker": null, "owner": "Codex goal/a06-observation-contract; reviewed PR #222 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q03", "title": "Config authority consolidation", "state": "done", "depends_on": ["Q01", "P01"], "evidence": "evidence/Q03.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q04", "title": "Cohesive policy modules", "state": "done", "depends_on": ["Q03"], "evidence": "evidence/Q04.md", "blocker": null, "owner": "Codex goal/q04-policy-naming; independently reviewed and merged via PR #164 (9f1b8e3)", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q05", "title": "Maturity score containment", "state": "done", "depends_on": ["P01", "Q01"], "evidence": "evidence/Q05.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q06", "title": "Maintenance command simplification", "state": "done", "depends_on": ["Q01", "R02"], "evidence": "evidence/Q06.md", "blocker": null, "owner": "Codex goal/q06-release-readiness; independently reviewed and merged via PR #166 (50e131e)", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q07", "title": "Error and fallback contracts", "state": "done", "depends_on": ["Q01"], "evidence": "evidence/Q07.md", "blocker": null, "owner": "Codex goal/q07-error-contract", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "W01", "title": "Working marketing CTAs", "state": "done", "depends_on": ["B00"], "evidence": "evidence/W01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"}
   ],
   "additional_dependencies": [
     {
@@ -804,5 +631,104 @@
       "record": "09-14-resolve-versioned-build-artifact-generation",
       "disposition": "completed #337 is ancestor of master; old release statements are historical"
     }
-  ]
+  ],
+  "reviewed_checkout_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "review_passes": [
+    {
+      "pass": 1,
+      "new_items": 12,
+      "carried_unfinished": 10,
+      "report": "docs/analysis/2026-10-17-new-user-review.md"
+    },
+    {
+      "pass": 2,
+      "focus": "core filesystem capability/performance, whole-workflow efficiency and ecosystem fit",
+      "new_items_total": 14,
+      "report": ".trellis/tasks/10-17-new-user-review-backlog/research/capability-efficiency-review.md",
+      "product_changes": false
+    }
+  ],
+  "recommended_lanes": [
+    {
+      "lane": "core-correctness",
+      "start": [
+        "NU13",
+        "NU01",
+        "NU07"
+      ],
+      "note": "Independently implementable; NU13 precedes any future incremental-coverage expansion."
+    },
+    {
+      "lane": "core-performance",
+      "start": [
+        "SP01"
+      ],
+      "note": "One serial admitted profiling lane. NU11 guardrail diagnosis is separate; rich-engine findings do not explain the naming fast-path failure."
+    },
+    {
+      "lane": "adoption-composition",
+      "start": [
+        "NU02",
+        "NU03",
+        "NU04",
+        "NU05"
+      ],
+      "note": "These fixes need no competitor research, new runner, daemon or content model."
+    },
+    {
+      "lane": "external-value",
+      "start": [],
+      "route": [
+        "A07",
+        "R06",
+        "F01",
+        "F02"
+      ],
+      "note": "Extend existing outcomes and real prerequisites; no outreach, evaluator change or retention credit from this review."
+    }
+  ],
+  "completed_related_work": [
+    {
+      "id": "CF01",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "75992ad4cfcba4efb1cfc8a1d3333208991bba88"
+    },
+    {
+      "id": "CF02",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "9383acc2fd9a47d63553fd32768aef7428c7b34c"
+    },
+    {
+      "id": "CF03",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "6c70e23640229cb784bded5f3406e32a90fa2f25"
+    },
+    {
+      "id": "CF04",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "7069bd1161913c0ed717aff94b1f5216935a09f0"
+    }
+  ],
+  "conditional_opportunities": {
+    "source": "systemic-performance-hypotheses.json",
+    "not_open_implementation_cards": [
+      "P1 demand-driven metadata",
+      "P2 equal-scope enumeration reuse",
+      "P3 literal-prefix/glob candidate indexing",
+      "P4 dependency-class incremental eligibility"
+    ],
+    "future_incremental_prerequisites": [
+      "NU13",
+      "SP01"
+    ],
+    "deferred": [
+      "parser replacement",
+      "additional public check binaries",
+      "unconditional parallel traversal",
+      "persistent filesystem database",
+      "new daemon adoption",
+      "generic runner or ecosystem plugin framework",
+      "cold strict2x chasing without profiler evidence"
+    ]
+  }
 }

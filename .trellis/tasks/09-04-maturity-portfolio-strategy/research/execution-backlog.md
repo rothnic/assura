@@ -1,8 +1,9 @@
 # Assura Maturity Execution Backlog
 
-**2026-10-17 review:** Start with the [current-source new-user assessment](../../../../docs/analysis/2026-10-17-new-user-review.md)
+**2026-10-17 second pass:** Start with the [capability, efficiency and ecosystem review](../../10-17-new-user-review-backlog/research/capability-efficiency-review.md)
 and its [proposed dependency backlog](../../10-17-new-user-review-backlog/research/backlog.json).
-It adds 12 reproduced findings and reconciles the 10 unfinished outcomes here.
+It retains the first pass, adds targeted-check coverage and one core-filesystem
+profiling spike (14 new proposals total), and reconciles the 10 unfinished outcomes here.
 Recorded states below remain historical until their exact acceptance is
 revalidated; the review does not authorize execution or recreate terminal work.
 

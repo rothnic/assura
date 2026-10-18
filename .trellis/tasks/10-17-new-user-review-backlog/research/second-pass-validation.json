@@ -1,0 +1,52 @@
+{
+  "result": "pass",
+  "scope": "Trellis research and planning artifacts; no product sources changed",
+  "integration_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+  "input_review_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "checks": [
+    {
+      "command": "cargo xtask evidence",
+      "exit": 0
+    },
+    {
+      "command": "published v0.4.1 assura check --format json . on complete clean source export plus owned changes",
+      "exit": 0,
+      "files_checked": 1931,
+      "pre_existing_nonblocking": 13,
+      "new_artifact_findings": 0
+    },
+    {
+      "command": "JSON parse, graph integrity/cycles, acceptance-description equality, report/index local links",
+      "result": "pass"
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "measurements": {
+    "fresh_process_calls": 80,
+    "samples_per_operation_project": 5,
+    "same_candidate_verified": true,
+    "comparative_benchmark": false,
+    "cold_disk": false,
+    "p95_claim": false
+  },
+  "capability_probe": {
+    "calls": 8,
+    "initial_hypothesis_assertion": "failed; expected file-target relationship failure but observed success; retained as coverage observation",
+    "cache_full_negative_controls": "passed"
+  },
+  "reuse": {
+    "first_pass_behavior_checks": "dated; not rebranded as new host/pilot acceptance",
+    "website_docs_gate": "not rerun; website and docs/ paths unchanged in this pass"
+  },
+  "not_run": [
+    "product Rust test/clippy suites",
+    "architectural speedup profiling",
+    "competitor execution",
+    "installed host event delivery",
+    "native Beads dry-run/import",
+    "external adopter retention"
+  ]
+}

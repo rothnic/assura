@@ -2,7 +2,7 @@
   "id": "new-user-review-backlog",
   "name": "new-user-review-backlog",
   "title": "New-user review and dependency backlog",
-  "description": "Current-source new-user review, two isolated existing-project trials, Assura dogfood, and a proposed Beads dependency graph; product execution excluded.",
+  "description": "Current-source new-user review, two project trials, Assura dogfood, and second-pass core-filesystem capability/performance and ecosystem assessment with a proposed Beads graph; product execution excluded.",
   "status": "planning",
   "dev_type": null,
   "scope": null,
@@ -21,7 +21,7 @@
   "children": [],
   "parent": null,
   "relatedFiles": [],
-  "notes": "Research deliverables independently accepted. Task start held by legacy P05 receipt; native artifact registered without changing owner. Current-source check, evidence and docs gates pass. No Beads import or product/release acceptance claimed. Native owner acceptance remains open for Nick review; independent agent review is not relabeled as owner acceptance. Next: inspect delivered report/backlog, select authoritative Beads store and reconcile duplicate/status/owner state before applying.",
+  "notes": "Research deliverables independently accepted. Task start held by legacy P05 receipt; native artifact registered without changing owner. Current-source check, evidence and docs gates pass. No Beads import or product/release acceptance claimed. Native owner acceptance remains open for Nick review; independent agent review is not relabeled as owner acceptance. Next: inspect delivered report/backlog, select authoritative Beads store and reconcile duplicate/status/owner state before applying. Second pass requested: core filesystem capability/performance and ecosystem fit. Added NU13 observed targeted relationship omission and SP01 one profiling spike; no product fixes, competitor benchmarks, evaluator/participant changes or Beads writes. Prior first-pass gates/review stay dated; second-pass structure/evidence/static checks pass; independent second-pass review pending.",
   "meta": {
     "delivery": {
       "schema_version": 1,
