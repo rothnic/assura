@@ -200,3 +200,39 @@ platform fonts; neither difference is established as the cause. Changed-source
 development/production browser proof and scoped independent review remain
 pending at this source commit. Thresholds, content, fonts and retry policy
 remain unchanged.
+
+## Hosted mobile height correction, corrected local validation
+
+At clean source commit `9d4a6675da162682a83f37a495b7ba051172c6b3`, one
+canonical `cargo xtask website-demo-data` generation passed. Only the five
+intended CLI demo JSON `source_revision` fields advanced from
+`12bdbb84e1d88315d9d582f29650953baa4d792c` to `9d4a6675`; all five JSON
+payloads are equal after removing that field, and protected performance/history
+outputs match byte-for-byte. The affected generator group passed 13/13 with zero
+ignored tests. `cargo xtask website-demo-data --check --released` and
+`cargo xtask docs` passed; the latter built 48 pages. Node 24.19.0, pnpm 10.25.0,
+Playwright 1.61.1 and headless shell 149.0.7827.55 were recorded.
+
+The production `website/dist` manifest was frozen at 136 files before browser
+validation. The unchanged 152-case Playwright suite passed with two workers,
+zero retries and `maxFailures=0`: 152 expected, zero skipped, unexpected or
+flaky; 144 screenshots were hashed. The preview served the byte-identical
+frozen `index.html`; every production output hash, tracked source hash, lock
+hash and protected performance/history hash remained unchanged. Port 61601 and
+the owned process group were released. Full generator and browser bindings,
+raw logs, manifests and process receipts are external under
+`/Users/nroth/workspace/.assura-review-20261017/w02-current/hosted-height-corrected/`.
+This local production result does not establish a new hosted Ubuntu CI pass.
+
+A targeted run through the checked-in Astro development-server command reports
+3/3 aligned cases passing at 320, 360 and 390px, with two workers and zero
+retries. Root requested three read-only setup triages and method review before
+crediting this targeted result. The first attempt is retained as a zero-test
+configuration failure caused by relative `testDir` and server `cwd` resolving
+under the external evidence directory; the corrected v2 attempt completed
+before the hold arrived. Do not count either result toward hosted acceptance
+until root records that disposition. Separate external 320px light/dark
+diagnostic measurements of child bounds, visible text, scroll width and
+screenshots remain pending, as does selected screenshot inspection. The
+original hosted 244.109375px failure and all its raw evidence remain immutable;
+no new Ubuntu hosted run is claimed.
