@@ -329,7 +329,7 @@ impl StructureChecker {
         let mut entries = Vec::new();
         for entry in walker {
             let entry = entry?;
-            if entry.path() == checked_path {
+            if entry.path() == self.project_root {
                 continue;
             }
             let rel = self.relative_path(entry.path());

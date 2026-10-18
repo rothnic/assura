@@ -563,6 +563,16 @@ If `src/components/Button.tsx` exists, Assura requires
 `src/components/Button.test.tsx`. If no component exists, no test file is
 required.
 
+Ordinary `assura check <path>` checks captured relationships for the selected
+producer itself and producers below it, respecting exclusions. Providers can
+reside elsewhere in the project. For example,
+`assura check src/components/Button.tsx` reports its missing test counterpart.
+Selecting only `Button.test.tsx` does not check incoming producers, and a
+passing scoped check does not prove whole-project success. Counterpart
+existence proves presence, not test execution or adequacy. Explicit
+`--ls-lint-target-semantics` keeps its compatibility behavior; prepared
+changed-path checks retain their full-project fallback for relationships.
+
 Use `needs:` and `provides:` when a relationship can be satisfied by more than
 one artifact:
 
