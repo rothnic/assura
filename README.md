@@ -6,10 +6,14 @@
 [![Latest Release](https://img.shields.io/github/v/release/rothnic/assura?include_prereleases)](https://github.com/rothnic/assura/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue)](#license)
 
-Assura catches project drift while the fix is still small. It gives AI coding
-agents one fast local signal layer for repository structure, naming, file and
-section limits, Markdown, references, branch/worktree change pressure, and
-project-specific policy.
+Assura makes repository conventions executable. It gives coding agents precise
+feedback on project structure, naming and guidance, with the same local policy
+available in CI.
+
+Keep LS-Lint when naming and cardinality rules cover your need. Add Assura for
+an additional project convention or useful repair workflow, alongside native
+linters, type checks, tests and your existing hook runner. A passing repository
+policy does not establish software correctness or test quality.
 
 **Onboard once. Review while working. Explain when needed. Check before
 merge.** Review is the radar; Check is the gate.

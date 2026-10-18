@@ -92,5 +92,6 @@
     "project_root": ".",
     "text": null
   },
-  "schema": "assura.website-intelligence-demo.v1"
+  "schema": "assura.website-intelligence-demo.v1",
+  "source_revision": "1f8085ceb251b11098e3a9ca6ed3c731e9692b24"
 }

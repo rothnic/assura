@@ -26,7 +26,46 @@
     }
   ],
   "presentation": "fixture_explanation",
+  "repair": {
+    "after": {
+      "command": "assura check --format json .",
+      "exit_code": 0,
+      "report": {
+        "dirs_checked": 4,
+        "files_checked": 6,
+        "success": true,
+        "violations": []
+      }
+    },
+    "before": {
+      "command": "assura check --format json .",
+      "exit_code": 1,
+      "report": {
+        "dirs_checked": 4,
+        "files_checked": 6,
+        "success": false,
+        "violations": [
+          {
+            "blocking": true,
+            "corrective_context": "Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
+            "message": "File 'UserMenu.ts' does not match naming convention 'kebab-case'",
+            "path": "packages/core/src/UserMenu.ts",
+            "rule": "file_naming",
+            "severity": "medium",
+            "severity_label": "Medium"
+          }
+        ]
+      }
+    },
+    "config_preserved": true,
+    "file_contents_preserved": true,
+    "from": "packages/core/src/UserMenu.ts",
+    "operation": "file_rename",
+    "to": "packages/core/src/user-menu.ts",
+    "unrepaired_exit_code": 1
+  },
   "schema": "assura.website-policy-demo.v1",
+  "source_revision": "1f8085ceb251b11098e3a9ca6ed3c731e9692b24",
   "summary": {
     "dirs_checked": 4,
     "files_checked": 8,

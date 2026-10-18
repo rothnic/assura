@@ -3,7 +3,13 @@ import AxeBuilder from '@axe-core/playwright';
 import { readFileSync } from 'node:fs';
 import {
   agentSetupPrompt,
+  checkCommand,
   installCommand,
+  onboardingCommand,
+  reviewCommand,
+  releaseStatus,
+  releaseScope,
+  verificationCommand,
 } from '../data/marketing';
 
 const assuraPolicyFixture = readFileSync(
@@ -28,7 +34,7 @@ type DemoLine = {
 
 const reviewDemo = JSON.parse(
   readFileSync(new URL('../data/review-demo.json', import.meta.url), 'utf8'),
-) as { command: string; hero_lines: DemoLine[]; display_lines: DemoLine[]; artifact_lines: DemoLine[] };
+) as { source_revision: string; command: string; hero_lines: DemoLine[]; display_lines: DemoLine[]; artifact_lines: DemoLine[] };
 
 const checkDemo = JSON.parse(
   readFileSync(new URL('../data/check-demo.json', import.meta.url), 'utf8'),
@@ -51,7 +57,63 @@ const policyDemo = JSON.parse(
 ) as {
   config: string;
   tree: Array<{ path: string; full_path?: string; status: string; detail: string }>;
+  repair: { before: { report: object }; after: { report: object } };
 };
+
+const performanceSummary = JSON.parse(
+  readFileSync(new URL('../data/performance-summary.json', import.meta.url), 'utf8'),
+) as { assura_version: string; timestamp: string; cold: { aggregate_speedup_ratio: number }; warm: { aggregate_speedup_ratio: number } };
+
+const historicalPerformanceContext = `Historical report: recorded version ${performanceSummary.assura_version} · ${performanceSummary.timestamp.slice(0, 10)} UTC.`;
+
+test('authored About principles do not inherit raw CLI source provenance', async ({ page }) => {
+  const verify = expect.configure({ timeout: 1_000 });
+  await page.goto('/about/');
+  const artifact = page.locator('.focused-evidence-example');
+  await verify.soft(artifact).not.toContainText('raw generated CLI evidence');
+  await verify.soft(artifact).not.toContainText('Source candidate');
+  await expect(artifact).toContainText('Authored summary');
+  await page.getByRole('link', { name: /with your agent/ }).first().click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toContainText(releaseStatus);
+  await expect(dialog).toContainText(releaseScope);
+});
+
+for (const entry of ['direct', 'navigation'] as const) {
+  test(`LS-Lint comparison qualifies historical numbers through ${entry} entry`, async ({ page }) => {
+    const verify = expect.configure({ timeout: 1_000 });
+    if (entry === 'direct') {
+      await page.goto('/compare/ls-lint/');
+    } else {
+      await page.goto('/');
+      await page.getByRole('link', { name: 'Compare', exact: true }).first().click();
+      await expect(page).toHaveURL(/\/compare\/ls-lint\/$/);
+    }
+    const main = page.locator('main');
+    await verify.soft(main.getByText('Performance evidence under review', { exact: true })).toBeVisible();
+    await verify.soft(main).toContainText(historicalPerformanceContext);
+    await verify.soft(main).not.toContainText(/current performance evidence|checked release evidence|a faster path/i);
+    const artifact = page.locator('.focused-evidence-example');
+    await verify.soft(artifact).not.toContainText('raw generated CLI evidence');
+    await verify.soft(artifact).not.toContainText('Source candidate');
+    await verify.soft(artifact).toContainText('Historical performance summary');
+    await expect(artifact).toContainText('cold aggregate');
+    await expect(artifact).toContainText(`${performanceSummary.cold.aggregate_speedup_ratio.toFixed(2)}x`);
+    await expect(artifact).toContainText(`${performanceSummary.warm.aggregate_speedup_ratio.toFixed(2)}x`);
+  });
+}
+
+test('generated review artifact keeps raw CLI provenance and qualified setup', async ({ page }) => {
+  await page.goto('/project-review/');
+  const artifact = page.locator('.focused-evidence-example');
+  await expect(artifact).toContainText('raw generated CLI evidence');
+  await expect(artifact).toContainText('Recorded source example');
+  await expect(artifact).toContainText(reviewDemo.source_revision);
+  await expect(artifact).not.toContainText(releaseStatus);
+  for (const line of reviewDemo.artifact_lines.filter((line) => line.text.trim())) {
+    await expect(page.locator('.focused-artifact')).toContainText(line.text);
+  }
+});
 
 const performanceReport = JSON.parse(
   readFileSync(new URL('../../public/data/performance/current.json', import.meta.url), 'utf8'),
@@ -74,12 +136,141 @@ const performanceReport = JSON.parse(
 const formatMeasuredMs = (value: number) => `${value.toFixed(value >= 10 ? 1 : 2)} ms`;
 const formatCount = (value: number) => value.toLocaleString('en-US');
 
-const widths = [360, 390, 430, 768, 1024, 1440];
+const widths = [320, 360, 390, 430, 768, 1024, 1440];
 const themes = ['light', 'dark'] as const;
+
+for (const [fragment, context] of [
+  ['map-title', 'Native linters and tests remain necessary'],
+  ['performance-title', 'Performance evidence under review'],
+] as const) {
+  test(`legacy homepage fragment ${fragment} navigates to its current context`, async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto(`/#${fragment}`);
+    await expect(page).toHaveURL(new RegExp(`/#${fragment}$`));
+    const target = page.locator(`#${fragment}`);
+    await expect(target).toContainText(context, { timeout: 1_000 });
+    await expect.poll(async () => {
+      const bounds = await target.boundingBox();
+      const header = await page.locator('.site-header').boundingBox();
+      return bounds && header ? bounds.y - header.y - header.height : -Infinity;
+    }, { message: 'Fragment content must start below the sticky header' }).toBeGreaterThanOrEqual(0);
+    await expect.poll(async () => {
+      const bounds = await target.boundingBox();
+      return bounds ? bounds.y + Math.min(bounds.height, 40) : Infinity;
+    }, { message: 'Fragment content must enter the viewport' }).toBeLessThanOrEqual(page.viewportSize()!.height);
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0);
+  });
+}
+
+for (const colorScheme of themes) {
+  for (const width of [320, 768]) {
+    test(`${colorScheme} source input qualification precedes the first terminal command at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const qualification = page.locator('.hero-visual > .release-route-status');
+      const command = page.locator('.hero-visual > .review-terminal .terminal-bar strong');
+      await expect(qualification).toContainText('Recorded source example');
+      await expect(qualification).toContainText(reviewDemo.source_revision);
+      await expect(qualification).toContainText('published release output may differ');
+      await expect(command).toContainText('assura review');
+      const qualificationBox = await qualification.boundingBox();
+      const commandBox = await command.boundingBox();
+      expect(qualificationBox).not.toBeNull();
+      expect(commandBox).not.toBeNull();
+      expect(qualificationBox!.y + qualificationBox!.height).toBeLessThanOrEqual(commandBox!.y);
+      const containment = await qualification.evaluate((element) => {
+        const parent = element.getBoundingClientRect();
+        return {
+          left: parent.left,
+          right: parent.right,
+          clientWidth: element.clientWidth,
+          scrollWidth: element.scrollWidth,
+          children: Array.from(element.children).map((child) => {
+            const bounds = child.getBoundingClientRect();
+            return {
+              tag: child.tagName,
+              left: bounds.left,
+              right: bounds.right,
+              clientWidth: child.clientWidth,
+              scrollWidth: child.scrollWidth,
+            };
+          }),
+        };
+      });
+      expect.soft(containment.scrollWidth, 'Qualification must not clip overflowing content').toBeLessThanOrEqual(containment.clientWidth);
+      for (const child of containment.children) {
+        expect.soft(child.left, `${child.tag} left edge`).toBeGreaterThanOrEqual(containment.left);
+        expect.soft(child.right, `${child.tag} right edge`).toBeLessThanOrEqual(containment.right);
+        expect.soft(child.scrollWidth, `${child.tag} text must fit without clipping`).toBeLessThanOrEqual(child.clientWidth);
+      }
+    });
+  }
+}
+
+test('homepage story leads from executable conventions to setup and evidence', async ({ page }) => {
+  await page.goto('/');
+  await expect(page.locator('#hero-title')).toHaveText('Make repository conventions executable.');
+  await expect(page.locator('.hero-copy')).toHaveText('Assura gives coding agents precise feedback on project structure, naming and guidance, with the same local policy available in CI.');
+  await expect(page.locator('.hero')).toContainText('UserMenu.ts');
+  const order = await page.locator('#review-output, #onboard, #compare, .performance-proof, .final-section').evaluateAll(
+    (elements) => elements.map((element) => element.id || (element.classList.contains('performance-proof') ? 'evidence' : 'feedback')),
+  );
+  expect(order).toEqual(['review-output', 'onboard', 'compare', 'evidence', 'feedback']);
+  await expect(page.locator('#compare')).toContainText('Native linters and tests remain necessary');
+  await expect(page.locator('.final-section').getByRole('link', { name: /feedback/i })).toBeVisible();
+});
+
+test('homepage records one naming repair and an authoritative recheck', async ({ page }) => {
+  await page.goto('/#review-output');
+  const repair = page.getByRole('region', { name: 'One recorded naming repair' });
+  await expect(repair).toBeVisible();
+  await expect(repair).toContainText('UserMenu.ts');
+  await expect(repair).toContainText('user-menu.ts');
+  await expect(repair).toContainText('Recorded CLI output');
+  await expect(repair).toContainText('not executed in your browser');
+  await expect(repair.locator('[data-repair-stage="before"]')).toContainText('file_naming');
+  await expect(repair.locator('[data-repair-stage="before"]')).toContainText('Exit 1');
+  await expect(repair.locator('[data-repair-stage="after"]')).toContainText('Exit 0');
+  await expect(repair).toContainText('Configuration and file contents unchanged');
+  await expect(page.locator('.tree-panel')).toContainText('Separate policy examples');
+});
+
+for (const colorScheme of themes) {
+  for (const width of [320, 390, 768]) {
+    test(`${colorScheme} recorded repair at ${width}px keeps expanded CLI fields readable`, async ({ page }, testInfo) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/#review-output');
+      const repair = page.getByRole('region', { name: 'One recorded naming repair' });
+      const outputs = repair.locator('.recorded-json details');
+      for (const [index, stage] of (['before', 'after'] as const).entries()) {
+        const output = outputs.nth(index);
+        await output.locator('summary').click();
+        const code = output.locator('pre code');
+        expect(JSON.parse(await code.innerText())).toEqual(policyDemo.repair[stage].report);
+        const layout = await code.evaluate((element) => ({
+          fontSize: Number.parseFloat(getComputedStyle(element).fontSize),
+          overflow: element.parentElement!.scrollWidth - element.parentElement!.clientWidth,
+        }));
+        expect(layout.fontSize).toBeGreaterThanOrEqual(13);
+        expect(layout.overflow).toBe(0);
+      }
+      expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+      for (const [position, locator] of [repair, outputs.nth(0), outputs.nth(1)].entries()) {
+        await locator.evaluate((element) => {
+          const header = document.querySelector('.site-header')!.getBoundingClientRect();
+          window.scrollTo({ top: window.scrollY + element.getBoundingClientRect().top - header.height - 16, behavior: 'instant' });
+        });
+        await page.screenshot({ path: testInfo.outputPath(`recorded-repair-${colorScheme}-${width}-${position}.png`) });
+      }
+    });
+  }
+}
 const marketingRoutes = [
-  { path: '/', heading: 'Catch project drift before review.' },
-  { path: '/compare/ls-lint/', heading: 'A faster path from naming checks to agent-ready project validation.' },
-  { path: '/performance/', heading: 'Fast checks keep agent work moving.' },
+  { path: '/', heading: 'Make repository conventions executable.' },
+  { path: '/compare/ls-lint/', heading: 'Extend naming checks with repository policy and agent feedback.' },
+  { path: '/performance/', heading: 'Performance evidence under review' },
   { path: '/ai-coding-agent-guardrails/', heading: 'Guide the repair before a late gate forces it.' },
   { path: '/about/', heading: 'Built to make AI-assisted work easier to trust.' },
   { path: '/project-review/', heading: 'See what this branch changed before review starts.' },
@@ -98,7 +289,7 @@ for (const colorScheme of themes) {
       await page.emulateMedia({ colorScheme });
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/');
-      await expect(page.locator('#hero-title')).toHaveText('Catch project drift before review.');
+      await expect(page.locator('#hero-title')).toHaveText('Make repository conventions executable.');
 
       const overflow = await page.evaluate(
         () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
@@ -107,6 +298,9 @@ for (const colorScheme of themes) {
       await page.screenshot({
         path: testInfo.outputPath(`landing-${colorScheme}-${width}.png`),
         fullPage: true,
+      });
+      await page.locator('.performance-proof').screenshot({
+        path: testInfo.outputPath(`performance-proof-${colorScheme}-${width}.png`),
       });
     });
   }
@@ -186,7 +380,7 @@ for (const colorScheme of themes) {
 
         const dialog = page.getByRole('dialog', { name: 'Set up this project with Assura.' });
         await expect(
-          dialog.getByText('assura agent onboard .', { exact: true }),
+          dialog.getByText(onboardingCommand, { exact: true }),
         ).toBeVisible();
         await expect(dialog.locator('#agent-instruction')).toContainText(
           'Define project-owned rules for the expected stack',
@@ -207,7 +401,7 @@ for (const colorScheme of themes) {
         await installation.locator('summary').click();
         await expect(dialog.locator('#install-command')).toHaveText(installCommand);
         await expect(dialog.locator('#agent-prompt')).toHaveText(agentSetupPrompt);
-        await expect(dialog.locator('#agent-prompt')).toContainText('assura.dev/install.sh');
+        await expect(dialog.locator('#agent-prompt')).toContainText(verificationCommand);
         expect(await dialog.evaluate((element) => element.scrollWidth - element.clientWidth)).toBe(0);
         expect(
           await dialog.locator('#install-command').evaluate(
@@ -227,7 +421,7 @@ for (const colorScheme of themes) {
   }
 }
 
-test('setup copies the complete public installer instruction', async ({ page }) => {
+test('setup copies the complete published release instruction', async ({ page }) => {
   await page.addInitScript(() => {
     Object.defineProperty(navigator, 'clipboard', {
       configurable: true,
@@ -433,6 +627,47 @@ test('compact policy links to the complete monorepo example through optional dis
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
 });
 
+for (const colorScheme of themes) {
+  for (const width of [320, 390, 720, 721, 768, 980, 981, 1024, 1440]) {
+    test(`${colorScheme} performance evidence content stays inside its cells at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      await expect(page.getByRole('region', { name: 'Performance evidence under review', exact: true })).toBeVisible();
+      await expect(page.locator('.performance-proof > div')).toHaveCount(3);
+      const cells = await page.locator('.performance-proof > div').evaluateAll((items) =>
+        items.map((item) => {
+          const { left, right, top, bottom } = item.getBoundingClientRect();
+          const textBounds = Array.from(item.querySelectorAll('span, strong, small, a')).flatMap((text) => {
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            return Array.from(range.getClientRects(), (rect) => ({
+              left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom,
+            }));
+          });
+          return { left, right, top, bottom, textBounds, overflow: item.scrollWidth - item.clientWidth };
+        }),
+      );
+      expect(cells).toHaveLength(3);
+      for (const [index, cell] of cells.entries()) {
+        expect(cell.overflow, `cell ${index} overflow`).toBe(0);
+        expect(cell.textBounds.length).toBeGreaterThan(0);
+        for (const text of cell.textBounds) {
+          expect(text.left).toBeGreaterThanOrEqual(cell.left);
+          expect(text.right).toBeLessThanOrEqual(cell.right);
+          expect(text.top).toBeGreaterThanOrEqual(cell.top);
+          expect(text.bottom).toBeLessThanOrEqual(cell.bottom);
+        }
+        for (const other of cells.slice(index + 1)) {
+          const overlaps = Math.min(cell.right, other.right) > Math.max(cell.left, other.left)
+            && Math.min(cell.bottom, other.bottom) > Math.max(cell.top, other.top);
+          expect(overlaps, `cell ${index} overlaps another cell`).toBe(false);
+        }
+      }
+    });
+  }
+}
+
 for (const width of [320, 360, 390]) {
   test(`homepage policy is fully visible without nested scrolling at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 844 });
@@ -583,11 +818,43 @@ test('review, check, and onboarding retain distinct real product states', async 
   );
 });
 
-test('performance CTA lands on the measured project cohort', async ({ page }) => {
+test('homepage withholds current speed claims and links methodology and historical evidence', async ({ page }) => {
   await page.goto('/');
-  await page.getByRole('link', { name: 'How we measured it' }).click();
+  const proof = page.getByRole('region', { name: 'Performance evidence under review', exact: true });
+  await expect(proof).toBeVisible();
+  await expect(proof.getByText('Performance evidence under review', { exact: true })).toBeVisible();
+  await expect(proof.locator('strong')).toHaveText(['Under review', 'Under review']);
+  await expect(proof).not.toContainText(/faster|\d+(?:\.\d+)?\s*[×x]|current\s+(?:Assura\s+)?(?:speed|performance) evidence/i);
+  await expect(proof).toHaveAttribute('data-release-surface', 'cold-ls-lint-comparison warm-session-performance');
+  const methodology = proof.getByRole('link', { name: 'How we measured it' });
+  await expect(methodology).toHaveAttribute('href', '/insights/benchmark-methodology/');
+  await methodology.click();
+  await expect(page.getByRole('heading', { name: 'Measure equivalent work before comparing speed.' })).toBeVisible();
+  await expect(page.getByText('Performance evidence under review', { exact: true })).toBeVisible();
+  await expect(page.locator('.focused-hero-copy')).toContainText(historicalPerformanceContext);
+  await expect(page.locator('.focused-artifact')).toContainText(`recorded version ${performanceSummary.assura_version}`);
+  await expect(page.locator('.focused-artifact')).not.toContainText(/release\s+\d/i);
+  await expect(page.getByRole('heading', { name: 'Release-bound claims', exact: true })).toHaveCount(0);
+  await page.goto('/');
+  await page.locator('.performance-proof').getByRole('link', {
+    name: `Historical report (recorded version ${performanceSummary.assura_version})`,
+  }).click();
   await expect(page).toHaveURL(/\/performance\/#measured-comparison$/);
-  await expect(page.getByRole('heading', { name: 'Faster than native LS-Lint across eight cold comparisons.' })).toBeVisible();
+  const comparison = page.locator('#measured-comparison');
+  await expect(comparison.getByText('Performance evidence under review', { exact: true })).toBeInViewport();
+  await expect(comparison).toContainText(historicalPerformanceContext);
+});
+
+test('performance page preserves the measured project cohort', async ({ page }) => {
+  await page.goto('/performance/#measured-comparison');
+  const comparison = page.locator('#measured-comparison');
+  await expect(comparison.getByText('Performance evidence under review', { exact: true })).toBeInViewport();
+  await expect(comparison).toContainText(historicalPerformanceContext);
+  await expect(comparison.getByRole('heading')).toHaveText('Historical cold comparisons, not a current speed claim.');
+  await expect(page.getByRole('heading', { name: 'Performance evidence under review', exact: true })).toBeVisible();
+  await expect(page.locator('.benchmark-hero')).toContainText(historicalPerformanceContext);
+  await expect(page.locator('.benchmark-summary')).toHaveAttribute('aria-label', 'Historical benchmark summary');
+  await expect(page.locator('main')).not.toContainText(/Current checked cohort|Every tracked cold project beats native LS-Lint|Faster than native LS-Lint in all eight cold comparisons\./);
   await expect(page.locator('.policy-breadth-card')).toHaveCount(1);
   await expect(page.locator('.policy-wipe-layer')).toHaveCount(2);
   await expect(page.getByRole('slider')).toHaveCount(0);
@@ -600,6 +867,18 @@ test('performance CTA lands on the measured project cohort', async ({ page }) =>
   await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Multipart extension scale' })).toContainText('1,501 checked');
   await expect(page.locator('.benchmark-matrix-row').filter({ hasText: 'Configured scope scale' })).toContainText('801 rules');
   await expect(page.getByText('Download current JSON')).toHaveCount(0);
+  await expect(page.locator('.benchmark-provenance')).toContainText('generated naming fixtures');
+  await expect(page.locator('.benchmark-summary')).toContainText('excluding session setup/startup');
+  await expect(page.locator('.benchmark-summary')).toContainText('Installed hook entry is a separate operation');
+});
+
+test('fit guidance composes checks without implying test quality or a tool replacement', async ({ page }) => {
+  await page.goto('/');
+  const fit = page.locator('#compare');
+  await expect(fit).toContainText('file or directory cardinality');
+  await expect(fit).toContainText('keep LS-Lint when its policy is sufficient');
+  await expect(fit).toContainText('retain native commands and hook ownership');
+  await expect(fit).toContainText('File presence does not establish code usage or test quality');
 });
 
 test('performance ranges use labeled report-derived minimum and maximum values', async ({ page }) => {
@@ -715,6 +994,7 @@ test('onboarding distinguishes applied recommendations from undecided policy', a
 test('mobile execution layers use compact aligned markers', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/');
+  await page.waitForLoadState('networkidle');
   const rows = await page.locator('.layer-row').evaluateAll((items) =>
     items.map((item) => {
       const marker = item.firstElementChild?.getBoundingClientRect();
@@ -987,11 +1267,62 @@ test('reduced motion disables smooth scrolling', async ({ page }) => {
 test('marketing commands stay on the current public CLI surface', async ({ page }) => {
   await page.goto('/');
   const text = await page.locator('body').innerText();
-  expect(text).toContain('assura review');
-  expect(text).toContain('assura explain');
-  expect(text).not.toContain('assura review --base');
-  expect(text).not.toContain('assura review --path');
+  expect(text).toContain(reviewCommand);
+  expect(text).toContain('assura explain .');
+  expect(text).not.toContain('review --base');
+  expect(text).not.toContain('review --path');
 });
+
+test('authored command model uses the published route for all four commands', async ({ page }) => {
+  await page.goto('/');
+  const journey = page.locator('.journey-section');
+  await expect(journey.locator('code')).toHaveText([
+    reviewCommand,
+    checkCommand,
+    onboardingCommand,
+    'assura explain .',
+  ]);
+  await expect(journey).toContainText(releaseStatus);
+  await expect(journey).toContainText(releaseScope);
+  await expect(journey).toContainText('current project directory');
+});
+
+for (const colorScheme of themes) {
+  for (const width of [320, 768]) {
+    test(`${colorScheme} authored public commands fit internally at ${width}px`, async ({ page }) => {
+      await page.emulateMedia({ colorScheme });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/');
+      const commands = page.locator('.journey-section code');
+      await expect(commands).toHaveCount(4);
+      for (const command of await commands.all()) {
+        const geometry = await command.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          const parent = element.parentElement!;
+          const parentBounds = parent.getBoundingClientRect();
+          const panel = element.closest('.command-model, .supporting-commands')!;
+          const style = getComputedStyle(element);
+          return {
+            left: bounds.left,
+            right: bounds.right,
+            parentLeft: parentBounds.left,
+            parentRight: parentBounds.right,
+            clientWidth: element.clientWidth,
+            scrollWidth: element.scrollWidth,
+            panelClientWidth: panel.clientWidth,
+            panelScrollWidth: panel.scrollWidth,
+            fontSize: parseFloat(style.fontSize),
+          };
+        });
+        expect.soft(geometry.fontSize).toBeGreaterThanOrEqual(13);
+        expect.soft(geometry.left).toBeGreaterThanOrEqual(geometry.parentLeft);
+        expect.soft(geometry.right).toBeLessThanOrEqual(geometry.parentRight);
+        expect.soft(geometry.scrollWidth).toBeLessThanOrEqual(geometry.clientWidth);
+        expect.soft(geometry.panelScrollWidth).toBeLessThanOrEqual(geometry.panelClientWidth);
+      }
+    });
+  }
+}
 
 test('review and check have distinct workflow roles without maturity badges', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
