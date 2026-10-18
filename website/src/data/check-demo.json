@@ -121,7 +121,7 @@
   "generated_from": "assura check --format json",
   "rendered_text": "Assura structure check\n======================\nProject root: .\nConfig: ./.assura/config.yml\nChecked path: .\nFiles checked: 21\nDirectories checked: 11\nViolations: 1\n\nViolations\n----------\napps/web/src/BadName.tsx [medium:file_naming] File 'BadName.tsx' does not match naming convention 'kebab-case'\n  Blocking: true\n  Fix: Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.",
   "schema": "assura.website-check-demo.v1",
-  "source_revision": "0a1fdbac72f6ea50259d614019929617b884960f",
+  "source_revision": "a1f1a125852c8c74e021e6e7b7b3c0b9798778ab",
   "success": false,
   "violation_count": 1,
   "violations": [

@@ -123,3 +123,21 @@ performance/history bytes remain identical. Receipts are under external
 152-case matrix are pending at this data/evidence commit. Root admitted
 `maxFailures=0` with workers=2 and retries=0 for the next run, to collect the
 remaining failure frontier without converting a nonzero result into success.
+
+## Complete frontier correction
+
+At `bb8ab119`, all 152 tests executed once: 143 passed, 9 failed, zero
+skipped/interrupted/flaky/global errors. Six desktop proof-cell cases reported
+44px overflow; three mobile cases reported title/scope row misalignment.
+All 144 captures, nine traces and full process/port teardown remain under
+external `performance-wrap-corrected/production-checkpoint/`.
+
+Three grouped read-only diagnoses supported the combined CSS correction in
+`a1f1a125852c8c74e021e6e7b7b3c0b9798778ab`: bound the desktop metadata track
+and allow wrapping; explicitly top-align mobile title/scope columns with
+full-width links/caveat and compact band spacing. All content and assertions
+remain intact. One canonical generation passed; only five source revisions
+changed, with identical CLI/repair payloads and protected performance bytes.
+New receipts are under external `full-frontier-corrected/`. Changed-source
+focused/strict/build and complete 152-case production proof remain pending at
+this data/evidence commit; the previous 143/9 result is not a passing gate.
