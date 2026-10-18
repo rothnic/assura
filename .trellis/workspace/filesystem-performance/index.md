@@ -1,6 +1,13 @@
-# Workspace Index - filesystem_performance
+# Workspace Index - filesystem-performance
 
 > Journal tracking for AI development sessions.
+
+## Identity mapping
+
+- **Workspace path alias**: `filesystem-performance` (kebab-case, for repository structure policy).
+- **Native active agent identity**: `/root/filesystem_performance`.
+- **Trellis creator key in the SP01 task record**: `filesystem_performance`.
+- This path is continuity metadata only. The SP01 task assignee, native delivery owner, and receipt remain unchanged.
 
 ---
 
