@@ -12,3 +12,14 @@
 - Not run: Rust/Cargo or website build, per the owned shell-installer scope and Mac NU01 compiler-lane constraint.
 - Delivery readback: `task.py delivery inspect` waited inside provider pull-request inventory (`gh`) and was interrupted after 15 seconds (exit 130). Registration succeeded; hosted review and merge state remain root-owned.
 - Status: implementation and local checks complete; independent Luna review, review disposition, hosted PR checks, merge, and fresh human/runtime release acceptance remain open.
+
+## Independent review correction and CI integration
+
+- Reviewed candidate: `08672fd9765183bd62211b1124e3dc6caa5120f3`; report: `/Users/nroth/workspace/.assura-review-20261017/nu05-review/nu05-independent-review.md`.
+- Disposition: accepted the low false-positive finding. Compare executable identity using physical (`pwd -P`) directory paths so a PATH symlink to `BIN_DIR` is recognized as the same binary; retain the logical install path for the suggested export. Added a symlink-to-destination fixture while preserving the original four controls.
+- CI: added one command to the existing Ubuntu `release-contracts` job. `scripts/ci-scope.sh --files-from` for `tests/installer_path_resolution_tests.py` reports `release=true`; the classifier itself and all job conditions remain unchanged. Existing `tests/*` routing also schedules its pre-existing rust, performance, rustdoc, and website scopes. Editing `.github/workflows/ci.yml` continues to trigger the workflow classifier's existing full-scope behavior.
+- Focused correction check: `TMPDIR=/Users/nroth/workspace/.assura-review-20261017/nu05 python3 tests/installer_path_resolution_tests.py` exited 0; 5 tests passed, including no false correction for a symlink alias.
+- Existing release suite: `TMPDIR=/Users/nroth/workspace/.assura-review-20261017/nu05 python3 tests/release_process_contract_tests.py` exited 0; 33 tests passed. Captured output: `/Users/nroth/workspace/.assura-review-20261017/nu05/release-process-contracts.txt`.
+- `sh -n website/public/install.sh`, `git diff --check`, Ruby YAML parse of `.github/workflows/ci.yml`, and Trellis task context validation all exited 0.
+- Scoped code/spec rationale: no durable tooling policy changed. Existing `.trellis/spec/assura/tooling-stabilization.md` already routes installer changes to release gates and `tests/*` to release eligibility. Its relevant context is included in this task; the scoped task record captures the regression and command evidence.
+- Status: local correction and CI wiring are ready for root-owned scoped rereview. Hosted checks, human acceptance, merge, and release remain open.

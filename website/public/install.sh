@@ -159,13 +159,13 @@ if [ -n "$resolved_assura" ]; then
     *) resolved_dir="."; resolved_name="$resolved_assura" ;;
   esac
   [ -n "$resolved_dir" ] || resolved_dir="/"
-  resolved_path="$(CDPATH= cd "$resolved_dir" && pwd -L)/$resolved_name"
+  resolved_path="$(CDPATH= cd "$resolved_dir" && pwd -P)/$resolved_name"
 else
   echo "Current PATH resolves assura to no command"
   resolved_path=""
 fi
-installed_path="$(CDPATH= cd "$bin_dir" && pwd -L)/assura"
-installed_bin_dir="${installed_path%/assura}"
+installed_path="$(CDPATH= cd "$bin_dir" && pwd -P)/assura"
+installed_bin_dir="$(CDPATH= cd "$bin_dir" && pwd -L)"
 if [ "$resolved_path" != "$installed_path" ]; then
   shell_quote() {
     quoted="'"

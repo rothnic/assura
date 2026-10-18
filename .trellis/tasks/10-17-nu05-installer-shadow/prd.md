@@ -19,6 +19,8 @@ After a successful Unix install, tell the user which version was installed and w
 - [x] Verify `assura` and `assura-full` in the destination are both the new version.
 - [x] Apply the printed correction in a fresh shell and verify `command -v assura` and `assura --version` select the installed candidate.
 - [x] Preserve the normal successful path, checksum rejection, and transactional replacement behavior; cover no-PATH and new-first negative controls.
+- [x] Treat a PATH symlink to the installed directory as the same executable, without an unnecessary correction.
+- [x] Run the focused fixture from the existing release-contracts CI job; verify the existing classifier schedules that job for the fixture path.
 - [x] Run the focused fixture suite, `git diff --check`, and applicable Assura structure check. Record exact commands, exits, and test counts.
 
 ## Definition of Done
@@ -27,4 +29,4 @@ Implementation and focused evidence are committed coherently on `fix/nu05-instal
 
 ## Out of Scope
 
-No automatic PATH persistence, shell profile modification, uninstall/rollback redesign, release/archive format change, Windows behavior change, global binary replacement, or website rebuild.
+No automatic PATH persistence, shell profile modification, uninstall/rollback redesign, release/archive format change, Windows behavior change, global binary replacement, or website rebuild. The installer fixture is run by the existing release-contracts CI job; the classifier itself is unchanged.

@@ -32,7 +32,9 @@ class InstallerPathResolutionTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         self.old_bin = self.root / "older bin"
         self.new_bin = self.root / "new install's bin"
+        self.alias_bin = self.root / "alias bin"
         self.old_bin.mkdir()
+        self.alias_bin.symlink_to(self.new_bin, target_is_directory=True)
         _fake_binary(self.old_bin / "assura", "0.4.0")
         _fake_binary(self.old_bin / "assura-full", "0.4.0")
 
@@ -121,6 +123,18 @@ class InstallerPathResolutionTests(unittest.TestCase):
         self.assertIn("Installed version: assura 0.4.1", result.stdout)
         self.assertIn(
             f"Current PATH resolves assura to {self.new_bin / 'assura'} (assura 0.4.1)",
+            result.stdout,
+        )
+        self.assertNotIn("export PATH=", result.stdout)
+
+    def test_symlinked_path_to_destination_does_not_suggest_a_correction(self) -> None:
+        path = os.pathsep.join((str(self.alias_bin), str(self.old_bin), os.environ["PATH"]))
+
+        result = self.install(path)
+
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertIn(
+            f"Current PATH resolves assura to {self.alias_bin / 'assura'} (assura 0.4.1)",
             result.stdout,
         )
         self.assertNotIn("export PATH=", result.stdout)

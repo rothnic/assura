@@ -5,7 +5,7 @@
   "description": "Implement NU05 ae-8kr: after successful installation, report installed version and actual shell command resolution when an older PATH entry shadows the destination; provide a concrete correction without modifying shell files or replacing another install. Verify assura and assura-full companions and a fresh-shell version canary after correction. Preserve checksum/error/install behavior; add focused installer coverage and record proof.",
   "status": "in_progress",
   "dev_type": null,
-  "scope": "website/public/install.sh and focused shell fixture coverage",
+  "scope": "Unix installer PATH diagnostics, focused fixture, and release-contract CI step",
   "package": null,
   "priority": "P2",
   "creator": "nu05-installer-shadow",
