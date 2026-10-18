@@ -236,3 +236,14 @@ diagnostic measurements of child bounds, visible text, scroll width and
 screenshots remain pending, as does selected screenshot inspection. The
 original hosted 244.109375px failure and all its raw evidence remain immutable;
 no new Ubuntu hosted run is claimed.
+
+## Geometry follow-up after c2c04c2a
+
+The later external `geometry-c2c04c2a/` checkpoint completed both 320px themes:
+214.625px panel height, all 18 text rectangles visible, full caveat and links,
+and no overflow. All 136 frozen production files matched their manifest; the
+owned preview stopped and port 61602 was released. The earlier pending status
+above describes the state at that commit. Scoped independent Luna rereview
+passed the correction and local proof; the manual performance audit remains
+unrun and receives no credit. New exact-head hosted checks, including Ubuntu
+geometry, and native integration/closure remain pending.
