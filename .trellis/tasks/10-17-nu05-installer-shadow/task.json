@@ -32,7 +32,7 @@
       "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/fix/nu05-installer-shadow",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "prd.md#goal"
     }
   }
 }
