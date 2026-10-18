@@ -4094,8 +4094,9 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
 
     for marker in [
         format!("Assura {candidate_tag} Release Notes"),
-        format!("prepared `{candidate_tag}` beta increment"),
-        "still remains pre-1.0 beta software".to_string(),
+        format!("[published {candidate_tag} release]"),
+        "The release was published and live-verified on".to_string(),
+        "Assura remains pre-1.0 beta software".to_string(),
     ] {
         checks.require(
             release_notes.contains(&marker),

@@ -86,6 +86,13 @@ its existing pinned native comparator to the owned install directory. Three
 read-only vendor/environment/adversarial checks support these corrections.
 No comparator version, native execution, assertion or product gate is weakened.
 
+Final target-state validation also exposed stale release-note markers left
+behind by the published-status update in `c5cd79c6`. The coordinator owns the
+minimal `xtask/src/main.rs` marker correction: require the candidate-tagged
+published release link, live verification and current pre-1.0 beta status.
+Preserve the accurate publication receipts and exercise missing-marker negative
+controls; no release action or gate waiver is authorized.
+
 Follow Rust-quality error/effect, traversal and test guidance. Start with the
 focused notation/relationship tests. Run `cargo xtask pr` once settled (it
 includes fast), docs prerequisites and evidence/structure checks as applicable;
