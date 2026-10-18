@@ -141,3 +141,18 @@ changed, with identical CLI/repair payloads and protected performance bytes.
 New receipts are under external `full-frontier-corrected/`. Changed-source
 focused/strict/build and complete 152-case production proof remain pending at
 this data/evidence commit; the previous 143/9 result is not a passing gate.
+
+## Remaining mobile height correction
+
+At `7db4f51a`, the complete matrix ran 152 cases: 151 passed, one failed,
+zero skipped/interrupted/flaky/global errors. The sole failure measured the
+320px proof height at 238.265625px against the unchanged strict `<230` cap;
+all desktop containment and mobile alignment cases passed. Its 144 captures,
+one trace and teardown remain under external `full-frontier-corrected/`.
+After three read-only height diagnoses, source commit
+`0dbd1b9a1c543ea70b76b9de476c4d3e4786c77b` changed only existing mobile metric
+cell vertical padding to 0.5rem, preserving the later metadata override and all
+text/type/assertions. One canonical generation passed; five source revisions
+changed with identical CLI/repair and protected performance bytes. Receipts
+are under external `height-padding-corrected/`; post-fix height and complete
+changed-source validation are pending at this data/evidence commit.
