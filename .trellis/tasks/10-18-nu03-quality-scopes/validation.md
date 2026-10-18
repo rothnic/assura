@@ -42,3 +42,43 @@ outer failure and missing-PID limitations. This proves fixture composition,
 order, failure visibility and removal behavior; it does not establish real
 project-script adequacy, human adoption or release acceptance. Final independent
 review, current-base integration and applicable hosted checks remain required.
+
+## Exact focused setup correction and current-base refresh (2026-10-18)
+
+The single focused 70-test lane was rerun on clean candidate source
+`7904af3f03859fcc9aa4a3083f78f78cf9371ea9` after the selected numeric Rust
+1.94.1 toolchain was supplied its missing `rustfmt` and `clippy` components.
+The preflight bound Cargo/rustc to 1.94.1 and `cargo fmt`/`cargo clippy` to
+rustfmt 1.8.0 and Clippy 0.1.94 under the original recorded PATH and
+`RUSTUP_TOOLCHAIN=1.94.1`. The generated fixture uses the candidate's
+`CARGO_BIN_EXE_assura-full` binary for `assura check`, then runs `cargo fmt`,
+`cargo test --locked`, and `cargo clippy` in its fixture directory. Its full
+plan and seeded-format rejection/restoration assertions completed.
+
+The focused run exited 0 with 70 passed, none failed or ignored. Its four suite
+summaries were 18, 25, 11, and 16 passed. The explicit test-name census, raw
+stdout/stderr/exit, selected-toolchain preflight, resource gates, and prior
+missing-component receipts are retained under
+`/Users/nroth/workspace/.assura-review-20261017/nu03/fmt-environment-correction/`.
+The earlier 54/0 recorder summary remains incomplete; the supplemental 69/1
+census records that earlier failed attempt. This successful run supersedes that
+focused-run failure only for the unchanged candidate and exact selected
+component environment.
+
+The candidate was then nonforce-merged with current base
+`74d9917dd39e599bbd43c3a5760b71644b2cf91b` as merge commit
+`22f1051efff7ddb8aa1654428f9cdf2bf184f1b9`. The incoming delta contains only
+DX01 skill and Trellis task/workspace files. Rust source, tests, configuration,
+Cargo/.cargo, xtask, `.assura`, and CI/workflow inputs are unchanged from the
+focused run. All seven tracked xtask/Cargo/.cargo input hashes match the
+preserved xtask binding, so its bounded `evidence` command was reused on the
+merged tree and passed. The candidate `assura-full check .` structure gate also
+passed: 2,027 files and 430 directories checked, 17 low-severity line-count
+advisories, and no blockers. The post-merge workflow gate reports this NU03 task
+ready and in progress.
+
+The complete `cargo xtask pr` result remains historically bound to
+`3498274b8c88c55e2fd431024ebf1125ef2910ef`; it was not rerun on this current
+merge. This local focused proof does not resolve or explain the separate hosted
+macOS hot-status failure, whose cause remains unknown. Final independent review
+and the changed-source hosted diagnostic remain outstanding.
