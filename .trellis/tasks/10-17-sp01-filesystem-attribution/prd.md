@@ -44,7 +44,7 @@ P2 may use temporary instrumentation in the exact existing consumer files and an
 
 ## Saved P2 attribution evidence
 
-The v5 data set is accepted as a six-paired-row source-count/output-parity result, with the tiny positive control separately labeled. It does not establish OS syscall counts, cache hits, performance improvement, or optimization retention. All three cache-shaped rows have local/shared hit counts of 0/0; neither a warm hit nor a cache defect is established. The exact source callers/scopes, counter results, identities, preserved v1-v5 attempts, and the prepared-but-unrun v6 harness correction are documented in `research/p2-attribution-evidence.md`. No additional CLI/build run is admitted by that evidence note.
+The v5 data set is accepted as a six-paired-row source-count/output-parity result, with the tiny positive control separately labeled. It does not establish OS syscall counts, cache hits, performance improvement, or optimization retention. All three cache-shaped rows have local/shared hit counts of 0/0; neither a warm hit nor a cache defect is established. The exact source callers/scopes, counter results, identities, preserved v1-v5 attempts, and both prepared harness revisions are documented in `research/p2-attribution-evidence.md`. One later isolated default-cache seed/repeat protocol used the pinned binaries only; it exited successfully with no local/shared hits. Warm reuse and a cache defect remain unproven. No build, performance claim, or further retry was made.
 
 ## Admission and current phase
 
