@@ -233,3 +233,9 @@ candidate is claimed. Independent review of this new base delta and exact-tip
 hosted checks remain before integration. Root retains native record/close,
 archive ownership, and PR authority; historical receipt base/tip and generation
 0 remain unchanged.
+
+## Current-base refresh after W02 integration
+
+The candidate was ordinarily merged with current W02 master `775eb0577dd6f5ed33d36219096df71749b52993` in merge `d89b330f5f65d237d1a8dfb5b0c1ebdda646b23c` (parents `1920bb27b82108c5c528c6fc60c8217a52241a02` and `775eb0577dd6f5ed33d36219096df71749b52993`). The canonical no-argument `cargo xtask website-demo-data` generation ran once against that committed source. It changed exactly the five expected website demo JSON revision fields to d89b; all 16 protected performance/history files remained byte-identical. Current focused website-demo tests passed 13/13; released-data check, docs (48 pages), evidence, and the four native xtask compatibility tests passed. The unchanged 150-row native report passed and the seeded slowdown was rejected for `native_small native:content-check-cli`; neither report changed.
+
+Current-base command receipts and exact raw output are in `/Users/nroth/workspace/.assura-review-20261017/sp04/current-base-775-20261018T1501Z/`; see `integration-proof.md` there for source, command, fixture-hash, and limitation details. That directory also retains three uncredited setup failures with their root-reviewed triages/dispositions. Prior SP04 source-bound focused/full-PR evidence is not a combined current-head PR run. Hosted checks, independent current-base review, root-owned native close, and final integration remain outstanding; no history or benchmark claim is made.
