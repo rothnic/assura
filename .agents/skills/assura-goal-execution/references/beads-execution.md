@@ -16,7 +16,7 @@ alone does not authorize another database. Reuse the verified project store;
 leave unrelated/global stores and registrations intact.
 
 When adoption is authorized and absence is established, initialize once using
-supported skip flags for agent instructions and hooks. The installed1.2.2
+supported skip flags for agent instructions and hooks. The installed 1.2.2
 supports `--non-interactive --skip-agents --skip-hooks --setup-exclude`; the
 last option uses repository-local Git exclusion, without stealth/global setup.
 Verify actual backend/server mode afterward. Keep one coordinator writer and
@@ -29,7 +29,7 @@ as a substitute for identifying it.
 1. Freeze the reviewed input revision and graph SHA-256; inspect all source
    keys, titles, acceptance, labels, `parent_key` and edges. Check duplicate
    source identities and current store issues before creation.
-2. Use the installed graph dry run. In the reviewed1.2.2 plan, an edge's
+2. Use the installed graph dry run. In the reviewed 1.2.2 plan, an edge's
    `from_key` is the dependent and `to_key` its prerequisite; confirm with
    actual readback rather than relying on an arrow's appearance.
 3. Retain the exact creation output and key-to-ID map. Read all created issues,

@@ -1,5 +1,12 @@
 # New-user review and dependency backlog
 
+## Intake snapshot
+
+This is the dated research proposal. The authorized execution goal is
+`10-17-assura-beads-execution`; after verified import, Beads owns live status,
+readiness and dependencies. Consult its source-key mapping and Beads readback
+for current state; the JSON/graph below retain historical evidence.
+
 ## Goal
 
 Review the current Assura product as a new user, apply the published release to
