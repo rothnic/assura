@@ -6,6 +6,9 @@ use super::agent_onboarding_handoff_templates as handoff;
 use super::agent_onboarding_quality::quality_config;
 use super::agent_onboarding_structure_fit_templates as structure_fit;
 use super::AgentContentTemplate;
+use std::collections::{HashMap, HashSet};
+use std::fs;
+use std::path::{Path, PathBuf};
 
 pub(super) const AGENTIC_RECIPE: &str = "agentic-core + structure-health";
 pub(super) const AGENT_ENTRYPOINT_REFERENCE: &str = "$agent-entrypoint";
@@ -13,11 +16,12 @@ pub(super) const AGENT_ENTRYPOINT_REFERENCE: &str = "$agent-entrypoint";
 pub(super) fn baseline_files(
     detected: &DetectedSection,
     content_template: AgentContentTemplate,
+    strict_agent_surface: bool,
 ) -> Vec<GeneratedFile> {
     let mut files = vec![
         GeneratedFile {
             path: ".assura/config.yml",
-            contents: agent_ready_config(detected, content_template),
+            contents: agent_ready_config(detected, content_template, strict_agent_surface),
             required: true,
             executable: false,
         },
@@ -68,6 +72,80 @@ pub(super) fn baseline_files(
     files
 }
 
+pub(super) fn has_unmanaged_agent_surface(
+    project_root: &Path,
+    detected: &DetectedSection,
+    content_template: AgentContentTemplate,
+) -> bool {
+    let expected_files = baseline_files(detected, content_template, true)
+        .into_iter()
+        .filter(|file| file.path.starts_with(".agents/"))
+        .map(|file| (PathBuf::from(file.path), file.contents))
+        .collect::<HashMap<_, _>>();
+    let expected_directories = expected_files
+        .keys()
+        .flat_map(|path| path.ancestors().skip(1).map(Path::to_path_buf))
+        .filter(|path| path != Path::new("."))
+        .collect::<HashSet<_>>();
+
+    let agents_path = project_root.join("AGENTS.md");
+    match fs::symlink_metadata(&agents_path) {
+        Ok(metadata) if metadata.file_type().is_file() => {
+            if fs::read_to_string(&agents_path).ok().as_deref() != Some(agents_md()) {
+                return true;
+            }
+        }
+        Ok(_) => return true,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+        Err(_) => return true,
+    }
+
+    let agents_dir = project_root.join(".agents");
+    match fs::symlink_metadata(&agents_dir) {
+        Ok(metadata) if metadata.file_type().is_dir() => {}
+        Ok(_) => return true,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return false,
+        Err(_) => return true,
+    }
+
+    let mut pending = vec![agents_dir];
+    while let Some(directory) = pending.pop() {
+        let Ok(entries) = fs::read_dir(&directory) else {
+            return true;
+        };
+        for entry in entries {
+            let Ok(entry) = entry else {
+                return true;
+            };
+            let path = entry.path();
+            let Ok(metadata) = fs::symlink_metadata(&path) else {
+                return true;
+            };
+            let Ok(relative) = path.strip_prefix(project_root) else {
+                return true;
+            };
+            let relative = relative.to_path_buf();
+            if metadata.file_type().is_symlink() {
+                return true;
+            }
+            if metadata.file_type().is_dir() {
+                if !expected_directories.contains(&relative) {
+                    return true;
+                }
+                pending.push(path);
+                continue;
+            }
+            let Some(expected) = expected_files.get(&relative) else {
+                return true;
+            };
+            if fs::read_to_string(path).ok().as_deref() != Some(expected.as_str()) {
+                return true;
+            }
+        }
+    }
+    false
+}
+
 pub(super) fn rule_recommendations_file(detected: &DetectedSection, status: &str) -> GeneratedFile {
     GeneratedFile {
         path: ".assura/onboarding/rules.md",
@@ -99,6 +177,7 @@ impl GeneratedFile {
 fn agent_ready_config(
     detected: &DetectedSection,
     content_template: AgentContentTemplate,
+    strict_agent_surface: bool,
 ) -> String {
     let repository_references = content::repository_reference_config(content_template);
     let requirements_traceability = content::requirements_traceability_config(content_template);
@@ -106,6 +185,31 @@ fn agent_ready_config(
     let root_structure = content::root_structure(content_template);
     let docs_structure = content::docs_structure(content_template);
     let quality_config = quality_config(detected);
+    let agent_guidance = if strict_agent_surface {
+        strict_agent_guidance_config()
+    } else {
+        "  agent_guidance: []\n"
+    };
+    let agents_structure = if strict_agent_surface {
+        r#"  .agents/:
+    ./: exists:0-1 | $closed
+    skills/:
+      ./: exists:0-1
+      ./*/: kebab-case | $skill
+      ./*: $closed-entry
+"#
+    } else {
+        r#"  .agents/:
+    skills/:
+      assura-project-maintenance/: $skill
+      assura-structure-fit/: $skill
+"#
+    };
+    let agents_entrypoint = if strict_agent_surface {
+        "AGENTS.md: exists:1 | $agent-entrypoint"
+    } else {
+        "AGENTS.md: exists:1"
+    };
     format!(
         r#"rules:
   # Progressive-disclosure entrypoints.
@@ -143,7 +247,51 @@ fn agent_ready_config(
     SKILL.md: exists:1 | $skill-entrypoint
 
 extensions:
-  agent_guidance:
+{agent_guidance}
+{repository_references}
+{requirements_traceability}
+{content_config}
+{quality_config}
+
+structure:
+  # Agent entrypoints and project-owned skills.
+{agents_structure}
+
+  docs/:
+    process/:
+      agent-workflow.md: exists:1
+    learnings/:
+      README.md: exists:1
+
+{docs_structure}
+{root_structure}
+
+  # Root files are explicit; project-specific manifests stay optional.
+  .gitignore: exists:0-1
+  {agents_entrypoint}
+  Cargo.toml: exists:0-1
+  package.json: exists:0-1
+  pyproject.toml: exists:0-1
+  README.md: exists:1
+
+  # Recursive advisory defaults.
+  ./**/:
+    ./: $folder-health
+    .{{md,js,jsx,ts,tsx}}: max_lines:500 | severity:low
+
+exclude:
+  - ".assura/**"
+  - ".git/**"
+  - "target/**"
+  - "node_modules/**"
+  - "dist/**"
+  - "**/dist/**"
+"#
+    )
+}
+
+fn strict_agent_guidance_config() -> &'static str {
+    r#"  agent_guidance:
     - id: agent_project_guidance
       severity: low
       agents_path: AGENTS.md
@@ -180,50 +328,7 @@ extensions:
         - .assura/onboarding/
       max_agents_lines: 160
       max_skill_lines: 120
-{repository_references}
-{requirements_traceability}
-{content_config}
-{quality_config}
-
-structure:
-  # Agent entrypoints and project-owned skills.
-  .agents/:
-    ./: exists:0-1 | $closed
-    skills/:
-      ./: exists:0-1
-      ./*/: kebab-case | $skill
-      ./*: $closed-entry
-
-  docs/:
-    process/:
-      agent-workflow.md: exists:1
-    learnings/:
-      README.md: exists:1
-{docs_structure}
-{root_structure}
-
-  # Root files are explicit; project-specific manifests stay optional.
-  .gitignore: exists:0-1
-  AGENTS.md: exists:1 | $agent-entrypoint
-  Cargo.toml: exists:0-1
-  package.json: exists:0-1
-  pyproject.toml: exists:0-1
-  README.md: exists:1
-
-  # Recursive advisory defaults.
-  ./**/:
-    ./: $folder-health
-    .{{md,js,jsx,ts,tsx}}: max_lines:500 | severity:low
-
-exclude:
-  - ".assura/**"
-  - ".git/**"
-  - "target/**"
-  - "node_modules/**"
-  - "dist/**"
-  - "**/dist/**"
 "#
-    )
 }
 
 fn presets_lock() -> &'static str {
