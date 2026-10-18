@@ -1,14 +1,14 @@
 //! Project doctor and path explanation commands.
 
-use super::ExitCode;
 use super::args::CheckOutputFormat;
 use super::check::{
-    CheckError, CheckTargetMode, PathExplainReport, explain_structure_path,
-    run_structure_check_with_target_mode,
+    explain_structure_path, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
+    PathExplainReport,
 };
 pub(super) use super::doctor_report::{
     DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorBuild, ProjectDoctorReport,
 };
+use super::ExitCode;
 use crate::config::loader::ConfigLoader;
 use std::path::{Path, PathBuf};
 

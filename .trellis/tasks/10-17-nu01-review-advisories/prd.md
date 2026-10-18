@@ -18,7 +18,7 @@ Make Review expose configured nonblocking structural violations with named stabl
 
 - [x] A configured low-severity `max_lines` fixture crossing the limit yields the named configured advisory in Review, ordered before optional setup suggestions, with stable identity across runs and correct new/worsened/resolved history.
 - [x] Review exits 0 and Check exit behavior remains unchanged.
-- [x] Unchanged nonblocking findings remain hidden from compact action output while full JSON retains their history.
+- [x] Unchanged nonblocking findings and their configured next-actions remain hidden from compact text and agent output while full JSON retains their history; unchanged blockers remain actionable.
 - [x] Bounded output totals and ordering are correct; full JSON retains all finding states and compact text reports exact overflow counts.
 - [ ] Focused review tests pass; required final validation/review gates are recorded with any held tier.
 
@@ -36,6 +36,6 @@ Trace Doctor's single check report into Review's report/history. Carry the exist
 
 ## Technical Notes
 
-- Source baseline: `49d85358bae85de04f1ce7faa746b377687dcaf3` on `fix/nu01-review-advisories`, base `origin/master`.
+- Current integration base: `ba4804bb6abdadc1ccc12c41397dd2402a914171` on `fix/nu01-review-advisories`; `src/` and `crates/` are unchanged from original Rust baseline `49d85358bae85de04f1ce7faa746b377687dcaf3`.
 - Contract: `.trellis/spec/assura/compact-project-review.md`.
 - Historical trial notes are in the primary checkout at `.trellis/tasks/10-17-new-user-review-backlog/research/` and are evidence leads, not current behavior.

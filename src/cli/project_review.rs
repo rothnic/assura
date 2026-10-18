@@ -6,16 +6,17 @@ mod report;
 mod text;
 
 use self::heatmap::build_project_review_heatmap;
-use self::report::{ProjectReviewAction, ProjectReviewReport, render_project_review};
-use super::ExitCode;
+use self::report::{
+    render_project_review, ProjectReviewAction, ProjectReviewFinding, ProjectReviewReport,
+};
 use super::args::CheckOutputFormat;
 use super::check::CheckError;
 use super::content_query::context::{ContentQueryError, QueryContext};
-use super::content_query::{AgentQueryGapsOutput, content_gap_summary};
+use super::content_query::{content_gap_summary, AgentQueryGapsOutput};
 use super::doctor::{
-    DoctorNextAction, DoctorViolation, build_project_doctor_with_structure_report,
-    exit_code_for_check_error,
+    build_project_doctor_with_structure_report, exit_code_for_check_error, DoctorNextAction,
 };
+use super::ExitCode;
 use std::path::PathBuf;
 
 /// Run the top-level compact project review command.
@@ -61,11 +62,14 @@ pub(crate) fn build_project_review(
 
 fn review_next_actions(
     actions: &[DoctorNextAction],
-    configured_nonblocking_violations: &[DoctorViolation],
+    findings: &[ProjectReviewFinding],
     check_status: &str,
 ) -> Vec<ProjectReviewAction> {
     let insertion = usize::from(check_status == "fail" && !actions.is_empty());
-    let has_violation = !configured_nonblocking_violations.is_empty();
+    let configured = findings
+        .iter()
+        .find_map(|finding| finding.configured_fix_action((insertion + 1) as u32));
+    let has_violation = configured.is_some();
     let mut next_actions = actions
         .iter()
         .enumerate()
@@ -75,16 +79,8 @@ fn review_next_actions(
             command: action.follow_up.clone(),
         })
         .collect::<Vec<_>>();
-    if let Some(violation) = configured_nonblocking_violations.first() {
-        let path = violation.path.replace('\\', "/");
-        next_actions.insert(
-            insertion,
-            ProjectReviewAction {
-                priority: (insertion + 1) as u32,
-                action: format!("Fix configured `{}` violation at `{path}`.", violation.rule),
-                command: "assura check --format json .".to_string(),
-            },
-        );
+    if let Some(action) = configured {
+        next_actions.insert(insertion, action);
     }
     next_actions.push(ProjectReviewAction {
         priority: (next_actions.len() + 1) as u32,

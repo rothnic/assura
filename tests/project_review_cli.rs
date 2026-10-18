@@ -82,6 +82,15 @@ fn write_config(project: &TempDir, config: &str) {
     fs::write(project.path().join(".assura/config.yml"), config).expect("write config");
 }
 
+fn write_low_severity_max_lines_config(project: &TempDir, max_lines: usize) {
+    write_config(
+        project,
+        &format!(
+            "structure:\n  ./:\n    children:\n      src/:\n        files:\n          max_lines: {max_lines}\n          severity: low\nexclude:\n  - .assura/**\n"
+        ),
+    );
+}
+
 fn finding<'a>(review: &'a Value, id: &str) -> &'a Value {
     review["findings"]
         .as_array()
@@ -167,20 +176,7 @@ exclude:
 #[test]
 fn review_tracks_configured_nonblocking_violations_without_changing_check_exit() {
     let project = TempDir::new().expect("temp project");
-    write_config(
-        &project,
-        r#"
-structure:
-  ./:
-    children:
-      src/:
-        files:
-          max_lines: 500
-          severity: low
-exclude:
-  - .assura/**
-"#,
-    );
+    write_low_severity_max_lines_config(&project, 500);
     let source = project.path().join("src/oversized-probe.ts");
     fs::create_dir_all(source.parent().expect("source directory")).expect("create source dir");
     fs::write(&source, "line\n".repeat(501)).expect("write initial violation");
@@ -211,12 +207,10 @@ exclude:
         "src/oversized-probe.ts: File 'src/oversized-probe.ts' has 501 lines, exceeding limit 500"
     );
     assert_eq!(review_501["findings"][0]["id"], first["id"]);
-    assert!(
-        review_501["next_actions"][0]["action"]
-            .as_str()
-            .expect("first next action")
-            .contains("configured `max_lines`")
-    );
+    assert!(review_501["next_actions"][0]["action"]
+        .as_str()
+        .expect("first next action")
+        .contains("configured `max_lines`"));
     let fingerprint = first["fingerprint"].as_str().expect("fingerprint");
     assert_eq!(fingerprint.len(), 64);
 
@@ -235,6 +229,21 @@ exclude:
     assert_eq!(compact.status.code(), Some(0));
     let compact = String::from_utf8(compact.stdout).expect("review text");
     assert!(!compact.contains("configured:max_lines:src/oversized-probe.ts"));
+    assert!(!compact.contains("Fix configured `max_lines` violation at `src/oversized-probe.ts`."));
+
+    let agent = json_from_success(run_review(&[
+        project.path().to_str().expect("project path"),
+        "--format",
+        "agent",
+    ]));
+    assert!(agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .all(|action| !action["action"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("oversized-probe.ts")));
 
     fs::write(&source, "line\n".repeat(700)).expect("increase violation pressure");
     let check_700 = run_assura(&[
@@ -280,20 +289,7 @@ exclude:
 #[test]
 fn review_text_reports_overflow_for_configured_advisories() {
     let project = TempDir::new().expect("temp project");
-    write_config(
-        &project,
-        r#"
-structure:
-  ./:
-    children:
-      src/:
-        files:
-          max_lines: 1
-          severity: low
-exclude:
-  - .assura/**
-"#,
-    );
+    write_low_severity_max_lines_config(&project, 1);
     let source_dir = project.path().join("src");
     fs::create_dir_all(&source_dir).expect("create source dir");
     for index in 0..15 {
@@ -323,11 +319,9 @@ exclude:
         .filter(|finding| finding["source"] == "doctor.configured_nonblocking_violations")
         .collect::<Vec<_>>();
     assert_eq!(configured.len(), 15);
-    assert!(
-        configured
-            .iter()
-            .all(|finding| finding["state"] == "unchanged")
-    );
+    assert!(configured
+        .iter()
+        .all(|finding| finding["state"] == "unchanged"));
     assert_eq!(
         full_json["finding_history"]["unchanged"],
         full_json["findings"].as_array().unwrap().len()
@@ -338,20 +332,7 @@ exclude:
 #[test]
 fn review_agent_bounds_configured_findings_but_keeps_total_history() {
     let project = TempDir::new().expect("temp project");
-    write_config(
-        &project,
-        r#"
-structure:
-  ./:
-    children:
-      src/:
-        files:
-          max_lines: 1
-          severity: low
-exclude:
-  - .assura/**
-"#,
-    );
+    write_low_severity_max_lines_config(&project, 1);
     let source_dir = project.path().join("src");
     fs::create_dir_all(&source_dir).expect("create source dir");
     for index in 0..15 {
@@ -366,11 +347,17 @@ exclude:
     ]));
     let findings = agent["findings"].as_array().expect("agent findings");
     assert_eq!(findings.len(), 12);
-    assert!(
-        findings
-            .iter()
-            .all(|finding| { finding["source"] == "doctor.configured_nonblocking_violations" })
-    );
+    assert!(findings
+        .iter()
+        .all(|finding| { finding["source"] == "doctor.configured_nonblocking_violations" }));
+    assert!(agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .any(|action| action["action"]
+            .as_str()
+            .unwrap_or_default()
+            .contains("probe-0.ts")));
     assert_eq!(agent["summary"]["advisory"], 19);
     assert!(agent["finding_history"]["new"].as_u64().expect("new count") > 12);
 }
@@ -884,6 +871,7 @@ exclude:
     let second_stdout = String::from_utf8_lossy(&second_text.stdout);
     assert!(second_stdout.contains("Fix first"));
     assert!(second_stdout.contains("README.md"));
+    assert!(second_stdout.contains("Fix blocking configured check violations first."));
     let second_agent = json_from_output(&run_review(&[
         project.path().to_str().unwrap(),
         "--format",
@@ -893,6 +881,11 @@ exclude:
         finding(&second_agent, "blocking:exists_count")["state"],
         "unchanged"
     );
+    assert!(second_agent["next_actions"]
+        .as_array()
+        .expect("next actions")
+        .iter()
+        .any(|action| action["action"] == "Fix blocking configured check violations first."));
 
     fs::write(project.path().join("README.md"), "# Project\n").expect("README");
     let third = json_from_success(run_review(&[

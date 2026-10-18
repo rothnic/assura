@@ -1,7 +1,7 @@
 //! Project review report assembly and rendering.
 
 use super::heatmap::ProjectReviewHeatmap;
-use super::history::{FindingHistorySummary, apply_finding_history};
+use super::history::{apply_finding_history, FindingHistorySummary};
 use super::text::render_project_review_text;
 use crate::cli::args::CheckOutputFormat;
 use crate::cli::content_query::AgentQueryGapsOutput;
@@ -67,6 +67,8 @@ impl ProjectReviewReport {
 
         let finding_history =
             apply_finding_history(&doctor.project_root, &mut findings, persist_history);
+        let next_actions =
+            super::review_next_actions(&doctor.next_actions, &findings, doctor.check.status);
         let omitted_noise = omitted_noise_policy();
         let summary = ProjectReviewSummary::from_findings(&findings, omitted_noise.len());
         let status = if summary.blocking > 0 {
@@ -95,11 +97,7 @@ impl ProjectReviewReport {
             content_gaps: ProjectReviewContentGaps::from(content_gaps),
             heatmap,
             omitted_noise,
-            next_actions: super::review_next_actions(
-                &doctor.next_actions,
-                &configured_nonblocking_violations,
-                doctor.check.status,
-            ),
+            next_actions,
             lower_level_commands: vec![
                 "assura check --format json .",
                 "assura doctor --format json .",
@@ -175,6 +173,23 @@ pub(super) struct ProjectReviewFinding {
     pub(super) detail: String,
     pub(super) command: &'static str,
     pub(super) source: &'static str,
+}
+
+impl ProjectReviewFinding {
+    pub(super) fn configured_fix_action(&self, priority: u32) -> Option<ProjectReviewAction> {
+        if self.source != "doctor.configured_nonblocking_violations"
+            || !matches!(self.state, "new" | "worsened")
+        {
+            return None;
+        }
+        let identity = self.id.strip_prefix("configured:")?;
+        let (rule, path) = identity.split_once(':')?;
+        Some(ProjectReviewAction {
+            priority,
+            action: format!("Fix configured `{rule}` violation at `{path}`."),
+            command: "assura check --format json .".to_string(),
+        })
+    }
 }
 
 #[derive(Debug, Clone, Serialize)]

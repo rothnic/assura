@@ -85,8 +85,9 @@
   reports concrete violation, changed-file, and line values. Verbose text may
   render the bounded hot-directory tree.
 - Unchanged non-blocking findings are hidden from default action rows and
-  bounded agent output. Unchanged blocking findings remain visible until fixed,
-  and full JSON retains every finding state.
+  bounded agent output. Configured nonblocking next-actions appear only while a
+  matching finding is `new` or `worsened`; unchanged blocker actions remain
+  visible until fixed, and full JSON retains every finding state.
 - Review keeps all named findings and their history in full JSON. Text action
   rows and agent findings remain bounded; text reports the exact number of
   additional action rows beyond its visible finding limit, while summary and
@@ -110,7 +111,7 @@
 | Git checkout has branch/worktree pressure | Review includes compact branch/worktree rows and the most specific hot path; JSON retains totals and directory rollups. |
 | Explicit `--base <ref>` resolves | Branch metrics compare against that ref and report it in `heatmap.branch.base`. |
 | Explicit `--base <ref>` is invalid | Exit with configuration error and name the invalid ref. |
-| Review repeats without changes | Stable fingerprints remain `unchanged`; repeated non-blocking output is hidden while an unresolved blocker remains visible. |
+| Review repeats without changes | Stable fingerprints remain `unchanged`; nonblocking findings and their configured next-actions are hidden while unresolved blocker findings and actions remain visible. |
 | Configured low-severity structure violation is present, worsens, then resolves | Review exits `0` and emits the named path/rule advisory as `new`, `worsened`, then `resolved` with a stable fingerprint; Check retains its nonblocking exit. |
 | More configured advisory findings exist than compact action rows can show | Full JSON retains every finding/state; text shows a bounded list with an exact overflow count, and summary/history counts include all findings. |
 | A prior finding disappears | The next review emits a bounded `resolved` history item. |
