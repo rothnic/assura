@@ -1513,8 +1513,16 @@ structure:
           allowed_names:
             - "fixtures"
             - "ls_lint_rule_coverage"
+            - "watch_cli_windows_ctrl_c"
           allow_extra: false
         children:
+          watch_cli_windows_ctrl_c/:
+            files:
+              naming: "snake_case"
+              max_lines: 1000
+              allowed_names:
+                - "owned_process.rs"
+              allow_extra: false
           ls_lint_rule_coverage/:
             files:
               naming: "snake_case"

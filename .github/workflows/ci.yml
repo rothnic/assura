@@ -278,7 +278,7 @@ jobs:
         if ($receipt.schema -ne 'assura.nu17.ctrl-c.v1') { throw 'Unexpected NU17 receipt schema' }
         $positive = $receipt.positive
         $ids = @($positive.console_process_ids | Sort-Object -Unique)
-        if ($positive.send_calls -ne 1 -or $positive.event_code -ne 0 -or !$positive.ack -or
+        if ($positive.initial_event_success -ne $true -or $positive.send_calls -ne 1 -or $positive.event_code -ne 0 -or !$positive.ack -or
             $positive.watch_exit_code -ne 0 -or $positive.elapsed_ms -gt 10000 -or
             !$positive.watch_in_job -or !$positive.watch_artifact_absent -or
             $ids.Count -ne 2 -or $ids -notcontains $positive.helper_pid -or
@@ -288,7 +288,7 @@ jobs:
         }
         $noSend = $receipt.no_send
         $noSendIds = @($noSend.console_process_ids | Sort-Object -Unique)
-        if ($noSend.send_calls -ne 0 -or $noSend.ack -or $noSend.event_code -ne 4294967295 -or
+        if ($noSend.initial_event_success -ne $true -or $noSend.send_calls -ne 0 -or $noSend.ack -or $noSend.event_code -ne 4294967295 -or
             !$noSend.watch_alive_before_cleanup -or !$noSend.watch_reaped -or
             !$noSend.watch_artifact_absent -or !$noSend.watch_in_job -or
             $noSendIds.Count -ne 2 -or $noSendIds -notcontains $noSend.helper_pid -or
