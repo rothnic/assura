@@ -39,8 +39,11 @@ issues/history, reconcile source keys/titles before importing missing nodes.
 Installed `bd 1.2.2` auto-cloned the remote, then its embedded engine failed
 reading schema (`Error 1105: table has unknown fields`). Original and two
 hash-verified copies remain intact. Installed Dolt 2.3.1 can query a copy.
-Investigate a supported existing-server backend on a copy before selecting
-runtime mode; no force, reinit, upgrade or migration to bypass identity.
+Verified copy tests selected an isolated vendor Dolt 2.5.0 external server;
+original rows, schemas and history survived the expected clone-local ignored
+migration. Supported existing-server attach restored only the absent `ae`
+prefix and client tracking after preservation proof. No system installation,
+force, reinit, SQL config insertion or identity bypass was used.
 
 The init skip flags preserved AGENTS and hooks. Contrary to the help-based
 plan, `--setup-exclude` appended broad patterns to tracked `.gitignore` before
@@ -100,13 +103,14 @@ provide discovery; a local store is not cross-machine synchronization.
   itself passes independent outcome review, with owned merge/archive closure.
   A real unresolved prerequisite keeps its affected outcome open.
 
-## First actions
+## Initial observations
 
 PR #355 was reviewed and passed 30 hosted checks before merge. Its merge is
 `49d85358`; post-merge Rust 39090025708, docs 39090025772 and security 39090025736
-are live observations, not yet passing acceptance. Finish that reconciliation
-before closing NU13. In parallel prepare store adoption and its independent
-review. SP01 remains the next proposed core filesystem attribution slice;
+were pending at goal creation; exact-merge checks subsequently passed. See
+research/nu13-postmerge-verification.json. Beads owns subsequent live state;
+finish native reconciliation before closing NU13. SP01 is the core filesystem
+attribution slice;
 measure repeated metadata/enumeration/discovery before retaining optimization.
 
 ## Discovered closure prerequisite

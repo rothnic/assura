@@ -34,6 +34,10 @@ Read-only workers do not claim or mutate issues. A local copy of a configured
 remote is distinct from a successfully synchronized write; verify native
 backup/sync and remote identity under the installed version's contract.
 
+For the observed remote-schema/missing-prefix recovery, use
+[store recovery](beads-store-recovery.md); never replay its commands before
+refreshing identity, versions, ownership and current evidence.
+
 ## Import and retries
 
 1. Freeze the reviewed input revision and graph SHA-256; inspect all source
