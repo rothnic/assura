@@ -57,11 +57,13 @@ all serialized coordinator writes. Freeze reviewed source/hash, check existing
 identities, retain dry-run and key/ID/edge/readiness proof, and verify native
 Dolt backup before/after import. JSONL is interchange, not canonical sync.
 
-The standard `.beads` path is tool-managed local database/runtime state,
-excluded from source control by supported setup. Exclude that exact directory
-from Assura checks, like other managed runtime outputs; no broad root
-allowance or weakened source rule. The goal's tracked mapping and contracts
-provide discovery; a local store is not cross-machine synchronization.
+Dolt database/runtime files are ignored by Beads' standard `.beads/.gitignore`;
+metadata/config may be tracked and init can commit them. This checkout keeps
+its whole local `.beads` directory out of Git through an explicit repository
+info/exclude entry. Exclude that exact directory from Assura checks, like
+other managed runtime outputs; no broad root allowance or weakened source
+rule. Tracked mapping/contracts provide discovery. Actual native remote sync
+and fresh-clone readback are distinct from local storage and backup.
 
 ## Per-bead execution contract
 
