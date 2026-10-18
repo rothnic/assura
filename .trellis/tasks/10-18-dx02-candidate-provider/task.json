@@ -3,7 +3,7 @@
   "name": "dx02-candidate-provider",
   "title": "Bound candidate delivery provider reads and preserve failure context",
   "description": "Bead ae-i4d DX02. Implement reviewed candidate-scoped current GitHub details for delivery writes, preserving complete identity discovery, strict fleet audit coverage, no fallback, generation binding and contextual fail-closed diagnostics.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "Candidate GitHub provider reads and bounded unavailable diagnostics; existing delivery modules, scoped contract tests and delivery spec only",
   "package": null,
