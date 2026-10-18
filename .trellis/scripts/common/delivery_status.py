@@ -402,7 +402,6 @@ def _required_facts(
             checks_evidence,
             postmerge_evidence,
             inventory.base_oid,
-            receipt.get("_terminal_receipt_verified", receipt.get("outcome") == "delivered" and receipt.get("closure") in {"verified", "closed"}) if isinstance(receipt, dict) else False,
         )
         remote_base_verified = True
         if isinstance(receipt, dict) and receipt.get("outcome") == "delivered":

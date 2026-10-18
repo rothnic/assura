@@ -254,8 +254,8 @@ def _github_checks_match_pr(
         or (
             not _check_success(check)
             and not (
-                merge_state == "clean"
-                and str(check.get("conclusion") or "").lower() == "skipped"
+                str(check.get("conclusion") or "").lower() == "skipped"
+                and (merge_state == "clean" or merged_unknown)
             )
         )
         for check in checks
@@ -294,7 +294,6 @@ def _historical_evidence_context(
     checks: Any,
     postmerge: Any,
     current_base_oid: str | None,
-    terminal_receipt: bool,
 ) -> tuple[bool, str | None, str | None]:
     """Select evidence bases for a terminal receipt or exact merged-PR close."""
     provider_merged = (

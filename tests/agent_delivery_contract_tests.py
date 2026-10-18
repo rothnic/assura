@@ -697,7 +697,8 @@ class DeliveryProjectionTests(unittest.TestCase):
                 "reviewDecision": "APPROVED",
                 "reviews": [{"id": "review-21", "author": {"login": "reviewer"}, "state": "APPROVED"}],
                 "statusCheckRollup": [
-                    {"databaseId": "job-21", "name": "process-contracts", "detailsUrl": check_url, "conclusion": "SUCCESS"}
+                    {"databaseId": "job-21", "name": "process-contracts", "detailsUrl": check_url, "conclusion": "SUCCESS"},
+                    {"databaseId": "security-job-21", "name": "Security Audit", "conclusion": "SKIPPED"},
                 ],
             }
             fake_gh = repo / ".test-bin" / "gh"
@@ -1788,55 +1789,55 @@ class DeliveryProjectionTests(unittest.TestCase):
                 )
             )
 
-            merged_unknown_all_success = {
-                **provider_pr,
-                "mergeStateStatus": "UNKNOWN",
-                "statusCheckRollup": [provider_pr["statusCheckRollup"][0]],
+            unknown_pr = {
+                "number": 14,
+                "head_oid": tip,
+                "merge_state_status": "unknown",
+                "merged": True,
+                "merge_oid": merged_oid,
+                "base_oid": base_oid,
             }
+            evidenced_success = {
+                "run_id": "run-14",
+                "job_id": "job-14",
+                "name": "process-contracts",
+                "conclusion": "SUCCESS",
+            }
+            optional_skip = {
+                "run_id": "run-14",
+                "job_id": "security-job-14",
+                "name": "Security Audit",
+                "conclusion": "SKIPPED",
+            }
+
+            def accepted(checks: list[dict], pr: dict = unknown_pr, check_evidence: dict = evidence["checks"]) -> bool:
+                return delivery_status._github_checks_match_pr(
+                    check_evidence, {**pr, "checks": checks}
+                )
+
             self.assertTrue(
-                delivery_status._github_checks_match_pr(
-                    evidence["checks"],
-                    {
-                        "number": merged_unknown_all_success["number"],
-                        "head_oid": merged_unknown_all_success["headRefOid"],
-                        "merge_state_status": "unknown",
-                        "merged": True,
-                        "merge_oid": merged_unknown_all_success["mergeCommit"]["oid"],
-                        "base_oid": merged_unknown_all_success["baseRefOid"],
-                        "checks": [
-                            {
-                                "run_id": "run-14",
-                                "job_id": "job-14",
-                                "name": "process-contracts",
-                                "conclusion": "SUCCESS",
-                            }
-                        ],
-                    },
+                accepted([evidenced_success, optional_skip]),
+                "a non-evidenced conditional skip is allowed with exact merged context",
+            )
+            self.assertFalse(accepted([optional_skip]), "all-skipped rollups lack a successful evidenced job")
+            self.assertFalse(
+                accepted(
+                    [optional_skip],
+                    check_evidence={**evidence["checks"], "job_id": "security-job-14", "check_name": "Security Audit"},
                 ),
-                "merged UNKNOWN may use exact fully successful provider checks",
+                "the evidenced job itself must succeed",
             )
             self.assertFalse(
-                delivery_status._github_checks_match_pr(
-                    evidence["checks"],
-                    {
-                        "number": 14,
-                        "head_oid": tip,
-                        "merge_state_status": "unknown",
-                        "merged": True,
-                        "merge_oid": merged_oid,
-                        "base_oid": base_oid,
-                        "checks": [
-                            {
-                                "run_id": "run-14",
-                                "job_id": "security-job-14",
-                                "name": "Security Audit",
-                                "conclusion": "SKIPPED",
-                            }
-                        ],
-                    },
+                accepted(
+                    [evidenced_success, {**optional_skip, "conclusion": "PENDING"}],
                 ),
-                "UNKNOWN cannot use a skipped check without CLEAN merge state",
+                "pending checks remain unresolved",
             )
+            self.assertFalse(accepted([evidenced_success], {**unknown_pr, "merged": False}))
+            self.assertFalse(accepted([evidenced_success], {**unknown_pr, "merge_oid": "short"}))
+            self.assertFalse(accepted([evidenced_success], {**unknown_pr, "base_oid": None}))
+            self.assertFalse(accepted([evidenced_success], {**unknown_pr, "number": 15}))
+            self.assertFalse(accepted([evidenced_success], {**unknown_pr, "head_oid": "e" * 40}))
         finally:
             directory.cleanup()
 

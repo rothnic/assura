@@ -185,10 +185,13 @@ boolean or stale URL is not terminal evidence.
 
 For a PR already reported as merged, GitHub may return `UNKNOWN` for
 `mergeStateStatus`. In that case provider checks remain usable only when the
-payload includes full base and merge OIDs, the exact PR number/head and run/job
-correlation still match, and every reported check succeeded. A skipped check is
-accepted only with `CLEAN`; `UNKNOWN` never makes a skipped or pending check
-optional.
+payload includes full base and merge OIDs and the exact PR number/head still
+matches. A `SKIPPED` row may be ignored as a non-evidenced conditional job only
+for `CLEAN` state or this exact merged `UNKNOWN` context. The run/job recorded
+as evidence must itself match the provider and have `SUCCESS`; a skipped or
+all-skipped evidenced job cannot satisfy it. Missing, pending, neutral,
+failure, blocked, or open `UNKNOWN` states remain unresolved. A skipped
+workflow whose checks remain pending is unresolved as well.
 
 The first delivered close may bind its pre-merge checks to the exact provider
 `baseRefOid` even though the current base already contains the merge. This
