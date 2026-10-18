@@ -345,7 +345,7 @@
       "priority": 1,
       "issue_type": "bug",
       "review_state": "runtime-fix-and-evidence-independently-reviewed",
-      "execution_state": "verified-awaiting-hosted-checks",
+      "execution_state": "verified-integration-held",
       "area": "core-correctness",
       "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
       "evidence": [
@@ -367,7 +367,7 @@
         "A06"
       ],
       "owner": "/root/nu13_implement",
-      "next_action": "Observe exact-head PR355 OS/features/install/performance gates; integrate only after all applicable checks and review pass, then verify post-merge outcome and close owned delivery. Preserve any failed gate and route its smallest diagnosis; no threshold waiver.",
+      "next_action": "Observe final-head PR355 gates and obtain Cloudflare production-branch/deploy-command evidence or explicit authority for a production-coupled merge; integrate only after both gates and authority resolve, then prove post-merge outcome and native closure.",
       "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.",
       "execution": {
         "task": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage",
@@ -404,7 +404,17 @@
           "documentation": "https://github.com/rothnic/assura/actions/runs/39085547003",
           "security": "https://github.com/rothnic/assura/actions/runs/39085547054"
         },
-        "local_maintenance": "Installed /usr/local/bin Assura0.4.0 is stale and unchanged; published0.4.1 pair upgrade is separate local maintenance, with checksum/rollback/fresh-shell verification."
+        "local_maintenance": "Installed /usr/local/bin Assura0.4.0 is stale and unchanged; published0.4.1 pair upgrade is separate local maintenance, with checksum/rollback/fresh-shell verification.",
+        "deployment_boundary": {
+          "held_action": "merge PR355 to master; any further affected remote push",
+          "observed": "External Workers Builds created version33213860-a566-42c2-a356-20cf5480fa35 and an explicit candidate branch preview; production deployment is not proven.",
+          "unknown": "Cloudflare service production branch and deploy command; repository GitHub workflows and empty deployment API do not cover the external integration.",
+          "access": "wrangler auth refresh400/not logged in; no browser provider; independent Luna dashboard read challenged. No settings changed.",
+          "resolution": "Read-only authorized settings evidence, or Nick authorization for the production-coupled merge after all required checks pass.",
+          "reviewer": "/root/nu13_luna_final_review",
+          "evidence": "/Users/nroth/workspace/.assura-review-20261017/nu13-cloudflare-check.json",
+          "correction": "Pre-push trigger inspection covered GitHub workflows but missed the external Cloudflare preview integration; retain the observed publication and hold further affected actions."
+        }
       }
     },
     {
@@ -421,14 +431,16 @@
         "systemic-performance-hypotheses.json",
         "src/cli/check/file_limits.rs:19-25",
         "src/cli/check/test_relationship.rs:18-19",
-        "src/cli/check/rule_plan.rs:58-82"
+        "src/cli/check/rule_plan.rs:58-82",
+        "NU13 candidate4dc727d Luna caller trace: systemic-filesystem-review.md#nu13-follow-up-discovery-attribution"
       ],
       "acceptance_criteria": [
         "Profile ordinary public check with a source/binary/policy-bound rich repository and controlled wide-tree case; count stat-family calls, directory enumerations, reads/bytes, allocations or peak RSS, CPU and wall time by consumer.",
         "First discriminate no-size-policy eager metadata; then attribute identical-scope test/lifecycle enumeration. Preserve a naming-only negative control and full result/exit equivalence.",
         "Produce one smallest supported keep/defer decision; do not implement a shared inventory, index rewrite, daemon, new entrypoint or parallel traversal merely because source work is repeated.",
         "For any later performance candidate, use uninstrumented balanced same-host before/after public-command samples, exact quiet comparison, existing keep/stop criteria, accepted-fixture spillover and unchanged no-slower/native/warm gates.",
-        "Keep literal/glob scope indexing conditional on measured dominance. Incremental eligibility expansion additionally requires NU13 coverage resolution and deletion/rename/provider/config invalidation proof; source review alone proves no gain."
+        "Keep literal/glob scope indexing conditional on measured dominance. Incremental eligibility expansion additionally requires NU13 coverage resolution and deletion/rename/provider/config invalidation proof; source review alone proves no gain.",
+        "Separately count discovery/config-candidate metadata calls for no-cache root/nested and warm-cache Git/non-Git checks; NU13 source review identifies duplicate non-Git cache-root discovery but establishes no runtime gain. Preserve cache-only ancestor and invalid-nearest-policy controls."
       ],
       "depends_on": [],
       "related_existing": [

@@ -77,6 +77,26 @@ Assura's current dogfood config enables test relationships, both nonempty docs-l
 
 **Ownership:** This is CF03's existing warm/adapter outcome with CF04 evidence, plus R01 watch correctness where applicable. Extend their evidence/acceptance; do not create a duplicate generic “fast hooks” card. Resolve local capability coverage and established correctness issues first. Do not reopen terminal CF03/04 historical status merely to copy this proposal.
 
+## NU13 follow-up: discovery attribution
+
+GPT-6 Luna read-only caller review at candidate `4dc727d` distinguishes the
+new cache-root fallback from the ordinary filesystem hot path. No-cache Check
+never calls `default_check_cache_dir`. Git-backed cached checks resolve the
+Git common directory and avoid its new discovery fallback. Direct policy-root
+checks still return before ancestor discovery. For nested targets, the new
+candidate search replaces the old ancestor search; source inspection alone
+does not establish extra per-ancestor work or latency regression.
+
+Opt-in non-Git cached checks do repeat `discover_project`: first for cache-root
+selection, then in the cached runner. Its runtime fraction remains unmeasured.
+SP01 should count discovery calls and config-candidate/`.git` metadata checks
+separately from P1 per-file stats and P2 enumerations. Include no-cache root and
+nested-file cases, plus warm-cache Git and non-Git cases, preserving NU13's
+cache-only ancestor and invalid-nearest-policy controls. If material under the
+existing keep/stop criteria, reuse resolved project/config identity within one
+check; otherwise defer. This adds an attribution control to SP01, not another
+optimization task, persistent cache or claimed gain.
+
 ## Backlog disposition and sequence
 
 1. Preserve NU11/R02/R03's current-head strict no-slower diagnosis obligation separately. P1/P2 are not claimed as explanations for the current hosted miss.
