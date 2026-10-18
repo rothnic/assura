@@ -1,0 +1,2 @@
+{"file": ".trellis/tasks/10-18-sp04-native-admission/prd.md", "reason": "Review the executed loader/annotation controls and preserve exact compatibility acceptance."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Check native gate compatibility, report metadata, and existing performance policy."}
