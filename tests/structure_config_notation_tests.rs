@@ -1,7 +1,13 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
+use assura::cli::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use assura::cli::run_structure_check;
+use assura::cli::{
+    run_structure_check_cached, run_structure_check_with_artifact, CompiledStructureConfigArtifact,
+    PreparedStructureCheck,
+};
+use assura::config::loader::ConfigLoader;
 use tempfile::TempDir;
 
 fn write_config(project: &TempDir, config: &str) {
@@ -427,6 +433,257 @@ fn captured_counterpart_passes_when_test_file_exists() {
 
     assert!(report.success, "{:#?}", report.violations);
     assert!(report.violations.is_empty());
+}
+
+#[test]
+fn targeted_captured_file_checks_selected_producer_without_expanding_scope() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, relationship_pair_config());
+    fs::create_dir_all(project.path().join("src/components")).unwrap();
+    let producer = project.path().join("src/components/Button.tsx");
+    let provider = project.path().join("src/components/Button.test.tsx");
+    fs::write(&producer, "").unwrap();
+    fs::write(project.path().join("src/components/Other.tsx"), "").unwrap();
+
+    let missing = run_structure_check(Some(producer.clone()), None, false).unwrap();
+    assert!(!missing.success);
+    assert_eq!(missing.checked_path, producer.canonicalize().unwrap());
+    assert_eq!(missing.violations.len(), 1);
+    assert_eq!(
+        missing.violations[0].rule,
+        "relationship:captured-counterpart-1"
+    );
+    assert_eq!(
+        missing.violations[0].path,
+        PathBuf::from("src/components/Button.tsx")
+    );
+    assert!(missing.violations[0]
+        .message
+        .contains("src/components/Button.test.tsx"));
+
+    fs::write(&provider, "").unwrap();
+    let provided = run_structure_check(Some(producer), None, false).unwrap();
+    assert!(provided.success, "{:#?}", provided.violations);
+    assert!(provided.violations.is_empty());
+    let provider_only = run_structure_check(Some(provider), None, false).unwrap();
+    assert!(provider_only.success, "{:#?}", provider_only.violations);
+    assert!(provider_only.violations.is_empty());
+
+    let full = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(!full.success);
+    assert_eq!(full.violations.len(), 1);
+    assert_eq!(
+        full.violations[0].path,
+        PathBuf::from("src/components/Other.tsx")
+    );
+}
+
+#[test]
+fn targeted_captured_directory_checks_selected_producer_and_external_provider() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, package_doc_config());
+    let producer = project.path().join("packages/core");
+    let provider = project.path().join("docs/packages/core.md");
+    fs::create_dir_all(&producer).unwrap();
+    fs::create_dir_all(project.path().join("packages/other")).unwrap();
+
+    let missing = run_structure_check(Some(producer.clone()), None, false).unwrap();
+    assert!(!missing.success);
+    assert_eq!(missing.violations.len(), 1);
+    assert_eq!(missing.violations[0].rule, "relationship:captured-doc-1");
+    assert_eq!(missing.violations[0].path, PathBuf::from("packages/core"));
+    assert!(missing.violations[0]
+        .message
+        .contains("docs/packages/core.md"));
+
+    fs::create_dir_all(provider.parent().unwrap()).unwrap();
+    fs::write(&provider, "# Core\n").unwrap();
+    let provided = run_structure_check(Some(producer), None, false).unwrap();
+    assert!(provided.success, "{:#?}", provided.violations);
+    assert!(provided.violations.is_empty());
+    let provider_only = run_structure_check(Some(provider), None, false).unwrap();
+    assert!(provider_only.success, "{:#?}", provider_only.violations);
+    assert!(provider_only.violations.is_empty());
+
+    let full = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(!full.success);
+    assert_eq!(full.violations.len(), 1);
+    assert_eq!(full.violations[0].path, PathBuf::from("packages/other"));
+}
+
+#[test]
+fn targeted_captured_producers_respect_explicit_exclusions() {
+    for (config, selected, directory) in [
+        (
+            relationship_pair_config(),
+            "src/components/Button.tsx",
+            false,
+        ),
+        (package_doc_config(), "packages/core", true),
+    ] {
+        let project = TempDir::new().unwrap();
+        write_config(&project, &format!("{config}  - {selected}\n"));
+        let producer = project.path().join(selected);
+        if directory {
+            fs::create_dir_all(&producer).unwrap();
+        } else {
+            fs::create_dir_all(producer.parent().unwrap()).unwrap();
+            fs::write(&producer, "").unwrap();
+        }
+        for path in [producer, project.path().to_path_buf()] {
+            let report = run_structure_check(Some(path), None, false).unwrap();
+            assert!(report.success, "{selected}: {:#?}", report.violations);
+            assert!(report.violations.is_empty());
+        }
+    }
+}
+
+#[test]
+fn targeted_captured_relationships_preserve_explicit_ls_lint_mode() {
+    for (config, selected, directory) in [
+        (
+            relationship_pair_config(),
+            "src/components/Button.tsx",
+            false,
+        ),
+        (package_doc_config(), "packages/core", true),
+    ] {
+        let project = TempDir::new().unwrap();
+        write_config(&project, config);
+        let producer = project.path().join(selected);
+        if directory {
+            fs::create_dir_all(&producer).unwrap();
+        } else {
+            fs::create_dir_all(producer.parent().unwrap()).unwrap();
+            fs::write(&producer, "").unwrap();
+        }
+        let ordinary = run_structure_check(Some(producer.clone()), None, false).unwrap();
+        assert!(!ordinary.success, "{selected}: {ordinary:#?}");
+        let compatibility = run_structure_check_with_target_mode(
+            Some(producer),
+            None,
+            false,
+            CheckTargetMode::LsLint,
+        )
+        .unwrap();
+        assert!(
+            compatibility.success,
+            "{selected}: {:#?}",
+            compatibility.violations
+        );
+        assert!(compatibility.violations.is_empty());
+    }
+}
+
+#[test]
+fn targeted_captured_relationships_match_compiled_checks() {
+    for (config, selected, provider, directory) in [
+        (
+            relationship_pair_config(),
+            "src/components/Button.tsx",
+            "src/components/Button.test.tsx",
+            false,
+        ),
+        (
+            package_doc_config(),
+            "packages/core",
+            "docs/packages/core.md",
+            true,
+        ),
+    ] {
+        let project = TempDir::new().unwrap();
+        write_config(&project, config);
+        let producer = project.path().join(selected);
+        if directory {
+            fs::create_dir_all(&producer).unwrap();
+        } else {
+            fs::create_dir_all(producer.parent().unwrap()).unwrap();
+            fs::write(&producer, "").unwrap();
+        }
+        let config_path = project.path().join(".assura/config.yml");
+        let artifact = CompiledStructureConfigArtifact::new(
+            ConfigLoader::load_validated(&config_path).unwrap(),
+        );
+        for provided in [false, true] {
+            if provided {
+                let provider = project.path().join(provider);
+                fs::create_dir_all(provider.parent().unwrap()).unwrap();
+                fs::write(provider, "").unwrap();
+            }
+            let direct = run_structure_check(Some(producer.clone()), None, false).unwrap();
+            let compiled = run_structure_check_with_artifact(
+                project.path().to_path_buf(),
+                config_path.clone(),
+                producer.clone(),
+                artifact.clone(),
+                false,
+            )
+            .unwrap();
+            assert_eq!(direct.success, provided, "{selected}: {direct:#?}");
+            assert_eq!(compiled.success, provided, "{selected}: {compiled:#?}");
+            assert_eq!(
+                serde_json::to_value(&direct.violations).unwrap(),
+                serde_json::to_value(&compiled.violations).unwrap()
+            );
+        }
+    }
+}
+
+#[test]
+fn targeted_captured_relationship_cache_tracks_provider_config_and_producer_changes() {
+    let project = TempDir::new().unwrap();
+    let cache = TempDir::new().unwrap();
+    write_config(&project, relationship_pair_config());
+    fs::create_dir_all(project.path().join("src/components")).unwrap();
+    let producer = project.path().join("src/components/Button.tsx");
+    let provider = project.path().join("src/components/Button.test.tsx");
+    fs::write(&producer, "").unwrap();
+    fs::write(&provider, "").unwrap();
+    let check = |path| {
+        run_structure_check_cached(Some(path), None, false, cache.path().to_path_buf()).unwrap()
+    };
+    assert!(check(producer.clone()).success);
+    fs::remove_file(&provider).unwrap();
+    let missing = check(producer.clone());
+    assert!(!missing.success);
+    assert_eq!(missing.violations.len(), 1);
+    assert_eq!(
+        missing.violations[0].rule,
+        "relationship:captured-counterpart-1"
+    );
+    write_config(
+        &project,
+        &relationship_pair_config().replace("exists:1", "{}"),
+    );
+    assert!(check(producer.clone()).success);
+    write_config(&project, relationship_pair_config());
+    assert!(!check(producer.clone()).success);
+    fs::remove_file(producer).unwrap();
+    let deleted = check(project.path().to_path_buf());
+    assert!(deleted.success, "{:#?}", deleted.violations);
+    assert!(deleted.violations.is_empty());
+}
+
+#[test]
+fn targeted_captured_relationships_keep_prepared_changed_path_full_fallback() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, relationship_pair_config());
+    fs::create_dir_all(project.path().join("src/components")).unwrap();
+    let provider = project.path().join("src/components/Button.test.tsx");
+    fs::write(project.path().join("src/components/Button.tsx"), "").unwrap();
+    fs::write(&provider, "").unwrap();
+    fs::write(project.path().join("src/components/Other.tsx"), "").unwrap();
+    let prepared =
+        PreparedStructureCheck::load_for_path(Some(provider.clone()), None, false).unwrap();
+    assert!(!prepared.supports_incremental_path_checks());
+    let report = prepared.check_changed_path(provider).unwrap();
+    assert_eq!(report.checked_path, project.path().canonicalize().unwrap());
+    assert!(!report.success);
+    assert_eq!(report.violations.len(), 1);
+    assert_eq!(
+        report.violations[0].path,
+        PathBuf::from("src/components/Other.tsx")
+    );
 }
 
 #[test]
