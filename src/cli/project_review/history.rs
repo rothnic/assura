@@ -295,7 +295,18 @@ fn signal_pressure(finding: &ProjectReviewFinding) -> Option<usize> {
         .filter_map(|part| part.parse::<usize>().ok())
         .collect::<Vec<_>>();
     let actual = *numbers.first()?;
-    match finding.id.strip_prefix("blocking:")? {
+    let rule = if finding.source == "doctor.configured_nonblocking_violations" {
+        if finding.id.starts_with("configured:max_lines:") {
+            "max_lines"
+        } else if finding.id.starts_with("configured:max_size:") {
+            "max_size"
+        } else {
+            return None;
+        }
+    } else {
+        finding.id.strip_prefix("blocking:")?
+    };
+    match rule {
         "max_lines" | "max_size" => numbers
             .last()
             .copied()

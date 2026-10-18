@@ -2,6 +2,8 @@
 
 ## Goal
 
+The coordinator assignment `/root/nu01_review_advisories` maps to Trellis owner alias `nu01-review-advisories`; delivery authority is registered at `prd.md#goal`.
+
 Make Review expose configured nonblocking structural violations with named stable findings and complete history, while retaining advisory Review exits, existing Check severity exits, and compact omission of unchanged nonblocking action rows.
 
 ## Requirements
@@ -14,10 +16,10 @@ Make Review expose configured nonblocking structural violations with named stabl
 
 ## Acceptance
 
-- [ ] A configured `max_lines` fixture crossing the limit yields the named configured advisory in Review, with stable identity across runs and correct new/worsened/resolved history.
-- [ ] Review exits 0 and Check exit behavior remains unchanged.
-- [ ] Unchanged nonblocking findings remain hidden from compact action output while full JSON retains their history.
-- [ ] Bounded output totals and ordering are correct, including overflow cases.
+- [x] A configured low-severity `max_lines` fixture crossing the limit yields the named configured advisory in Review, ordered before optional setup suggestions, with stable identity across runs and correct new/worsened/resolved history.
+- [x] Review exits 0 and Check exit behavior remains unchanged.
+- [x] Unchanged nonblocking findings remain hidden from compact action output while full JSON retains their history.
+- [x] Bounded output totals and ordering are correct; full JSON retains all finding states and compact text reports exact overflow counts.
 - [ ] Focused review tests pass; required final validation/review gates are recorded with any held tier.
 
 ## Definition of Done

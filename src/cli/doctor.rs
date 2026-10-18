@@ -1,14 +1,14 @@
 //! Project doctor and path explanation commands.
 
+use super::ExitCode;
 use super::args::CheckOutputFormat;
 use super::check::{
-    explain_structure_path, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
-    PathExplainReport,
+    CheckError, CheckTargetMode, PathExplainReport, explain_structure_path,
+    run_structure_check_with_target_mode,
 };
 pub(super) use super::doctor_report::{
     DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorBuild, ProjectDoctorReport,
 };
-use super::ExitCode;
 use crate::config::loader::ConfigLoader;
 use std::path::{Path, PathBuf};
 
@@ -78,10 +78,29 @@ pub(super) fn build_project_doctor_with_structure_report(
         run_structure_check_with_target_mode(path, config, false, CheckTargetMode::Recursive)?;
     let config = ConfigLoader::load(&report.config_path)?;
     let doctor = ProjectDoctorReport::from_check(&report, &config);
+    let configured_nonblocking_violations = configured_nonblocking_violations(&report);
     Ok(ProjectDoctorBuild {
         doctor,
         structure_report: report,
+        configured_nonblocking_violations,
     })
+}
+
+fn configured_nonblocking_violations(
+    report: &super::check::StructureCheckReport,
+) -> Vec<DoctorViolation> {
+    report
+        .violations
+        .iter()
+        .filter(|violation| !violation.blocking)
+        .map(|violation| DoctorViolation {
+            path: violation.path.display().to_string(),
+            rule: violation.rule.clone(),
+            severity: violation.severity.clone(),
+            blocking: false,
+            message: violation.message.clone(),
+        })
+        .collect()
 }
 
 fn render_doctor(report: &ProjectDoctorReport, format: CheckOutputFormat) -> String {
