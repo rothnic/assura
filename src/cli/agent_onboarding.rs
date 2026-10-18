@@ -86,10 +86,10 @@ fn run_agent_onboarding(
     let had_config = config_path.is_file();
     if had_config {
         if let Some(recipe_file) = recipe_file.as_ref() {
-            merge_local_recipe(&config_path, recipe_file)?;
+            merge_local_recipe(&project_root, &config_path, recipe_file)?;
         }
     } else if let Some(recipe_file) = recipe_file.as_ref() {
-        materialize_initial_local_recipe(&config_path, recipe_file)?;
+        materialize_initial_local_recipe(&project_root, &config_path, recipe_file)?;
     }
     let mut files = Vec::new();
     let quality_advice = onboarding_quality_advice(&project_root);
@@ -190,6 +190,7 @@ fn run_agent_onboarding(
 }
 
 fn materialize_initial_local_recipe(
+    project_root: &Path,
     config_path: &Path,
     recipe_file: &PathBuf,
 ) -> Result<(), String> {
@@ -200,17 +201,18 @@ fn materialize_initial_local_recipe(
     let parent = config_path
         .parent()
         .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
-    ensure_generated_path_is_safe(parent, config_path)?;
+    ensure_generated_path_is_safe(project_root, config_path)?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     crate::cli::local_recipe::write_config_atomically(config_path, &source)
         .map_err(|error| error.message().to_string())
 }
 
-fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), String> {
-    let root = config_path
-        .parent()
-        .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
-    ensure_generated_path_is_safe(root, config_path)?;
+fn merge_local_recipe(
+    project_root: &Path,
+    config_path: &Path,
+    recipe_file: &Path,
+) -> Result<(), String> {
+    ensure_generated_path_is_safe(project_root, config_path)?;
     let outcome = crate::cli::local_recipe::merge_recipe_file(config_path, recipe_file)
         .map_err(|error| error.message().to_string())?;
     if outcome.conflicts.is_empty() {
@@ -503,9 +505,31 @@ pub(super) fn ensure_generated_path_is_safe(root: &Path, path: &Path) -> Result<
             .map_err(|error| format!("resolve generated path {}: {error}", path.display()))?
             .join(path)
     };
-    let mut current = PathBuf::new();
     let components = absolute.components().collect::<Vec<_>>();
-    for (index, component) in components.iter().enumerate() {
+    let mut prefix = PathBuf::new();
+    let trusted_root_prefix = components
+        .iter()
+        .enumerate()
+        .take(components.len().saturating_sub(1))
+        .find_map(|(index, _)| {
+            prefix.push(components[index].as_os_str());
+            if components[index + 1..]
+                .iter()
+                .any(|component| matches!(component, std::path::Component::ParentDir))
+            {
+                return None;
+            }
+            let metadata = fs::symlink_metadata(&prefix).ok()?;
+            if !(metadata.file_type().is_dir() || metadata.file_type().is_symlink()) {
+                return None;
+            }
+            (prefix.canonicalize().ok().as_deref() == Some(root)).then_some(index + 1)
+        });
+    let (mut current, start_index) = match trusted_root_prefix {
+        Some(index) => (root.to_path_buf(), index),
+        None => (PathBuf::new(), 0),
+    };
+    for (index, component) in components.iter().enumerate().skip(start_index) {
         current.push(component.as_os_str());
         let is_leaf = index + 1 == components.len();
         let metadata = match fs::symlink_metadata(&current) {

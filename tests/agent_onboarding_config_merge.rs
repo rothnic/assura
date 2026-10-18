@@ -562,3 +562,150 @@ structure:
         .unwrap()
         .contains("$project-agentic-baseline"));
 }
+
+#[test]
+fn agent_onboard_accepts_canonical_selected_config_path() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    let selected = project.path().join(".assura/custom.yml");
+    let original = b"version: \"2.0\"\nstructure:\n  ./:\n    extra: true\n";
+    fs::write(&selected, original).unwrap();
+    let canonical_selected = selected.canonicalize().unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "--config",
+        canonical_selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["rule_recommendations"][0]["status"], "not-applied");
+    assert_eq!(fs::read(selected).unwrap(), original);
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_accepts_config_through_alias_of_trusted_project_root() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    let selected = project.path().join(".assura/custom.yml");
+    fs::write(
+        &selected,
+        "version: \"2.0\"\nstructure:\n  ./:\n    extra: true\n",
+    )
+    .unwrap();
+    let project_name = project.path().file_name().unwrap().to_string_lossy();
+    let alias = project
+        .path()
+        .with_file_name(format!("{project_name}-alias"));
+    symlink(project.path(), &alias).unwrap();
+    let aliased_selected = alias.join(".assura/custom.yml");
+
+    let output = json_from_success(run_assura(&[
+        "--config",
+        aliased_selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    fs::remove_file(&alias).unwrap();
+
+    assert_eq!(output["rule_recommendations"][0]["status"], "not-applied");
+    assert!(fs::read_to_string(selected).unwrap().contains("extra: true"));
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_refuses_config_leaf_symlink_without_changing_external_bytes() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let external = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".assura")).unwrap();
+    let target = external.path().join("user-config.yml");
+    let original = b"version: \"2.0\"\nuser_owned: true\n";
+    fs::write(&target, original).unwrap();
+    let selected = project.path().join(".assura/custom.yml");
+    symlink(&target, &selected).unwrap();
+
+    let output = run_assura(&[
+        "--config",
+        selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("is a symlink"));
+    assert_eq!(fs::read(target).unwrap(), original);
+    assert!(fs::symlink_metadata(selected)
+        .unwrap()
+        .file_type()
+        .is_symlink());
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_refuses_config_parent_symlink_without_changing_external_bytes() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let external = TempDir::new().unwrap();
+    let target = external.path().join("custom.yml");
+    let original = b"version: \"2.0\"\nuser_owned: true\n";
+    fs::write(&target, original).unwrap();
+    let assura_dir = project.path().join(".assura");
+    symlink(external.path(), &assura_dir).unwrap();
+    let selected = assura_dir.join("custom.yml");
+
+    let output = run_assura(&[
+        "--config",
+        selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+
+    assert!(!output.status.success());
+    assert!(String::from_utf8_lossy(&output.stderr).contains("is a symlink"));
+    assert_eq!(fs::read(target).unwrap(), original);
+    assert!(fs::symlink_metadata(assura_dir)
+        .unwrap()
+        .file_type()
+        .is_symlink());
+}
+
+#[test]
+fn agent_onboard_keeps_regular_external_selected_config_valid() {
+    let project = TempDir::new().unwrap();
+    let external = TempDir::new().unwrap();
+    let external_root = external.path().canonicalize().unwrap();
+    let selected = external_root.join("custom.yml");
+    let original = b"version: \"2.0\"\nstructure:\n  ./:\n    extra: true\n";
+    fs::write(&selected, original).unwrap();
+
+    let output = json_from_success(run_assura(&[
+        "--config",
+        selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+
+    assert_eq!(output["rule_recommendations"][0]["status"], "not-applied");
+    assert_eq!(fs::read(selected).unwrap(), original);
+}
