@@ -1,0 +1,7 @@
+{
+  "prior_edges": 91,
+  "post_intake_edges": 116,
+  "every_prior_edge_preserved_exactly": true,
+  "new_edges": 25,
+  "expected_new_edges": "15 intake blocks +9 parent edges +1 NU13->NU14 discovered prerequisite"
+}

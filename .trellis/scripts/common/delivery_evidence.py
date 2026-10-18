@@ -227,17 +227,24 @@ def _check_success(check: dict[str, Any]) -> bool:
 def _github_checks_match_pr(
     value: Any, pull_request: dict[str, Any] | None
 ) -> bool:
-    """Require a passing provider check and a clean provider merge state.
+    """Require a correlated passing check and a verifiable provider merge state.
 
     GitHub includes conditionally skipped jobs in statusCheckRollup. They are
-    not passes, but a skipped optional job is valid when GitHub reports the PR
-    clean and the recorded check itself is a successful, bound job.
+    not passes; they are tolerated only for a clean PR. A merged PR with
+    UNKNOWN state requires full merge/base OIDs and all checks to pass.
     """
     if not _github_evidence_matches_pr(value, pull_request):
         return False
     if not isinstance(value, dict) or not isinstance(pull_request, dict):
         return False
-    if str(pull_request.get("merge_state_status") or "").lower() != "clean":
+    merge_state = str(pull_request.get("merge_state_status") or "").lower()
+    merged_unknown = (
+        merge_state == "unknown"
+        and pull_request.get("merged") is True
+        and _full_oid(pull_request.get("merge_oid"))
+        and _full_oid(pull_request.get("base_oid"))
+    )
+    if merge_state != "clean" and not merged_unknown:
         return False
     checks = pull_request.get("checks")
     if not isinstance(checks, list) or not checks:
@@ -246,7 +253,10 @@ def _github_checks_match_pr(
         not isinstance(check, dict)
         or (
             not _check_success(check)
-            and str(check.get("conclusion") or "").lower() != "skipped"
+            and not (
+                str(check.get("conclusion") or "").lower() == "skipped"
+                and (merge_state == "clean" or merged_unknown)
+            )
         )
         for check in checks
     ):
@@ -275,3 +285,41 @@ def _github_checks_match_pr(
         ):
             return True
     return False
+
+
+def _historical_evidence_context(
+    receipt: dict[str, Any] | None,
+    integration: str,
+    pull_request: dict[str, Any] | None,
+    checks: Any,
+    postmerge: Any,
+    current_base_oid: str | None,
+) -> tuple[bool, str | None, str | None]:
+    """Select evidence bases for a terminal receipt or exact merged-PR close."""
+    provider_merged = (
+        isinstance(receipt, dict)
+        and receipt.get("_provider_verified_merged_context") is True
+        and integration == "pr_merged"
+        and isinstance(pull_request, dict)
+        and pull_request.get("merged") is True
+        and _full_oid(pull_request.get("merge_oid"))
+        and _full_oid(pull_request.get("base_oid"))
+        and isinstance(checks, dict)
+        and checks.get("base_oid") == pull_request.get("base_oid")
+        and isinstance(postmerge, dict)
+        and (postmerge.get("merge_oid") or postmerge.get("integrated_oid"))
+        == pull_request.get("merge_oid")
+    )
+    terminal_receipt = (
+        receipt.get("_terminal_receipt_verified", receipt.get("outcome") == "delivered" and receipt.get("closure") in {"verified", "closed"})
+        if isinstance(receipt, dict)
+        else False
+    )
+    historical = terminal_receipt or provider_merged
+    checks_base = checks.get("base_oid") if historical and isinstance(checks, dict) else current_base_oid
+    postmerge_base = (
+        postmerge.get("merge_oid") or postmerge.get("integrated_oid")
+        if historical and isinstance(postmerge, dict)
+        else current_base_oid
+    )
+    return historical, checks_base, postmerge_base

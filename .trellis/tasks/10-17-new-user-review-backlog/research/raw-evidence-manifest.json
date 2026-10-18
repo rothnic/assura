@@ -1,0 +1,137 @@
+[
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/docs-quickstart.json",
+    "bytes": 2350,
+    "sha256": "4599714ca24dce5d592ed8260594e37dfb90e5c91748462431cd103ab0a2514e"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/install-headers.txt",
+    "bytes": 619,
+    "sha256": "248ed8faba5f85ae31d5aa2457f888448c0811f63c96615baa38742b732c976a"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/installer-shadow.json",
+    "bytes": 571,
+    "sha256": "c11018ae6fcf81339edab9657b447ec214bf66344ebf47b0098924f3a76ecb16"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/installer.json",
+    "bytes": 566,
+    "sha256": "0b1390b1cadb75ec42c56731111d9793c77510b331d9483c595e0ce631d20b1b"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/master-ci-failure.txt",
+    "bytes": 147962,
+    "sha256": "7d24e9b2c9951cc009fb62e01a3b96cb9e9a98cd56398f7ae5f7b37f187c8793"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-check.json",
+    "bytes": 7014,
+    "sha256": "63d5bf79686d69a8326b83896212465c2005d625b33cdd37f1d23ccd08f2799b"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-doctor-after-onboard.json",
+    "bytes": 3498,
+    "sha256": "92ec219b2fe7ca075924ad7010b64ea7d61f372aea7f7e16737480a400c921b8"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-doctor.json",
+    "bytes": 3008,
+    "sha256": "83e00469f8d1fab821ce4807bf45fbd40da58096b3aaa6beeb17fac24773fba9"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-explain.json",
+    "bytes": 14651,
+    "sha256": "c20de980a6ff4f1696d269bc5f7eb3c245601998b8e4ed381014c2268f5f0dbe"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-link-controlled.json",
+    "bytes": 8696,
+    "sha256": "41dd70563b56ad6d68fdd41c749d48e5eb4c647dd8a8a98700c5db1127a4e299"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-onboard.json",
+    "bytes": 9639,
+    "sha256": "18d90952b4a9f4a473d59585ee6dce5692db96b10842d0bf8a665bb059af2121"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-probes.json",
+    "bytes": 68604,
+    "sha256": "94361b506c576dee24575d5770d30dcc3ae5a4678485de2cb27f422238e3b0df"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-review-text.json",
+    "bytes": 694,
+    "sha256": "d274fd154f609061c816798624df18ca99bb3161b3c6af6d779fdae4193794ff"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/self-review.json",
+    "bytes": 12190,
+    "sha256": "2a448e7b609a5ec3806fb79ac88930d9df1a2d6e87dd9433081a32bcadba2fb4"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/topology-start.txt",
+    "bytes": 11837,
+    "sha256": "13a5bd6dcecc7827aa8dfd2e0cfef9987f67c7717ba2579c20f32ac8ed440e0a"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/watch-output.txt",
+    "bytes": 1549,
+    "sha256": "eb6a7091a734c3ec36fb384d7ebe27c9138fa0839fdcefc50838dd3fb5e42ee6"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/watch-stderr.txt",
+    "bytes": 0,
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/watch.json",
+    "bytes": 1936,
+    "sha256": "cea6be56b0438906b393b826c0c7e2955a86f9c496e08a9cd2cdff63692f4af3"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/second-project-trial/metadata.json",
+    "bytes": 1159,
+    "sha256": "b2a5c2d7e75c5590e15c08d0410731c23fd99e8b5a35f0de9586e26f0ea51442"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/second-project-trial/transcript.json",
+    "bytes": 479152,
+    "sha256": "13d628c37b418de736c9a626f0e874e6dacab633d36c578bad63a1dab3b455e1"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/typescript-trial/preservation.json",
+    "bytes": 2231,
+    "sha256": "1bdcdeec3a85123c1f496518630b831ff3c213670ae56591d01f6558755ca2b5"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/typescript-trial/transcript.json",
+    "bytes": 375592,
+    "sha256": "5f43febe1a5a08973473b96ab33e24c73295cc58bd2b89c04669ea894297ac22"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/task-start-hold.txt",
+    "bytes": 558,
+    "sha256": "57eb43b16c02849d67dd004f9adf3e7cd4673c70e1693c4902f7735fb505d429"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/current-source-final-check.json",
+    "bytes": 6247,
+    "sha256": "55af6001faa1f49a089e20d73903c35e787fdb757373006bf3562f519113a1e4"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/docs-final.log",
+    "bytes": 4626,
+    "sha256": "81dcb63dda38c92bac3bef02d0f3597b8b90f9cb6bd1ae01108a29073781d914"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/review-files-check.json",
+    "bytes": 6247,
+    "sha256": "95699cf41f0fedd1c35f9be0b3a19b3054b02926e215bf2d95830aad1811a70a"
+  },
+  {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/evidence/evidence-final.log",
+    "bytes": 647,
+    "sha256": "6684eab82c53d0413a0d53349c8f2e434a97aeb7df9e3b9cc3fadd40b7447589"
+  }
+]

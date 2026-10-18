@@ -1,0 +1,73 @@
+{
+  "scope": "second-pass raw research evidence; no product implementation",
+  "source_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "entries": [
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/transcript.json",
+      "bytes": 1287047,
+      "sha256": "f628b0f49e31bc9ae422b4264c73411428ff6edb4a5601b69a46e3c411c2a6f9"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/measurements.json",
+      "bytes": 40277,
+      "sha256": "5bed2678d915e83e738f28e62d0424d48c297b5648ff0b7caf4e0f676089c271"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/measure.py",
+      "bytes": 5185,
+      "sha256": "38016169b7d1ee085a67ad00a423ac33e2cf7afd8fb60085dc75614813b11d93"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/manifest.json",
+      "bytes": 510,
+      "sha256": "315eda162cad57bcbc63194a1a2bfaa685f3e38b80da2a6707ee6b817d225c2c"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/systemic-filesystem-performance/report.md",
+      "bytes": 17075,
+      "sha256": "115875ca7eb39f56de524c5e082cddd8c38641108e703ed175c9320d4eabec86"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/systemic-filesystem-performance/hypotheses.json",
+      "bytes": 8421,
+      "sha256": "4c219350ff2e8dd211c6be6e95b117253ed6512bb0423349446d352f624a0243"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/ecosystem-fit/report.md",
+      "bytes": 23360,
+      "sha256": "ee7d692c3926e8a6aa17dcadcf79b99d13333607b0ae7771854096c72dae2c3c"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/ecosystem-fit/sources.json",
+      "bytes": 7603,
+      "sha256": "1136385a6468baeb227bacd19ae02bfe4affdbe0be081b2bdd6b90ebbf2761f4"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/capability-pass/transcript.json",
+      "bytes": 7915,
+      "sha256": "ecbb34a6c75eb69da4d227e92b2540bdab7d88cb5f75fe09288d9b9cdcffb1d8"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/capability-pass/analysis.json",
+      "bytes": 925,
+      "sha256": "e0fa86a8dd8abe7820850706455d7ee552dd083fb1eaf472ab02c9b9d38ef08c"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/second-pass-topology.txt",
+      "bytes": 11790,
+      "sha256": "a0b28d413f3bf44f6afee6d33751432a725620ae1890e69c1eab88bc9f0c6d55"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/second-pass-evidence-gate.log",
+      "bytes": 712,
+      "sha256": "72ea99b92013a59bbeeab5870fa9e7dd0d16909bf4cd3e11d43a6d85e39e3aec"
+    },
+    {
+      "path": "/Users/nroth/workspace/.assura-review-20261017/second-pass-structure.json",
+      "bytes": 8535,
+      "sha256": "6faf4a2f876ed64b116b45c0e1076f0150502735150b6bc32ad785818fc947b5"
+    }
+  ],
+  "local_validation_method": "Clean Git archive of final review source; preserves foreign ignored canonical .superpowers/.worktrees paths rather than changing policy or deleting them.",
+  "capability_probe_note": "Original assertion expected targeted relationship failure; observed success is retained with contract uncertainty. No failed hypothesis was relabeled passing."
+}

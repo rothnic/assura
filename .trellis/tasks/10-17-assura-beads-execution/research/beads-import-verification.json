@@ -1,0 +1,42 @@
+{
+  "source_revision": "925ad07f478d5437e7f771254e83710bf556cbc9",
+  "graph_sha256": "8b9f383ba9dacca8069722dfe9503bb38b2e7cda81f3ffb08d1c84f4f7545af4",
+  "original_issue_count": 61,
+  "total_issue_count": 86,
+  "new_nodes": 25,
+  "blocking_edges": 15,
+  "parent_edges": 9,
+  "exact_fields_and_metadata": true,
+  "exact_edge_direction_and_parent_membership": true,
+  "new_graph_acyclic": true,
+  "ready_source_keys": [
+    "A07",
+    "F01",
+    "NEWUSER",
+    "NU01",
+    "NU02",
+    "NU03",
+    "NU04",
+    "NU05",
+    "NU06",
+    "NU07",
+    "NU08",
+    "NU09",
+    "NU10",
+    "NU11",
+    "NU12",
+    "NU13",
+    "SP01",
+    "W02",
+    "W03"
+  ],
+  "blocked_source_keys": [
+    "F02",
+    "F03",
+    "F04",
+    "F05",
+    "R06",
+    "W04"
+  ],
+  "live_status_authority": "Beads; this is dated intake readback only"
+}

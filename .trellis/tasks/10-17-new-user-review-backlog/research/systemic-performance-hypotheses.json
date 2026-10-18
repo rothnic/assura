@@ -1,0 +1,199 @@
+{
+  "schema_version": "assura.systemic-filesystem-performance-review.v1",
+  "source_sha": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "review_kind": "read-only-source-and-existing-evidence",
+  "runtime_measurements_performed": false,
+  "best_first_spike": {
+    "title": "Attribute filesystem work in ordinary policy-rich checks",
+    "first_discriminator": "Measure eager size-validator metadata calls with no size policy; then attribute duplicate enumeration and content reads.",
+    "deliverables": [
+      "source/binary/policy-bound CPU+syscall profile",
+      "public-command alternating wall-clock samples",
+      "file/directory/content-read and byte counts",
+      "peak-memory comparison",
+      "keep/defer decision under existing strict gates"
+    ],
+    "dependencies": [
+      "source/checkout/binary identity",
+      "idle host resource gate",
+      "targeted-check coverage contract before incremental eligibility changes"
+    ],
+    "current_head_gate_separate": "NU11/R02/R03 many-scope no-slower evidence is not explained by rich-engine hypotheses."
+  },
+  "existing_evidence": {
+    "ls_lint_report": {
+      "path": "benches/history/current.json",
+      "timestamp": "2026-09-30T23:11:17Z",
+      "sha": "3d3c37b04d842f9e73e8686ed92486890cde4d73",
+      "host": "Intel macOS x86_64",
+      "iterations": 5,
+      "many_scope_public_ms": 40.545014,
+      "many_scope_ls_lint_ms": 44.782169
+    },
+    "native_report": {
+      "path": "benches/history/native-current.json",
+      "timestamp": "2026-07-05T02:08:48Z",
+      "report_sha": "4eb5d51837ce0336696356d93188277dd06f3ee8",
+      "dirty_source_sha": "411cca5381492b9093942446143326e057a3f431",
+      "iterations": 5
+    },
+    "amdahl": "Unknown measured fractions; use 1/(1-f) only after same-operation attribution. Separate phase medians are not an end-to-end decomposition."
+  },
+  "hypotheses": [
+    {
+      "id": "P1",
+      "title": "Demand-driven filesystem metadata",
+      "classification": "source-proven avoidable work; latency opportunity unverified",
+      "source": [
+        "src/cli/check/file_limits.rs:19-25",
+        "src/cli/check/validators.rs:338",
+        "src/cli/check/traversal.rs:138-160"
+      ],
+      "applicable": "Full-engine checks with FileBundle rules and no applicable max-size rule",
+      "cost": "Up to one avoidable stat-family call per matching file; O(N) calls",
+      "amdahl_fraction": null,
+      "profile": "Attribute stat-family counts and CPU/wall time to size validation; no-size policy negative control",
+      "smallest_candidate": "Guard absent size policy before fetching metadata; no new abstraction",
+      "controls": [
+        "max-size defaults and overrides",
+        "unreadable/missing files",
+        "symlink behavior",
+        "same full findings/exits/severity",
+        "no-size metadata-request count zero",
+        "fast naming row unchanged"
+      ],
+      "depends_on": [
+        "profile public ordinary check"
+      ],
+      "disposition": "first discriminator in one bounded spike"
+    },
+    {
+      "id": "P2",
+      "title": "Share identical-scope enumeration within one check",
+      "classification": "duplicate walks and reads established; wall fraction unverified",
+      "source": [
+        "src/cli/check/test_relationship.rs:18-19",
+        "src/cli/check/docs_lifecycle.rs:31-33",
+        "src/cli/check/docs_lifecycle.rs:43",
+        "src/cli/check/docs_lifecycle.rs:69-70",
+        "src/cli/check/custom_constraints.rs:136-188",
+        "src/cli/check/direct_contents.rs:304-327"
+      ],
+      "applicable": "Policy-rich root/subtree checks with multiple extension consumers and aggregate rules",
+      "cost": "O(K*N) discovery can approach O(N) plus policy evaluation; preserve streaming naming path",
+      "amdahl_fraction": null,
+      "profile": "Count directory/file opens, walks, bytes and peak memory by consumer",
+      "smallest_candidate": "Reuse test-relationship project listing when checked scope equals root, or one docs active/status selector pass",
+      "controls": [
+        "root/file/subtree inclusion",
+        "exclusion pruning",
+        "symlinks",
+        "permission/errors",
+        "deterministic ordering",
+        "fail-fast",
+        "naming-only peak memory"
+      ],
+      "depends_on": [
+        "profile dominance",
+        "explicit shared traversal semantics"
+      ],
+      "disposition": "next observation in same spike; defer general inventory"
+    },
+    {
+      "id": "P3",
+      "title": "Bound scope candidate matching in rich/glob-heavy policies",
+      "classification": "O(D*S) source risk; not established dominant bottleneck",
+      "source": [
+        "src/cli/check/rule_plan.rs:58-82",
+        "src/cli/check/rule_plan.rs:123-131",
+        "src/cli/check.rs:441-449",
+        "src/cli/check.rs:484-487",
+        "src/cli/check/ls_fast_plan.rs:82-93"
+      ],
+      "applicable": "Many uncached directories and overlapping or wildcard scope configurations",
+      "cost": "Reduce candidate predicates below D*S while preserving current resolver; static fast scopes already indexed",
+      "amdahl_fraction": null,
+      "profile": "Vary scopes independently from paths/depth; count predicates, setup allocations and public wall time",
+      "smallest_candidate": "Candidate prefilter/index feeding unchanged composition order",
+      "controls": [
+        "equal-specificity order",
+        "inherit:false",
+        "exact/descendant policy",
+        "braces/globs",
+        "config invalidation",
+        "same sorted findings/exits",
+        "setup/memory spillover"
+      ],
+      "depends_on": [
+        "matcher profile dominance",
+        "current no-slower guardrail"
+      ],
+      "disposition": "defer unless profile dominant"
+    },
+    {
+      "id": "P4",
+      "title": "Proven dependency classes for incremental reuse",
+      "classification": "conservative fallback established; eligibility expansion unverified",
+      "source": [
+        "src/cli/check/prepared.rs:109-112",
+        "src/cli/check/prepared.rs:128-148",
+        "src/cli/check/prepared.rs:340-382",
+        "src/cli/watch.rs:411-438"
+      ],
+      "applicable": "Repeated single-edit and burst feedback with locally decidable rich policy",
+      "cost": "Potential N to changed m plus dependents; must preserve project-wide fallback",
+      "amdahl_fraction": null,
+      "profile": "Actual adapter idle/edit/burst/config/deletion with actual validation counts and coverage",
+      "smallest_candidate": "One truly local rule class after coverage contract is settled",
+      "controls": [
+        "counterpart deletion",
+        "renames",
+        "config changes",
+        "watch loss",
+        "existing project failure",
+        "shared parent aggregates",
+        "stale snapshots",
+        "installed adapter timing"
+      ],
+      "depends_on": [
+        "targeted CLI coverage semantics",
+        "R01 watch correctness",
+        "CF03 delivery scope",
+        "CF04 actual adapter evidence"
+      ],
+      "existing_owner_mapping": [
+        "CF03",
+        "CF04",
+        "R01"
+      ],
+      "disposition": "extend existing outcome; no duplicate fast-hook item",
+      "keep_stop": "Identical required findings/coverage; observed work reduction and actual adapter p95 improvement. Preserve CF03 targets idle <=25 ms, injected <=50 ms, structural edit <=100 ms, plus cold/native/warm gates. Stop on incomplete invalidation or no actual adapter benefit."
+    }
+  ],
+  "keep_policy": {
+    "target_public_min_improvement_percent": 5,
+    "target_public_min_improvement_ms": 0.75,
+    "exact_quiet_min_improvement_percent": 3,
+    "max_accepted_spillover_percent": 5,
+    "max_accepted_spillover_ms": 0.25,
+    "strict_no_slower_required": true,
+    "two_same_host_order_reversed_runs": true,
+    "stop_same_category_failed_attempts": 3
+  },
+  "defer": [
+    "parser swaps",
+    "new public check entrypoints",
+    "binary splitting",
+    "process-floor chasing",
+    "unconditional parallel traversal",
+    "persistent shared filesystem database",
+    "generic suffix-map repeats",
+    "automatic compiled-plan-cache repeats"
+  ],
+  "limitations": [
+    "No runtime attribution or fresh benchmark generated",
+    "No implementation or tests",
+    "Historical phase medians cannot determine current Amdahl fraction",
+    "Root supplied targeted-check release reproduction; source independently inspected"
+  ]
+}

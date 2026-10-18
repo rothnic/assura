@@ -1,0 +1,112 @@
+{
+  "attempt": {
+    "command": "bd --actor codex-assura-coordinator init --prefix assura --non-interactive --skip-agents --skip-hooks --setup-exclude",
+    "cwd": "/Users/nroth/workspace/assura",
+    "exit": 1,
+    "result": "Automatic bootstrap of git+https://github.com/rothnic/assura.git completed; embedded schema load failed: Error1105 table has unknown fields"
+  },
+  "identity_correction": {
+    "remote_ref": "refs/dolt/data",
+    "oid": "9dcb270a73653eac4bc3dc71002bbf41473f421a",
+    "issues": 61,
+    "statuses": {
+      "open": 25,
+      "closed": 30,
+      "in_progress": 5,
+      "blocked": 1
+    },
+    "prefix": "ae",
+    "schema_migrations": 53,
+    "fresh_empty_store_plan": "superseded; reuse and reconcile existing tracker"
+  },
+  "preservation": {
+    "original": "/Users/nroth/workspace/assura/.beads",
+    "manifest": "/Users/nroth/workspace/.assura-review-20261017/beads-failed-init-manifest.json",
+    "file_count": 45,
+    "bytes": 4227855,
+    "native_sql_probe": "Dolt2.3.1 SHOW TABLES and SELECT queries succeeded on a verified independent copy; original never reopened",
+    "remote_writes": "none issued; remote head read-only observation retained"
+  },
+  "side_effects": {
+    "AGENTS_and_hooks": "before/after hashes equal",
+    "tracked_gitignore": "Exact generated suffix preserved then removed after asserting bytes equal HEAD plus suffix and verified pre-init clean state",
+    "global_events_directory": "mtime changed during init; no content change proven; no cleanup attempted"
+  },
+  "reviews": {
+    "vendor": "/root/nu13_socket_vendor",
+    "environment": "/root/nu13_socket_environment",
+    "adversarial": "/root/nu13_luna_final_review",
+    "model": "gpt-6-luna",
+    "disposition": "Initial hold superseded by verified copy tests. Adopt isolated Dolt 2.5 external backend, expected clone-local ignored migration and documented existing-server attach with guards intact. Independent intake and relationship audits resolved."
+  },
+  "source": "https://raw.githubusercontent.com/gastownhall/beads/v1.2.2/cmd/bd/init.go",
+  "compatible_backend": {
+    "dolt_version": "2.5.0",
+    "isolated_binary": "/Users/nroth/workspace/.assura-review-20261017/dolt-2.5.0/dolt-darwin-amd64/bin/dolt",
+    "vendor_asset_sha256": "afb35b5406ef5afd167bd3485ad468417413bacc2243029e392403fab2a58017",
+    "system_installation": "unchanged",
+    "endpoint": "127.0.0.1:15389",
+    "database": "assura",
+    "server_pid": 41633,
+    "server_exec_session": 44709,
+    "beads_dir": "/Users/nroth/workspace/assura/.beads",
+    "mode": "external server selected by metadata.json; BEADS_DOLT_SERVER_MODE=1, not true",
+    "clone_local_migration": "App startup adds ignored schema1..11 and eight empty runtime tables; all original schemas/rows/history unchanged on copy and primary",
+    "copy_comparison": {
+      "before_sha256": "929aab4320a9c1abdfeccc1378ad7c32b3bd717e396c107c739d5a2ce5686d73",
+      "after_sha256": "4360c22391d3ecd558f333d07a0868877c46ad9dee37446e019876f54152f80c",
+      "changed_sections": [
+        "ignored_schema_migrations",
+        "local_metadata",
+        "repo_mtimes",
+        "wisp_child_counters",
+        "wisp_comments",
+        "wisp_dependencies",
+        "wisp_events",
+        "wisp_labels",
+        "wisps"
+      ],
+      "original_issue_rows_unchanged": true,
+      "original_dependencies_unchanged": true,
+      "original_history_unchanged": true,
+      "original_schemas_unchanged": true,
+      "issues": 61
+    },
+    "primary_comparison": "All original19tables/schemas/rows and213commit history match preserved bytes-derived baseline; remote9dcb unchanged",
+    "native_backup": "bd backup init/sync succeeded to owned filesystem backup before import"
+  },
+  "import_attempt": {
+    "dryrun": "25nodes15edges pass",
+    "failure": "Missing issue_prefix config in recovered remote; no nodes created",
+    "readback": {
+      "exit": 0,
+      "count": 61,
+      "all_existing_ids_unchanged": true,
+      "new_ids": [],
+      "all_prefixes": [
+        "ae"
+      ]
+    },
+    "next": "Historical failed attempt. Resolved through supported existing-server attach to the verified ae namespace. See beads-import-verification.json; query Beads for live status."
+  },
+  "prefix_recovery": {
+    "supported_path": "bd init --server --external --database assura --prefix ae, explicit endpoint, noninteractive, skip agents/hooks, empty remote and sandbox; a fresh clean client attaches to the existing server. No force or reinit.",
+    "probe": "Separate verified copy first. All original data preserved except expected prefix and client tracking. Project/repository identity and prior213commit hashes and immutable fields preserved.",
+    "primary": "Same supported path against the owned primary server. A dedicated empty Git index avoided automatic staging of source work. All61issues and91relationships preserved.",
+    "comparison": "beads-attach-verification.json",
+    "user_config": "Before/after SHA unchanged; HOME was not repurposed.",
+    "guardrails": "Protected config-set/rename-prefix routes and direct SQL configuration insertion were not used."
+  },
+  "intake_result": {
+    "original_nodes": 61,
+    "imported_nodes": 25,
+    "discovered_prerequisites": 1,
+    "total_nodes_asof_intake": 87,
+    "total_relations_asof_intake": 116,
+    "mapping": "beads-map.json",
+    "verification": "beads-import-verification.json",
+    "independent_review": "beads-intake-review.json",
+    "backup_restore": "beads-backup-verification.json",
+    "remote_sync": "Normal native Dolt push and fresh-clone readback succeeded. Git data ref changed9dcb270a to f3f6f5ed; master stayed49d85358. See beads-remote-verification.json."
+  }
+}

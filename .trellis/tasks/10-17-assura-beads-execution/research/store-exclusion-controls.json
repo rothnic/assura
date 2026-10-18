@@ -1,0 +1,14 @@
+[
+  {
+    "label": "managed-runtime",
+    "exit": 0,
+    "stdout": "{\n  \"success\": true,\n  \"project_root\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura\",\n  \"config_path\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura/.assura/config.yml\",\n  \"checked_path\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura/.beads\",\n  \"files_checked\": 0,\n  \"dirs_checked\": 0,\n  \"violations\": []\n}\n",
+    "stderr": ""
+  },
+  {
+    "label": "unrecognized-root",
+    "exit": 1,
+    "stdout": "{\n  \"success\": false,\n  \"project_root\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura\",\n  \"config_path\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura/.assura/config.yml\",\n  \"checked_path\": \"/Users/nroth/.codex/worktrees/assura-beads-execution/assura/unknown-beads-negative-control\",\n  \"files_checked\": 1,\n  \"dirs_checked\": 0,\n  \"violations\": [\n    {\n      \"path\": \"unknown-beads-negative-control/runtime.db\",\n      \"rule\": \"file_naming\",\n      \"message\": \"File 'runtime.db' does not match naming convention 'PascalCase'\",\n      \"severity\": \"medium\",\n      \"severity_label\": \"Medium\",\n      \"blocking\": true,\n      \"corrective_context\": \"Rename the file to match the effective naming rule, or update files.naming/naming_patterns when the policy is stale.\"\n    }\n  ]\n}\n",
+    "stderr": ""
+  }
+]

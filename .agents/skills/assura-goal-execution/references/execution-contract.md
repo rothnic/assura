@@ -2,6 +2,12 @@
 
 ## One state, one owner
 
+For a user-authorized Beads goal, follow [Beads execution](beads-execution.md):
+Beads owns live state/readiness and the Trellis goal stores only contracts,
+source-to-issue mapping and evidence pointers. The source review JSON is a
+dated intake snapshot. The backlog checkpoint convention below remains for
+other existing trains; do not maintain both as live queues for the same goal.
+
 Keep card state in the existing `backlog.json`; extend its existing evidence
 record with this checkpoint, rather than creating another scheduling queue:
 

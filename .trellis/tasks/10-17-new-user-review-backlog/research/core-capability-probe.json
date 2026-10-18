@@ -1,0 +1,18 @@
+{
+  "source_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "release": "v0.4.1",
+  "observed_exits": {
+    "missing-test-full": 1,
+    "missing-test-file-target": 0,
+    "presence-only-full": 0,
+    "cached-pass": 0,
+    "cached-test-deletion": 1,
+    "cached-policy-change": 0,
+    "cached-restored-policy": 1,
+    "producer-deleted": 0
+  },
+  "negative_controls": "Full/cached counterpart absence detected; cached policy change and producer deletion correctly invalidate outcome.",
+  "failed_initial_assert": "Expected file-target exit1; observed0. Expectation was a review hypothesis, not a confirmed documented contract.",
+  "open_question": "Whether direct file-target check must enforce captured relationships, versus report them explicitly as omitted; prepared changed-path fallback is separate.",
+  "semantic_limit": "A comment-only counterpart satisfies existence; semantic test adequacy is not claimed."
+}

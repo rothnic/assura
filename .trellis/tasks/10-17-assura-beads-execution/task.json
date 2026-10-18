@@ -1,0 +1,38 @@
+{
+  "id": "assura-beads-execution",
+  "name": "assura-beads-execution",
+  "title": "Execute reviewed Assura Beads backlog",
+  "description": "Adopt the reviewed Beads graph, execute dependency-ready outcomes with independent GPT-6 Luna review and corrections before each authorized merge, verify post-merge behavior and close evidence.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "/root",
+  "assignee": "/root",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "goal/assura-beads-execution",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-assura-beads-execution",
+      "owner": "/root",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/goal/assura-beads-execution",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

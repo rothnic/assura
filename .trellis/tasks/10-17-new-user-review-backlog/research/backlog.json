@@ -1,0 +1,804 @@
+{
+  "schema": "assura.new-user-review-backlog.v2",
+  "updated": "2026-10-17",
+  "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+  "release": "v0.4.1",
+  "scope": "Reviewed proposal with selected NU13 execution authorized on2026-10-17; no live Beads mutation.",
+  "beads": {
+    "binary": "/usr/local/bin/bd",
+    "version": "1.2.2",
+    "resolved_store": null,
+    "import_state": "prepared-not-executed",
+    "graph_source_commit": "6c124203e771433a3550c348771a5b5e27fd3c21",
+    "duplicate_check_required": true
+  },
+  "new_items": [
+    {
+      "id": "NU01",
+      "title": "Expose configured nonblocking violations in Review and finding history",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "review",
+      "problem": "Both real projects retain advisory=0 while Check names low findings; 501 to 700 lines produces no new/worsened Review finding. Assura has 13 nonblocking findings, but two optional baseline folders dominate actions.",
+      "evidence": [
+        "typescript-trial.md: baseline-mutation-review",
+        "python-trial.md: worsened-review",
+        "src/cli/project_review/report.rs:58-59"
+      ],
+      "acceptance_criteria": [
+        "A passing explicit low max_lines fixture emits a bounded named advisory and new/worsened/resolved history.",
+        "Keep Review exit 0, Check severity exits, stable fingerprints, and honest overflow totals.",
+        "Rank actionable configured violations ahead of optional setup suggestions."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R07",
+        "A06"
+      ],
+      "owner": "unassigned",
+      "next_action": "A passing explicit low max_lines fixture emits a bounded named advisory and new/worsened/resolved history.",
+      "priority_rationale": "Missing configured findings undermines working feedback, irrespective of command speed."
+    },
+    {
+      "id": "NU02",
+      "title": "Preserve established agent policy when merging onboarding baseline",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "onboarding",
+      "problem": "Onboarding closes .agents and rejects existing .agents/project-policy.json; the same conflict appears on Assura own README.md. Bytes survive but policy intent conflicts before specialization. Assura self-onboarding also introduces inherited PascalCase errors in existing docs.",
+      "evidence": [
+        "python-trial.md: onboard-first and onboard-baseline-check",
+        "self-onboard.json",
+        "self-doctor-after-onboard.json"
+      ],
+      "acceptance_criteria": [
+        "Reproduce existing .agents files and custom skill conventions in a disposable existing-project fixture.",
+        "Preserve owner policy and deliberate closures; report unresolved merge constraints without adding an incompatible passing claim.",
+        "Original files/hooks remain unchanged, repeated onboarding is idempotent, and generated policy passes or reports an actionable conflict."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "A02",
+        "A03"
+      ],
+      "owner": "unassigned",
+      "next_action": "Reproduce existing .agents files and custom skill conventions in a disposable existing-project fixture.",
+      "priority_rationale": "Setup can impose a failing policy on existing agent infrastructure."
+    },
+    {
+      "id": "NU03",
+      "title": "Cover established application roots in generated native quality scopes",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "quality",
+      "problem": "Bun quality paths cover src/** and tests/** but miss actual Next.js app/, components/, lib/, hooks/, artifacts/. quality plan for app/(chat)/page.tsx selects only Assura while test edits select lint/test.",
+      "evidence": [
+        "typescript-trial.md: quality-app, quality-test and onboard-auto"
+      ],
+      "acceptance_criteria": [
+        "Next/Bun fixture changes in app/components/lib select applicable native lint/test phases.",
+        "Generated and dependency outputs stay excluded; src-based projects still route correctly.",
+        "Derive coverage from explicit evidence and preserve user-authored scopes on repeat onboarding.",
+        "Demonstrate composition under one existing hook runner: native checks execute for real source changes and preserve their failures/order after adding/removing Assura, without duplicate invocations; do not implement a new runner."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "A05",
+        "A03"
+      ],
+      "owner": "unassigned",
+      "next_action": "Next/Bun fixture changes in app/components/lib select applicable native lint/test phases.",
+      "priority_rationale": "A complementary-tool story requires real source coverage and preserved native checks."
+    },
+    {
+      "id": "NU04",
+      "title": "Make the Getting Started policy pass after its documented init step",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "docs",
+      "problem": "The exact Getting Started YAML rejects AGENTS.md generated by its preceding init --recipe agentic-core --recipe structure-health step. First check exits 1 on the minimal documented Rust project.",
+      "evidence": [
+        "docs-quickstart.json",
+        "website/src/content/docs/guides/getting-started.md: First Run"
+      ],
+      "acceptance_criteria": [
+        "Execute published install/init/example/check in a disposable minimal project; clean example exits 0.",
+        "Retain generated guidance and explicitly model its intended paths.",
+        "Add an unexpected root file: Check exits nonzero; cleanup returns 0."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "Q02",
+        "W02"
+      ],
+      "owner": "unassigned",
+      "next_action": "Execute published install/init/example/check in a disposable minimal project; clean example exits 0.",
+      "priority_rationale": "The documented first-run path must pass before a meaningful negative control."
+    },
+    {
+      "id": "NU05",
+      "title": "Detect when installation leaves an older Assura first on PATH",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "install",
+      "problem": "Native public installer passes checksum and reports success, but when old /usr/local/bin precedes the destination already on PATH, command -v assura still selects 0.4.0 after installing 0.4.1. No warning is printed in that case.",
+      "evidence": [
+        "installer.json",
+        "installer-shadow.json",
+        "website/public/install.sh"
+      ],
+      "acceptance_criteria": [
+        "Seed old and new bin directories with old first and both present on PATH.",
+        "Report the installed version and actual command resolution; if shadowed, provide a concrete correction without editing shell files or replacing another install.",
+        "Verify both companions and a fresh-shell version canary after the documented correction."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R05",
+        "R06"
+      ],
+      "owner": "unassigned",
+      "next_action": "Seed old and new bin directories with old first and both present on PATH.",
+      "priority_rationale": "A successful install must identify the executable users actually run."
+    },
+    {
+      "id": "NU06",
+      "title": "Provide first-run recovery guidance for missing configuration",
+      "priority": 2,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "diagnostics",
+      "problem": "check/review/doctor --format json before configuration exit 4 with empty stdout and a missing-config stderr, but no onboarding or init recovery command.",
+      "evidence": [
+        "typescript-trial.md: doctor-before, review-before, check-before",
+        "python-trial.md: unconfigured-check"
+      ],
+      "acceptance_criteria": [
+        "All three commands provide the applicable project path and a usable onboard/init next action.",
+        "Preserve read-only diagnosis and documented nonzero exit behavior.",
+        "Define and test whether JSON failures emit a structured error or a documented stderr contract."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "Q07"
+      ],
+      "owner": "unassigned",
+      "next_action": "All three commands provide the applicable project path and a usable onboard/init next action.",
+      "priority_rationale": "Concrete recovery reduces first-run discovery cost."
+    },
+    {
+      "id": "NU07",
+      "title": "Make count violations identify offenders and actual limits",
+      "priority": 2,
+      "issue_type": "bug",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "diagnostics",
+      "problem": "Closed wildcard errors report only parent and count, including empty root path; custom folder-health messages replace actual/limit values with a documentation pointer.",
+      "evidence": [
+        "typescript-trial.md: closed-policy-count-allowance-mutations",
+        "python-trial.md: PY04"
+      ],
+      "acceptance_criteria": [
+        "Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count.",
+        "Actual count and configured threshold remain visible alongside custom guidance.",
+        "Allowed patterns are excluded from offender lists and text/JSON/agent outputs agree.",
+        "One bounded result retains project-specific guidance while deduplicating repeated generic repair boilerplate; count the additional discovery steps needed to identify the offender."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "Q07",
+        "A06"
+      ],
+      "owner": "unassigned",
+      "next_action": "Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count.",
+      "priority_rationale": "Repairable core diagnostics reduce attention and extra investigation."
+    },
+    {
+      "id": "NU08",
+      "title": "Make starter source-health coverage explicit for Python and Rust",
+      "priority": 2,
+      "issue_type": "task",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "onboarding",
+      "problem": "Agent broad health lists md/js/jsx/ts/tsx but misses py/rs; plain init instead assumes Rust paths. A 501-line Python source stays silent while Markdown triggers health feedback. Naming and link rules work once deliberately configured.",
+      "evidence": [
+        "python-trial.md: minimal-config, explain-large-python and PY03"
+      ],
+      "acceptance_criteria": [
+        "Provide consistent supported source-health coverage or explicitly enumerate uncovered types with a supported specialization path.",
+        "A Python monorepo source/test/generated fixture has a meaningful negative source-size proof.",
+        "Avoid inventing language naming/layout policy from file presence and preserve project-owned rules."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "A02",
+        "A03"
+      ],
+      "owner": "unassigned",
+      "next_action": "Provide consistent supported source-health coverage or explicitly enumerate uncovered types with a supported specialization path.",
+      "priority_rationale": "Supported starter coverage needs explicit boundaries."
+    },
+    {
+      "id": "NU09",
+      "title": "Triage current Assura nonblocking self-check debt",
+      "priority": 2,
+      "issue_type": "task",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "dogfood",
+      "problem": "Current source emits 13 nonblocking violations; 11 are in src. agent_nudge_delivery.rs has 1981 lines under a 500-line limit. Historical R07 done does not dispose of current violations.",
+      "evidence": [
+        "self-check.json",
+        "self-review.json"
+      ],
+      "acceptance_criteria": [
+        "Record every current violation with fix or evidence-backed scoped exception, owner and review date.",
+        "Prefer cohesive repairs; avoid splitting only to game counts or broadly raising ceilings.",
+        "Recheck exact current source and prove no unexplained advisory remains."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R07"
+      ],
+      "owner": "unassigned",
+      "next_action": "Record every current violation with fix or evidence-backed scoped exception, owner and review date.",
+      "priority_rationale": "Current dogfood debt needs intentional disposition, without mechanical refactors."
+    },
+    {
+      "id": "NU10",
+      "title": "Enable a bounded local-link policy for Assura maintained docs",
+      "priority": 2,
+      "issue_type": "task",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "dogfood",
+      "problem": "A valid-frontmatter analysis doc with a deliberately missing local target emits no link finding under Assura current policy. Doctor truthfully says repository references are unchecked; 1116 raw candidates remain informational.",
+      "evidence": [
+        "self-link-controlled.json",
+        "self-doctor.json",
+        "self-review.json"
+      ],
+      "acceptance_criteria": [
+        "Select maintained documentation scopes and configure deterministic local file/anchor checks.",
+        "A valid-frontmatter planted broken local target is found; cleanup passes.",
+        "Classify generated/archive noise without globally promoting all raw reference candidates to blockers."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R07",
+        "P01"
+      ],
+      "owner": "unassigned",
+      "next_action": "Select maintained documentation scopes and configure deterministic local file/anchor checks.",
+      "priority_rationale": "Scoped link policy proves intended local documentation coverage."
+    },
+    {
+      "id": "NU11",
+      "title": "Resolve the current-head many-scope performance gate failure",
+      "priority": 1,
+      "issue_type": "task",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "performance",
+      "problem": "Current master CI 37214120576 fails strict no-slower: 11.812ms Assura versus 11.650ms LS-Lint on many_configured_scopes_regression. Source regression versus variance is not established.",
+      "evidence": [
+        "master-ci-failure.txt",
+        "https://github.com/rothnic/assura/actions/runs/37214120576"
+      ],
+      "acceptance_criteria": [
+        "Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction.",
+        "Preserve the accepted fixture/threshold contract; do not retry unchanged until it passes or label noise without evidence.",
+        "Record the smallest supported resolution and exact-head hosted gate outcome, including unfavorable results.",
+        "Reconcile dated July matrix, September30 retained benchmark and current hosted gate in public claim provenance: cold/warm, startup, scope, source/profile/platform and synthetic-fixture labels stay distinct."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R02",
+        "R03"
+      ],
+      "owner": "unassigned",
+      "next_action": "Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction.",
+      "priority_rationale": "The current required performance gate remains failed; historical faster rows do not clear it."
+    },
+    {
+      "id": "NU12",
+      "title": "Reconcile legacy delivery holds and workspace ownership",
+      "priority": 2,
+      "issue_type": "task",
+      "review_state": "verified-finding",
+      "execution_state": "proposed",
+      "area": "maintenance",
+      "problem": "The refreshed full-history topology audit reports 46 prunable registrations, 15 unreadable worktrees and 8 goal refs not proven reachable from origin/master (67 worktrees). The first-pass audit recorded 18 such refs before the history refresh; retain it as dated evidence, not the current count. Starting the research task was held by old P05 integrated_pending_verification; absent paths and old receipts are not cleanup permission.",
+      "evidence": [
+        "second-pass-evidence-manifest.json: second-pass-topology.txt",
+        "first-pass topology-start.txt (dated)",
+        "task-start-hold.txt",
+        "prior-work-reconciliation.md"
+      ],
+      "acceptance_criteria": [
+        "Classify each retained path/ref with live owner, source identity, evidence and next action.",
+        "Resolve old P05 using actual acceptance/postmerge evidence or a named hold; do not rename an owner to bypass the guard.",
+        "Remove only independently proven clean owned artifacts after a recoverable manifest; confirm terminal native status and rerun strict topology."
+      ],
+      "depends_on": [],
+      "related_existing": [],
+      "owner": "unassigned",
+      "next_action": "Classify each retained path/ref with live owner, source identity, evidence and next action.",
+      "priority_rationale": "Ownership and native holds need resolution independently of product value."
+    },
+    {
+      "id": "NU13",
+      "title": "Make targeted captured-relationship checks correct and explicit",
+      "priority": 1,
+      "issue_type": "bug",
+      "review_state": "runtime-fix-and-evidence-independently-reviewed",
+      "execution_state": "verified-awaiting-deployment-authority",
+      "area": "core-correctness",
+      "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
+      "evidence": [
+        "core-capability-probe.json",
+        "raw capability-pass/transcript.json: missing-test-full and missing-test-file-target",
+        "systemic-filesystem-review.md: P4",
+        "src/cli/check/custom_constraints.rs:330-334"
+      ],
+      "acceptance_criteria": [
+        "Define the supported ordinary file-target relationship contract before changing behavior; distinguish it from explicit LS-Lint target semantics and whole-project coverage.",
+        "A selected captured producer with a missing counterpart/provider must not silently disappear: enforce its required relation or explicitly report that check as omitted with a full-project follow-up.",
+        "Prove full/file/directory, provided/missing counterpart, producer deletion, configuration changes, cache and prepared fallback cases with exact findings and exits.",
+        "Retain presence-versus-behavior semantics: an existing test filename does not prove a test executed or is adequate."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "A03",
+        "R01",
+        "A06"
+      ],
+      "owner": "/root/nu13_implement",
+      "next_action": "Await Nick authority for PR355 merge with any Cloudflare website production deployment, or obtain production-branch/deploy-command evidence proving separation; all30 checks pass. After authorized integration, verify merged/push-triggered outcome and native delivery closure.",
+      "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.",
+      "execution": {
+        "task": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage",
+        "branch": "fix/nu13-targeted-relationships",
+        "worktree": "/Users/nroth/.codex/worktrees/assura-nu13-targeted-relationships/assura",
+        "base_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+        "planning_commit": "ec7f7f6b8cfc4ab64b64ea17edd8858cf683e761",
+        "coordinator": "/root",
+        "owner_liveness": "Implementation worker /root/nu13_implement completed and handed off; coordinator /root owns validation, integration decision and closure.",
+        "phase": "integrate",
+        "acceptance": "Engineering behavior, independent review and all30 hosted checks proven; integration, production authority, post-merge outcome and native delivery closure remain open.",
+        "authority": "Nick2026-10-17: Orchestrate the first bit of work that would be most beneficial to implement",
+        "held_independent_action": "P05 generation5 remains owner nroth, integrated_pending_verification; reconstruct/disposition missing owned checkout and genuinely refresh current-base verification before native closure; receipt unchanged.",
+        "candidate_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+        "tested_source_revision": "6e49d8c1a9143058802ab8beab6321eb1897037e",
+        "pr_url": "https://github.com/rothnic/assura/pull/355",
+        "independent_review": {
+          "reviewer": "/root/nu13_luna_final_review",
+          "model": "gpt-6-luna",
+          "reviewed_source": "6e49d8c1a9143058802ab8beab6321eb1897037e",
+          "reviewed_metadata": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+          "result": "no-blocking-findings"
+        },
+        "local_validation": {
+          "task_record": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage/validation.md",
+          "pr_gate": "exit0;1450passed,0failed,1intentional-manual-performance-ignore",
+          "public_cli": "11calls passed; exact project/config and binary identities retained",
+          "extra_controls": "three missing markers rejected, restored pass, existing poisoned cache recovery, inaccessible nearest config exit4",
+          "metadata": "context/workflow/evidence/structure/diff checks pass; runtime inputs unchanged after tested source",
+          "native_push": "Mac candidate4dc built with Rust1.94.1; normal pre-push check passed via candidate PATH with no bypass. Published CLI upkeep occurred separately afterward."
+        },
+        "hosted_runs": {
+          "rust": "https://github.com/rothnic/assura/actions/runs/39085547048",
+          "documentation": "https://github.com/rothnic/assura/actions/runs/39085547003",
+          "security": "https://github.com/rothnic/assura/actions/runs/39085547054"
+        },
+        "local_maintenance": {
+          "scope": "Original workspace-upkeep request; installed current published release, not the unreleased NU13 candidate.",
+          "published_version": "v0.4.1",
+          "destination": "/usr/local/bin/assura and assura-full",
+          "archive_sha256": "eec2107ede8e45a87e28bffb7d4fcbf00b33892c02b3bfb7803e1c57b2756f2f",
+          "procedure_ref": "website/public/install.sh; docs/release-candidate-checklist.md",
+          "verification": "Official archive+sidecar verified; installed pair hashes match staged pair; fresh zsh discovers0.4.1 and hooks run; missing-check/blocking-missing/provided canaries exit1/1/0.",
+          "rollback": "/Users/nroth/workspace/.assura-review-20261017/rollback-cli-v040; both originals copied before replacement. Launcher hash matches independent pre-update diagnosis; companion pre-update hash was not separately observed.",
+          "receipt": "/Users/nroth/workspace/.assura-review-20261017/nu13-published-cli-update.json",
+          "reviewer": "/root/nu13_socket_environment (GPT-6 Luna), independently verified installed/staged/archive/fresh-shell identities; original companion hash evidence limit retained."
+        },
+        "deployment_boundary": {
+          "held_action": "merge PR355 to master; any further affected remote push",
+          "observed": "External Workers Builds created version33213860-a566-42c2-a356-20cf5480fa35 and an explicit candidate branch preview; production deployment is not proven.",
+          "unknown": "Cloudflare service production branch and deploy command; repository GitHub workflows and empty deployment API do not cover the external integration.",
+          "access": "wrangler auth refresh400/not logged in; no browser provider; independent Luna dashboard read challenged. No settings changed.",
+          "resolution": "Nick authority requested for production-coupled PR355 merge after all30 checks passed; no approval received or inferred. Read-only configuration evidence remains an alternative.",
+          "reviewer": "/root/nu13_luna_final_review",
+          "evidence": "/Users/nroth/workspace/.assura-review-20261017/nu13-cloudflare-check.json",
+          "correction": "Pre-push trigger inspection covered GitHub workflows but missed the external Cloudflare preview integration; retain the observed publication and hold further affected actions."
+        },
+        "hosted_validation": {
+          "result": "30pass,0fail,0pending,0skipped",
+          "candidate_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+          "tested_merge_revision": "90569f5bafd1f2e5d878fc26198d8e5f42e15a1a",
+          "tree_oid": "14642456c3cb5162d9f4724fe26d76be76c92131",
+          "tree_proof": "Test merge parents are f3540d4a and4dc727dc; its tree exactly matches candidate4dc727dc.",
+          "performance": "No-slower,native,warm gates each executed and passed; reports retained with392comparison,150native,5warm rows. This is no regression proof, not a NU13 speedup claim.",
+          "headline_limit": "Cold realistic-equivalent cohort has3/8 two-x successes and5misses; existing no-slower gate passes. Warm session results do not establish cold startup or owner productivity.",
+          "receipt": "/Users/nroth/workspace/.assura-review-20261017/nu13-hosted-checks-final.json"
+        }
+      }
+    },
+    {
+      "id": "SP01",
+      "title": "Attribute core filesystem work and select one systemic optimization",
+      "priority": 1,
+      "issue_type": "task",
+      "review_state": "source-proven repeated work; latency gain unmeasured",
+      "execution_state": "proposed-research-spike",
+      "area": "core-performance",
+      "problem": "Rich full-engine checks eagerly fetch metadata without a size limit, independently walk overlapping scopes, and scan all scopes per uncached directory. Existing static fast-path indexes and prepared reuse already exist. No current wall-time fraction or causal speedup is established.",
+      "evidence": [
+        "systemic-filesystem-review.md",
+        "systemic-performance-hypotheses.json",
+        "src/cli/check/file_limits.rs:19-25",
+        "src/cli/check/test_relationship.rs:18-19",
+        "src/cli/check/rule_plan.rs:58-82",
+        "NU13 candidate4dc727d Luna caller trace: systemic-filesystem-review.md#nu13-follow-up-discovery-attribution"
+      ],
+      "acceptance_criteria": [
+        "Profile ordinary public check with a source/binary/policy-bound rich repository and controlled wide-tree case; count stat-family calls, directory enumerations, reads/bytes, allocations or peak RSS, CPU and wall time by consumer.",
+        "First discriminate no-size-policy eager metadata; then attribute identical-scope test/lifecycle enumeration. Preserve a naming-only negative control and full result/exit equivalence.",
+        "Produce one smallest supported keep/defer decision; do not implement a shared inventory, index rewrite, daemon, new entrypoint or parallel traversal merely because source work is repeated.",
+        "For any later performance candidate, use uninstrumented balanced same-host before/after public-command samples, exact quiet comparison, existing keep/stop criteria, accepted-fixture spillover and unchanged no-slower/native/warm gates.",
+        "Keep literal/glob scope indexing conditional on measured dominance. Incremental eligibility expansion additionally requires NU13 coverage resolution and deletion/rename/provider/config invalidation proof; source review alone proves no gain.",
+        "Separately count discovery/config-candidate metadata calls for no-cache root/nested and warm-cache Git/non-Git checks; NU13 source review identifies duplicate non-Git cache-root discovery but establishes no runtime gain. Preserve cache-only ancestor and invalid-nearest-policy controls."
+      ],
+      "depends_on": [],
+      "related_existing": [
+        "R02",
+        "R03",
+        "R01",
+        "CF01",
+        "CF03",
+        "CF04"
+      ],
+      "owner": "unassigned",
+      "next_action": "Run one bounded full-engine filesystem-I/O attribution spike on an idle admitted host.",
+      "priority_rationale": "Explicit user focus on systemic filesystem performance; one investigation, not four speculative implementation cards."
+    }
+  ],
+  "carried_unfinished": [
+    {
+      "id": "A07",
+      "title": "Blinded candidate evaluation",
+      "state": "active",
+      "depends_on": [
+        "A04",
+        "A05",
+        "A06"
+      ],
+      "evidence": "evidence/A07.md",
+      "blocker": null,
+      "owner": "Codex goal: A07 acceptance coordinator; all prior candidates, canaries, packets and protocol records are historical or candidate-base no-credit; refresh current source/ledger, build a fresh candidate and rebind before separately authorized screening",
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Existing active, no-credit evaluator outcome. These unblinded field trials do not satisfy independent/blinded/holdout acceptance. Refresh source identity; retain protocol and evaluate new failure cases separately.",
+      "proposed_acceptance_additions": [
+        "For public nonsealed follow-up examples, preserve checked scope and collect setup/repair cost alongside correctness. No private protocol, screening, holdout, allocation or credit changes are authorized."
+      ]
+    },
+    {
+      "id": "W02",
+      "title": "Release-aware product story",
+      "state": "blocked",
+      "depends_on": [
+        "P01",
+        "R02",
+        "W01"
+      ],
+      "evidence": "evidence/W02.md",
+      "blocker": "Local packet preparation complete. Read-only 2026-09-08 audit of PR #187 found its successful Workers Builds: assura check linked to Cloudflare's production-builds surface, so no-deploy separation is not verified. Nick's explicit Cloudflare approval is required before any current-master push/PR that could trigger builds. PR187 is not current and lacks required exact-head gates; exact-head hosted/performance gates and current-master integration remain mandatory after authority is resolved.",
+      "owner": "Codex goal/w02-release-aware-installation; local packet complete at7cebab8 after independent review,158browser and covering VPS docs/released checks; unchanged Rust/xtask passed1303test PR tier at3cebe325; source/public installation proof audited; hosted integration remains pending; latest evidence preserved at 790b0a9:research/evidence/W02.md in the same task, not imported behavior",
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Refresh release story, integration next-release labels at website/src/content/docs/reference/agent-feedback.md:257-270, and dated public-roadmap copy against the release manifest. Reassess the old Sep 8 deployment hold; do not invent current deployment authority.",
+      "proposed_acceptance_additions": [
+        "Resolve release-surfaces.json current_published_release v0.3.0 versus live/latest/support v0.4.1, plus next-release labels, against actual source/release evidence.",
+        "Document fit/non-fit and composition with LS-Lint, source linters, dependency tools and existing hook runners; avoid uniqueness/speed claims without equivalent evidence.",
+        "Label generated naming fixtures, resident-session startup exclusions and absolute workload times; do not turn synthetic speedups into user productivity or retention claims."
+      ]
+    },
+    {
+      "id": "R06",
+      "title": "Public release/install proof",
+      "state": "pending",
+      "depends_on": [
+        "P01",
+        "R01",
+        "R02",
+        "R03",
+        "R04",
+        "R05",
+        "R07",
+        "Q02",
+        "W01",
+        "W02"
+      ],
+      "evidence": "evidence/R06.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "v0.4.1 is published and Intel Mac native install passed today. Reconcile remaining multi-platform and same-candidate proof; no blanket completion claim from this review."
+    },
+    {
+      "id": "W03",
+      "title": "Existing leadership case study",
+      "state": "verified",
+      "depends_on": [
+        "B00",
+        "P01"
+      ],
+      "evidence": "evidence/W03.md",
+      "blocker": "Production publication remains pending explicit authority. rothnic/nickroth PR #61 is current-main-based, locally and hosted verified, and merge-ready.",
+      "owner": "Codex goal: Assura Maturity Execution Train; rothnic/nickroth PR #61",
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Locally verified case study; publication remains separately held. Inspect existing artifact before creating more content."
+    },
+    {
+      "id": "W04",
+      "title": "Cross-site discovery and measurement",
+      "state": "pending",
+      "depends_on": [
+        "W02",
+        "W03"
+      ],
+      "evidence": "evidence/W04.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Existing discovery/measurement outcome; retain W02 and W03 dependencies."
+    },
+    {
+      "id": "F01",
+      "title": "Interview kit and demand evidence",
+      "state": "blocked",
+      "depends_on": [
+        "B00"
+      ],
+      "evidence": "evidence/F01.md",
+      "blocker": "Pilot kit is locally prepared; Nick must authorize participant selection and invitations before real demand evidence or a go/narrow/stop decision can exist.",
+      "owner": "Codex goal: Assura Maturity Execution Train",
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Existing prepared interview kit; participant selection/invitations require Nick authority. Internal agent trials are not participant demand."
+    },
+    {
+      "id": "F02",
+      "title": "External pilot and retention",
+      "state": "pending",
+      "depends_on": [
+        "R06",
+        "A07",
+        "F01"
+      ],
+      "evidence": "evidence/F02.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "External independent pilot and retention; internal project trials do not satisfy this acceptance. Preserve R06/A07/F01 dependencies.",
+      "proposed_acceptance_additions": [
+        "Use the maintainer existing-tool setup as the explicit comparison; record costly conventions already covered and at least one material unmet convention or cheaper repair outcome.",
+        "Record time to first correctly configured negative control, policy authoring/maintenance, manual decisions, repair commands, false positives, total workflow latency/bytes and model-token cost only when observable.",
+        "Include participant/dropout and continued-use evidence under the existing pilot target; internal unblinded trials do not satisfy it. No invitations authorized here."
+      ]
+    },
+    {
+      "id": "F03",
+      "title": "Launch package",
+      "state": "pending",
+      "depends_on": [
+        "F02",
+        "W03",
+        "W04"
+      ],
+      "evidence": "evidence/F03.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Existing launch-package outcome; keep downstream dependencies and publication boundaries."
+    },
+    {
+      "id": "F04",
+      "title": "Approved publication and feedback",
+      "state": "pending",
+      "depends_on": [
+        "F03"
+      ],
+      "evidence": "evidence/F04.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Approved publication/feedback; no outreach or publication is authorized by this review."
+    },
+    {
+      "id": "F05",
+      "title": "Evidence-based v1 decision",
+      "state": "pending",
+      "depends_on": [
+        "R06",
+        "A07",
+        "F02",
+        "Q02",
+        "Q07"
+      ],
+      "evidence": "evidence/F05.md",
+      "blocker": null,
+      "owner": null,
+      "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "reviewed_state": "needs-revalidation",
+      "next_action": "Evidence-based v1 decision; keep evidence and owner acceptance separate from local green commands."
+    }
+  ],
+  "historical_terminal": [
+    {"id": "B00", "title": "Current-source baseline", "state": "done", "depends_on": [], "evidence": "evidence/B00.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "P01", "title": "Scope and roadmap contract", "state": "done", "depends_on": ["B00"], "evidence": "evidence/P01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R01", "title": "Watch scope correctness", "state": "not_needed", "depends_on": ["B00"], "evidence": "evidence/R01.md", "blocker": null, "owner": "Codex goal/r01-diagnostic-association; owner-approved H01 archive decision in PR #185", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R02", "title": "Independent performance evidence", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R02.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R03", "title": "Many-scope performance repair", "state": "done", "depends_on": ["R02"], "evidence": "evidence/R03.md", "blocker": null, "owner": "Codex goal/r03-fast-rules-clone; reviewed PR #197 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R04", "title": "Verified Rust minimum", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R04.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R05", "title": "Installer work completion", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R05.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "R07", "title": "Self-check advisory closure", "state": "done", "depends_on": ["B00"], "evidence": "evidence/R07.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q01", "title": "Rust quality skill", "state": "done", "depends_on": ["B00"], "evidence": "evidence/Q01.md", "blocker": null, "owner": "codex", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q02", "title": "Contribution and review contract", "state": "done", "depends_on": ["P01", "Q01", "R04"], "evidence": "evidence/Q02.md", "blocker": null, "owner": "Codex goal/a05-current-audit; current-master integration merged in PR #158", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A01", "title": "Independent init evaluator", "state": "done", "depends_on": ["P01"], "evidence": "evidence/A01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A02", "title": "Reusable local patterns", "state": "done", "depends_on": ["A01"], "evidence": "evidence/A02.md", "blocker": null, "owner": "Codex goal/a02-init-discovery-correction; follow-up merged in PR #231", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A03", "title": "Agent-led specialization", "state": "done", "depends_on": ["A02"], "evidence": "evidence/A03.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A04", "title": "Verified hook lifecycle", "state": "done", "depends_on": ["A03"], "evidence": "evidence/A04.md", "blocker": null, "owner": "Codex goal/a04-pre-commit-adapter; reviewed PR #220 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A05", "title": "Native quality gates", "state": "done", "depends_on": ["A03"], "evidence": "evidence/A05.md", "blocker": null, "owner": "Codex goal/a05-current-audit; A05 acceptance closed through independently reviewed PRs #200, #202, #204, and #206; preserved historical work remains untouched", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "A06", "title": "Bounded efficient feedback", "state": "done", "depends_on": ["R01", "A04"], "evidence": "evidence/A06.md", "blocker": null, "owner": "Codex goal/a06-observation-contract; reviewed PR #222 merged after current-master hosted gates", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q03", "title": "Config authority consolidation", "state": "done", "depends_on": ["Q01", "P01"], "evidence": "evidence/Q03.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q04", "title": "Cohesive policy modules", "state": "done", "depends_on": ["Q03"], "evidence": "evidence/Q04.md", "blocker": null, "owner": "Codex goal/q04-policy-naming; independently reviewed and merged via PR #164 (9f1b8e3)", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q05", "title": "Maturity score containment", "state": "done", "depends_on": ["P01", "Q01"], "evidence": "evidence/Q05.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q06", "title": "Maintenance command simplification", "state": "done", "depends_on": ["Q01", "R02"], "evidence": "evidence/Q06.md", "blocker": null, "owner": "Codex goal/q06-release-readiness; independently reviewed and merged via PR #166 (50e131e)", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "Q07", "title": "Error and fallback contracts", "state": "done", "depends_on": ["Q01"], "evidence": "evidence/Q07.md", "blocker": null, "owner": "Codex goal/q07-error-contract", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"},
+    {"id": "W01", "title": "Working marketing CTAs", "state": "done", "depends_on": ["B00"], "evidence": "evidence/W01.md", "blocker": null, "owner": "Codex goal: Assura Maturity Execution Train", "source": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json", "reviewed_state": "historical-terminal-not-recertified"}
+  ],
+  "additional_dependencies": [
+    {
+      "dependent": "R06",
+      "prerequisite": "NU05",
+      "reason": "Remaining install proof must verify the executable actually selected by the documented install."
+    },
+    {
+      "dependent": "R06",
+      "prerequisite": "NU11",
+      "reason": "Release-readiness claims retain the current-head performance gate obligation."
+    }
+  ],
+  "parked_records": [
+    {
+      "branch": "archive/assura-prior-records-20261017",
+      "commit": "b69f4a3745834c2f2fbd53b30a212d9950ec1255",
+      "record": "a04-host-status-doctor-permission-gap.md",
+      "disposition": "resolved in current source/tests; preserve history, no new bug"
+    },
+    {
+      "record": "09-14-resolve-versioned-build-artifact-generation",
+      "disposition": "completed #337 is ancestor of master; old release statements are historical"
+    }
+  ],
+  "reviewed_checkout_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "review_passes": [
+    {
+      "pass": 1,
+      "new_items": 12,
+      "carried_unfinished": 10,
+      "report": "docs/analysis/2026-10-17-new-user-review.md"
+    },
+    {
+      "pass": 2,
+      "focus": "core filesystem capability/performance, whole-workflow efficiency and ecosystem fit",
+      "new_items_total": 14,
+      "report": ".trellis/tasks/10-17-new-user-review-backlog/research/capability-efficiency-review.md",
+      "product_changes": false
+    }
+  ],
+  "recommended_lanes": [
+    {
+      "lane": "core-correctness",
+      "start": [
+        "NU13",
+        "NU01",
+        "NU07"
+      ],
+      "note": "Independently implementable; NU13 precedes any future incremental-coverage expansion."
+    },
+    {
+      "lane": "core-performance",
+      "start": [
+        "SP01"
+      ],
+      "note": "One serial admitted profiling lane. NU11 guardrail diagnosis is separate; rich-engine findings do not explain the naming fast-path failure."
+    },
+    {
+      "lane": "adoption-composition",
+      "start": [
+        "NU02",
+        "NU03",
+        "NU04",
+        "NU05"
+      ],
+      "note": "These fixes need no competitor research, new runner, daemon or content model."
+    },
+    {
+      "lane": "external-value",
+      "start": [],
+      "route": [
+        "A07",
+        "R06",
+        "F01",
+        "F02"
+      ],
+      "note": "Extend existing outcomes and real prerequisites; no outreach, evaluator change or retention credit from this review."
+    }
+  ],
+  "completed_related_work": [
+    {
+      "id": "CF01",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "75992ad4cfcba4efb1cfc8a1d3333208991bba88"
+    },
+    {
+      "id": "CF02",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "9383acc2fd9a47d63553fd32768aef7428c7b34c"
+    },
+    {
+      "id": "CF03",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "6c70e23640229cb784bded5f3406e32a90fa2f25"
+    },
+    {
+      "id": "CF04",
+      "state": "historical-done; merge ancestry verified at current master",
+      "merge": "7069bd1161913c0ed717aff94b1f5216935a09f0"
+    }
+  ],
+  "conditional_opportunities": {
+    "source": "systemic-performance-hypotheses.json",
+    "not_open_implementation_cards": [
+      "P1 demand-driven metadata",
+      "P2 equal-scope enumeration reuse",
+      "P3 literal-prefix/glob candidate indexing",
+      "P4 dependency-class incremental eligibility"
+    ],
+    "future_incremental_prerequisites": [
+      "NU13",
+      "SP01"
+    ],
+    "deferred": [
+      "parser replacement",
+      "additional public check binaries",
+      "unconditional parallel traversal",
+      "persistent filesystem database",
+      "new daemon adoption",
+      "generic runner or ecosystem plugin framework",
+      "cold strict2x chasing without profiler evidence"
+    ]
+  }
+}

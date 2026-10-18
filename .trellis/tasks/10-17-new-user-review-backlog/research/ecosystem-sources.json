@@ -1,0 +1,190 @@
+{
+  "schema": "assura.ecosystem-fit-research.v1",
+  "date": "2026-10-17",
+  "source_revision": "66c1fe162bb837471f0c63c3aec19ceaa11bb176",
+  "scope": "Read-only ecosystem/capability economics; no competitor installs or comparative benchmarks.",
+  "hindsight": {
+    "search": "returned no pages",
+    "listing": "returned no items",
+    "used_conclusions": false
+  },
+  "external_primary_sources": [
+    {
+      "id": "ls-lint",
+      "url": "https://ls-lint.org/2.3/configuration/the-rules.html",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Naming, regex directory substitutions and file/directory cardinality; no uniqueness claim for these Assura primitives.",
+      "tested_locally": false
+    },
+    {
+      "id": "eslint",
+      "url": "https://eslint.org/docs/latest/use/core-concepts/",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Language rules, plugins, fixes, editor suggestions and configurations; composition boundary.",
+      "tested_locally": false
+    },
+    {
+      "id": "biome",
+      "url": "https://biomejs.dev/linter/",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Static code analysis, rule diagnostics, safe/unsafe fixes; no comparable benchmark claim.",
+      "tested_locally": false
+    },
+    {
+      "id": "dependency-cruiser-overview",
+      "url": "https://github.com/sverweij/dependency-cruiser",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "JavaScript/TypeScript dependency validation and graphs.",
+      "tested_locally": false
+    },
+    {
+      "id": "dependency-cruiser-rules",
+      "url": "https://github.com/sverweij/dependency-cruiser/blob/main/doc/rules-reference.md",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Forbidden/required dependency constraints and reachability.",
+      "tested_locally": false
+    },
+    {
+      "id": "knip",
+      "url": "https://knip.dev/reference/issue-types",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Unused files/dependencies/exports and unresolved imports; specialist job boundary.",
+      "tested_locally": false
+    },
+    {
+      "id": "markdownlint",
+      "url": "https://github.com/DavidAnson/markdownlint",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Markdown style rules, configuration and suppressions; no replacement completeness claim.",
+      "tested_locally": false
+    },
+    {
+      "id": "lychee",
+      "url": "https://lychee.cli.rs/guides/cli/",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Offline local file checks and fragment controls; local links are not unique to Assura.",
+      "tested_locally": false
+    },
+    {
+      "id": "pre-commit",
+      "url": "https://pre-commit.com/",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Multi-language hook management, changed-file and all-file execution; existing runner composition.",
+      "tested_locally": false
+    },
+    {
+      "id": "conftest",
+      "url": "https://www.conftest.dev/",
+      "evidence_class": "live-primary-documentation",
+      "checked_date": "2026-10-17",
+      "used_for": "Structured-data tests using Rego and policy verification; delegate arbitrary infrastructure policy.",
+      "tested_locally": false
+    }
+  ],
+  "local_sources": [
+    {
+      "path": "docs/support-policy.md",
+      "sha256": "e130601f12e12209a3f9d9f279a0fafcb13263e84b8bf3a48c698e25dc87e0d3",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": "docs/analysis/assura-scope-decisions.md",
+      "sha256": "01bd3eb4e06604857ec914aa945511a800982fd32d3589f465c5c412b1122630",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": "docs/data/release-surfaces.json",
+      "sha256": "36a29841c3e35e0fac27e0863c032e58fb7268f0da76603162dcbea392ed131c",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/positioning-launch.md",
+      "sha256": "ae11daf56604141bf4518310ab6df19a635d285f3c993214054ca711ac2b35d2",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md",
+      "sha256": "bc6200004da5d390c383039564d0a56384fff69121aa4b95f707109766eb73b7",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json",
+      "sha256": "414edcc640b92d1333c19e08b89f88523abb4c2396aaa11d793e626c3401e715",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".agents/skills/custom/assura-feedback-execution/references/backlog.md",
+      "sha256": "01654a47e7e56002be1bc494b928ff13e42234b87fe2ef0e51f7174176bce103",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".agents/skills/custom/assura-feedback-execution/references/feedback-contract.md",
+      "sha256": "7745b2ee6eeef36c7bb25b699e7acc403032bd28a69d3fd46d0b85e4015a3c61",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": "docs/analysis/2026-10-17-new-user-review.md",
+      "sha256": "165591fbaa3695f2996aa48106a602d3a3a22a9e86af20e43e38510c97569c34",
+      "evidence_class": "recorded-local-experiment-not-rerun"
+    },
+    {
+      "path": ".trellis/tasks/10-17-new-user-review-backlog/research/backlog.json",
+      "sha256": "e99766b871430efb5b403aa43526ba2e825fe93c3f9c9246d3221180656bf927",
+      "evidence_class": "current-source-contract"
+    },
+    {
+      "path": ".trellis/tasks/10-17-new-user-review-backlog/research/typescript-trial.md",
+      "sha256": "271d854fc00b433c0c2c09a9394852d730790afa5b61da8f62c29bc1f0ce596d",
+      "evidence_class": "recorded-local-experiment-not-rerun"
+    },
+    {
+      "path": ".trellis/tasks/10-17-new-user-review-backlog/research/python-trial.md",
+      "sha256": "b6838199aa65d5743802cb082c1e124160439b53e64de612a4fad029a5892416",
+      "evidence_class": "recorded-local-experiment-not-rerun"
+    },
+    {
+      "path": ".assura/config.yml",
+      "sha256": "1a7ae8ad7fce191580c70ff7d444ab3385b7735ef6af2f0524de38ab86082ee6",
+      "evidence_class": "current-source-contract"
+    }
+  ],
+  "observed_indicators": {
+    "release_manifest_surface_count": 31,
+    "surface_status_counts": {
+      "supported": 30,
+      "experimental": 1
+    },
+    "assura_own_config_line_count": 1565,
+    "not_typical_user_cost_evidence": true
+  },
+  "proposals_are_not_accepted_gates": true,
+  "excluded": [
+    "core filesystem source performance audit owned by dedicated agent",
+    "external outreach",
+    "private evaluator modifications",
+    "product changes",
+    "tracker mutation",
+    "build/test batches"
+  ],
+  "additional_current_receipt": {
+    "path": "/Users/nroth/workspace/.assura-review-20261017/capability-pass/transcript.json",
+    "sha256": "ecbb34a6c75eb69da4d227e92b2540bdab7d88cb5f75fe09288d9b9cdcffb1d8",
+    "evidence_class": "parent-generated-current-local-probe-read-by-this-agent",
+    "cases_used": [
+      "missing-test-full",
+      "missing-test-file-target",
+      "presence-only-full",
+      "cached-test-deletion",
+      "cached-restored-policy"
+    ]
+  }
+}
