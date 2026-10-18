@@ -19,6 +19,10 @@
   "pr_url": null,
   "subtasks": [],
   "children": [
+    "10-18-dx02-candidate-provider",
+    "10-18-dx03-validation-capture",
+    "10-18-nu16-watch-signal-lifetime",
+    "10-18-nu10-local-links",
     "10-18-nu03-quality-scopes"
   ],
   "parent": null,

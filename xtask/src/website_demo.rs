@@ -3,7 +3,7 @@
 use pulldown_cmark::{CodeBlockKind, Event, Options, Parser, Tag};
 use serde::Deserialize;
 use serde_json::{json, Value};
-use std::collections::BTreeSet;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
@@ -26,8 +26,32 @@ const PINNED_SOURCE_PREVIEW_FILES: &[&str] = &[
 ];
 const FORBIDDEN_WEBSITE_COMMANDS: &[&str] = &["assura review --path"];
 
+const DEMO_SOURCE_PATHS: &[&str] = &[
+    "src",
+    "crates",
+    "xtask",
+    "integrations",
+    "Cargo.toml",
+    "Cargo.lock",
+    "rust-toolchain",
+    "rust-toolchain.toml",
+    ".cargo",
+    "build.rs",
+    ".assura/hooks",
+    "tests/fixtures",
+    "website/src",
+    "docs/data/release-surfaces.json",
+    ":(exclude)website/src/data/review-demo.json",
+    ":(exclude)website/src/data/check-demo.json",
+    ":(exclude)website/src/data/onboarding-demo.json",
+    ":(exclude)website/src/data/intelligence-demo.json",
+    ":(exclude)website/src/data/policy-demo.json",
+    ":(exclude)website/src/data/performance-summary.json",
+];
+
 #[derive(Deserialize)]
 struct ReleaseSurfaceManifest {
+    current_published_release: String,
     surfaces: Vec<ReleaseSurface>,
 }
 
@@ -52,6 +76,7 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     if !root.join("Cargo.toml").is_file() || !root.join("website").is_dir() {
         return Err("website-demo-data must run from the repository root".into());
     }
+    let source_revision = demo_source_revision(&root)?;
     build_assura(&root)?;
     let binary = root.join("target/debug/assura-full");
     validate_lslint_config_example(&root, &binary)?;
@@ -136,7 +161,10 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
     let output_dir = root.join(OUTPUT_DIR);
     fs::create_dir_all(&output_dir)?;
     let mut stale = Vec::new();
-    for (name, value) in outputs {
+    for (name, mut value) in outputs {
+        if name != "performance-summary.json" {
+            value["source_revision"] = json!(source_revision);
+        }
         let path = output_dir.join(name);
         let content = format!("{}\n", serde_json::to_string_pretty(&value)?);
         if check_only {
@@ -175,6 +203,50 @@ pub(crate) fn run(args: &[String]) -> Result<()> {
                 .into(),
         )
     }
+}
+
+fn demo_source_revision(root: &Path) -> Result<String> {
+    let status = Command::new("git")
+        .current_dir(root)
+        .args([
+            "status",
+            "--porcelain",
+            "--untracked-files=all",
+            "--ignored=matching",
+            "--",
+        ])
+        .args(DEMO_SOURCE_PATHS)
+        .output()?;
+    if !status.status.success() {
+        return Err(command_error("inspect website demo source inputs", &status).into());
+    }
+    if !status.stdout.is_empty() {
+        return Err(format!(
+            "website demo source inputs must be committed: {}",
+            String::from_utf8_lossy(&status.stdout).trim()
+        )
+        .into());
+    }
+    let output = Command::new("git")
+        .current_dir(root)
+        .args(["log", "-1", "--format=%H", "HEAD", "--"])
+        .args(DEMO_SOURCE_PATHS)
+        .output()?;
+    if !output.status.success() {
+        return Err(command_error("resolve website demo input revision", &output).into());
+    }
+    let revision = std::str::from_utf8(&output.stdout)?.trim();
+    if revision.is_empty() {
+        return Err("website demo inputs have no tracked source revision".into());
+    }
+    run_status(
+        Command::new("git")
+            .current_dir(root)
+            .args(["diff", "--quiet", revision, "HEAD", "--"])
+            .args(DEMO_SOURCE_PATHS),
+        "verify website demo inputs match their recorded revision",
+    )?;
+    Ok(revision.to_string())
 }
 
 fn execution_mode(args: &[String]) -> Result<(bool, bool)> {
@@ -411,6 +483,44 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<Value>
     )?;
     let baseline_report = run_example_check(binary, &project, true)?;
 
+    let original_files = project_file_snapshot(&project)?;
+    let repaired_path = Path::new("packages/core/src/user-menu.ts");
+    let invalid_path = Path::new("packages/core/src/UserMenu.ts");
+    fs::rename(project.join(repaired_path), project.join(invalid_path))?;
+    let invalid_files = project_file_snapshot(&project)?;
+    let before = run_repair_check(binary, &project, 1)?;
+    require_example_violation(
+        "homepage naming repair",
+        &before["report"],
+        "packages/core/src/UserMenu.ts",
+        "file_naming",
+    )?;
+    if before["report"]["violations"].as_array().map(Vec::len) != Some(1) {
+        return Err("homepage rename must demonstrate exactly one naming violation".into());
+    }
+    // A second actual check without the rename must still fail, never count as repair.
+    let unrepaired = run_repair_check(binary, &project, 1)?;
+    if unrepaired["report"] != before["report"] {
+        return Err("unrepaired homepage naming evidence changed between checks".into());
+    }
+    fs::rename(project.join(invalid_path), project.join(repaired_path))?;
+    let after = run_repair_check(binary, &project, 0)?;
+    let repaired_files = project_file_snapshot(&project)?;
+    validate_rename_snapshots(&invalid_files, &repaired_files, invalid_path, repaired_path)?;
+    if repaired_files != original_files {
+        return Err("homepage repair must restore the original policy and file bytes".into());
+    }
+    let repair = json!({
+        "operation": "file_rename",
+        "from": invalid_path.to_string_lossy(),
+        "to": repaired_path.to_string_lossy(),
+        "before": before,
+        "unrepaired_exit_code": unrepaired["exit_code"],
+        "after": after,
+        "config_preserved": true,
+        "file_contents_preserved": true,
+    });
+
     fs::remove_file(package.join("AGENTS.md"))?;
     fs::remove_file(package.join("package.json"))?;
     let report = run_example_check(binary, &project, false)?;
@@ -466,6 +576,7 @@ fn validate_homepage_policy_example(root: &Path, binary: &Path) -> Result<Value>
         "presentation": "fixture_explanation",
         "command": "assura check --format json .",
         "config": config.trim_end(),
+        "repair": repair,
         "markers": [
             {"id": "1", "match": "AGENTS.md: exists:1 | $agent-doc", "label": "required agent guidance"},
             {"id": "2", "match": "./*/: $workspace", "label": "reused workspace contract"},
@@ -514,6 +625,68 @@ fn find_example_violation<'a>(report: &'a Value, path: &str, rule: &str) -> Resu
 
 fn file_line_count(path: &Path) -> Result<usize> {
     Ok(fs::read_to_string(path)?.lines().count())
+}
+
+fn validate_rename_snapshots(
+    before: &BTreeMap<PathBuf, Vec<u8>>,
+    after: &BTreeMap<PathBuf, Vec<u8>>,
+    from: &Path,
+    to: &Path,
+) -> Result<()> {
+    let mut expected = before.clone();
+    let contents = expected.remove(from).ok_or("rename source is missing")?;
+    if from == to || expected.insert(to.to_path_buf(), contents).is_some() {
+        return Err("rename must move one file to an absent, different path".into());
+    }
+    if &expected != after {
+        return Err("rename repair changed configuration, file contents or other paths".into());
+    }
+    Ok(())
+}
+
+fn require_repair_exit_code(actual: Option<i32>, expected: i32) -> Result<i32> {
+    if actual != Some(expected) {
+        return Err(
+            format!("homepage repair check expected exit {expected}, got {actual:?}").into(),
+        );
+    }
+    actual.ok_or_else(|| "homepage repair check terminated without an exit code".into())
+}
+
+fn project_file_snapshot(project: &Path) -> Result<BTreeMap<PathBuf, Vec<u8>>> {
+    let mut paths = Vec::new();
+    collect_files(project, &mut paths)?;
+    paths
+        .into_iter()
+        .map(|path| Ok((path.strip_prefix(project)?.to_path_buf(), fs::read(path)?)))
+        .collect()
+}
+
+fn run_repair_check(binary: &Path, project: &Path, expected_exit: i32) -> Result<Value> {
+    let output = Command::new(binary)
+        .current_dir(project)
+        .args(["check", "--format", "json", "."])
+        .output()?;
+    let exit_code = require_repair_exit_code(output.status.code(), expected_exit)?;
+    let normalized = normalize_project_path(std::str::from_utf8(&output.stdout)?, project);
+    let report: Value = serde_json::from_str(&normalized)?;
+    let violations = report["violations"]
+        .as_array()
+        .ok_or("homepage repair check is missing violations")?;
+    if report["success"] != (expected_exit == 0) || (expected_exit == 0 && !violations.is_empty()) {
+        return Err("homepage repair JSON disagrees with its process exit".into());
+    }
+    // Selected JSON fields come directly from the CLI; omit runtime timings.
+    Ok(json!({
+        "command": "assura check --format json .",
+        "exit_code": exit_code,
+        "report": {
+            "success": report["success"],
+            "files_checked": report["files_checked"],
+            "dirs_checked": report["dirs_checked"],
+            "violations": violations,
+        },
+    }))
 }
 
 fn validate_repair_document_references(project: &Path) -> Result<()> {
@@ -719,7 +892,7 @@ fn validate_claims(
         .collect::<BTreeSet<_>>();
     validate_claim_id_mapping(&rendered_claim_ids, &manifest_ids, &marketing_claim_ids)?;
     let marketing_claim_count = marketing_claim_ids.len();
-    let package_version = package_version(&root.join("Cargo.toml"))?;
+    let published_release = published_release_version(&manifest)?;
     for claim in manifest.surfaces {
         if !claim.marketing_claim {
             continue;
@@ -731,7 +904,7 @@ fn validate_claims(
             )
             .into());
         }
-        validate_marketing_claim_release(&claim, &package_version, require_released)?;
+        validate_marketing_claim_release(&claim, &published_release.to_string(), require_released)?;
         let evidence_status = claim
             .evidence_status
             .as_deref()
@@ -793,7 +966,7 @@ fn validate_claims(
 
 fn validate_marketing_claim_release(
     claim: &ReleaseSurface,
-    package_version: &str,
+    published_version: &str,
     require_released: bool,
 ) -> Result<()> {
     if claim.status != "supported" {
@@ -808,7 +981,7 @@ fn validate_marketing_claim_release(
     }
     if claim.first_release == "unreleased" {
         return Err(format!(
-            "marketing claim `{}` is not available in release v{package_version}",
+            "marketing claim `{}` is not available in release v{published_version}",
             claim.id
         )
         .into());
@@ -819,11 +992,12 @@ fn validate_marketing_claim_release(
             claim.id, claim.first_release
         )
     })?;
-    let package_release = semver::Version::parse(package_version)
-        .map_err(|_| format!("Cargo package version `{package_version}` is not valid SemVer"))?;
-    if first_release > package_release {
+    let published_release = semver::Version::parse(published_version).map_err(|_| {
+        format!("Published release version `{published_version}` is not valid SemVer")
+    })?;
+    if first_release > published_release {
         return Err(format!(
-            "marketing claim `{}` first ships in {} after local release v{package_version}",
+            "marketing claim `{}` first ships in {} after published release v{published_version}",
             claim.id, claim.first_release
         )
         .into());
@@ -831,12 +1005,20 @@ fn validate_marketing_claim_release(
     Ok(())
 }
 
+fn published_release_version(manifest: &ReleaseSurfaceManifest) -> Result<semver::Version> {
+    super::release_tag_version(&manifest.current_published_release).ok_or_else(|| {
+        format!(
+            "current_published_release `{}` is not a valid release tag",
+            manifest.current_published_release
+        )
+        .into()
+    })
+}
+
 fn validate_setup_delivery(root: &Path, require_released: bool) -> Result<()> {
     let manifest: ReleaseSurfaceManifest =
         serde_json::from_str(&fs::read_to_string(root.join(RELEASE_SURFACES_PATH))?)?;
-    let package_version = package_version(&root.join("Cargo.toml"))?;
-    let package_release = semver::Version::parse(&package_version)
-        .map_err(|_| format!("Cargo package version `{package_version}` is not valid SemVer"))?;
+    let published_release = published_release_version(&manifest)?;
     let needs_source_preview = manifest
         .surfaces
         .iter()
@@ -852,7 +1034,7 @@ fn validate_setup_delivery(root: &Path, require_released: bool) -> Result<()> {
                         surface.id, surface.first_release
                     )
                 })?;
-            Ok(needs_source_preview || first_release > package_release)
+            Ok(needs_source_preview || first_release > published_release)
         })?;
     let source = fs::read_to_string(root.join(MARKETING_DATA_PATH))?;
     validate_setup_delivery_source(&source, needs_source_preview, require_released)?;
@@ -912,7 +1094,10 @@ fn validate_setup_delivery_source(
     const PINNED_INSTALL: &str = "cargo install --git ${sourceRepositoryUrl} --rev ${sourcePreviewRevision} --locked --bin assura assura";
 
     if require_released && needs_source_preview {
-        return Err("released marketing cannot include capabilities newer than the package".into());
+        return Err(
+            "released marketing cannot include capabilities newer than the published release"
+                .into(),
+        );
     }
 
     if needs_source_preview {
@@ -1630,6 +1815,153 @@ mod tests {
     use super::*;
 
     #[test]
+    fn demo_revision_ignores_only_generated_data_and_rejects_dirty_inputs() {
+        let root = std::env::temp_dir().join(format!(
+            "assura-demo-revision-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&root).unwrap();
+        let git = |args: &[&str]| {
+            run_status(
+                Command::new("git")
+                    .current_dir(&root)
+                    .args([
+                        "-c",
+                        "core.hooksPath=/dev/null",
+                        "-c",
+                        "commit.gpgsign=false",
+                    ])
+                    .args(args)
+                    .env("GIT_AUTHOR_NAME", "Fixture")
+                    .env("GIT_AUTHOR_EMAIL", "fixture@example.test")
+                    .env("GIT_COMMITTER_NAME", "Fixture")
+                    .env("GIT_COMMITTER_EMAIL", "fixture@example.test"),
+                "prepare demo revision control",
+            )
+            .unwrap();
+        };
+        git(&["init", "--quiet"]);
+        for path in [
+            "src/lib.rs",
+            ".cargo/config.toml",
+            "tests/fixtures/input.txt",
+        ] {
+            fs::create_dir_all(root.join(path).parent().unwrap()).unwrap();
+            fs::write(root.join(path), "original").unwrap();
+        }
+        git(&["add", "."]);
+        git(&["commit", "-qm", "source"]);
+        let original = demo_source_revision(&root).unwrap();
+        fs::create_dir_all(root.join(OUTPUT_DIR)).unwrap();
+        fs::write(root.join(OUTPUT_DIR).join("review-demo.json"), "{}").unwrap();
+        git(&["add", "."]);
+        git(&["commit", "-qm", "generated data"]);
+        assert_eq!(demo_source_revision(&root).unwrap(), original);
+        fs::write(
+            root.join(OUTPUT_DIR).join("review-demo.json"),
+            "{\"changed\":true}",
+        )
+        .unwrap();
+        assert_eq!(demo_source_revision(&root).unwrap(), original);
+        for path in [
+            "src/lib.rs",
+            ".cargo/config.toml",
+            "tests/fixtures/input.txt",
+        ] {
+            let previous = demo_source_revision(&root).unwrap();
+            fs::write(root.join(path), "changed").unwrap();
+            assert!(demo_source_revision(&root).is_err(), "dirty {path}");
+            git(&["add", path]);
+            assert!(demo_source_revision(&root).is_err(), "staged {path}");
+            git(&["commit", "-qm", "input change"]);
+            assert_ne!(demo_source_revision(&root).unwrap(), previous);
+        }
+        fs::write(root.join("src/untracked.rs"), "untracked").unwrap();
+        assert!(demo_source_revision(&root).is_err());
+        fs::remove_dir_all(root).unwrap();
+    }
+
+    #[test]
+    fn homepage_policy_records_actual_rename_and_recheck() {
+        let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
+        let demo = read_json(root.join("website/src/data/policy-demo.json"))
+            .expect("read checked generated homepage evidence");
+        let repair = &demo["repair"];
+        assert_eq!(repair["before"]["exit_code"], 1);
+        assert_eq!(repair["before"]["report"]["success"], false);
+        assert_eq!(
+            repair["before"]["report"]["violations"]
+                .as_array()
+                .unwrap()
+                .len(),
+            1
+        );
+        assert!(repair["before"]["report"]["violations"][0]["path"]
+            .as_str()
+            .unwrap()
+            .ends_with("packages/core/src/UserMenu.ts"));
+        assert_eq!(
+            repair["before"]["report"]["violations"][0]["rule"],
+            "file_naming"
+        );
+        assert_eq!(repair["after"]["exit_code"], 0);
+        assert_eq!(repair["after"]["report"]["success"], true);
+        assert_eq!(repair["after"]["report"]["violations"], json!([]));
+        assert_eq!(
+            repair["before"]["report"]["files_checked"],
+            repair["after"]["report"]["files_checked"]
+        );
+        assert_eq!(repair["config_preserved"], true);
+        assert_eq!(repair["file_contents_preserved"], true);
+        assert_eq!(
+            demo["summary"]["violations"], 2,
+            "richer negative fixture remains separate"
+        );
+    }
+
+    #[test]
+    fn rename_repair_rejects_changed_config_or_file_contents() {
+        let from = Path::new("packages/core/src/UserMenu.ts");
+        let to = Path::new("packages/core/src/user-menu.ts");
+        let config = PathBuf::from(".assura/config.yml");
+        let before = BTreeMap::from([
+            (config.clone(), b".ts: kebab-case".to_vec()),
+            (from.to_path_buf(), b"export const value = true;".to_vec()),
+        ]);
+        let mut after = before.clone();
+        let content = after.remove(from).unwrap();
+        after.insert(to.to_path_buf(), content);
+        assert!(validate_rename_snapshots(&before, &after, from, to).is_ok());
+        for changed in [&config, to] {
+            let mut modified = after.clone();
+            modified.insert(changed.to_path_buf(), b"changed".to_vec());
+            assert!(validate_rename_snapshots(&before, &modified, from, to).is_err());
+        }
+        after.remove(to);
+        assert!(validate_rename_snapshots(&before, &after, from, to).is_err());
+    }
+
+    #[test]
+    fn rename_repair_rejects_an_unperformed_rename() {
+        let from = Path::new("UserMenu.ts");
+        let to = Path::new("user-menu.ts");
+        let before = BTreeMap::from([(from.to_path_buf(), b"unchanged".to_vec())]);
+        assert!(validate_rename_snapshots(&before, &before, from, to).is_err());
+    }
+
+    #[test]
+    fn rename_repair_requires_exact_process_exit_codes() {
+        assert_eq!(require_repair_exit_code(Some(1), 1).unwrap(), 1);
+        assert_eq!(require_repair_exit_code(Some(0), 0).unwrap(), 0);
+        assert!(require_repair_exit_code(Some(2), 1).is_err());
+        assert!(require_repair_exit_code(Some(0), 1).is_err());
+        assert!(require_repair_exit_code(None, 1).is_err());
+    }
+
+    #[test]
     fn performance_summary_keeps_cold_and_warm_claims_separate() {
         let root = Path::new(env!("CARGO_MANIFEST_DIR")).parent().unwrap();
         let version = package_version(&root.join("Cargo.toml")).expect("package version");
@@ -1719,7 +2051,7 @@ mod tests {
     }
 
     #[test]
-    fn released_marketing_claims_must_ship_by_the_local_version() {
+    fn released_marketing_claims_must_ship_by_the_published_version() {
         validate_marketing_claim_release(
             &release_surface("check", "supported", "v0.1.0"),
             "0.3.0",
@@ -1748,7 +2080,44 @@ mod tests {
             true,
         )
         .expect_err("future claim must fail strict release validation");
-        assert!(future.to_string().contains("after local release"));
+        assert!(future.to_string().contains("after published release"));
+    }
+
+    #[test]
+    fn setup_delivery_uses_published_release_even_when_local_package_is_newer() {
+        let root = std::env::temp_dir().join(format!(
+            "assura-website-release-{}",
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        fs::create_dir(&root).expect("unique temporary website root");
+        fs::create_dir_all(root.join("docs/data")).unwrap();
+        fs::create_dir_all(root.join("website/src/data")).unwrap();
+        fs::write(root.join("Cargo.toml"), "[package]\nversion = \"99.0.0\"\n").unwrap();
+        fs::write(
+            root.join(MARKETING_DATA_PATH),
+            "export const installCommand = 'curl -fsSL https://assura.dev/install.sh | sh';",
+        )
+        .unwrap();
+        for (published, first_release, valid) in [
+            ("v0.4.1", "v0.4.1", true),
+            ("v0.3.0", "v0.4.1", false),
+            ("v0.4.1", "unreleased", false),
+            ("invalid", "v0.4.1", false),
+        ] {
+            fs::write(root.join(RELEASE_SURFACES_PATH), serde_json::to_vec(&json!({
+                "current_published_release": published,
+                "surfaces": [{"id":"review", "status":"supported", "first_release":first_release, "marketing_claim":true}]
+            })).unwrap()).unwrap();
+            assert_eq!(
+                validate_setup_delivery(&root, false).is_ok(),
+                valid,
+                "published={published}, first_release={first_release}"
+            );
+        }
+        fs::remove_dir_all(&root).unwrap();
     }
 
     #[test]

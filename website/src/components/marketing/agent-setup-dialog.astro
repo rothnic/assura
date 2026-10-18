@@ -4,9 +4,20 @@ interface Props {
   prompt: string;
   onboardingCommand: string;
   installCommand: string;
+  releaseStatus: string;
+  releaseScope: string;
+  verificationCommand: string;
 }
 
-const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
+const {
+  steps,
+  prompt,
+  onboardingCommand,
+  installCommand,
+  releaseStatus,
+  releaseScope,
+  verificationCommand,
+} = Astro.props;
 ---
 
 <dialog id="agent-setup-dialog" class="setup-dialog" aria-labelledby="setup-dialog-title">
@@ -22,10 +33,6 @@ const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
       Copy one instruction to the coding agent already working in your project.
       It will establish the baseline, define the expected shape, and verify it.
     </p>
-    <div class="setup-command" aria-label="Assura onboarding command">
-      <span>One command</span>
-      <code>{onboardingCommand}</code>
-    </div>
     <div class="dialog-command">
       <div>
         <span>Agent goal</span>
@@ -35,6 +42,14 @@ const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
       <button class="button button-primary" type="button" data-copy-target="agent-prompt" data-copied-label="Instruction copied" data-analytics-event="setup_prompt_copy">
         Copy setup instruction
       </button>
+      <div class="release-status" aria-label="Published release status">
+        <strong>{releaseStatus}</strong>
+        <span>{releaseScope}</span>
+      </div>
+      <div class="setup-command" aria-label="Assura onboarding command">
+        <span>First command</span>
+        <code>{onboardingCommand}</code>
+      </div>
       <ol id="agent-instruction" class="agent-instruction">
         {steps.map((step) => <li>{step}</li>)}
       </ol>
@@ -42,7 +57,7 @@ const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
     <details class="install-details" aria-label="Public installation details">
       <summary>
         <span>Installation details</span>
-        <code>public release</code>
+        <code>published release pair</code>
       </summary>
       <div class="install-row">
         <code id="install-command" tabindex="0" aria-label="Assura install command">{installCommand}</code>
@@ -50,11 +65,29 @@ const { steps, prompt, onboardingCommand, installCommand } = Astro.props;
           Copy
         </button>
       </div>
-      <p>The copied setup instruction includes this command.</p>
+      <p>The copied setup instruction includes this command and the mandatory checks below.</p>
+      <pre><code id="verification-command" tabindex="0" aria-label="Assura version verification commands">{verificationCommand}</code></pre>
     </details>
     <p id="copy-status" class="copy-status" role="status" aria-live="polite"></p>
   </div>
 </dialog>
+
+<style>
+  .dialog-command > .release-status { display: grid; grid-template-columns: minmax(0, 1fr); gap: 0.35rem; align-items: start; }
+  .release-status { color: var(--muted); font-size: 0.82rem; line-height: 1.45; text-transform: none; }
+  .release-status strong { width: 100%; overflow-wrap: anywhere; color: var(--text); font-size: 0.9rem; }
+  .dialog-command > .release-status > span {
+    width: 100%;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-size: 0.82rem;
+    font-weight: 400;
+    line-height: 1.45;
+    text-transform: none;
+  }
+  .setup-command code, .install-row code { min-width: 0; overflow-wrap: anywhere; white-space: normal; }
+  .agent-instruction li { min-width: 0; overflow-wrap: anywhere; }
+  .install-details pre { overflow-x: auto; white-space: pre-wrap; overflow-wrap: anywhere; }
+</style>
 
 <script is:inline>
   const setupDialog = document.getElementById('agent-setup-dialog');

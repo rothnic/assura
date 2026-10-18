@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/assura/config-notation.md", "reason": "Existing finite exact selector and detailed structure normalization; no notation change"}
+{"file": ".trellis/spec/assura/pattern-scoped-file-directives.md", "reason": "Preserve file-pattern scope and inherited directory defaults"}

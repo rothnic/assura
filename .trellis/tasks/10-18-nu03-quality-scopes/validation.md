@@ -107,3 +107,52 @@ Evidence is under external `nu03/diagnostic-clippy-correction/`. The focused
 source and limits; neither is relabeled as freshly executed here. Independent
 scoped rereview, corrected-head hosted checks, final current-source full PR
 and disposition of the earlier unknown macOS failure remain outstanding.
+
+## NU16/NU10 current-base source-preparation merge (2026-10-18)
+
+This checkpoint is metadata/source-preparation only. Clean candidate
+`16fd6527a839fadb094bd0e454716992a3f78ce7` on `fix/nu03-quality-scopes`
+was non-force merged with the refreshed `origin/master`
+`c8b72d2e096a97240d7f88502d8a76e29c15a85a` (which descends from registered
+base `74d9917dd39e599bbd43c3a5760b71644b2cf91b`). The only merge conflict was
+`.trellis/tasks/10-17-assura-beads-execution/task.json`. The base and candidate
+stages had identical non-`children` fields. The resolved list preserves the
+four actual base children (`10-18-dx02-candidate-provider`,
+`10-18-dx03-validation-capture`, `10-18-nu16-watch-signal-lifetime`,
+`10-18-nu10-local-links`) and the candidate's `10-18-nu03-quality-scopes`,
+with semantic deduplication; other parent fields are unchanged.
+
+The NU03 task directory, PRD, context JSONL and validation history remain
+present. The candidate's eight tracked implementation/test inputs have
+byte-identical hashes before and after this merge:
+
+| Input | SHA-256 |
+| --- | --- |
+| `src/cli/agent_onboarding.rs` | `77bd258a0f0d059c4145be367b1ff74767ddc866b9ddb6d632749b6668f8d183` |
+| `src/cli/agent_onboarding_quality.rs` | `8076fc8fd308a2701967c9f11fc36d80337408bc3a1d42fa7bc38ee91f277b4b` |
+| `src/cli/check.rs` | `49cea3a02670943bf2d097f6082593c5fa8d8d66e9add17b57ff8c580f2647f0` |
+| `src/cli/quality.rs` | `b6c83ab513872f22a4f6b05e2225d9fe3a2e0dc1d4138986e409b4787ce59f14` |
+| `src/config/config/quality.rs` | `8f616ef0101df1f7f08df964f384101cceee320106b997c2af8ef87df135afd4` |
+| `src/config/config/validation/quality.rs` | `0f8906c5984af372430201234881efd002d5fee2bc9608375a4bd0cf8de26fe6` |
+| `tests/quality_onboarding_contract.rs` | `54d265d9641429686eac9af73abfac43024514ef5855a24387f6e984d906985f` |
+| `crates/assura-check-cli/tests/hot_cli.rs` | `e4047eff9dbe4bd16f31019323b859993d45efed817ed87168d311ab966a2fcd` |
+
+The incoming source delta includes NU16's `src/cli/watch.rs` and
+`src/cli/watch_signal.rs`; these are outside the NU03 implementation inputs.
+The task's product source, tests, `.assura`, Cargo/toolchain inputs and native
+history were not edited or regenerated. The candidate owner/status remains
+`nu03-quality-scopes` / `in_progress`. Before merge, the NU03 workflow gate was
+`Ready: yes`; the task context validator passed (16 implementation and 11
+check entries), as did the parent task context validator (4 implementation and
+3 check entries). The gate during the intentional uncommitted merge reports
+`blocked_dirty_worktree`; this is expected until this owned merge/evidence
+commit is completed.
+
+No Cargo command, build, companion CLI, native-generation/benchmark run,
+provider query, Beads command, or PR operation was run for this refresh. The
+older focused run, four-case composition proof, full PR lane, and hosted
+observations keep their existing source bindings and limitations documented
+above; none is promoted to exact refreshed-head validation. Final independent
+review, current-source focused and composition proof, full PR lane, current
+hosted checks, and adjudication of the historical unknown macOS failure remain
+outstanding. This merge does not close NU03 or its Bead.
