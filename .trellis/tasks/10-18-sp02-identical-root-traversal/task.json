@@ -1,0 +1,38 @@
+{
+  "id": "sp02-identical-root-traversal",
+  "name": "sp02-identical-root-traversal",
+  "title": "SP02 identical-root traversal reuse",
+  "description": "Prepare and, after phase admission, evaluate the smallest within-check reuse of identical-root test-relationship traversal. Preserve correctness and public keep gates; no speedup is presumed.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Identical-root test-relationship traversal reuse within one check; task setup and preparation only until coordinator admits further phase.",
+  "package": null,
+  "priority": "P2",
+  "creator": "sp02-identical-root-traversal",
+  "assignee": "sp02-identical-root-traversal",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "perf/sp02-identical-root-traversal",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-sp02-identical-root-traversal",
+      "owner": "sp02-identical-root-traversal",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/perf/sp02-identical-root-traversal",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#objective"
+    }
+  }
+}
