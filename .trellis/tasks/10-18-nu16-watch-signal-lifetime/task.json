@@ -1,0 +1,38 @@
+{
+  "id": "nu16-watch-signal-lifetime",
+  "name": "nu16-watch-signal-lifetime",
+  "title": "NU16 watch signal listener lifetime",
+  "description": "Retain platform shutdown listeners for the watch runtime; define and implement deterministic lifecycle/cancellation controls plus owned child signal coverage after resource and method release.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "src/cli/watch.rs; src/cli/watch_signal.rs; focused watch signal tests; tests/watch_cli.rs only for justified safe platform coverage",
+  "package": null,
+  "priority": "P1",
+  "creator": "nu16-watch-signal-lifetime",
+  "assignee": "nu16-watch-signal-lifetime",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/nu16-watch-signal-lifetime",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-17-assura-beads-execution",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu16-watch-signal-lifetime",
+      "owner": "nu16-watch-signal-lifetime",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu16-watch-signal-lifetime",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}

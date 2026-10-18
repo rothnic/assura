@@ -6,7 +6,7 @@ use super::doctor::exit_code_for_check_error;
 use super::watch_event::{
     emit_event, event_from_result, CacheState, RuntimeMode, WatchEvent, WatchTrigger,
 };
-use super::watch_signal::shutdown_signal;
+use super::watch_signal::{listen, ShutdownSignal};
 use super::watch_state::{
     display_paths, normalize_config_event, normalize_known_file_removal, DirtyProject, DirtyState,
     DirtyTake,
@@ -112,6 +112,8 @@ async fn run_watch(
         config_watch_parent,
         no_git,
     };
+    let mut shutdown_signal =
+        listen().map_err(|error| WatchError::Runtime(format!("listen for interrupt: {error}")))?;
     let dirty = Arc::new(DirtyState::new());
     let overflowed = Arc::new(AtomicBool::new(false));
     let (sender, mut receiver) = mpsc::channel(WATCH_CHANNEL_CAPACITY);
@@ -148,7 +150,7 @@ async fn run_watch(
     let max_batch_window = Duration::from_millis(debounce_ms.saturating_mul(4).max(1_000));
     loop {
         let first = tokio::select! {
-            signal = shutdown_signal() => {
+            signal = shutdown_signal.recv() => {
                 signal.map_err(|error| WatchError::Runtime(format!("listen for interrupt: {error}")))?;
                 return Ok(());
             }
@@ -169,7 +171,7 @@ async fn run_watch(
             }
             let quiet_window = debounce.min(remaining);
             let received = tokio::select! {
-                signal = shutdown_signal() => {
+                signal = shutdown_signal.recv() => {
                     signal.map_err(|error| WatchError::Runtime(format!("listen for interrupt: {error}")))?;
                     return Ok(());
                 }
