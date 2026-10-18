@@ -1,8 +1,8 @@
 # W02 source preparation and evidence
 
-This is an intermediate source packet. The child remains in progress; generated
-CLI data, production rendering, browser behavior, independent final review and
-PR gates have not been completed. Root owns admission and integration.
+This is an intermediate implementation packet. The child remains in progress;
+production rendering, browser behavior, independent final review and PR gates
+have not been completed. Root owns admission and integration.
 
 ## Source and ownership
 
@@ -32,6 +32,9 @@ source changes are not retroactively covered by an earlier run.
 | Corrected repair controls | Three tests passed, zero ignored: reject changed policy/file bytes, an unperformed rename, and wrong/missing process exits. The actual generated repair has not run yet. | `source-and-repair-corrected-1.raw.log`, `source-and-repair-corrected-1.exit.json` |
 | Cheap source checks | Rustfmt module check and diff whitespace check exit 0; both modified manifests parse as JSON. | `cheap-checks.json`, `cheap-check-2.raw.log`, `cheap-check-3.raw.log` |
 | Direct candidate structure triage | Installed `/usr/local/bin/assura` 0.4.1 checked this candidate's absolute root/config: exit 0, 2004 files, 423 directories, 16 nonblocking max-lines findings. This is not candidate-built final proof. | `cheap-checks.json`, `cheap-check-0.raw.log`, `cheap-check-1.raw.log` |
+| Label correction and scoped rereview | Seven release labels across three product docs now match v0.4.1 tag/manifest evidence; all other bytes and caveats preserved. Commit `4ecc5b06469ce7b33a5eab0f6eee3a1de33bb596` passed scoped independent rereview. | `release-label-correction.json`, `release-label-independent-rereview-4ecc5b06.md` |
+| One admitted canonical generation | Exit 0 at clean `4ecc5b06`; validates 20 marketed mappings and 54 documentation YAML examples, writes the five intended CLI artifacts, preserves every protected performance byte. | `generator.binding.json`, `generator.raw.log`, `generator.exit.json` |
+| Generated JSON and candidate-built structure | Five JSON artifacts parse and identify input revision `4ecc5b06`; actual repair fields agree with exits/preservation. Candidate-built `assura-full` checked the absolute candidate root: exit 0, 2005 files, 423 directories, 16 nonblocking max-lines findings. Diff check passes. | `generator-cheap-validation.json`, `generated-cheap-check-0.raw.log`, `generated-cheap-check-1.raw.log` |
 
 Corrected Rust tests explicitly pin Cargo and rustc 1.94.1 from the existing
 stable toolchain, their hashes, offline/locked arguments, jobs=2,
@@ -40,17 +43,21 @@ The installed structure binary's hash and absolute candidate binding are in
 its receipt. The shared precommit launcher path alone does not establish which
 checkout it checks; no wrong-checkout bug is claimed.
 
-## Pending generation and final gates
+## Generated source evidence and remaining gates
 
-The current checked-in demo JSON predates this adaptation. It lacks the new
-repair and source revision fields that the prepared UI expects. It has not
-been replaced by hand, and no production build or behavior pass is claimed.
+The single admitted canonical generation ran at clean commit
+`4ecc5b06469ce7b33a5eab0f6eee3a1de33bb596`, using absolute Cargo/rustc 1.94.1,
+pinned inherited child PATH, offline dependencies, jobs=2, candidate-local
+target and private disk-backed `/Users/nroth/workspace/.w02-gen.1atphaxs`.
+The Darwin socket bind/close budget probe passed; the managed daemon default
+is TCP. The generator completed, was reaped, and left no owned process-group
+or candidate-binary rows; its scratch directory was empty at teardown.
 
-After source is committed and root admits the run, request the existing
-canonical `cargo xtask website-demo-data` command from this checkout, with
-the pinned Rust/Node wrappers, jobs=2, offline dependencies, candidate-local
-target and a private short disk-backed TMPDIR. It builds the current
-`assura-full` and generates exactly these CLI artifacts:
+The command built source `assura-full` SHA-256
+`111dc66cbd69ac87f58f055d16c3457aa53828bd1ee3111441e652690363f929`.
+Actual generating HEAD and tracked-input revision are recorded separately;
+both were `4ecc5b06` for this run. No released-artifact behavior is inferred
+from that binary's Cargo version. The five generated CLI artifacts are:
 
 - `website/src/data/review-demo.json`
 - `website/src/data/check-demo.json`
@@ -58,16 +65,20 @@ target and a private short disk-backed TMPDIR. It builds the current
 - `website/src/data/intelligence-demo.json`
 - `website/src/data/policy-demo.json`
 
-The existing command also writes `performance-summary.json`; its producer is
-unchanged, so require its pre/post bytes to match. Preserve the raw/history
-performance datasets. Record actual generating HEAD/toolchain/binary and raw
-outputs externally. Per-artifact `source_revision` identifies the committed
-CLI/generator/fixture inputs, including configuration examples and relevant
-build/marketing inputs; it does not assert a literal generating HEAD after
-data-only commits, nor prove published-binary behavior.
+The entire generated delta is 44 insertions and one deletion across those five
+files: five input-revision fields and actual recorded naming repair. The repair
+has before exit 1, an unrepaired exit 1, then after exit 0 with no violations;
+configuration and file bytes are preserved by the generator's snapshot check.
+`performance-summary.json` was rewritten byte-identically; all protected
+raw/history files also retain their original hashes. Before/after files and
+hashes are preserved externally. Per-artifact `source_revision` identifies
+the committed CLI/generator/fixture inputs, including configuration examples
+and relevant build/marketing inputs; it does not assert a literal generating
+HEAD after data-only commits, nor prove published-binary behavior.
 
-Then run the generator-dependent actual repair test and applicable current-head
-docs/release checks, production build, browser behavior and responsive/theme
-proof, applicable Rust and hosted gates, independent Luna review/rereview,
-and root-owned integration/outcome verification. Historical 158-test evidence
-remains case rationale, not current proof.
+The generator-dependent unit test has not yet executed. Remaining admitted
+work must include applicable current-head generator/docs/released checks,
+production build, browser behavior and responsive/theme proof, applicable
+Rust and hosted gates, independent Luna review/rereview, and root-owned
+integration/outcome verification. Historical 158-test evidence remains case
+rationale, not current proof.
