@@ -1,0 +1,18 @@
+{
+  "candidate": "01f86f50abc1e5d00b18c746a562596f7d77c4a0",
+  "reviewer": "/root/nu13_luna_final_review",
+  "model": "gpt-6-luna",
+  "independent": true,
+  "decision": "ready-for-scoped-init-import",
+  "resolved_findings": [
+    "Beads sole live queue",
+    "exact candidate correction and rereview loop",
+    "graph identity idempotency and readback",
+    "external acceptance boundaries"
+  ],
+  "coordinator_dispositions": [
+    "Known Cloudflare coupling covered by direct user merge instruction after explicit disclosure.",
+    "Reviewer observed the coordinator uncommitted exact .beads exclusions; those exclusions are a new delta, not part of reviewed01f86f50. Positive/negative controls retained separately."
+  ],
+  "actual_attempt": "Init failed during automatic remote bootstrap before issue creation. No repeated init or import; partial state retained; three read-only Luna competitors dispatched."
+}

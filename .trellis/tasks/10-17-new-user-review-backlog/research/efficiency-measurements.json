@@ -1,0 +1,938 @@
+{
+  "measured_utc": "2026-10-17T23:48:53.455464+00:00",
+  "platform": "macOS-26.5.2-x86_64-i386-64bit-Mach-O",
+  "binary_sha256": {
+    "assura": "05355b9639d0295c51b3ccc7f077311cdb39b90a6cbc4583aae2239e389ac0fe",
+    "assura-full": "4dfdb3dea035ac0fa0f8025864a356074bede59bd0c62dab09a66da93f26650c"
+  },
+  "version": "0.4.1",
+  "TMPDIR": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/tmp",
+  "resource_admission": "Parent verified Mac32GiB,69%free,16logical,load7,disk134GiB; serial only",
+  "method": "fresh processes, existing OS caches, no cache-drop or warm-up; /usr/bin/time -l wrapper included in elapsed; 5 serial samples per command; 10s timeout; preserved onboarding config; explicit --base HEAD; no native lint/test executed",
+  "projects": {
+    "typescript": {
+      "source_copy": "/Users/nroth/workspace/.assura-review-20261017/typescript-trial/project",
+      "measured_copy": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/typescript",
+      "head": "e6cbf4e0fa9ff57eeb5f114dc03f3c9942ebf67d",
+      "status_before": "?? .agents/\n?? .assura/\n?? .codex/\n?? AGENTS.md\n?? docs/learnings/\n?? docs/process/\n",
+      "config_sha256": "96a585205c38a1571adff16e8b2c74772d66ec53d6637d188d2fa9fa220a2d32",
+      "removed_prior_probe_files": [],
+      "explain_path": "components/message.tsx",
+      "status_after": "?? .agents/\n?? .assura/\n?? .codex/\n?? AGENTS.md\n?? docs/learnings/\n?? docs/process/\n",
+      "config_sha256_after": "96a585205c38a1571adff16e8b2c74772d66ec53d6637d188d2fa9fa220a2d32"
+    },
+    "python": {
+      "source_copy": "/Users/nroth/workspace/.assura-review-20261017/second-project-trial/onboard",
+      "measured_copy": "/Users/nroth/workspace/.assura-review-20261017/efficiency-pass/python",
+      "head": "fdc669ec159965c783eb7596396c0fd3baa05de5",
+      "status_before": "?? .agents/skills/assura-project-maintenance/\n?? .agents/skills/assura-structure-fit/\n?? .assura/\n?? .codex/\n?? docs/learnings/\n?? docs/process/\n",
+      "config_sha256": "2330529600ac76fca51b396db8600d0dc3a10377f4bd24e43ed2c14edaa458e6",
+      "removed_prior_probe_files": [
+        "UnexpectedRoot.py",
+        "docs/large-review-probe.md",
+        "docs/review-probe.md",
+        "tools/agent-workflow/src/agent_workflow/BadName.py"
+      ],
+      "explain_path": "tools/agent-workflow/src/agent_workflow/cli.py",
+      "status_after": "?? .agents/skills/assura-project-maintenance/\n?? .agents/skills/assura-structure-fit/\n?? .assura/\n?? .codex/\n?? docs/learnings/\n?? docs/process/\n",
+      "config_sha256_after": "2330529600ac76fca51b396db8600d0dc3a10377f4bd24e43ed2c14edaa458e6"
+    }
+  },
+  "rows": [
+    {"project": "typescript", "command": "check-json", "samples": 5, "completed": 5, "median_ms": 37.8304161131382, "min_ms": 34.56007409840822, "max_ms": 39.15615752339363, "stdout_bytes": [7898, 7898, 7898, 7898, 7898], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 2674688},
+    {"project": "typescript", "command": "check-text", "samples": 5, "completed": 5, "median_ms": 36.8520887568593, "min_ms": 33.162509091198444, "max_ms": 41.02194216102362, "stdout_bytes": [5264, 5264, 5264, 5264, 5264], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 2670592},
+    {"project": "typescript", "command": "check-agent", "samples": 5, "completed": 5, "median_ms": 36.72906290739775, "min_ms": 34.963592886924744, "max_ms": 40.965935215353966, "stdout_bytes": [3272, 3272, 3272, 3272, 3272], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 2830336},
+    {"project": "typescript", "command": "check-quiet", "samples": 5, "completed": 5, "median_ms": 33.515566028654575, "min_ms": 31.766517087817192, "max_ms": 34.89273600280285, "stdout_bytes": [0, 0, 0, 0, 0], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 2523136},
+    {"project": "typescript", "command": "review-json", "samples": 5, "completed": 5, "median_ms": 212.86949887871742, "min_ms": 202.546626329422, "max_ms": 222.48743567615747, "stdout_bytes": [11069, 11110, 11110, 11110, 11110], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 6807552},
+    {"project": "typescript", "command": "review-text", "samples": 5, "completed": 5, "median_ms": 209.95472837239504, "min_ms": 203.55539210140705, "max_ms": 220.52691131830215, "stdout_bytes": [439, 439, 439, 439, 439], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 6762496},
+    {"project": "typescript", "command": "doctor-json", "samples": 5, "completed": 5, "median_ms": 37.95229457318783, "min_ms": 37.27669268846512, "max_ms": 39.22510053962469, "stdout_bytes": [2463, 2463, 2463, 2463, 2463], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 5648384},
+    {"project": "typescript", "command": "explain-json", "samples": 5, "completed": 5, "median_ms": 17.186409793794155, "min_ms": 16.451289877295494, "max_ms": 17.680819146335125, "stdout_bytes": [4726, 4726, 4726, 4726, 4726], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 4993024},
+    {"project": "python", "command": "check-json", "samples": 5, "completed": 5, "median_ms": 56.132301688194275, "min_ms": 52.887520752847195, "max_ms": 62.96176835894585, "stdout_bytes": [68332, 68332, 68332, 68332, 68332], "exit_statuses": [1, 1, 1, 1, 1], "max_rss_bytes": 3137536},
+    {"project": "python", "command": "check-text", "samples": 5, "completed": 5, "median_ms": 58.22202656418085, "min_ms": 56.32481258362532, "max_ms": 62.59450502693653, "stdout_bytes": [49378, 49378, 49378, 49378, 49378], "exit_statuses": [1, 1, 1, 1, 1], "max_rss_bytes": 3162112},
+    {"project": "python", "command": "check-agent", "samples": 5, "completed": 5, "median_ms": 59.904759749770164, "min_ms": 55.29541242867708, "max_ms": 62.31843028217554, "stdout_bytes": [3189, 3189, 3189, 3189, 3189], "exit_statuses": [1, 1, 1, 1, 1], "max_rss_bytes": 3186688},
+    {"project": "python", "command": "check-quiet", "samples": 5, "completed": 5, "median_ms": 60.90101599693298, "min_ms": 59.503788128495216, "max_ms": 65.18380623310804, "stdout_bytes": [49378, 49378, 49378, 49378, 49378], "exit_statuses": [1, 1, 1, 1, 1], "max_rss_bytes": 3178496},
+    {"project": "python", "command": "review-json", "samples": 5, "completed": 5, "median_ms": 530.7702487334609, "min_ms": 505.13217225670815, "max_ms": 554.989424534142, "stdout_bytes": [11971, 12018, 12018, 12018, 12018], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 17530880},
+    {"project": "python", "command": "review-text", "samples": 5, "completed": 5, "median_ms": 507.89038464426994, "min_ms": 494.43810526281595, "max_ms": 518.2133596390486, "stdout_bytes": [536, 536, 536, 536, 536], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 15228928},
+    {"project": "python", "command": "doctor-json", "samples": 5, "completed": 5, "median_ms": 58.42856224626303, "min_ms": 58.050272054970264, "max_ms": 61.96384225040674, "stdout_bytes": [2847, 2847, 2847, 2847, 2847], "exit_statuses": [1, 1, 1, 1, 1], "max_rss_bytes": 6066176},
+    {"project": "python", "command": "explain-json", "samples": 5, "completed": 5, "median_ms": 19.637069664895535, "min_ms": 18.97916104644537, "max_ms": 20.846636965870857, "stdout_bytes": [4675, 4675, 4675, 4675, 4675], "exit_statuses": [0, 0, 0, 0, 0], "max_rss_bytes": 4988928}
+  ],
+  "coverage": {
+    "typescript": {
+      "files_checked": 273,
+      "dirs_checked": 68,
+      "violation_count": 18,
+      "severity_counts": {
+        "low": 18
+      },
+      "rule_counts": {
+        "max_lines": 11,
+        "limit_children": 7
+      },
+      "review_summaries": [
+        {
+          "blocking": 0,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 0,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 0,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 0,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 0,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        }
+      ],
+      "review_histories": [
+        {
+          "new": 7,
+          "worsened": 0,
+          "unchanged": 0,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 7,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 7,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 7,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 7,
+          "resolved": 0
+        }
+      ]
+    },
+    "python": {
+      "files_checked": 449,
+      "dirs_checked": 140,
+      "violation_count": 129,
+      "severity_counts": {
+        "medium": 1,
+        "low": 128
+      },
+      "rule_counts": {
+        "exists_count": 1,
+        "max_lines": 3,
+        "limit_children": 13,
+        "agent_guidance:agent_project_guidance": 112
+      },
+      "review_summaries": [
+        {
+          "blocking": 1,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 1,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 1,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 1,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        },
+        {
+          "blocking": 1,
+          "advisory": 0,
+          "inactive": 5,
+          "informational": 2,
+          "omitted_noise": 4
+        }
+      ],
+      "review_histories": [
+        {
+          "new": 8,
+          "worsened": 0,
+          "unchanged": 0,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 8,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 8,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 8,
+          "resolved": 0
+        },
+        {
+          "new": 0,
+          "worsened": 0,
+          "unchanged": 8,
+          "resolved": 0
+        }
+      ]
+    }
+  },
+  "calculated_scenarios": {
+    "typescript": {
+      "label": "calculated only, not actual 100-call run; median samples *100; no user/agent/native-test time",
+      "hundred_calls": {
+        "check-json": {
+          "seconds": 3.78304161131382,
+          "stdout_bytes": 789800
+        },
+        "check-text": {
+          "seconds": 3.6852088756859303,
+          "stdout_bytes": 526400
+        },
+        "check-agent": {
+          "seconds": 3.6729062907397747,
+          "stdout_bytes": 327200
+        },
+        "check-quiet": {
+          "seconds": 3.3515566028654575,
+          "stdout_bytes": 0
+        },
+        "review-json": {
+          "seconds": 21.286949887871742,
+          "stdout_bytes": 1111000
+        },
+        "review-text": {
+          "seconds": 20.995472837239504,
+          "stdout_bytes": 43900
+        },
+        "doctor-json": {
+          "seconds": 3.795229457318783,
+          "stdout_bytes": 246300
+        },
+        "explain-json": {
+          "seconds": 1.7186409793794155,
+          "stdout_bytes": 472600
+        }
+      },
+      "hundred_cycles_check_review_doctor_explain": {
+        "calls": 400,
+        "seconds": 30.58386193588376,
+        "stdout_bytes": 2619700
+      }
+    },
+    "python": {
+      "label": "calculated only, not actual 100-call run; median samples *100; no user/agent/native-test time",
+      "hundred_calls": {
+        "check-json": {
+          "seconds": 5.6132301688194275,
+          "stdout_bytes": 6833200
+        },
+        "check-text": {
+          "seconds": 5.822202656418085,
+          "stdout_bytes": 4937800
+        },
+        "check-agent": {
+          "seconds": 5.9904759749770164,
+          "stdout_bytes": 318900
+        },
+        "check-quiet": {
+          "seconds": 6.090101599693298,
+          "stdout_bytes": 4937800
+        },
+        "review-json": {
+          "seconds": 53.07702487334609,
+          "stdout_bytes": 1201800
+        },
+        "review-text": {
+          "seconds": 50.789038464426994,
+          "stdout_bytes": 53600
+        },
+        "doctor-json": {
+          "seconds": 5.842856224626303,
+          "stdout_bytes": 284700
+        },
+        "explain-json": {
+          "seconds": 1.9637069664895535,
+          "stdout_bytes": 467500
+        }
+      },
+      "hundred_cycles_check_review_doctor_explain": {
+        "calls": 400,
+        "seconds": 66.49681823328137,
+        "stdout_bytes": 8787200
+      }
+    }
+  },
+  "published_evidence": {
+    "timestamp": "2026-09-30T23:11:17Z",
+    "commit_sha": "3d3c37b04d842f9e73e8686ed92486890cde4d73",
+    "branch": "codex/release-contract-sibling-verification",
+    "source_worktree_dirty": false,
+    "environment": {
+      "os": "macos",
+      "arch": "x86_64",
+      "cpu_model": "Intel(R) Core(TM) i9-9880H CPU @ 2.30GHz",
+      "logical_cpu_count": 16,
+      "total_memory_bytes": 34359738368,
+      "rust_version": "rustc 1.94.1 (e408947bf 2026-03-25)",
+      "node_version": "v25.6.0",
+      "npm_version": "11.8.0"
+    },
+    "iterations": 5,
+    "ls_lint_package": "@ls-lint/ls-lint@2.3.0",
+    "claim_summary": {
+      "fixture_cohort": "realistic-equivalent",
+      "assura_row_family": "assura-cli",
+      "ls_lint_row_family": "ls-lint-cli",
+      "fixture_count": 8,
+      "measured_fixture_count": 8,
+      "assura_faster_count": 8,
+      "two_x_pass_count": 1,
+      "two_x_fail_count": 7,
+      "blocked_by_process_floor_count": 0,
+      "blocked_by_rust_cli_floor_count": 2,
+      "plain_miss_count": 5,
+      "total_assura_runtime_ms": 76.48281599999999,
+      "total_ls_lint_runtime_ms": 100.065263,
+      "aggregate_speedup_ratio": 1.3083365418972024,
+      "all_headline_rows_available": true,
+      "all_two_x_targets_met": false,
+      "minimum_completion_iterations": 3,
+      "measured_iterations": 5,
+      "sufficient_completion_iterations": true,
+      "two_x_claim_verdict": "not-complete"
+    },
+    "warm_claim_summary": {
+      "fixture_cohort": "realistic-equivalent",
+      "assura_row_family": "assura-check-dirty-project-session-cli",
+      "ls_lint_row_family": "ls-lint-cli",
+      "fixture_count": 8,
+      "measured_fixture_count": 8,
+      "assura_faster_count": 8,
+      "two_x_pass_count": 8,
+      "two_x_fail_count": 0,
+      "blocked_by_process_floor_count": 0,
+      "blocked_by_rust_cli_floor_count": 0,
+      "plain_miss_count": 0,
+      "total_assura_runtime_ms": 4.035169,
+      "total_ls_lint_runtime_ms": 100.065263,
+      "aggregate_speedup_ratio": 24.79828304588978,
+      "all_headline_rows_available": true,
+      "all_two_x_targets_met": true,
+      "minimum_completion_iterations": 3,
+      "measured_iterations": 5,
+      "sufficient_completion_iterations": true,
+      "two_x_claim_verdict": "complete"
+    },
+    "warm_loop": {
+      "timestamp": "2026-07-10T23:48:35Z",
+      "commit_sha": "dba8d08a6ad4e42e85c147c7ea8b4578e0874e11",
+      "binary": "target/release/assura-full",
+      "source_worktree_dirty": true,
+      "iterations": 20,
+      "environment": {
+        "arch": "x86_64",
+        "os": "macos",
+        "rust_version": "rustc 1.94.1 (e408947bf 2026-03-25)"
+      }
+    },
+    "selected_rows": [
+      {
+        "fixture_id": "simple_library",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 3.791376,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 6
+      },
+      {
+        "fixture_id": "simple_library",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 4.822995,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 6
+      },
+      {
+        "fixture_id": "simple_library",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.16456500000000002,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 6
+      },
+      {
+        "fixture_id": "simple_library",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.22528,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 6
+      },
+      {
+        "fixture_id": "web_app",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 4.1258680000000005,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 7
+      },
+      {
+        "fixture_id": "web_app",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 4.693659,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 7
+      },
+      {
+        "fixture_id": "web_app",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.153843,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 7
+      },
+      {
+        "fixture_id": "web_app",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.16719,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 5,
+        "rule_count": 7
+      },
+      {
+        "fixture_id": "monorepo_packages",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 4.428241,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 7,
+        "rule_count": 10
+      },
+      {
+        "fixture_id": "monorepo_packages",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 5.396593,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 7,
+        "rule_count": 10
+      },
+      {
+        "fixture_id": "monorepo_packages",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.16961400000000001,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 7,
+        "rule_count": 10
+      },
+      {
+        "fixture_id": "monorepo_packages",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.211651,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 7,
+        "rule_count": 10
+      },
+      {
+        "fixture_id": "monorepo_policy",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 5.907606,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 39,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "monorepo_policy",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 9.001061,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 39,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "monorepo_policy",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.444249,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 39,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "monorepo_policy",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.35121600000000003,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 39,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "rule_heavy_repo",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 5.3074580000000005,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 192,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "rule_heavy_repo",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 6.921881,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 192,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "rule_heavy_repo",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.209341,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 192,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "rule_heavy_repo",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.169086,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 192,
+        "rule_count": 38
+      },
+      {
+        "fixture_id": "ignored_generated_heavy_repo",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 4.129156999999999,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 2,
+        "rule_count": 2
+      },
+      {
+        "fixture_id": "ignored_generated_heavy_repo",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 10.745199000000001,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 2,
+        "rule_count": 2
+      },
+      {
+        "fixture_id": "ignored_generated_heavy_repo",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.103219,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 2,
+        "rule_count": 2
+      },
+      {
+        "fixture_id": "ignored_generated_heavy_repo",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.13233999999999999,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 2,
+        "rule_count": 2
+      },
+      {
+        "fixture_id": "multipart_extension_regression",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 8.248096,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 1501,
+        "rule_count": 1
+      },
+      {
+        "fixture_id": "multipart_extension_regression",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 13.701706,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 1501,
+        "rule_count": 1
+      },
+      {
+        "fixture_id": "multipart_extension_regression",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 0.148591,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 1501,
+        "rule_count": 1
+      },
+      {
+        "fixture_id": "multipart_extension_regression",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 0.15137899999999999,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 1501,
+        "rule_count": 1
+      },
+      {
+        "fixture_id": "many_configured_scopes_regression",
+        "tool_name": "assura-cli",
+        "row_family": "assura-cli",
+        "median_runtime_ms": 40.545013999999995,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 801,
+        "rule_count": 801
+      },
+      {
+        "fixture_id": "many_configured_scopes_regression",
+        "tool_name": "ls-lint-native-cli",
+        "row_family": "ls-lint-cli",
+        "median_runtime_ms": 44.782168999999996,
+        "measurement_order": "alternating-per-iteration-assura-first-extra",
+        "assura_binary_profile": null,
+        "assura_binary_path": null,
+        "ls_lint_execution_mode": "native-binary-from-pinned-npm-package",
+        "validation_execution_mode": "cold-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": null,
+        "diagnostic": false,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 801,
+        "rule_count": 801
+      },
+      {
+        "fixture_id": "many_configured_scopes_regression",
+        "tool_name": "assura-check-dirty-project-session-cli",
+        "row_family": "assura-check-dirty-project-session-cli",
+        "median_runtime_ms": 2.6417469999999996,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-check-session",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-session-cli",
+        "proves_whole_project_success": true,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 801,
+        "rule_count": 801
+      },
+      {
+        "fixture_id": "many_configured_scopes_regression",
+        "tool_name": "assura-check-dirty-project-socket",
+        "row_family": "assura-check-dirty-project-socket",
+        "median_runtime_ms": 2.36414,
+        "measurement_order": null,
+        "assura_binary_profile": "release",
+        "assura_binary_path": "target/release/assura-checkd",
+        "ls_lint_execution_mode": null,
+        "validation_execution_mode": "hot-daemon-dirty-project-socket",
+        "proves_whole_project_success": false,
+        "changed_path_count": 1,
+        "diagnostic": true,
+        "native_ls_lint_parity": true,
+        "checked_file_count": 801,
+        "rule_count": 801
+      }
+    ]
+  },
+  "teardown": {
+    "config_and_status_unchanged": true,
+    "no_services_or_builds_started": true,
+    "disk_backing": "/dev/disk1s2 /System/Volumes/Data;134GiB available",
+    "load_end": "3.36 5.45 5.50"
+  }
+}

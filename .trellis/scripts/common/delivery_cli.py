@@ -44,6 +44,7 @@ from .delivery_store import (
     DeliveryStoreError,
     ReceiptCorrupt,
 )
+from .delivery_evidence import _full_oid
 from .delivery_receipts import (
     _attached_branch_ref,
     _current_branch,
@@ -762,14 +763,27 @@ def cmd_delivery_close(args: argparse.Namespace) -> int:
             data,
             allow_base_checkout=True,
         )
-        # Only the already persisted verified terminal receipt may use its
-        # historical checks/post-merge base identities. The prospective
-        # delivered outcome is not terminal until this close succeeds.
+        # A prospective merged close may use historical bases only through
+        # exact provider merge identities; otherwise only a persisted terminal
+        # receipt may use them.
         persisted_terminal_receipt = (
             receipt.get("outcome") == "delivered"
             and receipt.get("closure") in {"verified", "closed"}
         )
         prospective["_terminal_receipt_verified"] = persisted_terminal_receipt
+        prospective_pr = _pr_for_candidate(intent, inventory, current.tip)
+        prospective["_provider_verified_merged_context"] = bool(
+            args.outcome == "delivered"
+            and not persisted_terminal_receipt
+            and current.integration == "pr_merged"
+            and isinstance(prospective_pr, dict)
+            and prospective_pr.get("merged") is True
+            and _full_oid(prospective_pr.get("merge_oid"))
+            and _full_oid(prospective_pr.get("base_oid"))
+            and isinstance(prospective_evidence.get("checks"), dict)
+            and prospective_evidence["checks"].get("base_oid")
+            == prospective_pr.get("base_oid")
+        )
         status = classify_candidate(intent, inventory, prospective)
         transition_issues = [*status.issues, *validate_transition(intent, status, "close")]
         seen_codes: set[str] = set()

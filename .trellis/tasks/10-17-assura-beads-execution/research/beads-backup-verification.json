@@ -1,0 +1,22 @@
+{
+  "native_restore": "dolt backup restore into new owned directory; no force",
+  "issues": 87,
+  "issue_identity_status_owner_match_primary": true,
+  "relationships": 116,
+  "head": [
+    {
+      "head": "9bk1r8431obfkdr461d3e0b3g1iabh36"
+    }
+  ],
+  "restored_head": [
+    {
+      "head": "9bk1r8431obfkdr461d3e0b3g1iabh36"
+    }
+  ],
+  "heads_match": true,
+  "restored_prefix": [
+    {
+      "value": "ae"
+    }
+  ]
+}

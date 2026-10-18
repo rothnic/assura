@@ -1,0 +1,32 @@
+{
+  "result": "pass",
+  "pass": 2,
+  "new_findings": 14,
+  "new_runtime_observation": "NU13",
+  "new_source-performance-investigation": "SP01",
+  "carried_unfinished": 10,
+  "historical_terminal": 22,
+  "completed_CF_related": 4,
+  "native_graph_nodes": 25,
+  "native_graph_edges": 15,
+  "cycles": 0,
+  "missing_dependencies": 0,
+  "ready_new_items": [
+    "NU01",
+    "NU02",
+    "NU03",
+    "NU04",
+    "NU05",
+    "NU06",
+    "NU07",
+    "NU08",
+    "NU09",
+    "NU10",
+    "NU11",
+    "NU12",
+    "NU13",
+    "SP01"
+  ],
+  "native_store_dry_run": "not run; no authoritative store selected",
+  "note": "P1-P4 are conditional source hypotheses, not four new implementation cards."
+}

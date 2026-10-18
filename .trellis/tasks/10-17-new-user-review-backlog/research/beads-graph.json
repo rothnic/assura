@@ -1,0 +1,454 @@
+{
+  "commit_message": "Prepare Assura new-user review backlog",
+  "nodes": [
+    {
+      "key": "NEWUSER",
+      "title": "Reliable first-day Assura adoption",
+      "type": "epic",
+      "priority": 1,
+      "description": "Deliver the evidence-backed first-day adoption and targeted-coverage fixes with per-item acceptance; the core-performance research spike is independent. This does not certify external retention, native owner acceptance or a public release.",
+      "labels": [
+        "assura",
+        "adoption"
+      ]
+    },
+    {
+      "key": "NU01",
+      "title": "Expose configured nonblocking violations in Review and finding history",
+      "type": "bug",
+      "priority": 1,
+      "description": "Both real projects retain advisory=0 while Check names low findings; 501 to 700 lines produces no new/worsened Review finding. Assura has 13 nonblocking findings, but two optional baseline folders dominate actions.\n\nAcceptance:\n- A passing explicit low max_lines fixture emits a bounded named advisory and new/worsened/resolved history.\n- Keep Review exit 0, Check severity exits, stable fingerprints, and honest overflow totals.\n- Rank actionable configured violations ahead of optional setup suggestions.\n\nEvidence: typescript-trial.md: baseline-mutation-review, python-trial.md: worsened-review, src/cli/project_review/report.rs:58-59\nRelated existing work: R07, A06\nPriority rationale: Missing configured findings undermines working feedback, irrespective of command speed.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "review"
+      ],
+      "metadata": {
+        "review_id": "NU01",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU02",
+      "title": "Preserve established agent policy when merging onboarding baseline",
+      "type": "bug",
+      "priority": 1,
+      "description": "Onboarding closes .agents and rejects existing .agents/project-policy.json; the same conflict appears on Assura own README.md. Bytes survive but policy intent conflicts before specialization. Assura self-onboarding also introduces inherited PascalCase errors in existing docs.\n\nAcceptance:\n- Reproduce existing .agents files and custom skill conventions in a disposable existing-project fixture.\n- Preserve owner policy and deliberate closures; report unresolved merge constraints without adding an incompatible passing claim.\n- Original files/hooks remain unchanged, repeated onboarding is idempotent, and generated policy passes or reports an actionable conflict.\n\nEvidence: python-trial.md: onboard-first and onboard-baseline-check, self-onboard.json, self-doctor-after-onboard.json\nRelated existing work: A02, A03\nPriority rationale: Setup can impose a failing policy on existing agent infrastructure.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "onboarding"
+      ],
+      "metadata": {
+        "review_id": "NU02",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU03",
+      "title": "Cover established application roots in generated native quality scopes",
+      "type": "bug",
+      "priority": 1,
+      "description": "Bun quality paths cover src/** and tests/** but miss actual Next.js app/, components/, lib/, hooks/, artifacts/. quality plan for app/(chat)/page.tsx selects only Assura while test edits select lint/test.\n\nAcceptance:\n- Next/Bun fixture changes in app/components/lib select applicable native lint/test phases.\n- Generated and dependency outputs stay excluded; src-based projects still route correctly.\n- Derive coverage from explicit evidence and preserve user-authored scopes on repeat onboarding.\n- Demonstrate composition under one existing hook runner: native checks execute for real source changes and preserve their failures/order after adding/removing Assura, without duplicate invocations; do not implement a new runner.\n\nEvidence: typescript-trial.md: quality-app, quality-test and onboard-auto\nRelated existing work: A05, A03\nPriority rationale: A complementary-tool story requires real source coverage and preserved native checks.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "quality"
+      ],
+      "metadata": {
+        "review_id": "NU03",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU04",
+      "title": "Make the Getting Started policy pass after its documented init step",
+      "type": "bug",
+      "priority": 1,
+      "description": "The exact Getting Started YAML rejects AGENTS.md generated by its preceding init --recipe agentic-core --recipe structure-health step. First check exits 1 on the minimal documented Rust project.\n\nAcceptance:\n- Execute published install/init/example/check in a disposable minimal project; clean example exits 0.\n- Retain generated guidance and explicitly model its intended paths.\n- Add an unexpected root file: Check exits nonzero; cleanup returns 0.\n\nEvidence: docs-quickstart.json, website/src/content/docs/guides/getting-started.md: First Run\nRelated existing work: Q02, W02\nPriority rationale: The documented first-run path must pass before a meaningful negative control.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "docs"
+      ],
+      "metadata": {
+        "review_id": "NU04",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU05",
+      "title": "Detect when installation leaves an older Assura first on PATH",
+      "type": "bug",
+      "priority": 1,
+      "description": "Native public installer passes checksum and reports success, but when old /usr/local/bin precedes the destination already on PATH, command -v assura still selects 0.4.0 after installing 0.4.1. No warning is printed in that case.\n\nAcceptance:\n- Seed old and new bin directories with old first and both present on PATH.\n- Report the installed version and actual command resolution; if shadowed, provide a concrete correction without editing shell files or replacing another install.\n- Verify both companions and a fresh-shell version canary after the documented correction.\n\nEvidence: installer.json, installer-shadow.json, website/public/install.sh\nRelated existing work: R05, R06\nPriority rationale: A successful install must identify the executable users actually run.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "install"
+      ],
+      "metadata": {
+        "review_id": "NU05",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU06",
+      "title": "Provide first-run recovery guidance for missing configuration",
+      "type": "bug",
+      "priority": 2,
+      "description": "check/review/doctor --format json before configuration exit 4 with empty stdout and a missing-config stderr, but no onboarding or init recovery command.\n\nAcceptance:\n- All three commands provide the applicable project path and a usable onboard/init next action.\n- Preserve read-only diagnosis and documented nonzero exit behavior.\n- Define and test whether JSON failures emit a structured error or a documented stderr contract.\n\nEvidence: typescript-trial.md: doctor-before, review-before, check-before, python-trial.md: unconfigured-check\nRelated existing work: Q07\nPriority rationale: Concrete recovery reduces first-run discovery cost.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "diagnostics"
+      ],
+      "metadata": {
+        "review_id": "NU06",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU07",
+      "title": "Make count violations identify offenders and actual limits",
+      "type": "bug",
+      "priority": 2,
+      "description": "Closed wildcard errors report only parent and count, including empty root path; custom folder-health messages replace actual/limit values with a documentation pointer.\n\nAcceptance:\n- Root and nested count failures name a deterministic bounded set of unmatched paths with omitted count.\n- Actual count and configured threshold remain visible alongside custom guidance.\n- Allowed patterns are excluded from offender lists and text/JSON/agent outputs agree.\n- One bounded result retains project-specific guidance while deduplicating repeated generic repair boilerplate; count the additional discovery steps needed to identify the offender.\n\nEvidence: typescript-trial.md: closed-policy-count-allowance-mutations, python-trial.md: PY04\nRelated existing work: Q07, A06\nPriority rationale: Repairable core diagnostics reduce attention and extra investigation.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "diagnostics"
+      ],
+      "metadata": {
+        "review_id": "NU07",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU08",
+      "title": "Make starter source-health coverage explicit for Python and Rust",
+      "type": "task",
+      "priority": 2,
+      "description": "Agent broad health lists md/js/jsx/ts/tsx but misses py/rs; plain init instead assumes Rust paths. A 501-line Python source stays silent while Markdown triggers health feedback. Naming and link rules work once deliberately configured.\n\nAcceptance:\n- Provide consistent supported source-health coverage or explicitly enumerate uncovered types with a supported specialization path.\n- A Python monorepo source/test/generated fixture has a meaningful negative source-size proof.\n- Avoid inventing language naming/layout policy from file presence and preserve project-owned rules.\n\nEvidence: python-trial.md: minimal-config, explain-large-python and PY03\nRelated existing work: A02, A03\nPriority rationale: Supported starter coverage needs explicit boundaries.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "onboarding"
+      ],
+      "metadata": {
+        "review_id": "NU08",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "NU09",
+      "title": "Triage current Assura nonblocking self-check debt",
+      "type": "task",
+      "priority": 2,
+      "description": "Current source emits 13 nonblocking violations; 11 are in src. agent_nudge_delivery.rs has 1981 lines under a 500-line limit. Historical R07 done does not dispose of current violations.\n\nAcceptance:\n- Record every current violation with fix or evidence-backed scoped exception, owner and review date.\n- Prefer cohesive repairs; avoid splitting only to game counts or broadly raising ceilings.\n- Recheck exact current source and prove no unexplained advisory remains.\n\nEvidence: self-check.json, self-review.json\nRelated existing work: R07\nPriority rationale: Current dogfood debt needs intentional disposition, without mechanical refactors.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "dogfood"
+      ],
+      "metadata": {
+        "review_id": "NU09",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "NU10",
+      "title": "Enable a bounded local-link policy for Assura maintained docs",
+      "type": "task",
+      "priority": 2,
+      "description": "A valid-frontmatter analysis doc with a deliberately missing local target emits no link finding under Assura current policy. Doctor truthfully says repository references are unchecked; 1116 raw candidates remain informational.\n\nAcceptance:\n- Select maintained documentation scopes and configure deterministic local file/anchor checks.\n- A valid-frontmatter planted broken local target is found; cleanup passes.\n- Classify generated/archive noise without globally promoting all raw reference candidates to blockers.\n\nEvidence: self-link-controlled.json, self-doctor.json, self-review.json\nRelated existing work: R07, P01\nPriority rationale: Scoped link policy proves intended local documentation coverage.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "dogfood"
+      ],
+      "metadata": {
+        "review_id": "NU10",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "NU11",
+      "title": "Resolve the current-head many-scope performance gate failure",
+      "type": "task",
+      "priority": 1,
+      "description": "Current master CI 37214120576 fails strict no-slower: 11.812ms Assura versus 11.650ms LS-Lint on many_configured_scopes_regression. Source regression versus variance is not established.\n\nAcceptance:\n- Inspect retained samples and compare an equivalent pinned baseline/candidate with bounded reproduction.\n- Preserve the accepted fixture/threshold contract; do not retry unchanged until it passes or label noise without evidence.\n- Record the smallest supported resolution and exact-head hosted gate outcome, including unfavorable results.\n- Reconcile dated July matrix, September30 retained benchmark and current hosted gate in public claim provenance: cold/warm, startup, scope, source/profile/platform and synthetic-fixture labels stay distinct.\n\nEvidence: master-ci-failure.txt, https://github.com/rothnic/assura/actions/runs/37214120576\nRelated existing work: R02, R03\nPriority rationale: The current required performance gate remains failed; historical faster rows do not clear it.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "performance"
+      ],
+      "metadata": {
+        "review_id": "NU11",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "NU12",
+      "title": "Reconcile legacy delivery holds and workspace ownership",
+      "type": "task",
+      "priority": 2,
+      "description": "The refreshed full-history topology audit reports 46 prunable registrations, 15 unreadable worktrees and 8 goal refs not proven reachable from origin/master (67 worktrees). The first-pass audit recorded 18 such refs before the history refresh; retain it as dated evidence, not the current count. Starting the research task was held by old P05 integrated_pending_verification; absent paths and old receipts are not cleanup permission.\n\nAcceptance:\n- Classify each retained path/ref with live owner, source identity, evidence and next action.\n- Resolve old P05 using actual acceptance/postmerge evidence or a named hold; do not rename an owner to bypass the guard.\n- Remove only independently proven clean owned artifacts after a recoverable manifest; confirm terminal native status and rerun strict topology.\n\nEvidence: second-pass-evidence-manifest.json: second-pass-topology.txt, first-pass topology-start.txt (dated), task-start-hold.txt, prior-work-reconciliation.md\nRelated existing work: none\nPriority rationale: Ownership and native holds need resolution independently of product value.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.",
+      "labels": [
+        "assura",
+        "maintenance"
+      ],
+      "metadata": {
+        "review_id": "NU12",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "A07",
+      "title": "Blinded candidate evaluation",
+      "type": "task",
+      "priority": 1,
+      "description": "REUSE EXISTING WORK: Existing active, no-credit evaluator outcome. These unblinded field trials do not satisfy independent/blinded/holdout acceptance. Refresh source identity; retain protocol and evaluate new failure cases separately.\n\nPrior recorded state: active (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item A07; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/A07.md\nExisting owner record: Codex goal: A07 acceptance coordinator; all prior candidates, canaries, packets and protocol records are historical or candidate-base no-credit; refresh current source/ledger, build a fresh candidate and rebind before separately authorized screening; verify live ownership before assignment.\n\nSecond-pass proposed acceptance additions (preserve canonical scope/authority):\n- For public nonsealed follow-up examples, preserve checked scope and collect setup/repair cost alongside correctness. No private protocol, screening, holdout, allocation or credit changes are authorized.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "A07",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "W02",
+      "title": "Release-aware product story",
+      "type": "task",
+      "priority": 1,
+      "description": "REUSE EXISTING WORK: Refresh release story, integration next-release labels at website/src/content/docs/reference/agent-feedback.md:257-270, and dated public-roadmap copy against the release manifest. Reassess the old Sep 8 deployment hold; do not invent current deployment authority.\n\nPrior recorded state: blocked (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item W02; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/W02.md\nExisting owner record: Codex goal/w02-release-aware-installation; local packet complete at7cebab8 after independent review,158browser and covering VPS docs/released checks; unchanged Rust/xtask passed1303test PR tier at3cebe325; source/public installation proof audited; hosted integration remains pending; latest evidence preserved at 790b0a9:research/evidence/W02.md in the same task, not imported behavior; verify live ownership before assignment.\n\nSecond-pass proposed acceptance additions (preserve canonical scope/authority):\n- Resolve release-surfaces.json current_published_release v0.3.0 versus live/latest/support v0.4.1, plus next-release labels, against actual source/release evidence.\n- Document fit/non-fit and composition with LS-Lint, source linters, dependency tools and existing hook runners; avoid uniqueness/speed claims without equivalent evidence.\n- Label generated naming fixtures, resident-session startup exclusions and absolute workload times; do not turn synthetic speedups into user productivity or retention claims.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "W02",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "R06",
+      "title": "Public release/install proof",
+      "type": "task",
+      "priority": 1,
+      "description": "REUSE EXISTING WORK: v0.4.1 is published and Intel Mac native install passed today. Reconcile remaining multi-platform and same-candidate proof; no blanket completion claim from this review.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item R06; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/R06.md\nExisting owner record: None; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "R06",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "W03",
+      "title": "Existing leadership case study",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Locally verified case study; publication remains separately held. Inspect existing artifact before creating more content.\n\nPrior recorded state: verified (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item W03; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/W03.md\nExisting owner record: Codex goal: Assura Maturity Execution Train; rothnic/nickroth PR #61; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "W03",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "W04",
+      "title": "Cross-site discovery and measurement",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Existing discovery/measurement outcome; retain W02 and W03 dependencies.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item W04; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/W04.md\nExisting owner record: None; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "W04",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "F01",
+      "title": "Interview kit and demand evidence",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Existing prepared interview kit; participant selection/invitations require Nick authority. Internal agent trials are not participant demand.\n\nPrior recorded state: blocked (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item F01; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/F01.md\nExisting owner record: Codex goal: Assura Maturity Execution Train; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "F01",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "F02",
+      "title": "External pilot and retention",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: External independent pilot and retention; internal project trials do not satisfy this acceptance. Preserve R06/A07/F01 dependencies.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item F02; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/F02.md\nExisting owner record: None; verify live ownership before assignment.\n\nSecond-pass proposed acceptance additions (preserve canonical scope/authority):\n- Use the maintainer existing-tool setup as the explicit comparison; record costly conventions already covered and at least one material unmet convention or cheaper repair outcome.\n- Record time to first correctly configured negative control, policy authoring/maintenance, manual decisions, repair commands, false positives, total workflow latency/bytes and model-token cost only when observable.\n- Include participant/dropout and continued-use evidence under the existing pilot target; internal unblinded trials do not satisfy it. No invitations authorized here.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "F02",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "F03",
+      "title": "Launch package",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Existing launch-package outcome; keep downstream dependencies and publication boundaries.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item F03; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/F03.md\nExisting owner record: None; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "F03",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "F04",
+      "title": "Approved publication and feedback",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Approved publication/feedback; no outreach or publication is authorized by this review.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item F04; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/F04.md\nExisting owner record: None; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "F04",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "F05",
+      "title": "Evidence-based v1 decision",
+      "type": "task",
+      "priority": 2,
+      "description": "REUSE EXISTING WORK: Evidence-based v1 decision; keep evidence and owner acceptance separate from local green commands.\n\nPrior recorded state: pending (dated 2026-09-12; requires current revalidation).\nCanonical scope/acceptance: .trellis/tasks/09-04-maturity-portfolio-strategy/research/backlog.json item F05; follow its packet/evidence, do not invent completion.\nPrior evidence: evidence/F05.md\nExisting owner record: None; verify live ownership before assignment.",
+      "labels": [
+        "assura"
+      ],
+      "metadata": {
+        "legacy_id": "F05",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a"
+      }
+    },
+    {
+      "key": "NU13",
+      "title": "Make targeted captured-relationship checks correct and explicit",
+      "type": "bug",
+      "priority": 1,
+      "description": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.\n\nAcceptance:\n- Define the supported ordinary file-target relationship contract before changing behavior; distinguish it from explicit LS-Lint target semantics and whole-project coverage.\n- A selected captured producer with a missing counterpart/provider must not silently disappear: enforce its required relation or explicitly report that check as omitted with a full-project follow-up.\n- Prove full/file/directory, provided/missing counterpart, producer deletion, configuration changes, cache and prepared fallback cases with exact findings and exits.\n- Retain presence-versus-behavior semantics: an existing test filename does not prove a test executed or is adequate.\n\nEvidence: core-capability-probe.json, raw capability-pass/transcript.json: missing-test-full and missing-test-file-target, systemic-filesystem-review.md: P4, src/cli/check/custom_constraints.rs:330-334\nRelated existing work: A03, R01, A06\nPriority rationale: Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.\n\nExecution checkpoint: Nick separately authorized NU13 implementation on2026-10-17. PR355 at4dc727dc is locally proven and GPT-6 Luna reviewed; all30 hosted checks pass; Cloudflare production-deployment authority/configuration and integration remain unresolved. Not delivered. Canonical current execution: backlog.json NU13.",
+      "labels": [
+        "assura",
+        "core-correctness"
+      ],
+      "metadata": {
+        "review_id": "NU13",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+        "pr_url": "https://github.com/rothnic/assura/pull/355"
+      },
+      "parent_key": "NEWUSER"
+    },
+    {
+      "key": "SP01",
+      "title": "Attribute core filesystem work and select one systemic optimization",
+      "type": "task",
+      "priority": 1,
+      "description": "Rich full-engine checks eagerly fetch metadata without a size limit, independently walk overlapping scopes, and scan all scopes per uncached directory. Existing static fast-path indexes and prepared reuse already exist. No current wall-time fraction or causal speedup is established.\n\nAcceptance:\n- Profile ordinary public check with a source/binary/policy-bound rich repository and controlled wide-tree case; count stat-family calls, directory enumerations, reads/bytes, allocations or peak RSS, CPU and wall time by consumer.\n- First discriminate no-size-policy eager metadata; then attribute identical-scope test/lifecycle enumeration. Preserve a naming-only negative control and full result/exit equivalence.\n- Produce one smallest supported keep/defer decision; do not implement a shared inventory, index rewrite, daemon, new entrypoint or parallel traversal merely because source work is repeated.\n- For any later performance candidate, use uninstrumented balanced same-host before/after public-command samples, exact quiet comparison, existing keep/stop criteria, accepted-fixture spillover and unchanged no-slower/native/warm gates.\n- Keep literal/glob scope indexing conditional on measured dominance. Incremental eligibility expansion additionally requires NU13 coverage resolution and deletion/rename/provider/config invalidation proof; source review alone proves no gain.\n\nEvidence: systemic-filesystem-review.md, systemic-performance-hypotheses.json, src/cli/check/file_limits.rs:19-25, src/cli/check/test_relationship.rs:18-19, src/cli/check/rule_plan.rs:58-82\nRelated existing work: R02, R03, R01, CF01, CF03, CF04\nPriority rationale: Explicit user focus on systemic filesystem performance; one investigation, not four speculative implementation cards.\nSource: f3540d4a11d36afa43f69c96fd7f1c233599822a; v0.4.1. No implementation authorized by this review.\n\nNU13 follow-up measurement control: count discovery/config-candidate metadata separately for no-cache root/nested and warm-cache Git/non-Git checks. At4dc727dc the non-Git cached fallback repeats discover_project; gain is unmeasured. Preserve cache-only ancestor and invalid-nearest-policy behavior; reuse within-check identity only if existing keep/stop criteria justify it. See systemic-filesystem-review.md#nu13-follow-up-discovery-attribution.",
+      "labels": [
+        "assura",
+        "core-performance"
+      ],
+      "metadata": {
+        "review_id": "SP01",
+        "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+        "follow_up_source_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3"
+      }
+    }
+  ],
+  "edges": [
+    {
+      "from_key": "R06",
+      "to_key": "W02",
+      "type": "blocks"
+    },
+    {
+      "from_key": "W04",
+      "to_key": "W02",
+      "type": "blocks"
+    },
+    {
+      "from_key": "W04",
+      "to_key": "W03",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F02",
+      "to_key": "R06",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F02",
+      "to_key": "A07",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F02",
+      "to_key": "F01",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F03",
+      "to_key": "F02",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F03",
+      "to_key": "W03",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F03",
+      "to_key": "W04",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F04",
+      "to_key": "F03",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F05",
+      "to_key": "R06",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F05",
+      "to_key": "A07",
+      "type": "blocks"
+    },
+    {
+      "from_key": "F05",
+      "to_key": "F02",
+      "type": "blocks"
+    },
+    {
+      "from_key": "R06",
+      "to_key": "NU05",
+      "type": "blocks"
+    },
+    {
+      "from_key": "R06",
+      "to_key": "NU11",
+      "type": "blocks"
+    }
+  ]
+}

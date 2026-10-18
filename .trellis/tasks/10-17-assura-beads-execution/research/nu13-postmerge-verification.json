@@ -1,0 +1,36 @@
+{
+  "candidate": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+  "merge": "49d85358bae85de04f1ce7faa746b377687dcaf3",
+  "checks": {
+    "count": 29,
+    "all_success": true,
+    "rust_run": 39090025708,
+    "docs_run": 39090025772,
+    "security_run": 39090025736,
+    "workers_build": "ce615f3e-ecd9-414e-81df-76fb521317a8"
+  },
+  "website": [
+    {
+      "url": "https://assura.dev/",
+      "status": 200,
+      "bytes": 43140,
+      "sha256": "9545798d2fb37ec400bdfcf33c5b7459813a2167c6fd70608c93fdf2fab748f4",
+      "cf_ray": "a4c42a07ab7cbca2-ATL",
+      "assura_marker": true
+    },
+    {
+      "url": "https://assura.dev/reference/configuration/",
+      "status": 200,
+      "bytes": 147954,
+      "sha256": "fc3c80c89257c2a23c545f74bd5dba8e74dc3571f84f79bcd8f490e1d54e1279",
+      "cf_ray": "a4c42a083802730f-ATL",
+      "assura_marker": true
+    }
+  ],
+  "native_closure": "Open: merged UNKNOWN false negative plus prospective historical-base transition defect; no receipt bypass",
+  "independent_triage": [
+    "/root/nu13_socket_vendor",
+    "/root/nu13_socket_environment",
+    "/root/nu13_luna_final_review"
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "original_tables_unchanged": true,
+  "changed_sections": [
+    "config",
+    "metadata"
+  ],
+  "prefix": "ae",
+  "project_id_preserved": true,
+  "issues": "61",
+  "original_commit_hashes_preserved": true,
+  "issue_count": 61,
+  "comparison_note": "Dolt SQL COUNT JSON returned string61; numerical count normalized for assertion, original receipt retained."
+}
