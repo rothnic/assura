@@ -1,2 +1,3 @@
 {"file": ".trellis/tasks/10-18-sp04-native-admission/prd.md", "reason": "Review the executed loader/annotation controls and preserve exact compatibility acceptance."}
 {"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Check native gate compatibility, report metadata, and existing performance policy."}
+{"file":"/Users/nroth/workspace/.assura-review-20261017/sp04/current-base-31c-20261018T133726Z/integration-proof.md", "reason":"Current-base merge proof, protected-input reuse checks, and direct prebuilt positive/negative gate controls."}
