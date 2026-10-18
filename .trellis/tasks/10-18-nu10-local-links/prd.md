@@ -16,12 +16,14 @@ this preparation commit. Root is the sole Beads, native receipt, push, PR and
 merge writer. This worker owns only this candidate's scoped config, selected
 docs if a real finding requires repair, and this new Trellis task.
 
-Current authority is **preparation only**: create the branch/task, curate
-portable context, commit clean, then freeze. Do not run native initialization,
-`task.py start`, delivery registration, a policy edit or intentional runtime
-controls until root registers/starts the task and explicitly releases
-implementation. Normal repository status/structure guards triggered by Git
-remain enabled; their results are not NU10 product acceptance evidence.
+Root registered the candidate at preparation tip `3f41be38` against base 46e,
+started the task, and committed activation as
+`eee4769fed3c5ecb9a4ab1688b83fcd5a26e0cf7`. Root then explicitly released
+this exact config-only implementation and bounded disposable controls.
+Native initialization, task start and receipt changes remain root ownership.
+Normal Git status/structure guards remain enabled; their results alone are not
+NU10 product acceptance evidence. Independent implementation review and all
+applicable final integration gates remain root responsibilities.
 
 ## Source and reviewed decisions
 
@@ -125,7 +127,7 @@ is not acceptance. Existing engine tests plus the real-config controls are
 proportionate; a discovered engine defect needs separately admitted source
 work and focused regression gates.
 
-## Preparation checkpoint
+## Preparation checkpoint (historical)
 
 Phase: planning / prepared, implementation held. Initial workflow gate exited
 0 on clean base with no active task. Branch creation and task creation exited
@@ -152,3 +154,22 @@ Cargo/build, dependency, browser, website, network, native or Beads mutations by
 the worker. Root retains review, integration and closure authority. Keep the
 original performance failure under NU11 unresolved; every eventual candidate
 requires its own applicable final-head hosted gates.
+
+## Implementation checkpoint
+
+Phase: proven bounded config policy; clean commit prepared for root review.
+Only the two-doc selector changed product policy. Both selected source docs
+remain byte-identical; no existing link repair was required. All 13 disposable
+control cases passed, including the intended missing-file/heading negatives
+in both selected docs. Baseline and restored checks exit 0 with equal findings
+and checked scope. The source-bound companion and 397 checker inputs retain
+their recorded identities. See [validation evidence](research/validation.md)
+for actual commands, receipts, preservation and cleanup bounds.
+
+One supporting-harness import failure occurred before any supporting CLI
+child. Its raw evidence and root's three-triage disposition are retained;
+the admitted continuation used direct captures only, with no control reruns or
+harness/source fix. No Cargo/build/install/browser/GitHub/Beads/native writes
+were performed. Root's next action is independent review of the committed diff
+and receipts, then applicable current-base/hosted/performance gates. NU11's
+unresolved performance gate is not satisfied by this slice's local controls.

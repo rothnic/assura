@@ -1154,6 +1154,11 @@ structure:
         markdown:
           require_frontmatter: true
           lint_trailing_spaces: true
+        "{support-policy,compatibility-and-surface}.md":
+          markdown:
+            require_frontmatter: true
+            lint_trailing_spaces: true
+            check_links: true
         directories:
           allowed_names:
             - "analysis"
