@@ -18,6 +18,7 @@ Use names already collected for direct children; do not enumerate again. Keep th
 - Root and nested file and directory count failures include a deterministic sorted sample capped at five matching paths and the exact omitted count when applicable.
 - Allowed/refinement patterns remain excluded from zero-count offender paths according to `matches_count_target`.
 - Count failures emit one aggregate finding per failed rule, including zero-count directory rules.
+- A zero-count directory rule failed by the onboarding fixture's `tmp` child keeps one `exists_count` at serialized parent path `.agents/skills/missing-skill-md`; its message includes `expected 0` and the unexpected path `.agents/skills/missing-skill-md/tmp`, with no duplicate child-path count finding.
 - Diagnostic content is consistent across text, JSON, and agent output; all preserve current severity, ordering, and exit behavior.
 - Child-limit custom guidance remains present alongside actual child count and configured maximum.
 - Missing/minimum count failures report measured count and expectation without inventing offending paths.

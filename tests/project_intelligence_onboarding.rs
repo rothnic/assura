@@ -774,17 +774,22 @@ Read `references/runbook.md` for the detailed procedure.
     ]);
     assert_eq!(invalid_child_check.status.code(), Some(1));
     let invalid_child_json: Value = serde_json::from_slice(&invalid_child_check.stdout).unwrap();
-    assert!(invalid_child_json["violations"]
+    let exists_count_findings = invalid_child_json["violations"]
         .as_array()
         .expect("violations")
         .iter()
-        .any(|item| {
-            item["path"] == ".agents/skills/missing-skill-md/tmp"
-                && item["rule"] == "exists_count"
-                && item["message"]
-                    .as_str()
-                    .is_some_and(|message| message.contains("expected 0"))
-        }));
+        .filter(|item| item["rule"] == "exists_count")
+        .collect::<Vec<_>>();
+    assert_eq!(exists_count_findings.len(), 1);
+    let count_finding = exists_count_findings[0];
+    assert_eq!(count_finding["path"], ".agents/skills/missing-skill-md");
+    assert_eq!(count_finding["rule"], "exists_count");
+    let count_message = count_finding["message"].as_str().expect("count message");
+    assert!(count_message.contains("expected 0"), "{count_message}");
+    assert!(
+        count_message.contains("Unexpected paths: .agents/skills/missing-skill-md/tmp"),
+        "{count_message}"
+    );
 }
 
 #[test]
