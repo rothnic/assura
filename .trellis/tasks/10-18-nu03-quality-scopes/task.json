@@ -1,0 +1,38 @@
+{
+  "id": "nu03-quality-scopes",
+  "name": "nu03-quality-scopes",
+  "title": "Cover established application roots in generated native quality scopes",
+  "description": "NU03 (Beads ae-7cd): improve evidence-derived generated Bun/Next native quality paths and prove preserved existing-runner composition. Preserve package/lockfile/src/tests and declared-script behavior; exclude generated/dependency outputs; preserve authored scopes on repeat onboarding. Keep edits within the renderer, minimal necessary generation call site, and existing quality-onboarding/lifecycle tests. Coordinate shared files with NU02. No new runner, planner-wide semantics, public API, modules, dependencies, or Beads state writes.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nu03-quality-scopes",
+  "assignee": "nu03-quality-scopes",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/nu03-quality-scopes",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "10-17-assura-beads-execution",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu03-quality-scopes",
+      "owner": "nu03-quality-scopes",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu03-quality-scopes",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/10-18-nu03-quality-scopes/prd.md", "reason": "Acceptance and explicit no-runner-phase limit."}
+{"file": ".trellis/tasks/10-18-nu03-quality-scopes/research/nu03-red-test-design.md", "reason": "Prepared red/green matrix and proof boundary."}
+{"file": "tests/quality_onboarding_contract.rs", "reason": "Focused generated paths and quality-plan controls."}
+{"file": "tests/git_hook_lifecycle.rs", "reason": "Existing-runner composition and removal controls."}
+{"file": "src/cli/quality.rs", "reason": "Verify native path selection/exclusion through existing planner."}
+{"file": ".trellis/spec/assura/agent-ready-onboarding.md", "reason": "Onboarding policy behavior and preservation requirements."}
+{"file": ".trellis/spec/assura/agent-harness-hooks.md", "reason": "Hook behavior contract for composition evidence."}

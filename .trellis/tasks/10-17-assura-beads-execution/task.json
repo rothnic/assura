@@ -18,7 +18,9 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [],
+  "children": [
+    "10-18-nu03-quality-scopes"
+  ],
   "parent": null,
   "relatedFiles": [],
   "notes": "",
