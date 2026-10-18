@@ -228,6 +228,12 @@ graph creation starts nodes open and is not an idempotent synchronization tool.
 The installed-version graph schema and static integrity were checked; native
 store dry-run/import remain unrun.
 
+NU12 also uses the refreshed full-history audit: 67 worktrees, 46 prunable
+registrations, 15 unreadable worktrees and 8 goal refs not proven reachable from
+the integration base. The first pass recorded 18 before the history refresh;
+that remains dated evidence. Neither count establishes ownership or permission
+to remove anything.
+
 ## Proof limits and handoff
 
 This pass executed bounded diagnostic measurements and capability probes,

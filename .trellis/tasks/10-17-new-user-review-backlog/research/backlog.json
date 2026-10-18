@@ -321,9 +321,10 @@
       "review_state": "verified-finding",
       "execution_state": "proposed",
       "area": "maintenance",
-      "problem": "The resource-safe topology audit found 46 prunable registrations, 15 unreadable worktrees and 18 unmerged goal branches. Starting this artifact task was held by old P05 integrated_pending_verification; absent paths and old receipts are not safe cleanup targets.",
+      "problem": "The refreshed full-history topology audit reports 46 prunable registrations, 15 unreadable worktrees and 8 goal refs not proven reachable from origin/master (67 worktrees). The first-pass audit recorded 18 such refs before the history refresh; retain it as dated evidence, not the current count. Starting the research task was held by old P05 integrated_pending_verification; absent paths and old receipts are not cleanup permission.",
       "evidence": [
-        "topology-start.txt",
+        "second-pass-evidence-manifest.json: second-pass-topology.txt",
+        "first-pass topology-start.txt (dated)",
         "task-start-hold.txt",
         "prior-work-reconciliation.md"
       ],
