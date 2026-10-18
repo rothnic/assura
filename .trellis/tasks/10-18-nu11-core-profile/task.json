@@ -1,0 +1,38 @@
+{
+  "id": "nu11-core-profile",
+  "name": "nu11-core-profile",
+  "title": "NU11 bounded core filesystem instruction profiling",
+  "description": "Bead ae-4s5: source-bound accepted800scope fixture/exporter and separate manual pinned Callgrind workflow mode, finite descriptive functionIr; keep old strictfailure unknown and defaultR03/production gates unchanged. Source-only until separate validation/dispatch admission.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "bounded-core-filesystem-profiling",
+  "package": null,
+  "priority": "P2",
+  "creator": "nu11-core-profile",
+  "assignee": "nu11-core-profile",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "feat/nu11-core-profile",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu11-core-profile",
+      "owner": "nu11-core-profile",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/feat/nu11-core-profile",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
