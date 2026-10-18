@@ -1677,7 +1677,7 @@
   .performance-proof {
     display: grid;
     width: min(100% - 2rem, 1120px);
-    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) minmax(0, 3fr);
     gap: 0;
     margin: 0 auto;
     border-right: 1px solid var(--border);
@@ -1724,11 +1724,17 @@
 
   .performance-proof .proof-meta {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
     border-right: 0;
     background: var(--surface-muted);
+  }
+
+  .proof-meta > * {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
 
   .proof-meta a {
@@ -2372,9 +2378,15 @@
     }
 
     .performance-proof .proof-meta {
-      flex-wrap: wrap;
-      align-items: baseline;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      align-items: start;
+      gap: 0.2rem 0.75rem;
+      padding-block: 0.2rem;
+    }
+
+    .proof-meta > :nth-child(n + 3) {
+      grid-column: 1 / -1;
     }
 
     .command-model,
