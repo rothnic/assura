@@ -2,12 +2,182 @@
 
 use super::{
     annotate_native_regressions_with_baseline, baseline_is_calibrated, classify_regression_status,
-    derive_threshold_ms, median, representative_provisional_max_ms, NativeBaselineKey,
-    NativeBaselineRow, STATUS_BASELINE_ROW_MISSING, STATUS_WITHIN_PROVISIONAL,
+    derive_threshold_ms, load_native_baseline_rows_from_paths, load_native_history_rows,
+    load_native_history_rows_excluding, median, representative_provisional_max_ms,
+    NativeBaselineKey, NativeBaselineRow, NativeExecutionKey, STATUS_BASELINE_ROW_MISSING,
+    STATUS_WITHIN_PROVISIONAL,
 };
 use crate::cli::performance_report::{PerformanceResultRow, RuntimeDistribution};
 use serde_json::json;
 use std::collections::BTreeMap;
+use std::io::Write;
+
+#[test]
+fn native_history_duplicate_execution_counts_once_and_stays_provisional() {
+    let row = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    let mut replay = row.clone();
+    replay.native_regression_status = Some("replayed-annotation".to_string());
+    let history = temporary_history(&[&row, &replay]);
+
+    let baseline = load_native_history_rows(history.path()).expect("history loads");
+    let baseline = baseline.values().next().expect("native row admitted");
+
+    let reversed_history = temporary_history(&[&replay, &row]);
+    let reversed_baseline =
+        load_native_history_rows(reversed_history.path()).expect("reordered history loads");
+    let reversed_baseline = reversed_baseline
+        .values()
+        .next()
+        .expect("native row admitted");
+    assert_eq!(baseline, reversed_baseline);
+
+    assert_eq!(baseline.report_count, 1);
+    assert_eq!(baseline.sample_count, 5);
+    assert_eq!(
+        baseline.threshold_ms,
+        derive_threshold_ms(1, 11.0, 9.0, 13.0, &[9.0, 10.0, 11.0, 12.0, 13.0])
+    );
+}
+
+#[test]
+fn native_history_conflicting_duplicate_execution_fails_closed() {
+    let first = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    let second = measured_native_row("run-a", "commit-a", &[19.0, 20.0, 21.0, 22.0, 23.0]);
+    let history = temporary_history(&[&first, &second]);
+
+    assert!(load_native_history_rows(history.path()).is_err());
+}
+
+#[test]
+fn native_history_same_commit_different_timestamps_count_as_distinct_runs() {
+    let first = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    let second = measured_native_row("run-b", "commit-a", &[10.0, 11.0, 12.0, 13.0, 14.0]);
+    let history = temporary_history(&[&first, &second]);
+
+    let baseline = load_native_history_rows(history.path()).expect("history loads");
+    let baseline = baseline.values().next().expect("native row admitted");
+
+    assert_eq!(baseline.report_count, 2);
+    assert_eq!(baseline.sample_count, 10);
+    assert_eq!(baseline.threshold_ms, 14.0);
+}
+
+#[test]
+fn native_history_without_usable_execution_identity_gets_no_report_credit() {
+    let mut row = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    row.timestamp.clear();
+    let history = temporary_history(&[&row]);
+
+    assert!(load_native_history_rows(history.path())
+        .expect("history remains usable")
+        .is_empty());
+}
+
+#[test]
+fn native_history_excludes_the_slow_current_execution_from_its_own_baseline() {
+    let first = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    let second = measured_native_row("run-b", "commit-a", &[10.0, 11.0, 12.0, 13.0, 14.0]);
+    let target = measured_native_row("run-c", "commit-b", &[99.0, 100.0, 101.0, 102.0, 103.0]);
+    let unrelated_key_row = measured_native_row("run-c", "commit-b", &[5.0, 6.0, 7.0, 8.0, 9.0]);
+    let mut unrelated_key_row = unrelated_key_row;
+    unrelated_key_row.fixture_id = "native_other".to_string();
+    let history = temporary_history(&[&first, &second, &target, &unrelated_key_row]);
+
+    let target_key = NativeExecutionKey::from_performance_row(&target).expect("target identity");
+    let baseline = load_native_history_rows_excluding(
+        history.path(),
+        &std::collections::BTreeSet::from([target_key]),
+    )
+    .expect("history loads");
+    let unrelated_key = NativeBaselineKey::from_performance_row(&unrelated_key_row);
+    assert_eq!(
+        baseline.get(&unrelated_key).map(|row| row.report_count),
+        Some(1)
+    );
+    let mut annotated = vec![target.clone()];
+    annotate_native_regressions_with_baseline(&mut annotated, Some(&baseline));
+
+    assert_eq!(
+        annotated[0].native_regression_baseline_report_count,
+        Some(2)
+    );
+    assert_eq!(
+        annotated[0].native_regression_baseline_sample_count,
+        Some(10)
+    );
+    assert_eq!(annotated[0].native_regression_threshold_ms, Some(14.0));
+    assert_eq!(
+        annotated[0].native_regression_status.as_deref(),
+        Some("regressed-vs-calibrated-baseline")
+    );
+    write_gate_row_if_requested("seeded-slowdown-row.json", &annotated[0]);
+
+    let unchanged = measured_native_row("run-d", "commit-d", &[10.0, 11.0, 12.0, 13.0, 14.0]);
+    let unchanged_history = unchanged.clone();
+    let unchanged = annotate_from_history(&[&first, &second, &unchanged_history], unchanged);
+    assert_eq!(
+        unchanged.native_regression_status.as_deref(),
+        Some("within-calibrated-baseline")
+    );
+    assert_eq!(unchanged.native_regression_baseline_report_count, Some(2));
+    assert_eq!(unchanged.native_regression_baseline_sample_count, Some(10));
+    assert_eq!(unchanged.native_regression_threshold_ms, Some(14.0));
+    write_gate_row_if_requested("unchanged-row.json", &unchanged);
+}
+
+#[test]
+fn native_current_fallback_excludes_target_but_keeps_unseen_row_provisional() {
+    let target = measured_native_row("run-c", "commit-c", &[99.0, 100.0, 101.0, 102.0, 103.0]);
+    let mut unrelated = native_row("linux", "native_other", "native:content-check-cli");
+    unrelated.timestamp = target.timestamp.clone();
+    unrelated.commit_sha = target.commit_sha.clone();
+    let empty_history = temporary_history(&[]);
+    let checked_current = temporary_current(&[&target, &unrelated]);
+    let target_key = NativeExecutionKey::from_performance_row(&target).expect("target identity");
+    let targets = std::collections::BTreeSet::from([target_key.clone()]);
+
+    let baseline = load_native_baseline_rows_from_paths(
+        empty_history.path(),
+        checked_current.path(),
+        &targets,
+    )
+    .expect("checked-current fallback loads");
+    assert_eq!(baseline.len(), 1, "unrelated environment remains available");
+    assert!(
+        !baseline.contains_key(&NativeBaselineKey::from_performance_row(&target)),
+        "the exact target cannot reenter through fallback"
+    );
+
+    let mut annotated = vec![target];
+    annotate_native_regressions_with_baseline(&mut annotated, Some(&baseline));
+    assert_eq!(
+        annotated[0].native_regression_baseline_report_count,
+        Some(1)
+    );
+    assert_eq!(
+        annotated[0].native_regression_baseline_sample_count,
+        Some(5)
+    );
+    assert_eq!(
+        annotated[0].native_regression_status.as_deref(),
+        Some(STATUS_WITHIN_PROVISIONAL)
+    );
+}
+
+#[test]
+fn native_current_fallback_rejects_conflicting_rows_for_one_execution() {
+    let first = measured_native_row("run-a", "commit-a", &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    let second = measured_native_row("run-a", "commit-a", &[19.0, 20.0, 21.0, 22.0, 23.0]);
+    let empty_history = temporary_history(&[]);
+    let checked_current = temporary_current(&[&first, &second]);
+
+    assert!(load_native_baseline_rows_from_paths(
+        empty_history.path(),
+        checked_current.path(),
+        &std::collections::BTreeSet::new(),
+    )
+    .is_err());
+}
 
 #[test]
 fn threshold_uses_highest_observed_sample_once_baseline_is_calibrated() {
@@ -287,4 +457,62 @@ fn native_row(os: &str, fixture_id: &str, row_family: &str) -> PerformanceResult
         details: None,
         comparison_baseline_id: "stable-baseline-v1".to_string(),
     }
+}
+
+fn measured_native_row(timestamp: &str, commit_sha: &str, samples: &[f64]) -> PerformanceResultRow {
+    let mut row = native_row("macos", "native_small", "native:content-check-cli");
+    row.rust_version = "rustc 1.94.1 (e408947bf 2026-03-25)".to_string();
+    row.timestamp = timestamp.to_string();
+    row.commit_sha = commit_sha.to_string();
+    row.median_runtime_ms = median(samples);
+    row.distribution.samples = samples.len();
+    row.distribution.samples_ms = samples.to_vec();
+    row.distribution.min_ms = samples.iter().copied().min_by(f64::total_cmp);
+    row.distribution.max_ms = samples.iter().copied().max_by(f64::total_cmp);
+    row.distribution.p95_ms = row.distribution.max_ms;
+    row
+}
+
+fn temporary_history(rows: &[&PerformanceResultRow]) -> tempfile::NamedTempFile {
+    let mut file = tempfile::NamedTempFile::new().expect("temporary history file");
+    for row in rows {
+        serde_json::to_writer(&mut file, row).expect("serialize history row");
+        writeln!(file).expect("separate history rows");
+    }
+    file.flush().expect("flush history file");
+    file
+}
+
+fn temporary_current(rows: &[&PerformanceResultRow]) -> tempfile::NamedTempFile {
+    let file = tempfile::NamedTempFile::new().expect("temporary current report");
+    serde_json::to_writer(&file, &json!({ "results": rows })).expect("serialize current rows");
+    file
+}
+
+fn annotate_from_history(
+    history_rows: &[&PerformanceResultRow],
+    target: PerformanceResultRow,
+) -> PerformanceResultRow {
+    let history = temporary_history(history_rows);
+    let target_key = NativeExecutionKey::from_performance_row(&target).expect("target identity");
+    let baseline = load_native_history_rows_excluding(
+        history.path(),
+        &std::collections::BTreeSet::from([target_key]),
+    )
+    .expect("history loads");
+    let mut annotated = vec![target];
+    annotate_native_regressions_with_baseline(&mut annotated, Some(&baseline));
+    annotated.remove(0)
+}
+
+fn write_gate_row_if_requested(filename: &str, row: &PerformanceResultRow) {
+    let Some(directory) = std::env::var_os("SP04_GATE_ROW_DIR") else {
+        return;
+    };
+    let path = std::path::Path::new(&directory).join(filename);
+    std::fs::write(
+        path,
+        serde_json::to_vec(row).expect("serialize annotated gate row"),
+    )
+    .expect("write annotated gate row");
 }

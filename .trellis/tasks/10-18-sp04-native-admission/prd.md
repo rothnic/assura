@@ -20,10 +20,10 @@ or the history retention policy.
 - Base ref: `refs/remotes/origin/master` at
   `74d9917dd39e599bbd43c3a5760b71644b2cf91b` (verified in this worktree; do not
   use the stale local `master` ref).
-- Current phase: task/spec preparation. The local build/test lane is held until
-  the coordinator releases it. No implementation, test, build, benchmark,
-  report generation, hardware work, or Beads operation is authorized in this
-  phase.
+- Current phase: implementation and one focused RED/GREEN local test lane are
+  authorized. Root owns PR, push, native validation, integration, and delivery
+  closure. No benchmark, report promotion, hardware experiment, or Beads
+  operation is part of this candidate.
 - Candidate implementation files: the two existing native regression files
   above. No new module, dependency, schema, CLI option, report identity field,
   or history rewrite.
@@ -92,12 +92,13 @@ not weaken assertions to make existing code pass.
 
 ## Validation after lane release
 
-Run focused Rust tests first against the approved candidate SHA. `Cargo.toml`
-declares the `assura-full` test target and `native_regression.rs` includes
-`native_regression_tests.rs`, so the focused command is
-`cargo test --bin assura-full native_regression_tests`. Then run the smallest
-existing xtask-gate compatibility controls: positive and negative synthetic
-native reports through
+Run focused Rust tests first against the approved candidate SHA. The sibling
+test module is included under the library target (`src/cli/mod.rs` exposes the
+performance-report module); `--bin assura-full` selects a binary with zero
+unit tests. The focused command is
+`cargo +1.94.1 test --lib --jobs=2 native_regression::tests:: -- --test-threads=2`.
+Then run the smallest existing xtask-gate compatibility controls: positive and
+negative synthetic native reports through
 `cargo xtask native-performance-no-regression target/performance/native-unchanged.json`
 and
 `cargo xtask native-performance-no-regression target/performance/native-seeded-slowdown.json`,
@@ -129,6 +130,36 @@ repo's required Rust profile; do not start any other heavy job concurrently.
 5. Independent review checks the final tested source and reports any remaining
    concerns to the root owner. Root retains PR, native, integration, and closure
    authority.
+
+## Candidate execution evidence
+
+- Candidate started at `5c1d77d0`; final implementation/test source SHA-256 values
+  and raw receipts are recorded in
+  `/Users/nroth/workspace/.assura-review-20261017/sp04/run-sp04-native-admission-5c1d77d/`.
+- Final focused run: `cargo +1.94.1 test --lib --jobs=2 --offline --locked
+  native_regression::tests:: -- --test-threads=2`, 17 passed, 0 failed, 544
+  filtered. Final scoped Clippy `cargo +1.94.1 clippy --lib --tests --jobs=2
+  --offline --locked -- -D warnings` passed. Existing xtask gate tests passed
+  4/4; the unchanged 150-row report passed and the seeded slowdown was rejected
+  as expected. Those xtask runs preceded the final `#[cfg(test)]` annotation on
+  a private loader convenience wrapper, which does not affect non-test builds;
+  see the evidence manifest for exact bindings and receipts.
+- The unchanged-source four-control RED run was 1 passed / 3 failed (exit 101);
+  its intermediate test-source hash was not captured. The separately bound
+  unchanged-source two-control RED was 0 passed / 2 failed (exit 101). The
+  mistaken `--bin assura-full` selection ran zero tests and receives no proof
+  credit. The first export-enabled GREEN attempt had 16 passed / 1 setup failure
+  because its requested output directory was absent; after three setup reviews,
+  one run against a verified, owned `0700` directory passed all 17 and emitted
+  both real annotated rows. A socket-profile preflight was also rejected before
+  launch because the unrelated profile projected a Darwin socket path one byte
+  over capacity. These receipts are preserved separately.
+- Existing checked history and current report bytes remain unchanged. The two
+  cohesive Rust files now exceed the existing 500-line advisory: production is
+  558 lines (base 456), tests are 518 (base 290). No lines were compressed and
+  no gate was raised. Defer any natural module split to a specifically scoped
+  NU09 follow-up and an explicit structure/spec review; this candidate adds no
+  module.
 
 ## Evidence and authority references
 
