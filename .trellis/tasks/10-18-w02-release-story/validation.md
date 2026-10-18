@@ -178,3 +178,25 @@ source-revision fields changed; their payloads and protected performance/history
 bytes remain identical. Evidence is external under
 `w02-current/current-base-74d9917d/`. Current-base full PR and affected production
 validation, final independent review and hosted gates remain pending.
+
+## Hosted mobile height correction
+
+The clean current-base candidate `49b57eda` passed the complete local PR
+(1475 passed, zero failed, one explicit manual performance ignore) and all
+152 production browser cases. Independent Luna integration review passed.
+Hosted job 117657207713 then ran 152 cases against the Astro development
+server: 151 passed and the 320px proof measured 244.109375px against the
+unchanged strict `<230` cap. The raw log, trace and screenshots remain in
+external `w02-current/hosted-artifact/`; no rerun erases that failure.
+
+Three read-only diagnoses support compacting vertical spacing while retaining
+all copy, typography and assertions. The adversarial review corrected the
+initial metadata savings estimate: three rows yield two gaps. This correction
+removes mobile metadata row gaps and block padding, and reduces mobile metric
+block padding to 0.25rem. The nominal total saving is 20.8px; this arithmetic
+is not browser proof. The trace confirms expected text and the loaded marketing
+stylesheet. Local production and hosted development serving differ, as do
+platform fonts; neither difference is established as the cause. Changed-source
+development/production browser proof and scoped independent review remain
+pending at this source commit. Thresholds, content, fonts and retry policy
+remain unchanged.
