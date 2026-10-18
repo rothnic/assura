@@ -701,12 +701,13 @@ class DeliveryProjectionTests(unittest.TestCase):
                     {"databaseId": "security-job-21", "name": "Security Audit", "conclusion": "SKIPPED"},
                 ],
             }
-            fake_gh = repo / ".test-bin" / "gh"
+            fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
             fake_gh.write_text(
                 "#!/usr/bin/env python3\nprint(" + repr(json.dumps([provider_pr])) + ")\n",
                 encoding="utf-8",
             )
-            fake_gh.chmod(0o755)
+            if os.name != "nt":
+                fake_gh.chmod(0o755)
 
             evidence = local_integration_evidence(tip, merge_oid, "initial-close")
             evidence["review"].update(
