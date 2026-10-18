@@ -3,7 +3,7 @@
   "name": "dx03-validation-capture",
   "title": "Capture validation commands and observed exits once",
   "description": "Bead ae-whr.3 DX03. Small skill-local command capture wrapper; independently approved corrected designv2, exact invocation/raw streams/observed exit, explicit interruption limits.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": "assura-local-build skill local capture wrapper and focused controls only",
   "package": null,
