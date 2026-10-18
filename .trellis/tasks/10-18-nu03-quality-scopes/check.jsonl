@@ -6,3 +6,7 @@
 {"file": "src/cli/quality.rs", "reason": "Verify native path selection/exclusion through existing planner."}
 {"file": ".trellis/spec/assura/agent-ready-onboarding.md", "reason": "Onboarding policy behavior and preservation requirements."}
 {"file": ".trellis/spec/assura/agent-harness-hooks.md", "reason": "Hook behavior contract for composition evidence."}
+{"file": "src/config/config/quality.rs", "reason": "Verify empty default and serialized YAML compatibility."}
+{"file": "src/config/config/validation/quality.rs", "reason": "Verify invalid exclude globs fail with exact scope field context."}
+{"file": "src/cli/check.rs", "reason": "Review the crate-internal matcher bridge."}
+{"file": "src/cli/check/rules.rs", "reason": "Verify reuse of the existing exclusion matcher."}

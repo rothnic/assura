@@ -8,3 +8,10 @@
 {"file": "tests/git_hook_lifecycle.rs", "reason": "Existing supported pre-commit lifecycle test surface."}
 {"file": ".trellis/spec/assura/agent-ready-onboarding.md", "reason": "Evidence and owner-policy preservation contract."}
 {"file": ".trellis/spec/assura/agent-harness-hooks.md", "reason": "Supported hook lifecycle and ownership contract."}
+{"file": "src/config/config/quality.rs", "reason": "Add the additive scope-level exclusion field with empty serde default."}
+{"file": "src/config/config/validation/quality.rs", "reason": "Validate relative exclude globs with field-specific context."}
+{"file": "src/config/config/validation.rs", "reason": "Existing relative-pattern validation helper."}
+{"file": "src/cli/check.rs", "reason": "Possible crate-internal bridge to existing compiled exclusion helpers."}
+{"file": "src/cli/check/rules.rs", "reason": "Existing CompiledExclusion and is_excluded_rel_with semantics to reuse."}
+{"file": "src/cli/check/compiled_config.rs", "reason": "Existing exclusion compilation pattern."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Existing quality-scope planning contract."}

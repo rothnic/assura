@@ -16,8 +16,11 @@ Coordinate shared onboarding tests/call sites with NU02 before implementation.
 - Use only existing evidence for supported Bun/Next source roots. Retain
   `src/**`, `tests/**`, package manifest and lockfile coverage, along with the
   existing declared lint/test script selection.
-- Exclude dependency and generated output paths without changing broad quality
-  planner semantics.
+- Add the smallest per-scope `exclude_paths` config capability, defaulting to
+  empty so existing authored quality scopes retain their current behavior.
+  Exclusions override positive matches only within the same scope. Generate
+  explicit exclusions only for the Assura-owned Bun scope; do not apply
+  structure-level exclusions or new exclusions to other scopes.
 - Preserve owner-authored scopes and values through repeated onboarding.
 - Keep implementation in the existing quality renderer and only the minimal
   necessary quality-generation call site. Use the existing quality-onboarding
@@ -52,9 +55,23 @@ design only. Do not run Cargo/build/test/runner batches until the coordinator
 admits the focused red/green lane after NU02 releases the serialized full Rust
 lane.
 
-Current contract limitation: the planner matches positive scope paths and has
-no per-scope exclusions; a root glob such as `app/**` also admits nested
-generated/dependency paths. Do not claim this acceptance is met by top-level
-negative controls alone. Hold any broad root expansion until the coordinator
-decides whether the required scope-exclusion behavior may extend the planner
-contract.
+## Design proposal
+
+The current planner only matches positive path patterns. Add optional
+`quality.scopes.<id>.exclude_paths`, validated as relative globs with errors
+contextualized to the scope field, compiled once per scope through the existing
+`CompiledExclusion` and `is_excluded_rel_with` helpers, and applied only to that
+scope's positive matches. Empty or omitted exclusions preserve legacy behavior.
+Generate bounded exclusions for the new Bun scope, including root outputs and
+nested `.next`/`node_modules` paths. Confirm matcher semantics with nested and
+root controls before claiming generated-output coverage.
+
+`QualityScopeConfig` is re-exported by `src/config/config.rs` and is not marked
+`non_exhaustive`; adding a field technically breaks external Rust struct-literal
+construction. The crate entrypoint and `docs/support-policy.md` explicitly
+classify full-CLI Rust modules as unstable internal APIs with no compatibility
+guarantee before 1.0. The only in-repository struct literal is in
+`src/cli/quality.rs` tests. The supported YAML config remains backward
+compatible because the field defaults empty and the quality scope already has
+`deny_unknown_fields`. Record the internal literal update; do not claim a
+semver-stable Rust API change.

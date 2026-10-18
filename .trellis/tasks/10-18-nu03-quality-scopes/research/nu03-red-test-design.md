@@ -15,9 +15,12 @@ Source revision: `dafec88d507e8af31cda9306ff29d474bf938732` on
   control for each supported root and excluded output.
 - `tests/git_hook_lifecycle.rs` already uses the real CLI and pre-commit 4.6.2
   adapter surface, but its current pre-commit shim only returns status and does
-  not execute/record native commands. Use an installed available pre-commit in
-  a disposable fixture if present; keep any shim outside the proof used to
-  claim real composition.
+  not execute/record native commands. This host currently has neither a
+  `pre-commit` executable on `PATH` nor an importable Python `pre_commit`
+  module (`command -v pre-commit`; `python3 -c 'import importlib.util;
+  print(importlib.util.find_spec("pre_commit") is not None)'`). Do not count
+  the shim as composition proof or install a runner before the coordinator
+  admits an environment for that proof.
 
 ## Planned controls
 
@@ -50,19 +53,30 @@ changed.
 
 ## Open implementation decision
 
-The quality planner matches configured positive paths directly and has no
-per-scope denylist. Its special trailing `/**` handling is a prefix match, so
-`app/**` admits `app/.next/cache/chunk.js` and `lib/**` admits
+The quality planner matches configured positive paths directly. Its special
+trailing `/**` handling is a prefix match, so `app/**` admits
+`app/.next/cache/chunk.js` and `lib/**` admits
 `lib/node_modules/pkg/index.ts`. Top-level structural `exclude` rules do not
-apply to quality planning. Therefore explicit source roots plus top-level
-negative tests cannot establish the acceptance that nested generated and
-dependency paths stay excluded.
+apply to quality planning. Explicit source roots plus top-level negative tests
+cannot establish nested output/dependency exclusion.
 
-Do not claim that the renderer-only expansion satisfies this acceptance or
-silently apply structural exclusions to all authored quality scopes. A
-per-scope quality exclusion contract is the smallest general capability that
-appears to express the requirement, but it changes planner/schema behavior and
-is outside the current bounded renderer slice. Hold implementation of
-generated-safe broad roots pending coordinator scope decision. The renderer
-remains the lowest-overlap target while NU02 owns shared onboarding
-preservation work.
+Coordinator-authorized proposal: optional `exclude_paths` on each quality scope,
+default empty, overrides only that scope's matching positive paths. Reuse
+`CompiledExclusion` and `is_excluded_rel_with` from `src/cli/check/rules.rs`
+through a crate-internal bridge in the existing `src/cli/check.rs`; compile the
+list once per scope. Do not couple quality matching to structure exclusions or
+alter authored scopes. Add nested/root output, legacy omission, invalid-pattern
+context, preservation, and hook composition controls.
+
+API boundary evidence: `QualityScopeConfig` is public and re-exported at
+`src/config/config.rs`, has no `#[non_exhaustive]`, and has one in-repository
+struct literal at `src/cli/quality.rs`. External Rust struct-literal callers
+would need to add the field, but `src/lib.rs` and `docs/support-policy.md`
+explicitly classify these full-CLI Rust modules as unstable internal APIs with
+no pre-1.0 compatibility guarantee. The authored YAML behavior is additive:
+the new field defaults empty under `deny_unknown_fields`, preserving all
+existing files and scope behavior.
+
+The renderer remains the lowest-overlap implementation target while NU02 owns
+shared onboarding preservation work. Do not start the Cargo lane until
+coordinator admission.
