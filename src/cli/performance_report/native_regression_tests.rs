@@ -20,22 +20,53 @@ fn native_history_duplicate_execution_counts_once_and_stays_provisional() {
     let history = temporary_history(&[&row, &replay]);
 
     let baseline = load_native_history_rows(history.path()).expect("history loads");
-    let baseline = baseline.values().next().expect("native row admitted");
+    assert_eq!(baseline.len(), 1);
+    let baseline_row = baseline.values().next().expect("native row admitted");
+    assert_eq!(baseline_row.report_count, 1);
+    assert_eq!(baseline_row.sample_count, 5);
+    let expected_threshold =
+        derive_threshold_ms(1, 11.0, 9.0, 13.0, &[9.0, 10.0, 11.0, 12.0, 13.0]);
+    assert_eq!(baseline_row.threshold_ms, expected_threshold);
 
     let reversed_history = temporary_history(&[&replay, &row]);
     let reversed_baseline =
         load_native_history_rows(reversed_history.path()).expect("reordered history loads");
-    let reversed_baseline = reversed_baseline
-        .values()
-        .next()
-        .expect("native row admitted");
     assert_eq!(baseline, reversed_baseline);
 
-    assert_eq!(baseline.report_count, 1);
-    assert_eq!(baseline.sample_count, 5);
+    // A separate execution with the same baseline key exercises the real
+    // loader-to-annotation path without excluding the duplicate history row.
+    let target = measured_native_row(
+        "run-target",
+        "commit-target",
+        &[10.0, 11.0, 12.0, 13.0, 14.0],
+    );
+    let annotated = annotate_from_history(&[&row, &replay], target.clone());
+    let reversed_annotated = annotate_from_history(&[&replay, &row], target);
     assert_eq!(
-        baseline.threshold_ms,
-        derive_threshold_ms(1, 11.0, 9.0, 13.0, &[9.0, 10.0, 11.0, 12.0, 13.0])
+        annotated.native_regression_status,
+        Some(STATUS_WITHIN_PROVISIONAL.into())
+    );
+    assert_eq!(annotated.native_regression_baseline_report_count, Some(1));
+    assert_eq!(annotated.native_regression_baseline_sample_count, Some(5));
+    assert_eq!(
+        annotated.native_regression_threshold_ms,
+        Some(expected_threshold)
+    );
+    assert_eq!(
+        annotated.native_regression_status,
+        reversed_annotated.native_regression_status
+    );
+    assert_eq!(
+        annotated.native_regression_baseline_report_count,
+        reversed_annotated.native_regression_baseline_report_count
+    );
+    assert_eq!(
+        annotated.native_regression_baseline_sample_count,
+        reversed_annotated.native_regression_baseline_sample_count
+    );
+    assert_eq!(
+        annotated.native_regression_threshold_ms,
+        reversed_annotated.native_regression_threshold_ms
     );
 }
 

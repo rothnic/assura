@@ -160,6 +160,13 @@ repo's required Rust profile; do not start any other heavy job concurrently.
   no gate was raised. Defer any natural module split to a specifically scoped
   NU09 follow-up and an explicit structure/spec review; this candidate adds no
   module.
+- Independent review `independent-review-ded91108.md` identified one low proof
+  gap in the duplicate fixture. The test now annotates a distinct execution
+  against the real duplicate-collapsed loader output and asserts provisional
+  status, one report, five samples, the unchanged derived threshold, and
+  duplicate-order invariance. The focused 17-test suite and scoped Clippy were
+  rerun successfully with no production-source change; updated hashes and raw
+  receipts are in the evidence directory above. Root owns scoped rereview.
 
 ## Evidence and authority references
 
