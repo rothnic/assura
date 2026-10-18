@@ -156,3 +156,32 @@ above; none is promoted to exact refreshed-head validation. Final independent
 review, current-source focused and composition proof, full PR lane, current
 hosted checks, and adjudication of the historical unknown macOS failure remain
 outstanding. This merge does not close NU03 or its Bead.
+
+## SP04 current-base source preparation (2026-10-18)
+
+Clean NU03 candidate `e1a6ad1e00b973e78c387c1d1ec3361ba8955238` was normally
+merged with the pinned current base
+`a1d2f0aaf405a8d7e6359eb4c42aaaa4251a599e`. The merge had no conflicts.
+The actual parent-task three blobs were retained; the resulting five unique
+children equal the ordered union of both sides and all non-children fields
+are identical. This count is derived from those inputs, not a fixed policy.
+
+The incoming product delta is SP04's two native-regression Rust files, five
+canonical demo JSON revisions, and the SP04 task. All eight NU03 implementation/
+test hashes above and the pre-existing NU03 task files are unchanged before
+this evidence note. The registered gen0/base/history is preserved. NU03 and
+parent task context validation, staged/unstaged diff checks, and the explicit
+workflow invocation exited0. During the intentional uncommitted merge the
+workflow reports its expected dirty-worktree state; clean readiness is checked
+after this preparation commit. Normal Git hooks remain enabled.
+
+Exact argv, source hashes, three parent blobs, capture receipts, raw output,
+direct PIDs and observed exits are retained under
+`/Users/nroth/workspace/.assura-review-20261017/nu03/current-base-validation-v1/preparation/`.
+The outer merge invocation completed0 (`f62721`); cheap guards used session
+`85086`, terminal chunk `023932`, exit0. No explicit Cargo, writing generation,
+build, tests or fixture composition ran for this source-preparation checkpoint.
+Older results retain their original bindings and limitations. Root subsequently
+admitted one writing generation, focused59integration+6unit checks and fresh
+binary preparation after clean source commit/resource checks; composition and
+full PR remain held for independent current source/runtime binding review.

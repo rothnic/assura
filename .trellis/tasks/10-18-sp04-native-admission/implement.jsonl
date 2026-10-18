@@ -1,0 +1,2 @@
+{"file": ".trellis/tasks/10-18-sp04-native-admission/prd.md", "reason": "Private identity contract, lane boundary, test-first requirements, and acceptance."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Keep existing native/performance gate report contracts and Rust validation boundaries intact."}
