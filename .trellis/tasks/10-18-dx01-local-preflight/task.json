@@ -1,0 +1,38 @@
+{
+  "id": "dx01-local-preflight",
+  "name": "dx01-local-preflight",
+  "title": "DX01 local validation preflight",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "dx01-local-preflight",
+  "assignee": "dx01-local-preflight",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/dx01-local-preflight",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-dx01-local-preflight",
+      "owner": "dx01-local-preflight",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/dx01-local-preflight",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#scope-and-ownership"
+    }
+  }
+}
