@@ -1,0 +1,3 @@
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Changed-surface validation and environment versus source failures."}
+{"file": ".agents/skills/assura-local-build/SKILL.md", "reason": "Existing local-build and website checkout-local target contract."}
+{"file": ".trellis/spec/guides/code-reuse-thinking-guide.md", "reason": "One compact helper with existing patterns and no generic framework."}
