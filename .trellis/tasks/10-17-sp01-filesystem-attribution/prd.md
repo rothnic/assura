@@ -2,7 +2,7 @@
 
 ## Objective
 
-Measure whether `src/cli/check/file_limits.rs::validate_file_size` performs an avoidable metadata lookup for files whose effective full-engine `FileBundle` policy has no applicable `max_size` rule. Make at most one smallest local change, and retain it only if ordinary public `assura check --quiet` meets the existing performance keep bar with equivalent findings and exit behavior.
+Attribute filesystem work in ordinary policy-rich checks. P1 tested whether `src/cli/check/file_limits.rs::validate_file_size` performs an avoidable metadata lookup when the effective full-engine `FileBundle` policy has no applicable `max_size` rule. Three independent retention reviews found no-keep; that guard is reverted. Continue the same task with bounded attribution-only P2. No source optimization is currently retained.
 
 This is the first discriminator from the systemic filesystem review, not a general filesystem optimization project. The existing source hypothesis is copied into `research/`. The work does not explain or replace the separate NU11/R02/R03 many-scope no-slower obligation.
 
@@ -34,13 +34,22 @@ The no-size-policy arm must issue zero size-metadata requests from this validato
 
 No fix is required if the measurable public gain is below the keep bar. The accepted outcome may be a documented defer with the exact measurements and preserved unfavorable evidence.
 
+## P1 disposition and bounded P2 attribution
+
+P1 is complete as a no-keep disposition. Preserve its raw timings, syscall counts, correctness receipts and binaries as historical evidence. Do not rerun P1 public A/B or strict keep-gate comparisons, and do not present instrumented timings or syscall reduction as public speed. The exact quiet tie-breaker fixture was `/home/ubuntu/data/projects/manual-many-scopes-common`; its historical config/tree hash was not captured and must remain marked unavailable.
+
+P2 continues within this task and is attribution-only. Enumerate the identical-scope test and docs-lifecycle traversals, including the paths and lifecycle/callers that trigger each traversal. Separately attribute NU13 discovery/config-candidate metadata for four cases: no-cache root, no-cache nested target, warm-cache Git repository, and warm-cache non-Git repository. Preserve the naming-only negative control and full output/exit parity. Count, by consumer where practical, `stat`/metadata, walk, readdir, open, read, and bytes; record CPU, wall time, and peak RSS where meaningful. Use only provenance-bound rich-policy and controlled-wide fixtures. Instrumented timing is diagnostic and is never a public speed result.
+
+P2 may use temporary instrumentation in the exact existing consumer files and an isolated one-lane build only when required. It must not add a dependency or alter production source, shared inventory/index, daemon, API, traversal model, or incremental eligibility. No optimization is authorized by attribution alone. Record baseline SHA/tree, scratch diff, binary and fixture hashes, exact commands/exits, resource/disk gate, raw counts/samples, and teardown. Before any VPS work, refresh the host and disk-backed scratch gate; use the existing owned toolchain/cache only if safe, jobs=2, and do not mutate the separate NU13 source/build run. Avoid new full-target builds or deletion of foreign data. If the gate is unsafe, retain that as a measurement limit and finish independent source/test enumeration without timing claims.
+
 ## Admission and current phase
 
-This task is intentionally left in Trellis `planning` until the coordinating root confirms the verified Beads claim/admission. No build, remote workload, runtime edit, or test execution is authorized in this preparation phase. Once admitted, follow the repo Trellis implementation/check workflow and obtain a separate independent Luna review before any PR or merge; root coordinates those transitions.
+The coordinating root verified Beads claim/admission for `ae-xsm`; Trellis/native ownership remains `/root/filesystem_performance` (`filesystem_performance`). The P1 source disposition is committed. Continue P2 under the same canonical task; do not create another task or write to Beads. Root coordinates independent review and any later delivery transitions.
 
 ## Acceptance
 
 1. Task remains uniquely owned by `/root/filesystem_performance` and isolated on `perf/sp01-filesystem-attribution` from the specified current base.
-2. After admission, provenance-bound attribution distinguishes the no-size-policy and size-policy arms, includes the naming-only negative control, and preserves raw unfavorable outcomes.
-3. Any retained code change is limited to the listed scope and passes the correctness controls plus all existing keep/no-slower thresholds. Otherwise provide an explicit evidence-backed defer decision.
-4. Candidate is reviewed by a separate Luna reviewer before PR/merge, with concrete findings resolved or dispositioned and scoped rereview after fixes.
+2. P1 records the no-keep/revert disposition, preserves unfavorable raw evidence, and does not claim a retained speedup.
+3. P2 provides provenance-bound identical-scope test/lifecycle enumeration and separates NU13 discovery/config-candidate attribution across the four required root/nested and Git/non-Git cases, with consumer counts and output/exit controls where available.
+4. No P2 optimization is retained absent a separately authorized scope and evidence. Record exact provenance, resource gates, measurement limitations and owned-process teardown.
+5. Independent review checks the final P1/P2 evidence and any source disposition before root makes delivery decisions.
