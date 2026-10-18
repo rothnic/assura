@@ -112,4 +112,3 @@ The root admits focused unit/integration validation with one Cargo job and
 explicit test threads under a fresh resource gate; a separate SP04 full PR
 uses two jobs. No benchmark or full NU16 PR run is admitted yet. Stop on an
 unexpected gate failure and preserve the exact process handle and receipt.
-
