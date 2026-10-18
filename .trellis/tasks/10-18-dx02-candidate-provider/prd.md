@@ -36,3 +36,41 @@ Planning at base 74d9917dd39e599bbd43c3a5760b71644b2cf91b. Two failed W02 record
 ## Approved design
 
 Root accepted the three independent source/environment/adversarial designs. Decision and exact evidence links: /Users/nroth/workspace/.assura-review-20261017/dx02/design-adjudication-v1.md. Candidate-scoped record/close only; strict fleet/inspect/archive paths preserved. Implementation may proceed after supported task start; no production receipt write by the implementer.
+
+The approved structure boundary places GitHub protocol, query construction,
+provider shape checks, and provider errors in leaf
+`.trellis/scripts/common/delivery_github.py`, which imports no delivery domain,
+status, audit, or archive module. The delivery collector passes normalized
+short branch names and owns candidate mapping and error translation. The
+candidate GitHub coverage predicate belongs beside other evidence predicates
+in `delivery_evidence.py`. Keep the task CLI and full-fleet audit contract
+unchanged.
+
+## Implementation evidence checkpoint
+
+Post-split `python3 tests/agent_delivery_contract_tests.py` output records 110
+tests passing in 80.321 seconds, with child exit 0. The durable output and
+exit record are under
+`/Users/nroth/workspace/.assura-review-20261017/dx02/implementer-20261018/`
+as `delivery-final.log` and `delivery-final.exit`. This run includes the
+fresh-process import-order controls. Its recorder then raised
+`ProcessLookupError` because it queried the child's process group after
+`communicate()` had reaped it; this was a recorder error after the child test
+run, not a test failure. The recorded start hash covered only `delivery.py`,
+not the whole candidate; root must run the final clean-SHA delivery and process
+validation before approval.
+
+The earlier full raw log for 107 tests with two failures was overwritten by
+that post-split run and is lost. Three contemporaneous read-only triages
+attested the earlier outcome, but its raw output is unavailable and is not
+claimed as retained. The correction was scoped to explicit valid CheckRun
+fixtures and typed CheckRun/StatusContext rollup validation; malformed union
+controls remain rejecting. This is the only full delivery-suite result after
+the split; root's final whole-input delivery and process validation is still
+pending.
+
+The post-split structure check `assura check .` exited 0 with 16 nonblocking
+max-line findings; captured output and exit are in the same external evidence
+directory under `structure-final-20261018T123351Z.*`. The workflow gate
+reported `blocked_dirty_worktree` because these eight owned paths are
+uncommitted; that was an ownership prerequisite, not a code/test failure.
