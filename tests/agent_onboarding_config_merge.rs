@@ -370,6 +370,142 @@ fn agent_onboard_keeps_strict_defaults_for_an_empty_project() {
 }
 
 #[test]
+fn agent_onboard_keeps_strict_defaults_for_empty_expected_agent_directories() {
+    let project = TempDir::new().unwrap();
+    fs::create_dir_all(project.path().join(".agents/skills")).unwrap();
+
+    let onboarding = json_from_success(run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    assert_eq!(onboarding["rule_recommendations"][0]["status"], "applied");
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(
+        config["structure"][".agents/"]["./"],
+        "exists:0-1 | $closed"
+    );
+    assert_eq!(
+        config["structure"][".agents/"]["skills/"]["./"],
+        "exists:0-1"
+    );
+    assert_eq!(
+        config["extensions"]["agent_guidance"][0]["skill_paths"][0],
+        ".agents/skills/*/SKILL.md"
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_does_not_follow_dangling_assura_skill_symlink() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let destination = project
+        .path()
+        .join(".agents/skills/assura-project-maintenance/SKILL.md");
+    fs::create_dir_all(destination.parent().unwrap()).unwrap();
+    let target = project
+        .path()
+        .parent()
+        .unwrap()
+        .join(format!("nu02-dangling-target-{}", std::process::id()));
+    let _ = fs::remove_file(&target);
+    let link_text = target.to_string_lossy().into_owned();
+    symlink(&target, &destination).unwrap();
+
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["rule_recommendations"][0]["status"], "conflict");
+    assert!(report["files"].as_array().unwrap().iter().any(|item| {
+        item["path"] == ".agents/skills/assura-project-maintenance/SKILL.md"
+            && item["action"] == "conflict"
+    }));
+    assert!(!target.exists(), "dangling link target must remain absent");
+    assert!(fs::symlink_metadata(&destination)
+        .unwrap()
+        .file_type()
+        .is_symlink());
+    assert_eq!(
+        fs::read_link(destination).unwrap().to_string_lossy(),
+        link_text
+    );
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_preserves_bytes_behind_assura_skill_symlink() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let destination = project
+        .path()
+        .join(".agents/skills/assura-project-maintenance/SKILL.md");
+    fs::create_dir_all(destination.parent().unwrap()).unwrap();
+    let external = TempDir::new().unwrap();
+    let target = external.path().join("user-skill.md");
+    fs::write(&target, b"user-owned bytes\n").unwrap();
+    symlink(&target, &destination).unwrap();
+
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["rule_recommendations"][0]["status"], "conflict");
+    assert_eq!(fs::read(&target).unwrap(), b"user-owned bytes\n");
+    assert!(fs::symlink_metadata(destination)
+        .unwrap()
+        .file_type()
+        .is_symlink());
+}
+
+#[cfg(unix)]
+#[test]
+fn agent_onboard_does_not_write_through_assura_skill_parent_symlink() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let agents = project.path().join(".agents");
+    fs::create_dir_all(&agents).unwrap();
+    let external = TempDir::new().unwrap();
+    let skills = agents.join("skills");
+    symlink(external.path(), &skills).unwrap();
+
+    let output = run_assura(&[
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]);
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    assert_eq!(report["rule_recommendations"][0]["status"], "conflict");
+    assert!(fs::symlink_metadata(&skills)
+        .unwrap()
+        .file_type()
+        .is_symlink());
+    assert_eq!(fs::read_dir(external.path()).unwrap().count(), 0);
+}
+
+#[test]
 fn agent_onboard_recognizes_composed_entrypoint_as_applied() {
     let project = TempDir::new().unwrap();
     fs::create_dir_all(project.path().join(".assura")).unwrap();

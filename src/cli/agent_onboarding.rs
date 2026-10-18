@@ -81,6 +81,7 @@ fn run_agent_onboarding(
     let strict_agent_surface =
         !has_unmanaged_agent_surface(&project_root, &detected, options.content_template);
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    ensure_generated_path_is_safe(&project_root, &config_path)?;
     let recipe_file = options.recipe_file;
     let had_config = config_path.is_file();
     if had_config {
@@ -199,12 +200,17 @@ fn materialize_initial_local_recipe(
     let parent = config_path
         .parent()
         .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
+    ensure_generated_path_is_safe(parent, config_path)?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     crate::cli::local_recipe::write_config_atomically(config_path, &source)
         .map_err(|error| error.message().to_string())
 }
 
 fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), String> {
+    let root = config_path
+        .parent()
+        .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
+    ensure_generated_path_is_safe(root, config_path)?;
     let outcome = crate::cli::local_recipe::merge_recipe_file(config_path, recipe_file)
         .map_err(|error| error.message().to_string())?;
     if outcome.conflicts.is_empty() {
@@ -371,7 +377,18 @@ fn materialize_baseline_file(
 
 fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
+    let existed = match ensure_generated_path_is_safe(project_root, &path) {
+        Ok(existed) => existed,
+        Err(_) if file.path.starts_with(".agents/skills/assura-") => {
+            return Ok(FileAction {
+                path: file.path,
+                action: "conflict",
+                existed: true,
+                required: file.required,
+            });
+        }
+        Err(error) => return Err(error),
+    };
     let action = if !existed {
         "write"
     } else if file.path.starts_with(".agents/skills/assura-")
@@ -401,7 +418,7 @@ fn materialize_managed_file(
     file: GeneratedFile,
 ) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
+    let existed = ensure_generated_path_is_safe(project_root, &path)?;
     let current = if existed {
         Some(fs::read_to_string(&path).map_err(|error| error.to_string())?)
     } else {
@@ -449,7 +466,7 @@ fn set_executable_if_needed(_path: &Path, _executable: bool) -> Result<(), Strin
 
 fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
+    let existed = ensure_generated_path_is_safe(project_root, &path)?;
     if !existed {
         return materialize_file(project_root, file);
     }
@@ -472,6 +489,67 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
         existed,
         required: file.required,
     })
+}
+
+/// Refuses to read or write a generated destination when any existing path
+/// component is a symlink or an incompatible file type. This is a bounded
+/// preflight check; it does not claim protection against concurrent filesystem
+/// replacement after validation.
+pub(super) fn ensure_generated_path_is_safe(root: &Path, path: &Path) -> Result<bool, String> {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|error| format!("resolve generated path {}: {error}", path.display()))?
+            .join(path)
+    };
+    let mut current = PathBuf::new();
+    let components = absolute.components().collect::<Vec<_>>();
+    for (index, component) in components.iter().enumerate() {
+        current.push(component.as_os_str());
+        let is_leaf = index + 1 == components.len();
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => {
+                return Err(format!(
+                    "inspect generated path {} under {}: {error}",
+                    absolute.display(),
+                    root.display()
+                ));
+            }
+        };
+        if metadata.file_type().is_symlink() {
+            return Err(format!(
+                "refusing generated path {} under {} because component {} is a symlink",
+                absolute.display(),
+                root.display(),
+                current.display()
+            ));
+        }
+        if is_leaf {
+            if !metadata.file_type().is_file() {
+                return Err(format!(
+                    "refusing generated path {} under {} because destination is not a regular file",
+                    absolute.display(),
+                    root.display()
+                ));
+            }
+            return Ok(true);
+        }
+        if !metadata.file_type().is_dir() {
+            return Err(format!(
+                "refusing generated path {} under {} because parent component {} is not a directory",
+                absolute.display(),
+                root.display(),
+                current.display()
+            ));
+        }
+    }
+    Err(format!(
+        "generated path {} has no components",
+        absolute.display()
+    ))
 }
 
 fn merge_missing_values(existing: &mut Value, defaults: &Value) -> bool {

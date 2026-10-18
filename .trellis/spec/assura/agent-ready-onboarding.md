@@ -80,8 +80,10 @@ Public evaluator output exposes only aggregate state, not paths, ids, or text.
 | Evidence is ambiguous | Leave the scope open and ask a focused question instead of guessing. |
 | Existing unmanaged `AGENTS.md` or `.agents` files | Preserve their bytes and conventions; do not apply Assura-specific headings, frontmatter, names, or parent closures based on path alone. |
 | Existing `.agents` surface contains only proven generated artifacts | Assura may retain its strict managed defaults; a familiar filename by itself is not proof of ownership. |
+| Existing `.agents` surface contains only expected empty directories | Keep the strict managed defaults; directory presence without user content does not establish unmanaged ownership. |
 | New config is generated beside unmanaged guidance | Scope structure and guidance rules to the exact Assura-generated skill paths; leave user-owned paths out of inferred whitelists. |
-| Existing closure or generated-path collision prevents compatible output | Preserve the existing value/file, report `conflict` with the affected path and a `check` follow-up, and retain the failed verification result. |
+| Existing closure or generated-path collision prevents compatible output | Preserve the existing value/file and report `conflict` with the affected path and a `check` follow-up; verification and exit status continue to follow the configured severity policy. |
+| Generated destination or existing parent traverses a symlink | Do not read or write through the link; preserve it and report a generated-agent conflict or contextual path error. |
 | Guidance assertion has an empty/unsafe path | Reject the evaluator contract. |
 | Guidance assertion path traverses a symlink | Fail the assertion without reading external content. |
 | Guidance assertion file or fragment is absent | Fail the requested guidance dimension. |

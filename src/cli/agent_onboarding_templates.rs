@@ -109,7 +109,6 @@ pub(super) fn has_unmanaged_agent_surface(
     }
 
     let mut pending = vec![agents_dir];
-    let mut verified_generated_files = 0;
     while let Some(directory) = pending.pop() {
         let Ok(entries) = fs::read_dir(&directory) else {
             return true;
@@ -142,10 +141,9 @@ pub(super) fn has_unmanaged_agent_surface(
             if fs::read_to_string(path).ok().as_deref() != Some(expected.as_str()) {
                 return true;
             }
-            verified_generated_files += 1;
         }
     }
-    verified_generated_files == 0
+    false
 }
 
 pub(super) fn rule_recommendations_file(detected: &DetectedSection, status: &str) -> GeneratedFile {
