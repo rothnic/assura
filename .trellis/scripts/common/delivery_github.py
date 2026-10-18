@@ -6,6 +6,7 @@ import json
 import re
 import shutil
 import subprocess
+from datetime import datetime
 from typing import Any, Protocol
 
 
@@ -15,6 +16,32 @@ class GithubUnavailable(RuntimeError):
 
 class GithubIdentityMismatch(ValueError):
     """GitHub data does not match the candidate identity snapshot."""
+
+
+_UTC_TIMESTAMP = re.compile(
+    r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z"
+)
+_FULL_OID = re.compile(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})")
+
+
+def _valid_merge_snapshot(row: dict[str, Any]) -> bool:
+    """Require provider merge fields to agree with the PR's terminal state."""
+    state = row.get("state")
+    merged_at = row.get("mergedAt")
+    merge_commit = row.get("mergeCommit")
+    if state == "MERGED":
+        if not isinstance(merged_at, str) or _UTC_TIMESTAMP.fullmatch(merged_at) is None:
+            return False
+        try:
+            datetime.fromisoformat(merged_at[:-1] + "+00:00")
+        except ValueError:
+            return False
+        return (
+            isinstance(merge_commit, dict)
+            and isinstance(merge_commit.get("oid"), str)
+            and _FULL_OID.fullmatch(merge_commit["oid"]) is not None
+        )
+    return state in {"OPEN", "CLOSED"} and merged_at is None and merge_commit is None
 
 
 class GithubReader(Protocol):
@@ -129,6 +156,8 @@ class SubprocessGithubReader:
                 or re.fullmatch(r"(?:[0-9a-fA-F]{40}|[0-9a-fA-F]{64})", merge["oid"]) is None
             ):
                 raise GithubIdentityMismatch("PR identity mismatch: identity cohort has malformed merge OID")
+            if not _valid_merge_snapshot(row):
+                raise GithubIdentityMismatch("PR identity mismatch: identity cohort has incoherent merge state")
 
         matches = [
             row for row in cohort
@@ -190,7 +219,11 @@ class SubprocessGithubReader:
                             "SKIPPED", "STALE", "STARTUP_FAILURE", "SUCCESS", "TIMED_OUT",
                         }
                     )
-                    and (status != "COMPLETED" or isinstance(conclusion, str))
+                    and (
+                        isinstance(conclusion, str)
+                        if status == "COMPLETED"
+                        else conclusion is None
+                    )
                     and (check.get("detailsUrl") is None or isinstance(check.get("detailsUrl"), str))
                 )
             elif typename == "StatusContext":
@@ -207,6 +240,8 @@ class SubprocessGithubReader:
                 raise GithubIdentityMismatch("PR identity mismatch: current details have malformed check identity")
         if details.get("mergeCommit") != matches[0].get("mergeCommit"):
             raise GithubIdentityMismatch("PR identity mismatch: current details changed mergeCommit")
+        if not _valid_merge_snapshot(details):
+            raise GithubIdentityMismatch("PR identity mismatch: current details have incoherent merge state")
         return cohort, details
 
     def _run_candidate_query(

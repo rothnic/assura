@@ -74,3 +74,18 @@ max-line findings; captured output and exit are in the same external evidence
 directory under `structure-final-20261018T123351Z.*`. The workflow gate
 reported `blocked_dirty_worktree` because these eight owned paths are
 uncommitted; that was an ownership prerequisite, not a code/test failure.
+
+## Root correction checkpoint
+
+Independent review of d89dc899 accepted REV1 strict merge snapshot coherence and
+REV2 unfinished CheckRun/conclusion coherence. Candidate-only provider checks
+now enforce both. Root fixed two test-fixture details before validation: the
+actual diagnostic regex and a real full tip OID. All seven exact focused tests
+passed in 7.412s, including invalid-provider record/close no-write controls.
+Evidence: `/Users/nroth/workspace/.assura-review-20261017/dx02/root-focused-corrections-20261018T125647Z-541f31af/`.
+The external runner's preceding status-parser attempt aborted before launch
+and is uncredited. Full clean-source corrected suites and scoped independent
+rereview remain required; earlier raw-loss limitation above remains unchanged.
+Root cheap gates (structure, task/context validation, diff and reused xtask
+evidence) all exited zero at `../root-final-cheap-20261018T125728Z/dx02/`
+under the same external evidence root. No native provider write has occurred.
