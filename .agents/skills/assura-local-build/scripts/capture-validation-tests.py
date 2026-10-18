@@ -95,7 +95,7 @@ def stop_owned_fixture(pid: int | None, nonce: str | None = None) -> str:
         if state is None or state.startswith("Z"):
             return f"stopped ({state or 'absent'})"
         time.sleep(0.02)
-        raise AssertionError(f"nonce-verified fixture PID {pid} still active in state {state}")
+    raise AssertionError(f"nonce-verified fixture PID {pid} still active in state {state}")
 
 
 def finish_wrapper(root: Path, label: str, wrapper: subprocess.Popen | None) -> None:
