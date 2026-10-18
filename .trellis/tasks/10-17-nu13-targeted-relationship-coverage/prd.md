@@ -61,6 +61,10 @@ remains after source/contract review.
   compiled and prepared-fallback proof with exact findings and exits.
 - [ ] Record a real failing baseline and green focused tests; run applicable
   Rust, docs, structure and evidence gates and independent exact-source review.
+- [ ] Default caches for non-Git file/directory targets remain under the real
+  policy root. Existing cache-only `.assura` directories do not hide an ancestor
+  config or need deletion. Nearest real/malformed config and Git boundaries,
+  explicit cache locations and Git-common-directory placement stay intact.
 
 ## Affected surface and validation
 
@@ -70,6 +74,17 @@ adjacent existing checker tests, the scoped contract in
 `.trellis/spec/assura/config-notation.md`, and concise disclosure in
 `website/src/content/docs/reference/configuration.md` and
 `docs/release-notes.md`. Coordinator owns this task and central backlog tracking.
+
+Accepted validation findings extend that ownership to `src/cli/config.rs`
+config-file discovery (not generic project-root markers), non-Git cache
+placement in `src/cli/check/cache/status.rs`, adjacent existing discovery/cache
+tests, and explicit npm prefixing in `tests/ls_lint_rule_coverage/mod.rs`.
+The real CLI config-relax/restore probe exposed a pre-existing cache-created
+shadow directory; retain default-cache acceptance rather than hiding it with
+an explicit config. Native tests exposed npm installing outside scratch; bind
+its existing pinned native comparator to the owned install directory. Three
+read-only vendor/environment/adversarial checks support these corrections.
+No comparator version, native execution, assertion or product gate is weakened.
 
 Follow Rust-quality error/effect, traversal and test guidance. Start with the
 focused notation/relationship tests. Run `cargo xtask pr` once settled (it
