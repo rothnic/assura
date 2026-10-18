@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/compact-project-review.md","reason":"Review output, severity, history, compact omission, bounds, and behavior test contract."}
+{"file":".trellis/spec/assura/index.md","reason":"Assura-wide constraints and source-of-truth routing."}
+{"file":".trellis/spec/guides/cross-layer-thinking-guide.md","reason":"Trace Doctor-to-Review data and history without duplicating validation."}
+{"file":".agents/skills/assura-rust-quality/references/errors-and-effects.md","reason":"Preserve report construction and command exit/error behavior."}
