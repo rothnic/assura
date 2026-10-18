@@ -26,6 +26,7 @@ from .git import run_git
 from .delivery_evidence import (
     _evidence_error,
     _evidence_identifier,
+    _candidate_github_coverage,
     _full_oid,
     _full_sha256,
     _historical_evidence_context,
@@ -586,7 +587,7 @@ def _required_facts(
         receipt is None
         or receipt.get("outcome") in {None, "delivered"}
     )
-    if needs_github_coverage and inventory.coverage.get("github") != "complete":
+    if needs_github_coverage and not _candidate_github_coverage(intent, inventory):
         issues.append(DeliveryIssue("GITHUB_COVERAGE_UNAVAILABLE", "GitHub review/check coverage is incomplete", intent.candidate_id, next_action="Restore GitHub evidence access before claiming delivery."))
     if dirty:
         issues.append(DeliveryIssue("OWNED_WORKTREE_DIRTY", "candidate worktree has uncommitted changes", intent.candidate_id, next_action="Preserve and resolve the owned changes before closure."))
@@ -841,7 +842,7 @@ def classify_candidate(
     remote_coverage_unknown = (
         intent.kind == "integration"
         and (receipt is None or receipt.get("outcome") in {None, "delivered"})
-        and inventory.coverage.get("github") != "complete"
+        and not _candidate_github_coverage(intent, inventory)
     )
     coverage_unknown = _candidate_coverage_unknown(
         intent, inventory, tip

@@ -16,6 +16,7 @@ from .delivery import (
     DeliveryIntent,
     DeliveryIssue,
     DeliveryValidationError,
+    GithubUnavailable,
     _TERMINAL_OUTCOMES,
     _branch_name,
     _choose_base_ref,
@@ -31,6 +32,7 @@ from .delivery import (
     _refs_match_or_proven_alias,
     _worktree_matches_candidate,
     classify_candidate,
+    collect_candidate_inventory,
     collect_inventory,
     load_delivery_intent,
     render_checkpoint,
@@ -443,6 +445,7 @@ def _status_for_task(
     receipt_override: dict[str, Any] | None = None,
     allow_base_checkout: bool = False,
     refresh_remote: bool = False,
+    candidate_provider: bool = False,
 ) -> tuple[DeliveryIntent, CandidateStatus, Any, dict[str, Any]]:
     data = read_json(task_json)
     if not isinstance(data, dict):
@@ -458,12 +461,17 @@ def _status_for_task(
             data,
             allow_base_checkout=allow_base_checkout,
         )
-    inventory = collect_inventory(
-        repo_root,
-        github=github,
-        base_ref=intent.base_ref,
-        refresh_remote=refresh_remote,
-    )
+    if candidate_provider:
+        inventory = collect_candidate_inventory(
+            repo_root, intent, github=github, refresh_remote=refresh_remote
+        )
+    else:
+        inventory = collect_inventory(
+            repo_root,
+            github=github,
+            base_ref=intent.base_ref,
+            refresh_remote=refresh_remote,
+        )
     status = classify_candidate(intent, inventory, receipt)
     return intent, status, inventory, data
 
@@ -503,7 +511,7 @@ def cmd_delivery_register(args: argparse.Namespace) -> int:
             version=getattr(args, "version", None),
             required_assets=getattr(args, "required_asset", None),
         )
-    except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
+    except (DeliveryValidationError, DeliveryStoreError, GithubUnavailable, ValueError) as error:
         return _error_code(str(error), 2)
     print(f"registered: {intent.candidate_id} owner={intent.owner}")
     return 0
@@ -515,7 +523,7 @@ def cmd_delivery_inspect(args: argparse.Namespace) -> int:
     task_json = _task_json(args, repo_root)
     try:
         _, status, _, _ = _status_for_task(repo_root, task_json)
-    except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
+    except (DeliveryValidationError, DeliveryStoreError, GithubUnavailable, ValueError) as error:
         return _error_code(str(error), 2)
     _print_status(status, args.format)
     return 0
@@ -564,7 +572,7 @@ def cmd_delivery_record(args: argparse.Namespace) -> int:
     try:
         evidence = _load_evidence(Path(args.evidence_file))
         intent, status, inventory, data = _status_for_task(
-            repo_root, task_json, allow_base_checkout=True
+            repo_root, task_json, allow_base_checkout=True, candidate_provider=True
         )
         store = _receipt_store(repo_root)
         receipt = _read_receipt(store, intent.candidate_id)
@@ -637,7 +645,7 @@ def cmd_delivery_record(args: argparse.Namespace) -> int:
                 "next_action": "Record the remaining exact evidence, then close the candidate with an explicit outcome.",
             },
         )
-    except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
+    except (DeliveryValidationError, DeliveryStoreError, GithubUnavailable, ValueError) as error:
         return _error_code(str(error), 2)
     print(json.dumps(updated, indent=2, sort_keys=True))
     return 0
@@ -709,7 +717,8 @@ def cmd_delivery_close(args: argparse.Namespace) -> int:
     task_json = _task_json(args, repo_root)
     try:
         intent, current, inventory, data = _status_for_task(
-            repo_root, task_json, allow_base_checkout=True, refresh_remote=True
+            repo_root, task_json, allow_base_checkout=True, refresh_remote=True,
+            candidate_provider=True,
         )
         store = _receipt_store(repo_root)
         receipt = _read_receipt(store, intent.candidate_id)
@@ -817,7 +826,7 @@ def cmd_delivery_close(args: argparse.Namespace) -> int:
                 "recorded_by": intent.owner,
             },
         )
-    except (DeliveryValidationError, DeliveryStoreError, ValueError) as error:
+    except (DeliveryValidationError, DeliveryStoreError, GithubUnavailable, ValueError) as error:
         return _error_code(str(error), 2)
     print(json.dumps(updated, indent=2, sort_keys=True))
     return 0

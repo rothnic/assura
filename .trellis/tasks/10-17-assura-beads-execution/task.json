@@ -18,7 +18,9 @@
   "commit": null,
   "pr_url": null,
   "subtasks": [],
-  "children": [],
+  "children": [
+    "10-18-dx02-candidate-provider"
+  ],
   "parent": null,
   "relatedFiles": [],
   "notes": "",
