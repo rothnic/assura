@@ -15,11 +15,11 @@ content models.
 | --- | --- | --- |
 | `markdown.require_frontmatter` | Shipped | Generic Markdown presence rule. |
 | `markdown.outline` | Shipped | Assura-owned heading hierarchy with required and optional nested headings. |
-| `markdown.lint_trailing_spaces` | Supported next-release | Rust-native lint for blank Markdown lines containing spaces or tabs. |
-| `markdown.lint_common` | Supported next-release | Rust-native common lint bundle for heading increments, heading marker spacing, duplicate headings, and multiple blank lines. |
-| `markdown.check_links` | Supported next-release | Local validation for relative file links, unrendered local references, Markdown heading anchors, and GitHub-style line/range anchors. |
-| `markdown.rules.<rule_id>.severity` | Supported next-release | Per-rule severity overrides for supported Markdown findings. |
-| `assura-ignore` comments | Supported next-release | Reasoned suppressions for supported Markdown rule IDs. |
+| `markdown.lint_trailing_spaces` | Supported in v0.4.1 | Rust-native lint for blank Markdown lines containing spaces or tabs. |
+| `markdown.lint_common` | Supported in v0.4.1 | Rust-native common lint bundle for heading increments, heading marker spacing, duplicate headings, and multiple blank lines. |
+| `markdown.check_links` | Supported in v0.4.1 | Local validation for relative file links, unrendered local references, Markdown heading anchors, and GitHub-style line/range anchors. |
+| `markdown.rules.<rule_id>.severity` | Supported in v0.4.1 | Per-rule severity overrides for supported Markdown findings. |
+| `assura-ignore` comments | Supported in v0.4.1 | Reasoned suppressions for supported Markdown rule IDs. |
 | `assura fix markdown` | Experimental | Safe fix command for deterministic blank-line trailing whitespace and required-section heading appends with preview and explicit `--apply` audit JSON. |
 | Typed frontmatter fields | Shipped | Content runtime `models` and `collections`, not generic Markdown rules. |
 | Broad markdownlint-compatible coverage | Planned | Revisit when Assura has a compatible dependency or external-binary contract. |
