@@ -1,0 +1,38 @@
+{
+  "id": "sp01-filesystem-attribution",
+  "name": "sp01-filesystem-attribution",
+  "title": "SP01 attribute core file-size metadata work",
+  "description": "Bounded first discriminator: measure eager FileBundle metadata calls in full-engine checks without applicable max_size policy, preserve correctness and fast naming path, and retain only a candidate that clears the existing public performance bar. No shared inventory or eligibility expansion.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": "src/cli/check/file_limits.rs and adjacent existing tests/benchmark fixture only; scratch instrumentation outside repository",
+  "package": null,
+  "priority": "P2",
+  "creator": "filesystem_performance",
+  "assignee": "/root/filesystem_performance",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "perf/sp01-filesystem-attribution",
+  "base_branch": "origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "sp01-filesystem-attribution",
+      "owner": "/root/filesystem_performance",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/perf/sp01-filesystem-attribution",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
