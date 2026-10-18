@@ -183,6 +183,23 @@ is not independent review evidence. GitHub-sourced checks must also match the
 current PR number/head and the live provider payload. A caller-supplied
 boolean or stale URL is not terminal evidence.
 
+For a PR already reported as merged, GitHub may return `UNKNOWN` for
+`mergeStateStatus`. In that case provider checks remain usable only when the
+payload includes full base and merge OIDs, the exact PR number/head and run/job
+correlation still match, and every reported check succeeded. A skipped check is
+accepted only with `CLEAN`; `UNKNOWN` never makes a skipped or pending check
+optional.
+
+The first delivered close may bind its pre-merge checks to the exact provider
+`baseRefOid` even though the current base already contains the merge. This
+prospective exception requires a provider-confirmed merged PR, checks evidence
+bound to that exact full pre-merge base, post-merge evidence naming the exact
+provider merge OID, local ancestry from that merge to the current base, and the
+normal fresh advertised-base check. It is available only during that close
+validation; subsequent projections derive the same historical identities from
+the persisted verified terminal receipt. Missing or conflicting identities
+leave the candidate open and the receipt unchanged.
+
 Before accepting an integration's `delivered` outcome or archiving one,
 `close` and `archive` read the advertised origin heads without fetching or
 updating local refs. The advertised OID for the configured base branch must

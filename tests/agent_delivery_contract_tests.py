@@ -674,6 +674,104 @@ def local_integration_evidence(tip: str, base_oid: str, label: str) -> dict:
 
 
 class DeliveryProjectionTests(unittest.TestCase):
+    def test_cli_initial_close_uses_exact_provider_merge_and_historical_checks(self) -> None:
+        repo, original_base, tip, directory = fixture_repo()
+        try:
+            git(repo, "checkout", "master")
+            git(repo, "merge", "--ff-only", "candidate")
+            merge_oid = git(repo, "rev-parse", "HEAD")
+            git(repo, "push", "origin", "master:refs/heads/master")
+            check_url = "https://github.com/rothnic/assura/actions/runs/run-21/job/job-21"
+            provider_pr = {
+                "number": 21,
+                "state": "MERGED",
+                "title": "Candidate",
+                "url": "https://github.com/rothnic/assura/pull/21",
+                "headRefName": "candidate",
+                "headRefOid": tip,
+                "baseRefName": "master",
+                "baseRefOid": original_base,
+                "mergeCommit": {"oid": merge_oid},
+                "mergedAt": "2026-10-17T00:00:00Z",
+                "mergeStateStatus": "UNKNOWN",
+                "reviewDecision": "APPROVED",
+                "reviews": [{"id": "review-21", "author": {"login": "reviewer"}, "state": "APPROVED"}],
+                "statusCheckRollup": [
+                    {"databaseId": "job-21", "name": "process-contracts", "detailsUrl": check_url, "conclusion": "SUCCESS"}
+                ],
+            }
+            fake_gh = repo / ".test-bin" / "gh"
+            fake_gh.write_text(
+                "#!/usr/bin/env python3\nprint(" + repr(json.dumps([provider_pr])) + ")\n",
+                encoding="utf-8",
+            )
+            fake_gh.chmod(0o755)
+
+            evidence = local_integration_evidence(tip, merge_oid, "initial-close")
+            evidence["review"].update(
+                {"source": "github", "pr_number": 21, "reviewer": "reviewer", "review_id": "review-21", "evidence_ref": "https://github.com/rothnic/assura/pull/21#pullrequestreview-21"}
+            )
+            evidence["checks"].update(
+                {"source": "github", "base_oid": original_base, "pr_number": 21, "run_id": "run-21", "job_id": "job-21", "check_name": "process-contracts", "evidence_ref": "https://github.com/rothnic/assura/actions/runs/run-21"}
+            )
+            store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+            store.create(
+                "candidate-1",
+                {
+                    "owner": "tester",
+                    "repository": "rothnic/assura",
+                    "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                    "attached_branch_ref": "refs/heads/candidate",
+                    "authority_ref": "test:delivery-authority",
+                    "outcome": None,
+                    "closure": "open",
+                    "phase": "active",
+                    "observed_tip": tip,
+                    "registered_tip": tip,
+                    "registered_base_oid": original_base,
+                    "evidence": evidence,
+                },
+            )
+
+            initial_receipt = store.read("candidate-1")
+            bad_evidence = copy.deepcopy(initial_receipt["evidence"])
+            bad_evidence["checks"]["base_oid"] = "b" * 40
+            store.update(
+                "candidate-1", initial_receipt["generation"], {"evidence": bad_evidence}
+            )
+            wrong_base_receipt = store.read("candidate-1")
+            wrong_base_bytes = store.path_for("candidate-1").read_bytes()
+            rejected = task_cli(repo, "delivery", "close", "01-01-candidate", "--outcome", "delivered")
+            self.assertNotEqual(rejected.returncode, 0)
+            self.assertEqual(store.path_for("candidate-1").read_bytes(), wrong_base_bytes)
+            self.assertEqual(store.read("candidate-1")["generation"], wrong_base_receipt["generation"])
+            store.update(
+                "candidate-1",
+                wrong_base_receipt["generation"],
+                {"evidence": evidence},
+            )
+
+            closed = task_cli(repo, "delivery", "close", "01-01-candidate", "--outcome", "delivered")
+            self.assertEqual(closed.returncode, 0, closed.stderr)
+            self.assertEqual(store.read("candidate-1")["closure"], "verified")
+
+            (repo / "unrelated.txt").write_text("advance\n", encoding="utf-8")
+            git(repo, "add", "unrelated.txt")
+            git(repo, "commit", "-m", "advance base")
+            git(repo, "push", "origin", "master:refs/heads/master")
+            git(repo, "update-ref", "refs/remotes/origin/master", git(repo, "rev-parse", "master"))
+            intent = load_delivery_intent(repo / ".trellis" / "tasks" / "01-01-candidate" / "task.json")
+            inventory = collect_inventory(
+                repo,
+                github=FakeGithub([provider_pr]),
+                base_ref="refs/heads/master",
+                refresh_remote=True,
+            )
+            projected = classify_candidate(intent, inventory, store.read("candidate-1"))
+            self.assertEqual(projected.outcome, "delivered", projected.as_dict())
+        finally:
+            directory.cleanup()
+
     def test_delivered_receipt_survives_unrelated_base_advance(self) -> None:
         repo, original_base, tip, directory = fixture_repo()
         try:
@@ -1688,6 +1786,56 @@ class DeliveryProjectionTests(unittest.TestCase):
                     issue.code == "GITHUB_CHECKS_UNVERIFIED"
                     for issue in skipped_required_status.issues
                 )
+            )
+
+            merged_unknown_all_success = {
+                **provider_pr,
+                "mergeStateStatus": "UNKNOWN",
+                "statusCheckRollup": [provider_pr["statusCheckRollup"][0]],
+            }
+            self.assertTrue(
+                delivery_status._github_checks_match_pr(
+                    evidence["checks"],
+                    {
+                        "number": merged_unknown_all_success["number"],
+                        "head_oid": merged_unknown_all_success["headRefOid"],
+                        "merge_state_status": "unknown",
+                        "merged": True,
+                        "merge_oid": merged_unknown_all_success["mergeCommit"]["oid"],
+                        "base_oid": merged_unknown_all_success["baseRefOid"],
+                        "checks": [
+                            {
+                                "run_id": "run-14",
+                                "job_id": "job-14",
+                                "name": "process-contracts",
+                                "conclusion": "SUCCESS",
+                            }
+                        ],
+                    },
+                ),
+                "merged UNKNOWN may use exact fully successful provider checks",
+            )
+            self.assertFalse(
+                delivery_status._github_checks_match_pr(
+                    evidence["checks"],
+                    {
+                        "number": 14,
+                        "head_oid": tip,
+                        "merge_state_status": "unknown",
+                        "merged": True,
+                        "merge_oid": merged_oid,
+                        "base_oid": base_oid,
+                        "checks": [
+                            {
+                                "run_id": "run-14",
+                                "job_id": "security-job-14",
+                                "name": "Security Audit",
+                                "conclusion": "SKIPPED",
+                            }
+                        ],
+                    },
+                ),
+                "UNKNOWN cannot use a skipped check without CLEAN merge state",
             )
         finally:
             directory.cleanup()
