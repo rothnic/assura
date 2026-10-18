@@ -618,7 +618,9 @@ fn agent_onboard_accepts_config_through_alias_of_trusted_project_root() {
     fs::remove_file(&alias).unwrap();
 
     assert_eq!(output["rule_recommendations"][0]["status"], "not-applied");
-    assert!(fs::read_to_string(selected).unwrap().contains("extra: true"));
+    assert!(fs::read_to_string(selected)
+        .unwrap()
+        .contains("extra: true"));
 }
 
 #[cfg(unix)]
@@ -650,7 +652,10 @@ fn agent_onboard_creates_missing_config_parent_through_root_alias() {
         &fs::read_to_string(project.path().join(".assura/config.yml")).unwrap(),
     )
     .unwrap();
-    assert_eq!(config["structure"][".agents/"]["./"], "exists:0-1 | $closed");
+    assert_eq!(
+        config["structure"][".agents/"]["./"],
+        "exists:0-1 | $closed"
+    );
 }
 
 #[cfg(unix)]
