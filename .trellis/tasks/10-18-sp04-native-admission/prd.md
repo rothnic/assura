@@ -210,3 +210,26 @@ this Markdown reference preserves external raw evidence discovery.
 Independent current-base/correction review, exact final-head hosted checks and
 root native delivery acceptance/close remain before merge and bead closure.
 SP03 fixed-host experiments remain separately gated and unrun.
+
+## Current-base refresh after NU16 integration
+
+The candidate was merged onto `origin/master` at NU16 integration base
+`46e1e13b9f66012dd07ffeed0a0272b31582b374` in merge
+`7fd064e58a7b8b3b49391cd0bffca1c0faf18d4e`. The parent task child list is the
+base list (DX02, DX03, NU16), with no other parent-task JSON changes. This
+refresh adds NU16's `src/cli/watch.rs` and `src/cli/watch_signal.rs` changes;
+the SP04 native loader/test files and protected Cargo/config/benchmark/history
+inputs remain byte-identical to reviewed `59f2f062`. See
+`/Users/nroth/workspace/.assura-review-20261017/sp04/current-base-46e-20261018T140302Z/integration-proof.md`
+and its adjacent raw receipts.
+
+The seven preserved xtask compile inputs still match their manifest, so the
+existing binary could be reused for the unchanged 150-row positive report
+(exit 0) and seeded-slowdown control (expected exit 1). These are gate
+compatibility results, not new benchmark or native-history evidence. Existing
+SP04 focused test/Clippy proof remains tied to its recorded source; NU16's
+hosted full-PR proof is separate. No combined full-PR run on this refreshed
+candidate is claimed. Independent review of this new base delta and exact-tip
+hosted checks remain before integration. Root retains native record/close,
+archive ownership, and PR authority; historical receipt base/tip and generation
+0 remain unchanged.
