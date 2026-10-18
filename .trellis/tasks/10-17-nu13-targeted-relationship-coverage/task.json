@@ -13,7 +13,7 @@
   "createdAt": "2026-10-17",
   "completedAt": null,
   "branch": "fix/nu13-targeted-relationships",
-  "base_branch": "master",
+  "base_branch": "refs/remotes/origin/master",
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
@@ -29,7 +29,7 @@
       "candidate_id": "10-17-nu13-targeted-relationship-coverage",
       "owner": "/root/nu13_implement",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/master",
+      "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/fix/nu13-targeted-relationships",
       "acceptance_ref": "prd.md#acceptance",
       "authority_ref": "prd.md#goal"
