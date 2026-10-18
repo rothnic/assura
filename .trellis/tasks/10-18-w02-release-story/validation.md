@@ -82,3 +82,24 @@ production build, browser behavior and responsive/theme proof, applicable
 Rust and hosted gates, independent Luna review/rereview, and root-owned
 integration/outcome verification. Historical 158-test evidence remains case
 rationale, not current proof.
+
+## Responsive qualification correction
+
+At `1e8e48f0`, all 13 focused generator tests, strict `--check --released`,
+and the production build passed. The first production browser matrix stopped
+at a real 320px vertical-order failure: 6 passed, 1 failed, 1 interrupted
+(768px), 144 unrun, zero screenshots. The outside-test error was the configured
+maximum-failure stop. Complete traces, exact production/server/tool binding
+and process/port teardown remain under external `production-checkpoint/`.
+That attempt establishes neither a full browser pass nor visual acceptance.
+
+Three read-only triages and root adjudication supported removing only the two
+responsive homepage terminal `order: -1` overrides. Source commit
+`37601803375c758396224b09c835d7caf7596bfb` removes those otherwise-empty rules;
+all other declarations, qualification text and tests remain unchanged.
+One admitted canonical generation at that clean source passed. Only the five
+CLI JSON `source_revision` values advanced to `37601803`; all CLI output/repair
+payloads and protected performance/history bytes are unchanged. Its exact
+receipts and before/after copies are under external `mobile-order-corrected/`.
+Changed-source focused/strict/build checks and the complete production browser
+matrix remain pending at this data/evidence commit.
