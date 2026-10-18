@@ -316,10 +316,10 @@ fn finding_ids(findings: Vec<&ProjectReviewFinding>) -> String {
     let mut ids = findings
         .iter()
         .take(FINDING_LIMIT)
-        .map(|finding| finding.id.as_str())
+        .map(|finding| finding.id.clone())
         .collect::<Vec<_>>();
     if total > FINDING_LIMIT {
-        ids.push("+more");
+        ids.push(format!("+{} more", total - FINDING_LIMIT));
     }
     ids.join(", ")
 }

@@ -1,0 +1,38 @@
+{
+  "id": "nu01-review-advisories",
+  "name": "nu01-review-advisories",
+  "title": "Expose configured structural advisories in Review",
+  "description": "Implement dependency-ready NU01 ae-d5d on fix/nu01-review-advisories from origin/master. Review should expose named nonblocking configured structural violations with stable identity and honest history, without changing Check/exit severity or the compact hiding of unchanged findings. Scope: Doctor-to-Review data transport, Review report/history/text as necessary, focused tests, scoped compact-project-review spec, and this task evidence. No public API, dependencies, broad refactor, VPS work, or delivery effects.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "src/cli/doctor.rs and required submodules; src/cli/project_review/{report,history,text}.rs as needed; focused tests/project_review_cli.rs or existing tests; compact-project-review spec; own task evidence",
+  "package": null,
+  "priority": "P1",
+  "creator": "nu01-review-advisories",
+  "assignee": "nu01-review-advisories",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "fix/nu01-review-advisories",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu01-review-advisories",
+      "owner": "nu01-review-advisories",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu01-review-advisories",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

@@ -33,6 +33,11 @@
   Git metadata; non-Git projects report their temporary fallback path.
 - Review is advisory: successfully assembled reports exit `0` even when their
   status is `fail`. `assura check` remains the policy gate.
+- Configured nonblocking structure violations from the existing Doctor check
+  result appear as named advisory findings with stable path-and-rule identity.
+  They participate in Review finding history without changing Check severity
+  or exit behavior, and they rank before optional Doctor gap/capability
+  suggestions.
 - Onboarding may embed a review summary but must not read or mutate finding
   history.
 - Agent output includes bounded `findings`, `heatmap.hot_dirs`,
@@ -80,8 +85,13 @@
   reports concrete violation, changed-file, and line values. Verbose text may
   render the bounded hot-directory tree.
 - Unchanged non-blocking findings are hidden from default action rows and
-  bounded agent output. Unchanged blocking findings remain visible until fixed,
-  and full JSON retains every finding state.
+  bounded agent output. Configured nonblocking next-actions appear only while a
+  matching finding is `new` or `worsened`; unchanged blocker actions remain
+  visible until fixed, and full JSON retains every finding state.
+- Review keeps all named findings and their history in full JSON. Text action
+  rows and agent findings remain bounded; text reports the exact number of
+  additional action rows beyond its visible finding limit, while summary and
+  history counts include findings beyond the agent array limit.
 - Text output may use ANSI color only when stdout is a terminal or
   `ASSURA_FORCE_COLOR=1`/`CLICOLOR_FORCE` is set. Piped/captured output must
   remain plain text, and `NO_COLOR`/`CLICOLOR=0` must disable automatic color.
@@ -101,7 +111,9 @@
 | Git checkout has branch/worktree pressure | Review includes compact branch/worktree rows and the most specific hot path; JSON retains totals and directory rollups. |
 | Explicit `--base <ref>` resolves | Branch metrics compare against that ref and report it in `heatmap.branch.base`. |
 | Explicit `--base <ref>` is invalid | Exit with configuration error and name the invalid ref. |
-| Review repeats without changes | Stable fingerprints remain `unchanged`; repeated non-blocking output is hidden while an unresolved blocker remains visible. |
+| Review repeats without changes | Stable fingerprints remain `unchanged`; nonblocking findings and their configured next-actions are hidden while unresolved blocker findings and actions remain visible. |
+| Configured low-severity structure violation is present, worsens, then resolves | Review exits `0` and emits the named path/rule advisory as `new`, `worsened`, then `resolved` with a stable fingerprint; Check retains its nonblocking exit. |
+| More configured advisory findings exist than compact action rows can show | Full JSON retains every finding/state; text shows a bounded list with an exact overflow count, and summary/history counts include all findings. |
 | A prior finding disappears | The next review emits a bounded `resolved` history item. |
 | Text output is captured or piped | Output contains no ANSI escapes by default. |
 | Text output is forced with `ASSURA_FORCE_COLOR=1` | Output contains ANSI styling without changing text content or JSON/agent output. |
@@ -136,6 +148,11 @@
 - Text format test: captured output stays plain, the default stays bounded,
   `--verbose` exposes diagnostic inventory, unresolved blockers remain visible
   across repeated reviews, and forced color emits ANSI styling.
+- Configured nonblocking structure test: low-severity `max_lines` findings are
+  named before optional setup suggestions, retain stable fingerprints across
+  measured-count changes, transition through new/worsened/resolved, and do not
+  change Check's exit. Overflow tests verify full JSON history and exact text
+  overflow counts.
 
 ### 7. Wrong vs Correct
 
