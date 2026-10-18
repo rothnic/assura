@@ -2,10 +2,10 @@
   "id": "sp01-filesystem-attribution",
   "name": "sp01-filesystem-attribution",
   "title": "SP01 attribute core file-size metadata work",
-  "description": "Bounded first discriminator: measure eager FileBundle metadata calls in full-engine checks without applicable max_size policy, preserve correctness and fast naming path, and retain only a candidate that clears the existing public performance bar. No shared inventory or eligibility expansion.",
+  "description": "Attribute core filesystem work, preserve measured no-keep P1 evidence, enumerate P2 source consumers with provenance and output controls, and select a bounded follow-up hypothesis without a speed or cache-reuse claim.",
   "status": "in_progress",
   "dev_type": null,
-  "scope": "src/cli/check/file_limits.rs and adjacent existing tests/benchmark fixture only; scratch instrumentation outside repository",
+  "scope": "Filesystem attribution research: reverted P1 metadata experiment, bounded P2 traversal and cache counters; no retained production optimization",
   "package": null,
   "priority": "P2",
   "creator": "filesystem_performance",
@@ -32,7 +32,7 @@
       "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/perf/sp01-filesystem-attribution",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "prd.md#objective"
     }
   }
 }
