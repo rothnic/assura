@@ -74,14 +74,20 @@ validation logic that Rust tests exercise.
   `config-fragment`, `data-yaml`, or `ls-lint-config` metadata only when the
   fence is intentionally not a complete Assura config, and
   `assura-config-invalid` only for an intentional rejection example.
+- Generated CLI fixtures record the tracked CLI/generator/fixture input
+  revision. Relevant inputs must be committed and match that revision; only
+  generated outputs are excluded so data-only commits do not change identity.
+  This identifies source examples, not a released binary measurement. Preserve
+  the actual generating HEAD, toolchain and binary in the execution receipt.
 - `docs/data/release-surfaces.json` is the single marketing capability
   manifest. Promoted rows set `marketing_claim`, use `supported` status, use
   `verified` or `measured` evidence status, name existing evidence files, and
   smoke-test public commands with their expected exits when a command exists.
 - Preview evidence runs `cargo xtask website-demo-data --check`. Release
   candidates run `cargo xtask website-demo-data --check --released`, which
-  also rejects promoted rows that are unreleased or first ship after the local
-  package version.
+  also rejects promoted rows that are unreleased or first ship after the
+  manifest's `current_published_release`. This validates manifest consistency;
+  actual published archive/installer availability needs separate observed proof.
 
 ### 4. Validation & Error Matrix
 
@@ -95,7 +101,7 @@ validation logic that Rust tests exercise.
 | Documentation YAML fence is malformed or a full config does not load | The documentation build exits nonzero with the source path and fence number. |
 | Intentional fragment is not labeled | The build treats it as a full config and rejects it; add the narrow metadata label. |
 | Marketing claim lacks evidence or its command exit changes | `website-demo-data --check` exits nonzero and names the claim. |
-| Marketing claim is experimental, planned, unreleased, or newer than the candidate | `website-demo-data --check --released` exits nonzero and names the claim. |
+| Marketing claim is experimental, planned, unreleased, or newer than the published manifest version | `website-demo-data --check --released` exits nonzero and names the claim. |
 | All examples match current behavior | Print `Website Assura config examples are valid.` and continue the build. |
 
 ### 5. Good / Base / Bad Cases

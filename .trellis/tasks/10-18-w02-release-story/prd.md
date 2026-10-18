@@ -52,6 +52,8 @@ at `790b0a9fa579fe4dd1feaa17a7d467572652fd42`; product source is
 - [ ] Actual CLI repair evidence preserves policy and file bytes, rejects an
   unperformed repair or wrong exit, and is rendered as recorded output.
   Shared callers distinguish generated, authored and historical artifacts.
+  Each CLI artifact records the committed CLI/generator/fixture input revision;
+  source output is not presented as a measurement of the published binary.
 - [ ] Performance copy retains unfavorable/history data, labels generated
   naming fixtures, absolute times and asymmetric persistent-session/startup
   exclusions, and uses the existing under-review fallback when current proof
