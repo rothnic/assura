@@ -29,6 +29,14 @@ Any later comparison must use uninstrumented exact ordinary quiet commands on th
 
 Required identities and receipts: source SHA and tree, policy/config hash, fixture manifest/tree/generator hashes, executable path/hash, toolchain, exact argv/cwd/exits, raw samples, host/resource admission and teardown. Instrumented counts are diagnostic only and cannot substitute for public timing. Before each admitted batch, after retries/timeouts, every five minutes during prolonged work, and at teardown, use the infrastructure policy's resource and ownership gate. Prior VPS pressure and disk evidence are stale and do not authorize a run. NU03 owns the compiler lane; do not build until the coordinator explicitly admits a lane.
 
+## Preparation disposition (2026-10-18)
+
+No-keep/defer before build for the fixed exact-quiet tie-breaker. The fresh read-only VPS policy receipt identifies `/home/ubuntu/data/projects/manual-many-scopes-common/.assura/config.yml` as 59,262 bytes with SHA-256 `93e45ad524d61c0be21ea2508aeaff0dd5fc5be749abf4df131fe4ce7c22d853` and top-level keys `structure` only; it reports no includes, extends, or relationship policy. Current source invokes `validate_test_relationships` only when `extensions.test_relationships` is nonempty (`src/cli/check/custom_constraints.rs:60-61`). Therefore this fixed tie fixture does not reach the consumer, and this candidate cannot affect its required exact-quiet improvement of at least 3%. The threshold remains unchanged; there is no waiver, fixture substitution, or noise/performance claim.
+
+The observation is bounded to the current fixture bytes. The historical P1 config/tree identity remains unavailable, so this does not establish whether P1 exercised the relationship consumer. Source is unchanged from integration base `da23fa7dab9600463cf234fceea060df2c8f5ccc`: `test_relationship.rs` blob `d552cd4e11fe45ef93440c1695505f4b95ae7ecc` and `custom_constraints.rs` blob `aff2f29d89cada66ad49f06bf4dbba23e8cb8f69`. Task documentation before this disposition was at `4fe62676e17d96fbbfce87479e4264f46deea9be`. The SP01 aggregate-only counters remain source attribution, not per-walk measurements, syscalls, or timing.
+
+Any future rich-consumer experiment first requires a separate retention-gate applicability/policy decision and fresh coordinator admission. It does not follow automatically from this task or from the historical rich fixture; preserve the fixed tie-breaker and all existing thresholds. No candidate build, correctness run, or public timing was performed for this disposition.
+
 ## Acceptance
 
 1. Focused source and consumer evidence identifies the identical root case and distinguishes it from nested scope; no speedup is presumed.
