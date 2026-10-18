@@ -52,6 +52,26 @@ final-readiness review findings are adjudicated/corrected and rereviewed before
 root merge. Source-only/Unix checks do not count as Windows signal proof.
 Root verifies postmerge outcome, native close, Bead and owned checkout/ref closure.
 
+## Implementation status
+
+The isolated Windows-only test target is in `tests/watch_cli_windows_ctrl_c.rs`
+and the focused exact-test/receipt check is in the Windows test-suite job in
+`.github/workflows/ci.yml`. The target has not been built or run locally because
+the NU03 lane owns Cargo validation. The retained source-bound Assura binary
+passed the full current structure check (exit 0), and external positive/negative
+fixtures confirmed exact mappings pass while an unlisted ignored test still
+fails (exits 0 and 1). Raw captures are at
+`/Users/nroth/workspace/.assura-review-20261017/nu17/structure-gate-policy-20261018`.
+Standalone rustfmt and diff checks also pass. Actual Windows signal delivery
+remains unproven until the focused required CI step runs.
+
+The repository's high-severity `supported_surface_tests` policy has exact
+ignored-test entries for these two deliberate Windows-only tests: the outer
+test is selected by the focused required CI step, and the helper is invoked
+only as that outer test's owned child. Their distinct reason categories were
+added under a separate root policy decision; the performance-audit exception,
+other relationships, and severity remain unchanged.
+
 ## Evidence and phase
 
 Preparation base a1d2f0aaf405a8d7e6359eb4c42aaaa4251a599e.
