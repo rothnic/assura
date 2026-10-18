@@ -29,10 +29,10 @@
       "candidate_id": "10-18-dx01-local-preflight",
       "owner": "dx01-local-preflight",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/master",
+      "base_ref": "refs/remotes/origin/master",
       "branch_ref": "refs/heads/fix/dx01-local-preflight",
       "acceptance_ref": "prd.md#acceptance",
-      "authority_ref": null
+      "authority_ref": "prd.md#scope-and-ownership"
     }
   }
 }
