@@ -139,6 +139,56 @@ new_full=1
 rm -rf "$stage_dir" "$backup_dir"
 
 echo "Installed assura to $bin_dir/assura"
+
+installed_version="$("$bin_dir/assura" --version 2>/dev/null || true)"
+if [ -z "$installed_version" ]; then
+  installed_version="unavailable"
+fi
+echo "Installed version: $installed_version"
+
+resolved_assura="$(command -v assura 2>/dev/null || true)"
+if [ -n "$resolved_assura" ]; then
+  resolved_version="$("$resolved_assura" --version 2>/dev/null || true)"
+  if [ -z "$resolved_version" ]; then
+    resolved_version="unavailable"
+  fi
+  echo "Current PATH resolves assura to $resolved_assura ($resolved_version)"
+
+  case "$resolved_assura" in
+    */*) resolved_dir=${resolved_assura%/*}; resolved_name=${resolved_assura##*/} ;;
+    *) resolved_dir="."; resolved_name="$resolved_assura" ;;
+  esac
+  [ -n "$resolved_dir" ] || resolved_dir="/"
+  resolved_path="$(CDPATH= cd "$resolved_dir" && pwd -P)/$resolved_name"
+else
+  echo "Current PATH resolves assura to no command"
+  resolved_path=""
+fi
+installed_path="$(CDPATH= cd "$bin_dir" && pwd -P)/assura"
+installed_bin_dir="$(CDPATH= cd "$bin_dir" && pwd -L)"
+if [ "$resolved_path" != "$installed_path" ]; then
+  shell_quote() {
+    quoted="'"
+    remaining="$1"
+    while :; do
+      case "$remaining" in
+        *"'"*)
+          part=${remaining%%"'"*}
+          quoted="$quoted$part'\\''"
+          remaining=${remaining#*"'"}
+          ;;
+        *)
+          quoted="$quoted$remaining'"
+          break
+          ;;
+      esac
+    done
+    printf '%s' "$quoted"
+  }
+  echo "To use this install in the current shell, run:"
+  printf '  export PATH=%s:"$PATH"\n' "$(shell_quote "$installed_bin_dir")"
+fi
+
 case ":$PATH:" in
   *":$bin_dir:"*) ;;
   *)
