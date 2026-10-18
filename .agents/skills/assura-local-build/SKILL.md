@@ -29,6 +29,44 @@ its inherited environment and exit behavior; capture the command's exit in your
 outer receipt. A rejected preflight never launches that command. Dirty source
 is reported, not cleaned. Metadata and identity probes are not build/test credit.
 
+## Capture a validation invocation
+
+Use `capture-validation.py` when a task needs a durable record of one command's
+exact argv, raw stdout/stderr bytes and observed direct-child exit. The caller
+must provide existing repo and evidence root directories that it owns. Set any
+required environment, including `TMPDIR`, target and export directories,
+before invoking it:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/capture-validation.py \
+  --repo "$PWD" --evidence-root /absolute/path/to/existing/evidence \
+  --label cargo-metadata --record-env TMPDIR \
+  -- cargo metadata --offline --locked --no-deps --format-version 1
+```
+
+Each run creates a fresh mode-0700 directory with `receipt.json`, `stdout.bin`
+and `stderr.bin`. Only explicitly named non-secret environment values and
+repository-relative ordinary-file hashes are recorded. To compose local
+preflight, pass its existing command as the captured argv; its JSON remains in
+raw stderr and the receipt records only the helper invocation's exit. The
+caller separately inspects that helper record. The caller also retains the
+outer Codex/SSH tool session handle: the recorded PID cannot recover a lost
+session result.
+
+On handled INT/TERM the wrapper signals only its direct child and waits up to
+five seconds. Interruption always returns nonzero; a null child return code
+means the wrapper could not observe the child's exit. A `claimed` or `running`
+receipt without a terminal observation is unknown, including the spawn-to-PID
+write window. Descendants are not signalled or claimed as reaped. Run focused
+controls with:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/capture-validation-tests.py
+```
+
+Capture records invocation evidence only; interpret test counts, artifacts and
+command-specific success from the owning validation workflow.
+
 Choose profiles for the actual route: socket checks for Unix-socket tests,
 `--require-bash-mapfile` for evidence/pr/full (the CI scope classifier), and
 `--website-tools` for docs/pr/full. Omit unrelated profiles for ordinary Cargo.

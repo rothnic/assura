@@ -27,4 +27,12 @@ Own .agents/skills/assura-local-build/SKILL.md, new scripts/capture-validation.p
 
 ## State
 
-Approved designv2, independently admitted for bounded implementation. Base74d9917dd39e599bbd43c3a5760b71644b2cf91b. No implementation or validation credit yet. DX01 dependency is already closed; DX02 separate source ownership may proceed concurrently. Integration must refresh current base and relevant proof.
+Approved designv2, independently admitted for bounded implementation. Base74d9917dd39e599bbd43c3a5760b71644b2cf91b. Implementation is complete on `chore/dx03-validation-capture`; independent implementation review is pending. DX01 is closed; DX02 has separate source ownership. Integration must refresh current base and relevant proof.
+
+Final candidate evidence is under `/Users/nroth/workspace/.assura-review-20261017/dx03/impl-20261018T121059Z-a47b269e-1cf6-4c5b-9295-233c9adf79a7/evidence/`:
+
+- `capture-controls-final/`: 13 focused control groups passed; known return-zero interruption, literal signal return mapping, and unknown live-child outcome all returned nonzero wrapper status and verified owned fixture teardown.
+- `preflight-controls-canonical-20261018T123053Z/`: unchanged existing controls passed 25/25 with child-only `TMPDIR` and `DX01_CONTROL_ROOT` set to the verified canonical caller-owned APFS scratch directory.
+- `real-metadata-composition-final-20261018T123358Z/`: existing preflight helper plus `cargo metadata --offline --locked --no-deps --format-version 1`; helper and wrapper exits were zero, route was `metadata`, and workspace identity matched this checkout.
+
+Earlier failed runs and their raw records remain in sibling evidence directories. The initial local-preflight run's three lexical-versus-canonical path assertions were resolved by changing only caller-owned fixture roots; the helper, its tests, and socket spelling contract were not changed. A prior interrupted-control run remains unknown in its preserved `running` receipt and is not credited; the final focused run passed with the corrected bounded wait loop.
