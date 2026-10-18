@@ -623,6 +623,38 @@ fn agent_onboard_accepts_config_through_alias_of_trusted_project_root() {
 
 #[cfg(unix)]
 #[test]
+fn agent_onboard_creates_missing_config_parent_through_root_alias() {
+    use std::os::unix::fs::symlink;
+
+    let project = TempDir::new().unwrap();
+    let project_name = project.path().file_name().unwrap().to_string_lossy();
+    let alias = project
+        .path()
+        .with_file_name(format!("{project_name}-alias"));
+    symlink(project.path(), &alias).unwrap();
+    let selected = alias.join(".assura/config.yml");
+
+    let onboarding = json_from_success(run_assura(&[
+        "--config",
+        selected.to_str().unwrap(),
+        "agent",
+        "onboard",
+        project.path().to_str().unwrap(),
+        "--format",
+        "json",
+    ]));
+    fs::remove_file(&alias).unwrap();
+
+    assert_eq!(onboarding["rule_recommendations"][0]["status"], "applied");
+    let config: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml")).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(config["structure"][".agents/"]["./"], "exists:0-1 | $closed");
+}
+
+#[cfg(unix)]
+#[test]
 fn agent_onboard_refuses_config_leaf_symlink_without_changing_external_bytes() {
     use std::os::unix::fs::symlink;
 
