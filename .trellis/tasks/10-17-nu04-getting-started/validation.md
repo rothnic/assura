@@ -56,3 +56,26 @@ The delivery intent is registered and local refs resolve. Full
 `task.py delivery inspect` was stopped after 24 seconds because it waited on
 `gh pr list --repo rothnic/assura --state all --limit 1000` without returning;
 the hosted pull-request snapshot remains for coordinator validation.
+
+## Coordinator verification and current-base reconciliation
+
+The coordinator repeated the exact page YAML in a new disposable minimal
+Rust project with the private released v0.4.1 pair. The separate `init` exit
+was 0; clean/root-negative/docs-negative/recovery exits were 0/1/1/0. All
+four generated guidance-file hashes are unchanged. Exact argv, cwd, binary
+and companion digests and exit/output receipts are in
+`/Users/nroth/workspace/.assura-review-20261017/nu04-coordinator-proof/result.json`.
+This fills the independent review's minor init-exit receipt gap.
+
+At source `5c5f67f8`, checkout-local `cargo xtask docs` exited 0 and built
+48 pages; frozen dependencies selected pnpm 10.25.0. `xtask evidence` passed.
+The independent Luna review and rerun are at
+`/Users/nroth/workspace/.assura-review-20261017/nu04-review/nu04-independent-review.md`.
+
+Integrated refreshed master `ba4804bb6abdadc1ccc12c41397dd2402a914171`
+after PR #356. The guide blob is unchanged: SHA-256 `ce8bd3fd0b8cc06acd8999217ed130f8b416d373b765ba2fab638d548562550e`.
+The first-run and docs inputs, Rust source, lockfiles, toolchain and invocation
+are unchanged by this integration; the base adds reviewed Beads intake and
+native Python closure changes. Reuse the unchanged docs/CLI proofs and run
+final scoped review, structure/evidence and hosted checks. This is engineering
+evidence only; the native receipt stays open until actual delivery acceptance.
