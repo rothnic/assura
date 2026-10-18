@@ -134,3 +134,39 @@ and the broader readiness matrix remain unrun. The original Mac timeout also
 remains causally unproven. Do not describe either model controls or this Mac
 owned-child pass as proving the historic timeout's cause. No full NU16 PR gate,
 push, or integration was run.
+
+## Coordinator checkpoint at current base
+
+This checkpoint supersedes the earlier readiness statements above. Independent
+implementation review at01058222 and current-base rereviews at a9ba6990 and
+05198dea found no remaining source issue. The candidate is based on reviewed
+master31c043eb; the two watch source files remain identical to01058222. Parent
+task child lists were merged by union with original stage records retained.
+
+One local `cargo xtask pr` completed with observed tool and child exit0 at
+a9ba6990 using Rust1.94.1, two build jobs/test threads, a private short APFS
+TMPDIR and checkout-local target. Its captured raw output contains1471 passed,
+0 failed,1 manual ignore across110 harnesses;8 empty harnesses and the ignore
+receive no test credit. Clippy and the48-page website build passed. All2262
+tracked inputs, tree, HEAD and clean state matched before/after. Proof and
+actual outer handle3762 are under
+`/Users/nroth/workspace/.assura-review-20261017/nu16/full-pr-a9ba6990-20261018T1320/`.
+The root census reader initially assumed an optional interrupted-receipt field
+was always present; three read-only triages supported a state-specific reader
+correction. The original normal-complete receipt and raw output were unchanged;
+no producer change or test rerun was made. The historical lost handle remains
+unknown and is not repaired by this later successful invocation.
+
+The current-base merge changes only reviewed DX03 skill/helper and task
+metadata. A manifest compares869 Rust/Cargo/xtask/test/website/config inputs
+unchanged from the tested source; full PR proof is reused with scoped Luna
+review, rather than repeated. Exact raw census differences from older W02 and
+SP04 candidates reconcile to their different source tests. Records are under
+`current-base-31c-20261018T133629Z/` and `census-reconciliation-a9ba6990.md` in
+the same external evidence root.
+
+The exact final PR head still requires hosted gates, including Windows
+compilation and the existing real owned-child Ctrl-Break test. Safe real
+Windows Ctrl-C proof remains NU17. No new timeout/retry or platform broadcaster
+was added, and the historical Mac timeout's cause remains unproven. This is
+engineering validation only; no push, merge or release is claimed here.
