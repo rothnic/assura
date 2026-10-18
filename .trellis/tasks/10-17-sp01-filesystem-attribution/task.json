@@ -1,0 +1,38 @@
+{
+  "id": "sp01-filesystem-attribution",
+  "name": "sp01-filesystem-attribution",
+  "title": "SP01 attribute core file-size metadata work",
+  "description": "Attribute core filesystem work, preserve measured no-keep P1 evidence, enumerate P2 source consumers with provenance and output controls, and select a bounded follow-up hypothesis without a speed or cache-reuse claim.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Filesystem attribution research: reverted P1 metadata experiment, bounded P2 traversal and cache counters; no retained production optimization",
+  "package": null,
+  "priority": "P2",
+  "creator": "filesystem_performance",
+  "assignee": "/root/filesystem_performance",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "perf/sp01-filesystem-attribution",
+  "base_branch": "origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "sp01-filesystem-attribution",
+      "owner": "/root/filesystem_performance",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/perf/sp01-filesystem-attribution",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#objective"
+    }
+  }
+}
