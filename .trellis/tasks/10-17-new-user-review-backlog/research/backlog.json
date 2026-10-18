@@ -344,8 +344,8 @@
       "title": "Make targeted captured-relationship checks correct and explicit",
       "priority": 1,
       "issue_type": "bug",
-      "review_state": "runtime-and-source-verified-omission; scoped contract requires clarification",
-      "execution_state": "in_progress",
+      "review_state": "runtime-fix-and-evidence-independently-reviewed",
+      "execution_state": "verified-awaiting-hosted-checks",
       "area": "core-correctness",
       "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
       "evidence": [
@@ -367,7 +367,7 @@
         "A06"
       ],
       "owner": "/root/nu13_implement",
-      "next_action": "Freeze failing regression, apply shared root-entry correction, validate and independently review fix/nu13-targeted-relationships.",
+      "next_action": "Observe exact-head PR355 OS/features/install/performance gates; integrate only after all applicable checks and review pass, then verify post-merge outcome and close owned delivery. Preserve any failed gate and route its smallest diagnosis; no threshold waiver.",
       "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.",
       "execution": {
         "task": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage",
@@ -376,11 +376,35 @@
         "base_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
         "planning_commit": "ec7f7f6b8cfc4ab64b64ea17edd8858cf683e761",
         "coordinator": "/root",
-        "owner_liveness": "Live collaboration worker /root/nu13_implement, explicitly delegated2026-10-17",
-        "phase": "implement",
-        "acceptance": "pending red/green, applicable gates and independent review",
+        "owner_liveness": "Implementation worker /root/nu13_implement completed and handed off; coordinator /root owns validation, integration decision and closure.",
+        "phase": "integrate",
+        "acceptance": "Engineering behavior and applicable local gates proven; hosted checks, integration, post-merge outcome and native delivery closure remain open.",
         "authority": "Nick2026-10-17: Orchestrate the first bit of work that would be most beneficial to implement",
-        "held_independent_action": "P05 generation5 remains owner nroth, integrated_pending_verification; reconstruct/disposition missing owned checkout and genuinely refresh current-base verification before native closure; receipt unchanged."
+        "held_independent_action": "P05 generation5 remains owner nroth, integrated_pending_verification; reconstruct/disposition missing owned checkout and genuinely refresh current-base verification before native closure; receipt unchanged.",
+        "candidate_revision": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+        "tested_source_revision": "6e49d8c1a9143058802ab8beab6321eb1897037e",
+        "pr_url": "https://github.com/rothnic/assura/pull/355",
+        "independent_review": {
+          "reviewer": "/root/nu13_luna_final_review",
+          "model": "gpt-6-luna",
+          "reviewed_source": "6e49d8c1a9143058802ab8beab6321eb1897037e",
+          "reviewed_metadata": "4dc727dcab3b4a06aabb29bca126af433b4d3be3",
+          "result": "no-blocking-findings"
+        },
+        "local_validation": {
+          "task_record": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage/validation.md",
+          "pr_gate": "exit0;1450passed,0failed,1intentional-manual-performance-ignore",
+          "public_cli": "11calls passed; exact project/config and binary identities retained",
+          "extra_controls": "three missing markers rejected, restored pass, existing poisoned cache recovery, inaccessible nearest config exit4",
+          "metadata": "context/workflow/evidence/structure/diff checks pass; runtime inputs unchanged after tested source",
+          "native_push": "Mac candidate4dc built with Rust1.94.1; normal pre-push check passed via one-command candidate PATH; no hook bypass or global binary replacement"
+        },
+        "hosted_runs": {
+          "rust": "https://github.com/rothnic/assura/actions/runs/39085547048",
+          "documentation": "https://github.com/rothnic/assura/actions/runs/39085547003",
+          "security": "https://github.com/rothnic/assura/actions/runs/39085547054"
+        },
+        "local_maintenance": "Installed /usr/local/bin Assura0.4.0 is stale and unchanged; published0.4.1 pair upgrade is separate local maintenance, with checksum/rollback/fresh-shell verification."
       }
     },
     {
