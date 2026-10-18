@@ -123,3 +123,81 @@ fn cache_dir_does_not_claim_a_preexisting_nonempty_directory() {
     assert!(!cache.join(".assura-cache-root.json").exists());
     assert!(first_json_file(&cache).is_none());
 }
+
+#[test]
+fn default_cache_preserves_scoped_relationship_discovery_after_config_changes() {
+    for poisoned in [false, true] {
+        let temp = tempfile::tempdir().unwrap();
+        let project = temp.path().join("project");
+        fs::create_dir_all(project.join(".assura")).unwrap();
+        fs::create_dir_all(project.join("src/components")).unwrap();
+        let config_path = project.join(".assura/config.yml");
+        let policy = "structure:\n  ./:\n    extra: true\n  src/components/:\n    \"{component}.tsx\": {}\n    \"{component}.test.tsx\": exists:1\n";
+        fs::write(&config_path, policy).unwrap();
+        let producer = project.join("src/components/Button.tsx");
+        fs::write(&producer, "").unwrap();
+        let nested_cache = project.join("src/components/.assura/cache/check");
+        if poisoned {
+            fs::create_dir_all(&nested_cache).unwrap();
+            fs::write(nested_cache.join("keep.json"), "legacy-cache\n").unwrap();
+        }
+        let check = || {
+            Command::new(env!("CARGO_BIN_EXE_assura-check"))
+                .args(["--cache", "--format", "json"])
+                .arg(&producer)
+                .output()
+                .unwrap()
+        };
+        for required in [true, false, true] {
+            fs::write(
+                &config_path,
+                if required {
+                    policy.to_string()
+                } else {
+                    policy.replace("exists:1", "{}")
+                },
+            )
+            .unwrap();
+            let output = check();
+            assert_eq!(
+                output.status.code(),
+                Some(i32::from(required)),
+                "poisoned={poisoned}, required={required}, stderr={}",
+                String::from_utf8_lossy(&output.stderr)
+            );
+            let report: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+            for (field, expected) in [
+                ("project_root", &project),
+                ("config_path", &config_path),
+                ("checked_path", &producer),
+            ] {
+                assert_eq!(
+                    report[field],
+                    expected
+                        .canonicalize()
+                        .unwrap()
+                        .to_string_lossy()
+                        .replace('\\', "/")
+                );
+            }
+            if required {
+                assert_eq!(report["violations"].as_array().unwrap().len(), 1);
+                assert_eq!(
+                    report["violations"][0]["rule"],
+                    "relationship:captured-counterpart-1"
+                );
+            } else {
+                assert!(report["violations"].as_array().unwrap().is_empty());
+            }
+        }
+        assert!(first_json_file(&project.join(".assura/cache/check")).is_some());
+        if poisoned {
+            assert_eq!(
+                fs::read_to_string(nested_cache.join("keep.json")).unwrap(),
+                "legacy-cache\n"
+            );
+        } else {
+            assert!(!project.join("src/components/.assura").exists());
+        }
+    }
+}

@@ -318,7 +318,23 @@ impl ConfigDiscovery {
     }
 
     pub fn find_config_path(start: impl AsRef<Path>) -> Option<PathBuf> {
-        Self::find_project_root(start).map(|root| root.join(ASSURA_DIR).join(CONFIG_FILE))
+        let start = start.as_ref();
+        let mut current = if start.is_dir() {
+            start
+        } else {
+            start.parent()?
+        };
+        loop {
+            let config = current.join(ASSURA_DIR).join(CONFIG_FILE);
+            match std::fs::symlink_metadata(&config) {
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                _ => return Some(config),
+            }
+            if current.join(".git").exists() {
+                return None;
+            }
+            current = current.parent()?;
+        }
     }
 
     pub fn find_git_dir(start: impl AsRef<Path>) -> Option<PathBuf> {
@@ -381,6 +397,120 @@ mod tests {
 
         let found = ConfigDiscovery::find_project_root(temp_dir.path());
         assert_eq!(found, Some(temp_dir.path().to_path_buf()));
+    }
+
+    #[test]
+    fn config_discovery_skips_cache_only_assura_marker() {
+        let project = tempdir().unwrap();
+        let root_config = project.path().join(".assura/config.yml");
+        std::fs::create_dir_all(root_config.parent().unwrap()).unwrap();
+        std::fs::write(&root_config, "structure: {}\n").unwrap();
+        let nested = project.path().join("src/components");
+        let cache = nested.join(".assura/cache/check");
+        std::fs::create_dir_all(&cache).unwrap();
+        std::fs::write(cache.join("keep.json"), "{}\n").unwrap();
+        let file = nested.join("Button.tsx");
+        std::fs::write(&file, "").unwrap();
+
+        for selected in [&nested, &file] {
+            assert_eq!(
+                ConfigDiscovery::find_config_path(selected),
+                Some(root_config.clone())
+            );
+        }
+        assert_eq!(
+            ConfigDiscovery::find_project_root(&nested),
+            Some(nested.clone())
+        );
+        assert!(cache.join("keep.json").is_file());
+    }
+
+    #[test]
+    fn config_discovery_prefers_nearest_real_policy() {
+        let project = tempdir().unwrap();
+        for root in [project.path().to_path_buf(), project.path().join("nested")] {
+            std::fs::create_dir_all(root.join(".assura")).unwrap();
+            std::fs::write(root.join(".assura/config.yml"), "structure: {}\n").unwrap();
+        }
+        let selected = project.path().join("nested/src");
+        std::fs::create_dir_all(&selected).unwrap();
+        assert_eq!(
+            ConfigDiscovery::find_config_path(selected),
+            Some(project.path().join("nested/.assura/config.yml"))
+        );
+    }
+
+    #[test]
+    fn config_discovery_does_not_replace_malformed_nearest_policy() {
+        let project = tempdir().unwrap();
+        std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+        std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+        let nested = project.path().join("nested");
+        let malformed = nested.join(".assura/config.yml");
+        std::fs::create_dir_all(malformed.parent().unwrap()).unwrap();
+        std::fs::write(&malformed, "structure: [\n").unwrap();
+        for directory in [false, true] {
+            if directory {
+                std::fs::remove_file(&malformed).unwrap();
+                std::fs::create_dir(&malformed).unwrap();
+            }
+            assert_eq!(
+                ConfigDiscovery::find_config_path(&nested),
+                Some(malformed.clone())
+            );
+            let error =
+                crate::cli::run_structure_check(Some(nested.clone()), None, false).unwrap_err();
+            assert!(
+                matches!(error, crate::cli::check::CheckError::Config(_)),
+                "{error}"
+            );
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn config_discovery_retains_dangling_or_non_directory_policy_candidates() {
+        let project = tempdir().unwrap();
+        std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+        std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+        let nested = project.path().join("nested");
+        let marker = nested.join(".assura");
+        let nearest = marker.join("config.yml");
+        std::fs::create_dir_all(&marker).unwrap();
+        let selected = nested.join("source.ts");
+        std::fs::write(&selected, "").unwrap();
+        std::os::unix::fs::symlink("missing-policy.yml", &nearest).unwrap();
+
+        for non_directory in [false, true] {
+            if non_directory {
+                std::fs::remove_file(&nearest).unwrap();
+                std::fs::remove_dir(&marker).unwrap();
+                std::fs::write(&marker, "not a directory\n").unwrap();
+            }
+            assert_eq!(
+                ConfigDiscovery::find_config_path(&selected),
+                Some(nearest.clone())
+            );
+            assert!(crate::cli::run_structure_check(Some(selected.clone()), None, false).is_err());
+        }
+    }
+
+    #[test]
+    fn config_discovery_stops_at_git_boundary_without_borrowing_outer_policy() {
+        let project = tempdir().unwrap();
+        std::fs::create_dir_all(project.path().join(".assura")).unwrap();
+        std::fs::write(project.path().join(".assura/config.yml"), "structure: {}\n").unwrap();
+        let nested = project.path().join("nested");
+        std::fs::create_dir_all(nested.join(".git")).unwrap();
+        std::fs::create_dir_all(nested.join("src/.assura/cache/check")).unwrap();
+        assert_eq!(ConfigDiscovery::find_config_path(nested.join("src")), None);
+        std::fs::create_dir_all(nested.join(".assura")).unwrap();
+        let nested_config = nested.join(".assura/config.yml");
+        std::fs::write(&nested_config, "structure: {}\n").unwrap();
+        assert_eq!(
+            ConfigDiscovery::find_config_path(nested.join("src")),
+            Some(nested_config)
+        );
     }
 
     #[test]

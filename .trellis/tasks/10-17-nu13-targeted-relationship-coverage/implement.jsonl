@@ -1,0 +1,4 @@
+{"file":".trellis/tasks/10-17-nu13-targeted-relationship-coverage/prd.md","reason":"Selected producer scope, accepted adjacent fixes and exclusions"}
+{"file":".trellis/spec/assura/config-notation.md","reason":"Captured relationship and scoped target contract"}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Discovery, exclusions and severity behavior"}
+{"file":".trellis/spec/backend/quality-guidelines.md","reason":"Rust validation and regression conventions"}
