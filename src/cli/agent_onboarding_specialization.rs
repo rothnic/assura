@@ -1,6 +1,6 @@
 //! Deterministic specialization evidence for agent onboarding.
 
-use super::agent_onboarding::DetectedSection;
+use super::agent_onboarding::{ensure_generated_path_is_safe, DetectedSection};
 use super::agent_onboarding_report::{CheckItem, RuleRecommendation};
 use super::AgentContentTemplate;
 use sha2::{Digest, Sha256};
@@ -91,9 +91,11 @@ pub(super) fn write_specialization_profile(
     });
     validate_specialization_profile(&profile)?;
     let directory = project_root.join(".assura/onboarding");
+    let profile_path = directory.join("profile-selection.json");
+    ensure_generated_path_is_safe(project_root, &profile_path)?;
     fs::create_dir_all(&directory).map_err(|error| error.to_string())?;
     fs::write(
-        directory.join("profile-selection.json"),
+        profile_path,
         serde_json::to_vec_pretty(&profile).expect("specialization profile is serializable"),
     )
     .map_err(|error| error.to_string())

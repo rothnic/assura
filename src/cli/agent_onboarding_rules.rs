@@ -10,6 +10,7 @@ use std::path::Path;
 pub(super) fn recommended_rules(
     detected: &DetectedSection,
     config_path: &Path,
+    strict_agent_surface: bool,
 ) -> Result<Vec<RuleRecommendation>, String> {
     let contents = fs::read_to_string(config_path).map_err(|error| error.to_string())?;
     let config: Value = serde_yaml::from_str(&contents).map_err(|error| error.to_string())?;
@@ -37,6 +38,8 @@ pub(super) fn recommended_rules(
         .is_some_and(|limit| limit != 160);
     let status = if entrypoint_conflicts {
         "conflict"
+    } else if !strict_agent_surface {
+        "available"
     } else if present == expected_rules.len() && root_applies_entrypoint {
         "applied"
     } else if present > 0 {
@@ -47,6 +50,10 @@ pub(super) fn recommended_rules(
     let reason = match status {
         "applied" => format!(
             "{} project detected; editable agentic-core and structure-health policy is active",
+            detected.project_type
+        ),
+        "available" if !strict_agent_surface => format!(
+            "{} project detected; unmanaged AGENTS.md and .agents content was preserved, and generated skill checks are scoped to Assura-owned paths; specialize the remaining project policy after reviewing assura check --format json .",
             detected.project_type
         ),
         "available" => format!(
