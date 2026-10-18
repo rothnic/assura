@@ -318,7 +318,22 @@ impl ConfigDiscovery {
     }
 
     pub fn find_config_path(start: impl AsRef<Path>) -> Option<PathBuf> {
-        Self::find_project_root(start).map(|root| root.join(ASSURA_DIR).join(CONFIG_FILE))
+        let start = start.as_ref();
+        let mut current = if start.is_dir() {
+            start
+        } else {
+            start.parent()?
+        };
+        loop {
+            let config = current.join(ASSURA_DIR).join(CONFIG_FILE);
+            if config.exists() {
+                return Some(config);
+            }
+            if current.join(".git").exists() {
+                return None;
+            }
+            current = current.parent()?;
+        }
     }
 
     pub fn find_git_dir(start: impl AsRef<Path>) -> Option<PathBuf> {

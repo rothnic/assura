@@ -38,7 +38,12 @@ pub fn default_check_cache_dir(path: &Path) -> PathBuf {
             }
         })
         .map(|git_dir| git_dir.join("assura/check-cache"))
-        .unwrap_or_else(|| git_base.join(".assura/cache/check"))
+        .unwrap_or_else(|| {
+            discover_project(git_base, None)
+                .map(|(project_root, _)| project_root)
+                .unwrap_or_else(|_| git_base.to_path_buf())
+                .join(".assura/cache/check")
+        })
 }
 
 /// Inspect cache namespaces and serialized size without loading reports.

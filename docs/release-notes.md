@@ -26,6 +26,10 @@ passes.
   check of its producer. Providers may remain outside the selected subtree;
   provider-only checks do not validate incoming producers. Exclusions, explicit
   LS-Lint target mode, and prepared changed-path full fallback are unchanged.
+- Non-Git scoped checks place default caches at the discovered policy root.
+  Cache-only `.assura` directories left by earlier checks no longer shadow
+  ancestor policy; existing cache files are preserved. Nearest existing config
+  errors and Git discovery boundaries remain authoritative.
 
 ## v0.4.1 Release Delta
 

@@ -574,6 +574,12 @@ existence proves presence, not test execution or adequacy. Explicit
 `--ls-lint-target-semantics` keeps its compatibility behavior; prepared
 changed-path checks retain their full-project fallback for relationships.
 
+**Unreleased cache behavior:** Default `--cache` storage in non-Git projects
+uses the discovered policy root.
+Existing cache-only `.assura` directories below it do not shadow the policy
+and are left untouched. Discovery retains the nearest existing config and stops
+at Git boundaries.
+
 Use `needs:` and `provides:` when a relationship can be satisfied by more than
 one artifact:
 

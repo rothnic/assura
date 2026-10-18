@@ -266,6 +266,11 @@ scoped check does not prove whole-project success. Explicit
 changed-path checks retain their full-project fallback for relationship policy.
 Counterpart existence proves presence, not test execution or adequacy.
 
+Configuration discovery skips cache-only `.assura` directories while retaining
+the nearest existing config and Git boundary. In non-Git projects, default
+check caches live under the discovered policy root, including for file targets.
+Existing nested cache directories remain untouched and do not shadow policy.
+
 ## Project-Owned Recipes
 
 First-party recipes are authoring sources, not hidden runtime dependencies:
