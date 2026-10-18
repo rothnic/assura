@@ -36,7 +36,9 @@ checked capabilities from choices that still need user answers.
    ```
 
    `init` creates `.assura/config.yml` and refuses to overwrite an existing
-   config unless `--force` is provided.
+   config unless `--force` is provided. These recipes also create
+   `README.md`, `AGENTS.md`, `docs/agent-guidance.md`, and
+   `docs/structure.md`; keep those files when replacing the starter policy.
 
 3. **Author a minimal policy**
 
@@ -54,8 +56,13 @@ checked capabilities from choices that still need user answers.
    structure:
      ./: $closed
      README.md: exists:1
+     AGENTS.md: exists:1
      Cargo.toml: exists:1
      src/: exists:1
+     docs/:
+       ./: $closed
+       agent-guidance.md: exists:1
+       structure.md: exists:1
      ./*.lock: exists:0-1
      ./**/:
        .rs: snake_case

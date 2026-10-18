@@ -1,0 +1,38 @@
+{
+  "id": "nu04-getting-started",
+  "name": "nu04-getting-started",
+  "title": "NU04 Getting Started first-run policy",
+  "description": "Fix the published Getting Started example so the documented installed initialization and generated project policy can be exercised in a disposable minimal project; preserve generated guidance and verify a clean pass, unexpected-root failure, and recovery.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "website",
+  "package": null,
+  "priority": "P2",
+  "creator": "nu04_quickstart",
+  "assignee": "nu04_quickstart",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "fix/nu04-getting-started",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu04-getting-started",
+      "owner": "nu04_quickstart",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu04-getting-started",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}
