@@ -3,7 +3,7 @@
   "updated": "2026-10-17",
   "source_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
   "release": "v0.4.1",
-  "scope": "Review proposal; no product implementation or live tracker mutation",
+  "scope": "Reviewed proposal with selected NU13 execution authorized on2026-10-17; no live Beads mutation.",
   "beads": {
     "binary": "/usr/local/bin/bd",
     "version": "1.2.2",
@@ -345,7 +345,7 @@
       "priority": 1,
       "issue_type": "bug",
       "review_state": "runtime-and-source-verified-omission; scoped contract requires clarification",
-      "execution_state": "proposed",
+      "execution_state": "in_progress",
       "area": "core-correctness",
       "problem": "Full Check rejects missing Button.test.tsx; explicit Check of Button.tsx returns exit0 with no relationship finding. Relationship traversal skips its selected root entry even when it is a file. Prepared changed-path checking separately full-falls-back, so this does not establish a cache/session defect.",
       "evidence": [
@@ -366,9 +366,22 @@
         "R01",
         "A06"
       ],
-      "owner": "unassigned",
-      "next_action": "Freeze a failing file-target/full-target counterpart fixture and resolve its coverage contract.",
-      "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks."
+      "owner": "/root/nu13_implement",
+      "next_action": "Freeze failing regression, apply shared root-entry correction, validate and independently review fix/nu13-targeted-relationships.",
+      "priority_rationale": "Core policy coverage must remain trustworthy before claiming cheaper scoped or incremental checks.",
+      "execution": {
+        "task": ".trellis/tasks/10-17-nu13-targeted-relationship-coverage",
+        "branch": "fix/nu13-targeted-relationships",
+        "worktree": "/Users/nroth/.codex/worktrees/assura-nu13-targeted-relationships/assura",
+        "base_revision": "f3540d4a11d36afa43f69c96fd7f1c233599822a",
+        "planning_commit": "ec7f7f6b8cfc4ab64b64ea17edd8858cf683e761",
+        "coordinator": "/root",
+        "owner_liveness": "Live collaboration worker /root/nu13_implement, explicitly delegated2026-10-17",
+        "phase": "implement",
+        "acceptance": "pending red/green, applicable gates and independent review",
+        "authority": "Nick2026-10-17: Orchestrate the first bit of work that would be most beneficial to implement",
+        "held_independent_action": "P05 generation5 remains owner nroth, integrated_pending_verification; reconstruct/disposition missing owned checkout and genuinely refresh current-base verification before native closure; receipt unchanged."
+      }
     },
     {
       "id": "SP01",
