@@ -185,3 +185,16 @@ Older results retain their original bindings and limitations. Root subsequently
 admitted one writing generation, focused59integration+6unit checks and fresh
 binary preparation after clean source commit/resource checks; composition and
 full PR remain held for independent current source/runtime binding review.
+
+The subsequently admitted writing generator ran once on source merge
+`d21063d784cad8d332d24981f12ac65172f83e71`, through the locked/offline canonical
+xtask alias expansion and current preflight/capture. It exited0 (direct PID
+67013; outer session50328, terminal chunkdd1aa6, exit0). It validated20 marketed
+surface mappings and54 documentation YAML examples. All five demo JSON changes
+are source_revision-only to that merge SHA; every non-revision payload,
+performance-summary and protected performance data is unchanged. The complete
+tracked input comparison found only those five generated files changed. No
+hand-edited revisions or second writing generation occurred. The static current
+macOS census is59 requested integration tests plus6 quality/config unit tests;
+that census is preparation, not test execution proof. Focused execution and
+fresh regular/full binding remain the next admitted preparation steps.
