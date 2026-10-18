@@ -156,3 +156,25 @@ text/type/assertions. One canonical generation passed; five source revisions
 changed with identical CLI/repair and protected performance bytes. Receipts
 are under external `height-padding-corrected/`; post-fix height and complete
 changed-source validation are pending at this data/evidence commit.
+
+## Passing production checkpoint and current main
+
+At clean `01ba6a107a81fe993b39b42b54f675893a521aa4`, the changed-source
+checkpoint passed 13 focused tests, strict released-data validation, the pinned
+production build and all 152 unchanged browser cases without retries, skips,
+interruption, flakes or global errors. Eight actual captures were inspected;
+both metrics, all metadata and full caveats remain visible. All 144 captures
+were hashed, protected performance/history bytes stayed unchanged, all ten
+observed owned processes exited and the preview port was released. The strict
+height assertion passed; no exact post-fix height measurement is claimed.
+Independent review found no blocking source/correction/proof findings at that
+head. Prior failed checkpoints remain preserved.
+
+Standard nonforce merge `12bdbb84e1d88315d9d582f29650953baa4d792c` integrated
+main `74d9917dd39e599bbd43c3a5760b71644b2cf91b` without conflicts, including
+NU06 recovery documentation, NU07 count correctness and DX01 local preflight.
+One canonical generation at the clean merged source passed. Only five generated
+source-revision fields changed; their payloads and protected performance/history
+bytes remain identical. Evidence is external under
+`w02-current/current-base-74d9917d/`. Current-base full PR and affected production
+validation, final independent review and hosted gates remain pending.
