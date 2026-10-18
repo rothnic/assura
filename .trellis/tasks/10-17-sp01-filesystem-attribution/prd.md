@@ -42,6 +42,10 @@ P2 continues within this task and is attribution-only. Enumerate the identical-s
 
 P2 may use temporary instrumentation in the exact existing consumer files and an isolated one-lane build only when required. It must not add a dependency or alter production source, shared inventory/index, daemon, API, traversal model, or incremental eligibility. No optimization is authorized by attribution alone. Record baseline SHA/tree, scratch diff, binary and fixture hashes, exact commands/exits, resource/disk gate, raw counts/samples, and teardown. Before any VPS work, refresh the host and disk-backed scratch gate; use the existing owned toolchain/cache only if safe, jobs=2, and do not mutate the separate NU13 source/build run. Avoid new full-target builds or deletion of foreign data. If the gate is unsafe, retain that as a measurement limit and finish independent source/test enumeration without timing claims.
 
+## Saved P2 attribution evidence
+
+The v5 data set is accepted as a six-paired-row source-count/output-parity result, with the tiny positive control separately labeled. It does not establish OS syscall counts, cache hits, performance improvement, or optimization retention. All three cache-shaped rows have local/shared hit counts of 0/0; neither a warm hit nor a cache defect is established. The exact source callers/scopes, counter results, identities, preserved v1-v5 attempts, and the prepared-but-unrun v6 harness correction are documented in `research/p2-attribution-evidence.md`. No additional CLI/build run is admitted by that evidence note.
+
 ## Admission and current phase
 
 The coordinating root verified Beads claim/admission for `ae-xsm`; Trellis/native ownership remains `/root/filesystem_performance` (`filesystem_performance`). The P1 source disposition is committed. Continue P2 under the same canonical task; do not create another task or write to Beads. Root coordinates independent review and any later delivery transitions.

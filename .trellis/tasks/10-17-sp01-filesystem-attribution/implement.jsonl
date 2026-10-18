@@ -1,3 +1,4 @@
 {"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
 {"file": ".trellis/spec/assura/index.md", "reason": "Assura policy/check contract and canonical spec routing."}
 {"file": ".trellis/tasks/10-17-sp01-filesystem-attribution/research/systemic-filesystem-review.md", "reason": "Source-backed P1 hypothesis, limitations, controls and bounded first discriminator."}
+{"file": ".trellis/tasks/10-17-sp01-filesystem-attribution/research/p2-attribution-evidence.md", "reason": "Accepted six-pair P2 source-level counts, limitations, provenance, and proposed fail-fast harness correction."}
