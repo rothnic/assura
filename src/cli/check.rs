@@ -132,6 +132,27 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 
+/// Compiled path exclusions for one quality scope.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct QualityScopeExclusions(Vec<CompiledExclusion>);
+
+impl QualityScopeExclusions {
+    /// Compile configured patterns once so every changed path reuses them.
+    pub(crate) fn new(patterns: &[String]) -> Self {
+        Self(
+            patterns
+                .iter()
+                .map(|pattern| CompiledExclusion::new(pattern))
+                .collect(),
+        )
+    }
+
+    /// Whether the normalized project-relative path is excluded.
+    pub(crate) fn excludes(&self, path: &str) -> bool {
+        is_excluded_rel_with(&self.0, Path::new(path))
+    }
+}
+
 /// How a non-root checked path should be interpreted.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum CheckTargetMode {

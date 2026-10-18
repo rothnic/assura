@@ -27,6 +27,10 @@ pub struct QualityScopeConfig {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub paths: Vec<String>,
 
+    /// Relative path patterns excluded from this scope after a path matches.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub exclude_paths: Vec<String>,
+
     /// Checks included for every non-empty plan for this scope.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub always: Vec<String>,

@@ -50,10 +50,9 @@ Coordinate shared onboarding tests/call sites with NU02 before implementation.
 
 ## Phase constraint
 
-Current phase is source/spec trace, disposable-fixture preparation, and red-test
-design only. Do not run Cargo/build/test/runner batches until the coordinator
-admits the focused red/green lane after NU02 releases the serialized full Rust
-lane.
+Current phase is focused implementation and red/green preparation. Run only the
+coordinator-admitted focused jobs2 lane, after verifying the supplied private
+scratch directory and checkout-local Cargo target. Do not run a full PR gate.
 
 ## Design proposal
 

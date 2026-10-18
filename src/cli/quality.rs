@@ -1,6 +1,7 @@
 //! Quality gate planning command.
 
 use crate::cli::args::{QualityPhase, QualityPlanFormat};
+use crate::cli::check::QualityScopeExclusions;
 use crate::cli::{ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, QualityScopeConfig};
 use crate::config::loader::ConfigLoader;
@@ -115,9 +116,10 @@ fn plan_from_config(
     let mut checks = Vec::new();
 
     for (scope_id, scope) in sorted_scopes(&quality.scopes) {
+        let exclusions = QualityScopeExclusions::new(&scope.exclude_paths);
         let matched_paths = changed_paths
             .iter()
-            .filter(|path| scope_matches_path(scope, path))
+            .filter(|path| scope_matches_path(scope, &exclusions, path))
             .cloned()
             .collect::<Vec<_>>();
         if matched_paths.is_empty() {
@@ -221,11 +223,16 @@ fn git_output_lines<const N: usize>(
         .collect())
 }
 
-fn scope_matches_path(scope: &QualityScopeConfig, path: &str) -> bool {
-    scope
-        .paths
-        .iter()
-        .any(|pattern| path_matches(pattern, path))
+fn scope_matches_path(
+    scope: &QualityScopeConfig,
+    exclusions: &QualityScopeExclusions,
+    path: &str,
+) -> bool {
+    !exclusions.excludes(path)
+        && scope
+            .paths
+            .iter()
+            .any(|pattern| path_matches(pattern, path))
 }
 
 fn path_matches(pattern: &str, path: &str) -> bool {
@@ -325,12 +332,60 @@ mod tests {
     }
 
     #[test]
+    fn scope_exclusions_override_matching_paths_and_empty_exclusions_preserve_legacy_behavior() {
+        let exclusions = QualityScopeExclusions::new(&[
+            "**/.next/**".to_string(),
+            "**/node_modules/**".to_string(),
+            "dist/**".to_string(),
+        ]);
+        let scope = QualityScopeConfig {
+            paths: vec![
+                "app/**".to_string(),
+                "lib/**".to_string(),
+                "src/**".to_string(),
+            ],
+            exclude_paths: Vec::new(),
+            always: vec!["bun run lint".to_string()],
+            ..QualityScopeConfig::default()
+        };
+        assert!(!scope_matches_path(
+            &scope,
+            &exclusions,
+            "app/.next/server/page.js"
+        ));
+        assert!(!scope_matches_path(
+            &scope,
+            &exclusions,
+            "lib/node_modules/pkg/index.js"
+        ));
+        assert!(!scope_matches_path(
+            &scope,
+            &exclusions,
+            "dist/assets/app.js"
+        ));
+        assert!(scope_matches_path(&scope, &exclusions, "app/page.tsx"));
+        assert!(scope_matches_path(&scope, &exclusions, "lib/domain.ts"));
+
+        let legacy = QualityScopeConfig {
+            paths: vec!["app/**".to_string()],
+            ..QualityScopeConfig::default()
+        };
+        let no_exclusions = QualityScopeExclusions::default();
+        assert!(scope_matches_path(
+            &legacy,
+            &no_exclusions,
+            "app/.next/server/page.js"
+        ));
+    }
+
+    #[test]
     fn plan_uses_cumulative_phase_checks() {
         let mut scopes = HashMap::new();
         scopes.insert(
             "rust".to_string(),
             QualityScopeConfig {
                 paths: vec!["src/**".to_string()],
+                exclude_paths: Vec::new(),
                 always: vec!["assura:self-check".to_string()],
                 frequent: vec!["verify:check".to_string()],
                 pre_push: vec!["verify:test".to_string()],

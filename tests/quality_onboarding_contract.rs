@@ -394,7 +394,42 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
     )
     .expect("valid config YAML");
     let bun = &config["quality"]["scopes"]["bun"];
-    assert_eq!(bun["paths"][0], "src/**");
+    for path in [
+        "src/**",
+        "tests/**",
+        "app/**",
+        "components/**",
+        "lib/**",
+        "hooks/**",
+        "artifacts/**",
+        "package.json",
+        "bun.lock",
+    ] {
+        assert!(
+            bun["paths"].as_sequence().unwrap().contains(&path.into()),
+            "generated Bun paths must include {path}: {bun:?}"
+        );
+    }
+    for path in [
+        ".next/**",
+        "**/.next/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "dist/**",
+        "**/dist/**",
+        "coverage/**",
+        "**/coverage/**",
+        ".turbo/**",
+        "**/.turbo/**",
+    ] {
+        assert!(
+            bun["exclude_paths"]
+                .as_sequence()
+                .unwrap()
+                .contains(&path.into()),
+            "generated Bun exclusions must include {path}: {bun:?}"
+        );
+    }
     assert_eq!(
         bun["frequent"],
         serde_yaml::Value::Sequence(vec!["bun run lint".into()])
@@ -404,6 +439,49 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
         serde_yaml::Value::Sequence(vec!["bun run test".into()])
     );
     assert!(bun["pr"].is_null(), "type-check gates must not be invented");
+
+    for path in ["app/page.tsx", "components/button.tsx", "lib/domain.ts"] {
+        assert_eq!(
+            successful_plan_json(&project, &[path], "frequent")["checks"],
+            serde_json::json!(["assura check", "bun run lint"]),
+            "authored source path must select declared lint: {path}"
+        );
+        assert_eq!(
+            successful_plan_json(&project, &[path], "pre-push")["checks"],
+            serde_json::json!(["assura check", "bun run lint", "bun run test"]),
+            "authored source path must select declared lint and test: {path}"
+        );
+    }
+    for path in [
+        ".next/server/app/page.js",
+        "app/.next/server/page.js",
+        "lib/node_modules/pkg/index.js",
+        "components/dist/button.js",
+        "coverage/coverage-final.json",
+        "app/.turbo/cache/item",
+        "node_modules/pkg/index.js",
+        "dist/app.js",
+    ] {
+        let plan = successful_plan_json(&project, &[path], "pre-push");
+        assert_eq!(
+            plan["checks"],
+            serde_json::json!(["assura check"]),
+            "generated output must not select Bun: {path}"
+        );
+        assert!(
+            !plan["scopes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|scope| scope["id"] == "bun"),
+            "generated output must not match Bun scope: {path}: {plan}"
+        );
+    }
+    assert_eq!(
+        successful_plan_json(&project, &["docs/guide.md"], "pre-push")["checks"],
+        serde_json::json!(["assura check"]),
+        "unrelated paths must not select Bun"
+    );
 }
 
 #[test]

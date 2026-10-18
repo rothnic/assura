@@ -115,7 +115,7 @@ pub(super) fn quality_config(detected: &DetectedSection) -> String {
         "      pre_push:\n        - \"bun test\"\n"
     };
     config.push_str(&format!(
-        "    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
+        "    bun:\n      paths:\n        - \"src/**\"\n        - \"tests/**\"\n        - \"app/**\"\n        - \"components/**\"\n        - \"lib/**\"\n        - \"hooks/**\"\n        - \"artifacts/**\"\n        - \"package.json\"\n        - \"bun.lock\"\n      exclude_paths:\n        - \".next/**\"\n        - \"**/.next/**\"\n        - \"node_modules/**\"\n        - \"**/node_modules/**\"\n        - \"dist/**\"\n        - \"**/dist/**\"\n        - \"coverage/**\"\n        - \"**/coverage/**\"\n        - \".turbo/**\"\n        - \"**/.turbo/**\"\n      always:\n        - \"assura check\"\n{frequent}{pre_push}"
     ));
     config
 }
@@ -296,4 +296,63 @@ fn explicit_bun_project(project_root: &Path, has_package_json: bool) -> bool {
                 .map(str::to_owned)
         })
         .is_some_and(|manager| manager.starts_with("bun@"))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn generated_bun_scope_covers_observed_roots_and_excludes_generated_trees() {
+        let detected = DetectedSection {
+            project_type: "typescript",
+            project_confidence: "high",
+            requested_agent: "codex",
+            agent_harness: "none",
+            agent_confidence: "high",
+            git_repository: true,
+            existing_source_files: true,
+            manifest_conflicts: Vec::new(),
+            bun_scripts: vec!["lint".to_string(), "test".to_string()],
+            bun_available: true,
+            python_quality_tools: Vec::new(),
+        };
+
+        let rendered = quality_config(&detected);
+        for root in [
+            "src",
+            "tests",
+            "app",
+            "components",
+            "lib",
+            "hooks",
+            "artifacts",
+        ] {
+            assert!(
+                rendered.contains(&format!("- \"{root}/**\"")),
+                "missing {root}: {rendered}"
+            );
+        }
+        for excluded in [
+            ".next/**",
+            "**/.next/**",
+            "node_modules/**",
+            "**/node_modules/**",
+            "dist/**",
+            "**/dist/**",
+            "coverage/**",
+            "**/coverage/**",
+            ".turbo/**",
+            "**/.turbo/**",
+        ] {
+            assert!(
+                rendered.contains(&format!("- \"{excluded}\"")),
+                "missing {excluded}: {rendered}"
+            );
+        }
+        assert!(rendered.contains("bun run lint"));
+        assert!(rendered.contains("bun run test"));
+        assert!(rendered.contains("package.json"));
+        assert!(rendered.contains("bun.lock"));
+    }
 }
