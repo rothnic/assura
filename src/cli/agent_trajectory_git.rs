@@ -12,43 +12,113 @@ use std::time::{Duration, Instant};
 use exec::{run_git, GitOutput};
 
 thread_local! {
-    static LAST_GIT_PHASE: std::cell::Cell<Option<&'static str>> = const { std::cell::Cell::new(None) };
-    static GIT_DIAGNOSTICS: std::cell::RefCell<Vec<(&'static str, u128, &'static str)>> = const { std::cell::RefCell::new(Vec::new()) };
+    static ACTIVE_DIAGNOSTICS: std::cell::RefCell<Option<DiagnosticTrace>> = const { std::cell::RefCell::new(None) };
 }
 
-pub(super) fn diagnostic_label() -> Option<String> {
-    std::env::var("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL")
-        .ok()
-        .filter(|label| {
-            !label.is_empty()
-                && label
-                    .bytes()
-                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
-        })
+const MAX_GIT_DIAGNOSTIC_EVENTS: usize = 16;
+const MAX_INSPECTION_DIAGNOSTIC_STAGES: usize = 4;
+
+fn valid_diagnostic_label(label: &str) -> bool {
+    !label.is_empty()
+        && label.len() <= 32
+        && label
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
 }
 
-pub(super) fn flush_diagnostics(label: &str, stage: &str, elapsed: Duration) {
-    if diagnostic_label().as_deref() != Some(label) {
-        return;
+struct DiagnosticTrace {
+    label: String,
+    last_phase: Option<&'static str>,
+    events: Vec<(&'static str, u128, &'static str)>,
+    stages: Vec<(&'static str, u128)>,
+}
+
+pub(super) struct DiagnosticGuard {
+    started: Instant,
+}
+
+pub(super) fn diagnostics_enabled() -> bool {
+    ACTIVE_DIAGNOSTICS.with(|active| active.borrow().is_some())
+}
+
+impl DiagnosticGuard {
+    pub(super) fn record_stage(&self, stage: &'static str, elapsed: Duration) {
+        ACTIVE_DIAGNOSTICS.with(|active| {
+            let mut active = active.borrow_mut();
+            let Some(trace) = active.as_mut() else {
+                return;
+            };
+            if trace.stages.len() < MAX_INSPECTION_DIAGNOSTIC_STAGES {
+                trace.stages.push((stage, elapsed.as_millis()));
+            }
+        });
     }
-    GIT_DIAGNOSTICS.with(|events| {
-        for (phase, elapsed_ms, outcome) in events.borrow_mut().drain(..) {
-            eprintln!("trajectory-diagnostic label={label} phase={phase} elapsed_ms={elapsed_ms} outcome={outcome}");
-        }
+
+    pub(super) fn finish(self, stage: &'static str) {
+        let elapsed = self.started.elapsed().as_millis();
+        ACTIVE_DIAGNOSTICS.with(|active| {
+            let mut active = active.borrow_mut();
+            let Some(trace) = active.as_mut() else {
+                return;
+            };
+            for (phase, elapsed_ms, outcome) in trace.events.drain(..) {
+                eprintln!("trajectory-diagnostic label={} phase={phase} elapsed_ms={elapsed_ms} elapsed_scope=git_child_lifecycle_wall outcome={outcome}", trace.label);
+            }
+            for (stage, elapsed_ms) in trace.stages.drain(..) {
+                eprintln!("trajectory-diagnostic label={} stage={stage} elapsed_ms={elapsed_ms}", trace.label);
+            }
+            eprintln!("trajectory-diagnostic label={} stage={stage} elapsed_ms={elapsed} last_git_phase={}", trace.label, trace.last_phase.unwrap_or("none"));
+        });
+    }
+}
+
+impl Drop for DiagnosticGuard {
+    fn drop(&mut self) {
+        ACTIVE_DIAGNOSTICS.with(|active| *active.borrow_mut() = None);
+    }
+}
+
+pub(super) fn begin_diagnostics(started: Instant) -> Option<DiagnosticGuard> {
+    let label = std::env::var("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL")
+        .ok()
+        .filter(|label| valid_diagnostic_label(label))?;
+    ACTIVE_DIAGNOSTICS.with(|active| {
+        *active.borrow_mut() = Some(DiagnosticTrace {
+            label,
+            last_phase: None,
+            events: Vec::with_capacity(MAX_GIT_DIAGNOSTIC_EVENTS),
+            stages: Vec::with_capacity(MAX_INSPECTION_DIAGNOSTIC_STAGES),
+        });
     });
-    let last_phase = LAST_GIT_PHASE.with(|phase| phase.get()).unwrap_or("none");
-    eprintln!("trajectory-diagnostic label={label} stage={stage} elapsed_ms={} last_git_phase={last_phase}", elapsed.as_millis());
+    Some(DiagnosticGuard { started })
+}
+
+#[cfg(test)]
+mod diagnostic_tests {
+    use super::valid_diagnostic_label;
+
+    #[test]
+    fn diagnostic_labels_are_bounded_and_safe_for_stderr() {
+        assert!(valid_diagnostic_label("shallow_clone"));
+        assert!(valid_diagnostic_label("primary-worktree_2"));
+        assert!(!valid_diagnostic_label(""));
+        assert!(!valid_diagnostic_label(&"a".repeat(33)));
+        assert!(!valid_diagnostic_label("contains space"));
+        assert!(!valid_diagnostic_label("line\nbreak"));
+    }
 }
 
 fn record_diagnostic(phase: &'static str, elapsed: Duration, outcome: &'static str) {
-    if diagnostic_label().is_some() {
-        LAST_GIT_PHASE.with(|last| last.set(Some(phase)));
-        GIT_DIAGNOSTICS.with(|events| {
-            events
-                .borrow_mut()
-                .push((phase, elapsed.as_millis(), outcome));
-        });
-    }
+    ACTIVE_DIAGNOSTICS.with(|active| {
+        let mut active = active.borrow_mut();
+        let Some(trace) = active.as_mut() else {
+            return;
+        };
+        trace.last_phase = Some(phase);
+        if trace.events.len() < MAX_GIT_DIAGNOSTIC_EVENTS {
+            trace.events.push((phase, elapsed.as_millis(), outcome));
+        }
+    });
 }
 
 pub(super) fn reset_refresh_cancellation() {

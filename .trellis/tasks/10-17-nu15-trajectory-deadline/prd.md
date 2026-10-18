@@ -9,8 +9,8 @@ The observed failure is from merge `ba4804bb6abdadc1ccc12c41397dd2402a914171`, w
 ## Acceptance
 
 - Preserve the default product refresh/inspect timeout at 2,000 ms; do not widen it or weaken assertions, skip coverage, retry unchanged failing runs, or call the failure runner noise without evidence.
-- Add a bounded diagnostic that identifies each inspection/test phase, elapsed time, and last Git subprocess phase on a real timeout, without changing default public output or claiming timings as representative performance.
-- Use evidence to identify whether the root cause is serial subprocess count/cost, Windows process setup/cleanup, fixture construction, or parallel test contention; choose only the smallest supported correction.
+- Add a bounded diagnostic that identifies each inspection, discovery/collection stage, elapsed time, and last Git subprocess phase on success and deadline failure, without changing default public output or claiming timings as representative performance. Per-child timings are inclusive process-lifecycle wall time, including setup, output handling, termination and cleanup; they do not isolate Git execution time.
+- Use evidence to identify which inspection and serial Git call sites consume the shared deadline. Treat broad contention as a possibility only if the trace supports it; do not attribute an inclusive child duration to Git itself or to Windows process setup/cleanup separately.
 - Preserve shallow clone and multiple worktree integration coverage and status-truncation negative control.
 - Demonstrate a meaningful local positive/negative diagnostic behavior and run the focused test on the supported Windows lane for final platform evidence. If that lane cannot run from this candidate, state the exact held proof and do not claim the Windows failure fixed.
 - Preserve contextual errors, bounded subprocess execution, timeout cancellation, descendant cleanup, and all existing product coverage/report semantics.

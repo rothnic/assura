@@ -444,7 +444,7 @@ pub(super) fn run_git(
     deadline: Option<Instant>,
     phase: &'static str,
 ) -> GitOutput {
-    let started = Instant::now();
+    let started = super::diagnostics_enabled().then(Instant::now);
     let mut command = Command::new("git");
     command
         .env("GIT_OPTIONAL_LOCKS", "0")
@@ -461,13 +461,15 @@ pub(super) fn run_git(
         std::env::var_os("ASSURA_FEEDBACK_REFRESH_LOCK").is_none(),
         true,
     );
-    let outcome = match &result {
-        GitOutput::Text(_) => "text",
-        GitOutput::Failed => "failed",
-        GitOutput::Truncated => "truncated",
-        GitOutput::TimedOut => "timed_out",
-    };
-    super::record_diagnostic(phase, started.elapsed(), outcome);
+    if let Some(started) = started {
+        let outcome = match &result {
+            GitOutput::Text(_) => "text",
+            GitOutput::Failed => "failed",
+            GitOutput::Truncated => "truncated",
+            GitOutput::TimedOut => "timed_out",
+        };
+        super::record_diagnostic(phase, started.elapsed(), outcome);
+    }
     result
 }
 

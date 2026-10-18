@@ -258,6 +258,11 @@ jobs:
       env:
         ASSURA_WATCH_NORMALIZATION_DEBUG: "1"
       run: cargo test --all-features --test watch_cli watch_honors_the_requested_directory_scope -- --exact --nocapture
+    - name: Capture trajectory deadline diagnostics (Windows)
+      if: always() && runner.os == 'Windows'
+      env:
+        ASSURA_TRAJECTORY_DIAGNOSTIC_TEST_OUTPUT: "1"
+      run: cargo test --all-features --test agent_trajectory_cli shallow_clones_and_multiple_worktrees_keep_coverage_honest -- --exact --test-threads=1 --nocapture
 
   release-bundle:
     name: Release Bundle Smoke

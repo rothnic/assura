@@ -69,6 +69,9 @@ fn inspect(project: &Path) -> Value {
 fn inspect_labeled(project: &Path, label: &str) -> (Value, String) {
     let output = inspect_output(project, Some(label));
     let stderr = String::from_utf8_lossy(&output.stderr).into_owned();
+    if std::env::var_os("ASSURA_TRAJECTORY_DIAGNOSTIC_TEST_OUTPUT").is_some() {
+        eprint!("{stderr}");
+    }
     (json_success(output), stderr)
 }
 
@@ -368,8 +371,10 @@ fn shallow_clones_and_multiple_worktrees_keep_coverage_honest() {
     assert!(clone_output.status.success());
     let (shallow, shallow_diagnostic) = inspect_labeled(clone.path(), "shallow_clone");
     assert!(shallow_diagnostic.contains("label=shallow_clone stage=collection"));
+    assert!(shallow_diagnostic.contains("label=shallow_clone stage=complete elapsed_ms="));
     assert!(shallow_diagnostic.contains("last_git_phase="));
     assert!(shallow_diagnostic.contains("phase=discover.status elapsed_ms="));
+    assert!(shallow_diagnostic.contains("elapsed_scope=git_child_lifecycle_wall"));
     assert_eq!(shallow["trajectory"]["coverage"], "partial");
     assert!(shallow["trajectory"]["coverage_reasons"]
         .as_array()
@@ -393,7 +398,9 @@ fn shallow_clones_and_multiple_worktrees_keep_coverage_honest() {
     let (primary, primary_diagnostic) = inspect_labeled(source.path(), "primary_worktree");
     let (secondary, secondary_diagnostic) = inspect_labeled(&worktree_path, "secondary_worktree");
     assert!(primary_diagnostic.contains("label=primary_worktree stage=collection"));
+    assert!(primary_diagnostic.contains("label=primary_worktree stage=complete elapsed_ms="));
     assert!(secondary_diagnostic.contains("label=secondary_worktree stage=collection"));
+    assert!(secondary_diagnostic.contains("label=secondary_worktree stage=complete elapsed_ms="));
     assert_ne!(
         primary["trajectory"]["worktree"]["git_dir"],
         secondary["trajectory"]["worktree"]["git_dir"]
