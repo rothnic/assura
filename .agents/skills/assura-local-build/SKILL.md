@@ -5,8 +5,58 @@ description: "Resolve Assura build prerequisites and route isolated VPS validati
 
 # Assura Local Build
 
-Use this skill when build or validation commands fail for local environment
-reasons rather than Rust code errors.
+Use this skill before a long local validation run, or when build/validation
+commands fail for environment reasons rather than Rust code errors.
+
+## Local preflight
+
+From the candidate root, wrap the exact command without changing its argv:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/local-preflight.py \
+  --repo "$PWD" --socket-relative --require-bash-mapfile --website-tools \
+  -- cargo xtask pr
+```
+
+The helper resolves the effective target with offline, locked, no-dependency
+Cargo metadata. It emits one JSON record to stderr, then execs the command with
+its inherited environment and exit behavior; capture the command's exit in your
+outer receipt. A rejected preflight never launches that command. Dirty source
+is reported, not cleaned. Metadata and identity probes are not build/test credit.
+
+Choose profiles for the actual route: socket checks for Unix-socket tests,
+`--require-bash-mapfile` for evidence/pr/full (the CI scope classifier), and
+`--website-tools` for docs/pr/full. Omit unrelated profiles for ordinary Cargo.
+Socket checks require an existing caller-owned `0700` TMPDIR with verified disk
+backing; the projected default socket includes `.tmpXXXXXX` and the hot-session
+filename. Darwin's 104-byte capacity includes NUL and applies only on Darwin.
+`--socket-relative <suffix>` selects another known test suffix, not a shorter
+stand-in for the command's actual longest path.
+
+`--target-dir <path>` asserts the effective Cargo target and explicitly declares
+an external directory task-dedicated; it does not set `CARGO_TARGET_DIR`. An
+external target must already exist, belong to the caller and exclude other
+writers. Confirm its workload ownership separately. `--tmpdir` likewise asserts
+the inherited value without setting it. Set child-only environment explicitly
+before invoking the helper; it creates no directories or global configuration.
+
+Targets inside another Assura checkout are rejected. General Cargo commands may
+use a declared external target. `xtask docs`, `pr`, `full`, `website-demo-data`
+and `website-config-examples` require the local target: `run_pr` reaches
+`run_docs` in `xtask/src/main.rs`, and the demo/example helpers read
+`target/debug/assura-full` in `xtask/src/website_demo.rs`.
+
+Website probes retain xtask's pnpm/npm/node fallback and check selected pnpm
+against `website/package.json`. They record package/lock and executable hashes,
+child cwd/PATH and Node identity for the current simple Astro script. This
+no-build probe is not proof of arbitrary nested build subprocesses; retain
+actual build-child evidence when required. No Node version is invented as a pin.
+
+Run the fake-tool controls (no Cargo/website builds or installs):
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/local-preflight-tests.py
+```
 
 ## OpenSSL Discovery
 
