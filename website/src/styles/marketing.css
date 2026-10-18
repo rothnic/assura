@@ -2372,6 +2372,7 @@
     }
 
     .performance-proof .proof-meta {
+      flex-wrap: wrap;
       align-items: baseline;
       justify-content: space-between;
     }
