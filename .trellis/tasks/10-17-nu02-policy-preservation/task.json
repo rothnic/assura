@@ -1,0 +1,38 @@
+{
+  "id": "nu02-policy-preservation",
+  "name": "nu02-policy-preservation",
+  "title": "Preserve existing project policy during onboarding",
+  "description": "",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nu02-policy-preservation",
+  "assignee": "nu02-policy-preservation",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "fix/nu02-policy-preservation",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu02-policy-preservation",
+      "owner": "nu02-policy-preservation",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu02-policy-preservation",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

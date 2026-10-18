@@ -1,0 +1,28 @@
+# SP01 P1 disposition and evidence
+
+Status: P1 guard reverted after three independent retention reviews agreed it does not meet the keep bar. No source optimization is retained and no speedup is claimed. The public samples remain adverse evidence, not a causal performance claim.
+
+## Provenance
+
+- Repo: `/home/ubuntu/data/projects/assura-sp01-filesystem-attribution-20261018-01/source/checkout` on verified `vps-9cb01956` (Ubuntu).
+- Baseline source: `a4a0d23b4d5eabd5f62fb7bbfb8ce73fced4308f`, tree `b3841d82...`; candidate source: `d85f65ab23120f387f3b36166c80553fbc480b1e`, tree `d502559a...`.
+- Compiler/build: `cargo +stable`, release profile, `CARGO_BUILD_JOBS=2`, private `CARGO_HOME` and `CARGO_TARGET_DIR`, disk-backed `/var/tmp/agent-runs-1000/sp01-20261018-01` as `TMPDIR`. Candidate release executable SHA-256 `cf1b99f45f4437c401d27de2e169728963d507d867446977658b18a83cb53177`; adjacent `assura-full` SHA-256 `00077c9f21438b09aca9df83fd59753f6752a0a35f3e4b33e4d50aa9cf2445da`.
+- Fixture arms contain 5,000 files each. Config SHA-256: no-size `49916f46a13fa84f69c0a08f2cdb51dfbbf349b09d2fd7c7155360dd93f07c9f`; size-policy `eea78d3d956eef051a8bb7b473813a1e7d5abeb91a006a67dbf7d2c52cde05fd`; naming-only `f0e66a0fd77abf57e98b5483a4dccba18404eaa858c4f9ae65a85b60f0ae9440`.
+- Exact original run root: `/home/ubuntu/data/projects/assura-sp01-filesystem-attribution-20261018-01`; raw, command, and gate receipts are under `/home/ubuntu/data/projects/assura-sp01-filesystem-attribution-20261018-01/evidence/` on `vps-9cb01956`.
+- Bounded reviewer copy: `/Users/nroth/workspace/.assura-review-20261017/sp01-evidence/payload/`, archived at `/Users/nroth/workspace/.assura-review-20261017/sp01-evidence/sp01-review-evidence.tar.gz`. The current archive hash is `9df43e92c63d70450cf0f3c5f3a624e8e79c74e4307e0ff0da0279a9993e5f4c`; local and remote hashes match, all six included executable hashes match their copied `SHA256SUMS` records, and edge/missing correctness receipts match the sidecar hashes.
+
+## Attribution and correctness
+
+Temporary instrumentation on the baseline no-size arm counted 5,000 calls to `validate_file_size` with no effective max-size rule, and 5,000 metadata requests. The size-policy arm also counted 5,000 calls and requests. The naming-only fast path made no size-validator calls. Instrumented timings are diagnostic only.
+
+Uninstrumented `strace -c` runs confirmed the candidate removes exactly 5,000 `statx` calls from the no-size arm (10,006 to 5,006). The size-policy arm stayed at 10,006, and naming-only stayed at six. All six commands exited zero. Tracer elapsed times are not performance evidence.
+
+Base and candidate `assura check --format json .` matched stdout, stderr, and exit code byte-for-byte on all three 5,000-file arms. An edge fixture also matched exactly: 1,024-byte default-boundary passes; 1,025-byte default fails; a 1,025-byte pattern override under a 2 KB limit passes; zero-byte passes; a symlink to an oversized target and an unreadable mode-000 oversized file report the same findings; a broken symlink is skipped. Missing-target invocation returned the same exit code 3 and exact error text on both binaries. Candidate `cargo +stable test --locked --test pattern_scoped_file_directives` passed 5/5 tests.
+
+## Public measurement and retention disposition
+
+One bounded paired public run was taken after a two-window affinity assessment. At 03:45:40Z and 03:46:00Z, load was `5.26`→`5.65` on 16 CPUs, CPU PSI `some avg10` was 2.60%→3.35%, and CPU10 was a stable lower-activity candidate at 14.5%→15.6% busy across adjacent five-second windows; it was not established as the least-active CPU. Foreign `bd`, Dolt, and GC processes remained active. Both binaries were pinned to CPU10 and invoked through the same fork/exec launcher with identical `assura check --quiet` arguments. Twelve paired samples per arm were run in each order; the raw samples, runner, summary, and pre/post host receipts are in the reviewer payload and original evidence directory.
+
+On the policy-rich 5,000-file no-size arm, median paired improvement was 17.11 ms / 21.53% in base-first order and 11.56 ms / 16.86% in candidate-first order (11 of 12 pairs faster in each). This is observed sample evidence, not a causal speedup claim. The canonical `manual-many-scopes-common` exact quiet tie-breaker improved only 1.42% and 1.30% by median paired differences, below the required 3%; the unpaired medians reversed direction in one sequence and pair deltas were noisy. Its path is `/home/ubuntu/data/projects/manual-many-scopes-common`; the historical fixture config/tree hash was not captured and is unavailable. The size-policy control showed a first-order paired regression of 5.08 ms / 6.74%, then 0.81 ms / 1.09% in the reversed sequence; the naming-only control stayed within the 0.25 ms and 5% spillover limits. Post-run CPU PSI some avg10 fell from 2.34% to 1.82%, while I/O PSI some/full avg10 rose from 0.01% to 0.71%. These outcomes do not support retaining the optimization: the exact quiet tie-breaker misses its bar, size-policy spillover is material in one order, and formal performance-no-slower/native/warm gates were not run. Foreign work was not stopped or modified.
+
+Disposition: the isolated guard commit `d85f65ab` was reverted by `84a8d762`; source behavior now matches the pre-guard baseline. Three independent retention reviews agreed on no-keep. Do not cite the syscall reduction or custom no-size samples as a retained performance win. P1 public timing and strict no-slower/native/warm gates are closed without a keep decision; no more P1 timing attempts are planned. The same SP01 task continues with bounded attribution-only P2, specified in its PRD.

@@ -1,0 +1,4 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/spec/assura/delivery-lifecycle.md", "reason": "Bind candidate work and evidence to the owned task and branch; do not infer delivery from a green local check."}
+{"file": ".trellis/spec/frontend/directory-structure.md", "reason": "Keep public static installer and focused test files in their existing repository layers."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Release-contract CI owns this lightweight installer fixture; preserve the existing scoped release job and classifier behavior."}

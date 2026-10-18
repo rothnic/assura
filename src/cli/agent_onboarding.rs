@@ -12,7 +12,10 @@ use super::agent_onboarding_report::{
 };
 use super::agent_onboarding_rules::{normalize_existing_root, recommended_rules};
 use super::agent_onboarding_specialization::{inactive_capabilities, write_specialization_profile};
-use super::agent_onboarding_templates::{baseline_files, rule_recommendations_file, GeneratedFile};
+use super::agent_onboarding_templates::{
+    baseline_files, has_unmanaged_agent_surface, rule_recommendations_file, GeneratedFile,
+};
+use super::check::{run_structure_check_with_target_mode, CheckTargetMode};
 use super::doctor::project_doctor_packet_json;
 use super::project_review::build_project_review;
 use super::{
@@ -75,19 +78,22 @@ fn run_agent_onboarding(
     let project_root = resolve_project_root(options.path)?;
     fs::create_dir_all(&project_root).map_err(|error| error.to_string())?;
     let detected = detect_project(&project_root, options.agent, options.activate)?;
+    let strict_agent_surface =
+        !has_unmanaged_agent_surface(&project_root, &detected, options.content_template);
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    ensure_generated_path_is_safe(&project_root, &config_path)?;
     let recipe_file = options.recipe_file;
     let had_config = config_path.is_file();
     if had_config {
         if let Some(recipe_file) = recipe_file.as_ref() {
-            merge_local_recipe(&config_path, recipe_file)?;
+            merge_local_recipe(&project_root, &config_path, recipe_file)?;
         }
     } else if let Some(recipe_file) = recipe_file.as_ref() {
-        materialize_initial_local_recipe(&config_path, recipe_file)?;
+        materialize_initial_local_recipe(&project_root, &config_path, recipe_file)?;
     }
     let mut files = Vec::new();
     let quality_advice = onboarding_quality_advice(&project_root);
-    for file in baseline_files(&detected, options.content_template) {
+    for file in baseline_files(&detected, options.content_template, strict_agent_surface) {
         if had_config && options.preserve_existing_config && file.path == ".assura/config.yml" {
             files.push(FileAction {
                 path: file.path,
@@ -99,11 +105,8 @@ fn run_agent_onboarding(
             files.push(materialize_baseline_file(&project_root, file)?);
         }
     }
-    let rule_recommendations = recommended_rules(&detected, &config_path)?;
-    files.push(materialize_managed_file(
-        &project_root,
-        rule_recommendations_file(&detected, rule_recommendations[0].status),
-    )?);
+    let mut rule_recommendations =
+        recommended_rules(&detected, &config_path, strict_agent_surface)?;
 
     let integration_target = target_from_harness(detected.agent_harness);
     let integration = install_integration(
@@ -112,7 +115,26 @@ fn run_agent_onboarding(
         integration_target,
         options.activate,
     )?;
-    let (verified, review) = verify_project(&project_root, Some(config_path.clone()))?;
+    let (verified, review, mut policy_conflicts) =
+        verify_project(&project_root, Some(config_path.clone()))?;
+    policy_conflicts.extend(files.iter().filter_map(|file| {
+        (file.action == "conflict" && file.path.starts_with(".agents/skills/assura-"))
+            .then_some(file.path.to_string())
+    }));
+    policy_conflicts.sort();
+    policy_conflicts.dedup();
+    if !policy_conflicts.is_empty() {
+        let paths = policy_conflicts.join(", ");
+        rule_recommendations[0].status = "conflict";
+        rule_recommendations[0].reason = format!(
+            "{} project detected; existing agent policy or generated-file conflicts affect {paths}. Preserve those values and inspect `assura check --format json .` before resolving the paths.",
+            detected.project_type
+        );
+    }
+    files.push(materialize_managed_file(
+        &project_root,
+        rule_recommendations_file(&detected, rule_recommendations[0].status),
+    )?);
     write_specialization_profile(
         &project_root,
         &detected,
@@ -168,6 +190,7 @@ fn run_agent_onboarding(
 }
 
 fn materialize_initial_local_recipe(
+    project_root: &Path,
     config_path: &Path,
     recipe_file: &PathBuf,
 ) -> Result<(), String> {
@@ -178,12 +201,18 @@ fn materialize_initial_local_recipe(
     let parent = config_path
         .parent()
         .ok_or_else(|| format!("{} has no parent directory", config_path.display()))?;
+    ensure_generated_path_is_safe(project_root, config_path)?;
     fs::create_dir_all(parent).map_err(|error| error.to_string())?;
     crate::cli::local_recipe::write_config_atomically(config_path, &source)
         .map_err(|error| error.message().to_string())
 }
 
-fn merge_local_recipe(config_path: &Path, recipe_file: &Path) -> Result<(), String> {
+fn merge_local_recipe(
+    project_root: &Path,
+    config_path: &Path,
+    recipe_file: &Path,
+) -> Result<(), String> {
+    ensure_generated_path_is_safe(project_root, config_path)?;
     let outcome = crate::cli::local_recipe::merge_recipe_file(config_path, recipe_file)
         .map_err(|error| error.message().to_string())?;
     if outcome.conflicts.is_empty() {
@@ -350,8 +379,27 @@ fn materialize_baseline_file(
 
 fn materialize_file(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
-    let action = if existed { "existing" } else { "write" };
+    let existed = match ensure_generated_path_is_safe(project_root, &path) {
+        Ok(existed) => existed,
+        Err(_) if file.path.starts_with(".agents/skills/assura-") => {
+            return Ok(FileAction {
+                path: file.path,
+                action: "conflict",
+                existed: true,
+                required: file.required,
+            });
+        }
+        Err(error) => return Err(error),
+    };
+    let action = if !existed {
+        "write"
+    } else if file.path.starts_with(".agents/skills/assura-")
+        && fs::read_to_string(&path).ok().as_deref() != Some(file.contents.as_str())
+    {
+        "conflict"
+    } else {
+        "existing"
+    };
     if !existed {
         if let Some(parent) = path.parent() {
             fs::create_dir_all(parent).map_err(|error| error.to_string())?;
@@ -372,7 +420,7 @@ fn materialize_managed_file(
     file: GeneratedFile,
 ) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
+    let existed = ensure_generated_path_is_safe(project_root, &path)?;
     let current = if existed {
         Some(fs::read_to_string(&path).map_err(|error| error.to_string())?)
     } else {
@@ -420,7 +468,7 @@ fn set_executable_if_needed(_path: &Path, _executable: bool) -> Result<(), Strin
 
 fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAction, String> {
     let path = project_root.join(file.path);
-    let existed = path.exists();
+    let existed = ensure_generated_path_is_safe(project_root, &path)?;
     if !existed {
         return materialize_file(project_root, file);
     }
@@ -464,6 +512,95 @@ fn preserve_existing_bun_scope(existing: &Value, defaults: &mut Value) {
     {
         default_scopes.remove(key("bun"));
     }
+}
+
+/// Refuses to read or write a generated destination when any existing path
+/// component is a symlink or an incompatible file type. This is a bounded
+/// preflight check; it does not claim protection against concurrent filesystem
+/// replacement after validation.
+pub(super) fn ensure_generated_path_is_safe(root: &Path, path: &Path) -> Result<bool, String> {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir()
+            .map_err(|error| format!("resolve generated path {}: {error}", path.display()))?
+            .join(path)
+    };
+    let components = absolute.components().collect::<Vec<_>>();
+    let mut prefix = PathBuf::new();
+    let trusted_root_prefix = components
+        .iter()
+        .enumerate()
+        .take(components.len().saturating_sub(1))
+        .find_map(|(index, _)| {
+            prefix.push(components[index].as_os_str());
+            if matches!(components[index], std::path::Component::Prefix(_)) {
+                return None;
+            }
+            if components[index + 1..]
+                .iter()
+                .any(|component| matches!(component, std::path::Component::ParentDir))
+            {
+                return None;
+            }
+            let metadata = fs::symlink_metadata(&prefix).ok()?;
+            if !(metadata.file_type().is_dir() || metadata.file_type().is_symlink()) {
+                return None;
+            }
+            (prefix.canonicalize().ok().as_deref() == Some(root)).then_some(index + 1)
+        });
+    let (mut current, start_index) = match trusted_root_prefix {
+        Some(index) => (root.to_path_buf(), index),
+        None => (PathBuf::new(), 0),
+    };
+    for (index, component) in components.iter().enumerate().skip(start_index) {
+        current.push(component.as_os_str());
+        if matches!(component, std::path::Component::Prefix(_)) {
+            continue;
+        }
+        let is_leaf = index + 1 == components.len();
+        let metadata = match fs::symlink_metadata(&current) {
+            Ok(metadata) => metadata,
+            Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(false),
+            Err(error) => {
+                return Err(format!(
+                    "inspect generated path {} under {}: {error}",
+                    absolute.display(),
+                    root.display()
+                ));
+            }
+        };
+        if metadata.file_type().is_symlink() {
+            return Err(format!(
+                "refusing generated path {} under {} because component {} is a symlink",
+                absolute.display(),
+                root.display(),
+                current.display()
+            ));
+        }
+        if is_leaf {
+            if !metadata.file_type().is_file() {
+                return Err(format!(
+                    "refusing generated path {} under {} because destination is not a regular file",
+                    absolute.display(),
+                    root.display()
+                ));
+            }
+            return Ok(true);
+        }
+        if !metadata.file_type().is_dir() {
+            return Err(format!(
+                "refusing generated path {} under {} because parent component {} is not a directory",
+                absolute.display(),
+                root.display(),
+                current.display()
+            ));
+        }
+    }
+    Err(format!(
+        "generated path {} has no components",
+        absolute.display()
+    ))
 }
 
 fn merge_missing_values(existing: &mut Value, defaults: &Value) -> bool {
@@ -582,8 +719,31 @@ fn install_integration(
 fn verify_project(
     project_root: &Path,
     config: Option<PathBuf>,
-) -> Result<(Vec<CheckItem>, OnboardingReview), String> {
+) -> Result<(Vec<CheckItem>, OnboardingReview, Vec<String>), String> {
     let config_path = config.unwrap_or_else(|| project_root.join(".assura/config.yml"));
+    let check = run_structure_check_with_target_mode(
+        Some(project_root.to_path_buf()),
+        Some(config_path.clone()),
+        false,
+        CheckTargetMode::Recursive,
+    )
+    .map_err(|error| error.to_string())?;
+    let mut policy_conflicts = check
+        .violations
+        .iter()
+        .filter_map(|violation| {
+            let path = violation
+                .path
+                .strip_prefix(project_root)
+                .unwrap_or(&violation.path);
+            (path == Path::new(".agents")
+                || path.starts_with(".agents")
+                || path == Path::new("AGENTS.md"))
+            .then(|| format!("{} ({})", path.display(), violation.rule))
+        })
+        .collect::<Vec<_>>();
+    policy_conflicts.sort();
+    policy_conflicts.dedup();
     let report = build_project_review(
         Some(project_root.to_path_buf()),
         Some(config_path),
@@ -623,7 +783,7 @@ fn verify_project(
         inactive,
         next_command: "assura review --format agent .",
     };
-    Ok((verified, review))
+    Ok((verified, review, policy_conflicts))
 }
 fn content_section(template: AgentContentTemplate) -> ContentSection {
     if template.activates_content() {
