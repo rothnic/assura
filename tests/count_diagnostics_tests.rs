@@ -202,6 +202,55 @@ fn count_findings_are_bounded_aggregated_and_consistent_across_formats() {
 }
 
 #[test]
+fn nested_count_sample_paths_use_portable_separators() {
+    let project = TempDir::new().unwrap();
+    write_config(
+        &project,
+        r#"
+structure:
+  ./:
+    children:
+      .agents/:
+        children:
+          skills/:
+            children:
+              missing-skill-md/:
+                files:
+                  exists:
+                    "*.tmp": "0"
+                limit_children:
+                  max: 100
+"#,
+    );
+
+    let nested_parent = project
+        .path()
+        .join(".agents")
+        .join("skills")
+        .join("missing-skill-md");
+    fs::create_dir_all(&nested_parent).unwrap();
+    fs::write(nested_parent.join("tmp.tmp"), "unexpected").unwrap();
+
+    let output = run_check(&project, Some("json"));
+    assert_eq!(output.status.code(), Some(1));
+    let report: Value = serde_json::from_slice(&output.stdout).unwrap();
+    let findings = report["violations"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|finding| finding["rule"] == "exists_count")
+        .collect::<Vec<_>>();
+    assert_eq!(findings.len(), 1);
+    assert_eq!(findings[0]["path"], ".agents/skills/missing-skill-md");
+    let message = findings[0]["message"].as_str().unwrap();
+    assert!(
+        message.contains("Unexpected paths: .agents/skills/missing-skill-md/tmp.tmp"),
+        "{message}"
+    );
+    assert!(!message.contains('\\'), "{message}");
+}
+
+#[test]
 fn unrelated_forbidden_file_policy_keeps_its_blocking_exit() {
     let project = TempDir::new().unwrap();
     write_config(

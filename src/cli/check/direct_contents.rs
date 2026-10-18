@@ -2,7 +2,7 @@
 
 use super::patterns::{best_file_pattern_match, matches_single_compiled_pattern};
 use super::rules::{
-    count_satisfies, display_rel, file_matches_any_extension, severity_for_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, rel_to_string, severity_for_bundle,
     severity_for_directory_bundle,
 };
 use super::{StructureCheckReport, StructureChecker};
@@ -380,7 +380,7 @@ fn count_diagnostic_message(
             if rel.as_os_str().is_empty() {
                 format!("./{name}")
             } else {
-                format!("{}/{name}", rel.display())
+                format!("{}/{name}", rel_to_string(rel))
             }
         })
         .collect::<Vec<_>>();
