@@ -220,6 +220,33 @@ base OID (or an alias has been proven to resolve to that same OID). A mismatch
 is an unresolved `stale_base` candidate carrying both full OIDs and a next
 action; audit never cleans up its branch or worktree.
 
+## Candidate-scoped write-time GitHub reads
+
+`delivery record` and `delivery close` may use a candidate-scoped GitHub read for
+integration candidates. The reader first requests a complete, bounded identity
+cohort containing PR number, state, head/base refs and OIDs, and merge identity.
+A full 1,000-row response is incomplete. The typed task branch/base refs and the
+exact current local tip must map to one PR in that cohort; submitted evidence
+never selects the PR. The reader then requests current details for that exact
+number, including reviews and status checks, and verifies that number, refs,
+OIDs, state, and merge identity still match the cohort snapshot.
+
+Candidate details coverage is explicitly bound to one candidate and PR. It
+does not mean repository-wide review/check coverage and cannot satisfy another
+candidate. Provider failure reports a bounded query stage and unavailable
+status; malformed or changed identity reports an identity mismatch. Neither
+case advances task or receipt state. There is no fallback to fleet reads after
+a candidate query fails. Audit, next, checkpoint, inspect, and archive keep the
+full repository inventory contract.
+
+The GitHub reader lives in the leaf `delivery_github.py` provider module. It
+accepts already-normalized short head/base branch names and returns provider
+facts or provider-specific errors; it does not import delivery domain, status,
+audit, or archive modules. The delivery collector owns task/ref/tip mapping
+and translates provider identity mismatches into the established delivery
+validation error. Candidate coverage remains a delivery-evidence predicate,
+separate from provider I/O.
+
 ## State and outcomes
 
 `task.py finish` means pause: it records `session_state: paused` and then

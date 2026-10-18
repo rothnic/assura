@@ -10,22 +10,22 @@ from __future__ import annotations
 
 import json
 import re
-import shutil
-import subprocess
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
-from typing import Any, Protocol
+from typing import Any
 from urllib.parse import urlparse
 
 from .git import run_git
+from .delivery_github import (
+    GithubIdentityMismatch,
+    GithubReader,
+    GithubUnavailable,
+    SubprocessGithubReader,
+)
 
 
 class DeliveryValidationError(ValueError):
     """A task does not contain a valid delivery intent."""
-
-
-class GithubUnavailable(RuntimeError):
-    """GitHub evidence could not be collected completely."""
 
 
 _SAFE_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]{0,127}$")
@@ -175,74 +175,6 @@ class Inventory:
             "remote_refs": list(self.remote_refs),
             "issues": [issue.as_dict() for issue in self.issues],
         }
-
-
-class GithubReader(Protocol):
-    """Minimal injectable GitHub reader used by audits and tests."""
-
-    def list_pull_requests(self, repository: str) -> list[dict[str, Any]]:
-        """Return all available pull requests for a repository."""
-
-
-class SubprocessGithubReader:
-    """Read pull-request facts through the installed GitHub CLI."""
-
-    def __init__(self, executable: str = "gh") -> None:
-        self.executable = executable
-
-    def list_pull_requests(self, repository: str) -> list[dict[str, Any]]:
-        """Query all pull requests without invoking a shell."""
-        executable = shutil.which(self.executable) or self.executable
-        field_sets = (
-            "number,state,title,url,headRefName,headRefOid,baseRefName,baseRefOid,mergeCommit,mergedAt,reviewDecision,mergeStateStatus",
-            "number,reviews",
-            "number,statusCheckRollup",
-        )
-        rows: dict[str, dict[str, Any]] = {}
-        for fields in field_sets:
-            command = [
-                executable,
-                "pr",
-                "list",
-                "--repo",
-                repository,
-                "--state",
-                "all",
-                "--limit",
-                "1000",
-                "--json",
-                fields,
-            ]
-            try:
-                result = subprocess.run(
-                    command,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                    check=False,
-                )
-            except OSError as error:
-                raise GithubUnavailable(f"GitHub CLI unavailable: {error}") from error
-            if result.returncode != 0:
-                detail = result.stderr.strip() or "unknown GitHub CLI failure"
-                raise GithubUnavailable(detail)
-            try:
-                value = json.loads(result.stdout or "[]")
-            except json.JSONDecodeError as error:
-                raise GithubUnavailable("GitHub CLI returned invalid JSON") from error
-            if not isinstance(value, list):
-                raise GithubUnavailable("GitHub CLI returned a non-list response")
-            if len(value) >= 1000:
-                raise GithubUnavailable(
-                    "GitHub PR pagination is incomplete at the 1000-result limit"
-                )
-            for item in value:
-                if not isinstance(item, dict) or item.get("number") is None:
-                    continue
-                key = str(item["number"])
-                rows.setdefault(key, {}).update(item)
-        return list(rows.values())
 
 
 def _required_string(data: dict[str, Any], field: str) -> str:
@@ -904,6 +836,50 @@ def collect_inventory(
         issues=tuple(issues),
         repo_root=repo_root,
     )
+
+
+def collect_candidate_inventory(
+    repo_root: Path,
+    intent: DeliveryIntent,
+    github: Any = None,
+    refresh_remote: bool = False,
+) -> Inventory:
+    """Collect local topology and only the current details for this candidate PR."""
+    class EmptyReader:
+        def list_pull_requests(self, repository: str) -> list[dict[str, Any]]:
+            return []
+
+    inventory = collect_inventory(
+        repo_root, github=EmptyReader(), base_ref=intent.base_ref,
+        refresh_remote=refresh_remote,
+    )
+    if intent.kind != "integration":
+        return inventory
+    reader = github or SubprocessGithubReader()
+    query = getattr(reader, "candidate_pull_request", None)
+    if not callable(query):
+        raise GithubUnavailable("GitHub candidate identity cohort unavailable: reader does not support candidate reads")
+    from .delivery_status import _candidate_ref_matches
+
+    refs = _candidate_ref_matches(intent, inventory)
+    tip = refs[0].get("oid") if len(refs) == 1 else None
+    if not isinstance(tip, str) or not tip:
+        raise DeliveryValidationError("PR identity mismatch: candidate local tip is missing or ambiguous")
+    head_ref = _branch_name(intent.branch_ref)
+    base_ref = _branch_name(intent.base_ref)
+    if head_ref is None or base_ref is None:
+        raise DeliveryValidationError("PR identity mismatch: candidate branch mapping is incomplete")
+    try:
+        _, raw = query(inventory.repository, head_ref, base_ref, tip)
+    except GithubIdentityMismatch as error:
+        raise DeliveryValidationError(str(error)) from error
+    pull_request = _normalise_pr(raw)
+    coverage = dict(inventory.coverage)
+    coverage["github"] = "unavailable"
+    coverage["github_candidate"] = intent.candidate_id
+    coverage["github_candidate_details"] = "complete"
+    coverage["github_candidate_pr_number"] = pull_request.get("number")
+    return replace(inventory, coverage=coverage, pull_requests=(pull_request,))
 
 
 
