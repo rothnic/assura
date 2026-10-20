@@ -359,10 +359,14 @@ extensions:
             - crates/assura-check-cli/tests/compiled_requirements_traceability_cli.rs
       allowed_ignore_reasons:
         - manual_performance_audit
+        - manual_performance_fixture_export
       ignored_tests:
         - path: tests/ls_lint_parity_regression_tests.rs
           test: ls_lint_parity_audit_performance_shapes
           reason: manual_performance_audit
+        - path: src/cli/performance_report/fixture_tests.rs
+          test: export_nu11_accepted_many_scope_fixture
+          reason: manual_performance_fixture_export
   module_topologies:
     - id: public_rust_modules
       severity: high
@@ -1117,6 +1121,7 @@ structure:
             - "perf-vps-ls-lint-compare.sh"
             - "publish-release-assets.py"
             - "r03-performance-variance.sh"
+            - "nu11-callgrind-profile.py"
             - "release-contract.py"
             - "smoke-install-adoption.ps1"
             - "smoke-install-adoption.sh"

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import os
+import hashlib
 import subprocess
 import tempfile
 import unittest
@@ -25,6 +26,11 @@ class R03PerformanceVarianceContractTests(unittest.TestCase):
         self.assertIn("r03-performance-variance", workflow)
         self.assertIn("ASSURA_PERF_VARIANCE_COMMIT", workflow)
         self.assertIn("full 40-character commit SHA", workflow)
+        self.assertIn("default: variance", workflow)
+        self.assertIn("if: ${{ inputs.mode == '' || inputs.mode == 'variance' }}", workflow)
+        self.assertIn("if: ${{ inputs.mode == 'callgrind' }}", workflow)
+        self.assertIn("scripts/nu11-callgrind-profile.py", workflow)
+        self.assertIn("debian:bookworm-20260918-slim@sha256:", workflow)
 
         self.assertIn("--iterations 16", runner)
         self.assertIn("cargo xtask performance-no-slower", runner)
@@ -43,6 +49,12 @@ class R03PerformanceVarianceContractTests(unittest.TestCase):
         self.assertLess(
             runner.index("cargo rustc --release --bin assura"),
             runner.index('> "$output_dir/binaries-before.sha256"'),
+        )
+
+    def test_original_variance_runner_is_byte_identical_to_base(self) -> None:
+        self.assertEqual(
+            hashlib.sha256(RUNNER.read_bytes()).hexdigest(),
+            "fb933e77bed02f3ae4a7cf3de7b871ac7861fbb0d554a906d124ada84f0572c2",
         )
 
     def test_invalid_collection_boundaries_stop_before_build_or_artifact_creation(self) -> None:

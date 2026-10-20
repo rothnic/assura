@@ -7,6 +7,14 @@ on:
         description: full 40-character commit SHA to measure.
         required: true
         type: string
+      mode:
+        description: Run the unchanged strict variance collection or the bounded Callgrind observation.
+        required: true
+        default: variance
+        type: choice
+        options:
+          - variance
+          - callgrind
 
 permissions:
   contents: read
@@ -14,6 +22,7 @@ permissions:
 jobs:
   diagnose:
     name: Retain strict paired cold evidence
+    if: ${{ inputs.mode == '' || inputs.mode == 'variance' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -37,4 +46,53 @@ jobs:
         name: r03-performance-variance
         path: target/performance/r03-performance-variance
         if-no-files-found: error
+        retention-days: 14
+
+  callgrind:
+    name: Describe accepted workload instructions
+    if: ${{ inputs.mode == 'callgrind' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    container:
+      image: debian:bookworm-20260918-slim@sha256:f3034a6ec3c1205360777c4aae76234998866ad18806ae62b63a3f84ccad782b
+    env:
+      ASSURA_NU11_COMMIT: ${{ inputs.commit }}
+      ASSURA_NU11_MODE: ${{ inputs.mode }}
+    steps:
+    - name: Reject source or ref mismatch before tool setup
+      shell: bash
+      run: |
+        set -euo pipefail
+        [[ "$ASSURA_NU11_COMMIT" =~ ^[0-9a-f]{40}$ ]]
+        [[ "$GITHUB_SHA" == "$ASSURA_NU11_COMMIT" ]]
+        [[ "$GITHUB_REF" == refs/heads/* ]]
+        [[ "$GITHUB_REF" != refs/heads/master && "$GITHUB_REF" != refs/heads/main ]]
+    - uses: actions/checkout@v4
+      with:
+        ref: ${{ inputs.commit }}
+    - name: Verify checked-out source before tool setup
+      shell: bash
+      run: |
+        set -euo pipefail
+        [[ "$(git rev-parse HEAD)" == "$ASSURA_NU11_COMMIT" ]]
+        [[ -z "$(git status --porcelain --untracked-files=normal)" ]]
+    - name: Install Rust
+      uses: dtolnay/rust-toolchain@stable
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24
+    - name: Run bounded Callgrind observation
+      run: python3 scripts/nu11-callgrind-profile.py
+    - name: Upload raw NU11 profile evidence
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v4
+      with:
+        name: nu11-callgrind-${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: target/performance/nu11-callgrind-profile/${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
+        if-no-files-found: warn
         retention-days: 14

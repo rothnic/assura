@@ -22,10 +22,21 @@ mode and isolated profile job; new scripts/nu11-callgrind-profile.py; existing
 src/cli/performance_report/fixture_tests.rs ignored exact constructor exporter;
 existing tests/r03_performance_variance_contract_tests.py and focused
 tests/nu11_callgrind_profile_tests.py. Task/context/evidence as needed.
-No new Rust module/public API/dependency/config/threshold/history change.
+No new Rust module/public API/dependency, performance threshold or history
+change.
 Keep existing scripts/r03-performance-variance.sh byte-identical and default
 3x16 timing behavior unchanged. Leave old plan-only r03_callgrind_attribution.py
 and old A/B tests untouched and uncredited as executor evidence.
+
+Two narrowly scoped metadata decisions are separately authorized because the
+approved files require closed-world registration: add only
+scripts/nu11-callgrind-profile.py to the existing scripts/ allowed-name list,
+and allow reason manual_performance_fixture_export plus its one exact ignored
+test mapping for
+src/cli/performance_report/fixture_tests.rs::export_nu11_accepted_many_scope_fixture
+under supported_surface_tests. Preserve all existing categories, mappings,
+relationships, severity and other allowlists. These entries authorize neither
+profile execution nor a product-policy or performance-gate change.
 
 ## Contract
 
@@ -77,3 +88,22 @@ Source-only now; no local Cargo while NU03 owns Rust lane. Python focused negati
 controls/standalone formatting/cheap task/context/diff checks allowed. No package
 operation/build/profile/dispatch/native/Beads by worker. Stop unexpected gates
 and retain raw before root three-competitor diagnosis.
+
+
+## Source checkpoint (2026-10-20)
+
+The optional Callgrind mode, constructor-backed ignored fixture exporter and
+local bounded runner are implemented. The default variance script is unchanged.
+Root accepted independent review findings for combined-output accounting,
+PID/PGID launch receipts, distinct overflow/deadline causes, remaining-job
+deadlines and bounded owned-process cleanup, including setup/persistence faults.
+The source gate now passes 13 focused Python controls and 3 existing R03
+contract tests. Earlier failed assertions, cleanup errors and missing-import
+receipts are retained under external `nu11/correction-20261020`; none is hidden
+or counted as a pass. Standalone Rust formatting, context, diff and source-bound
+structure guards pass.
+
+Rust exporter compilation, container/Valgrind compatibility, actual three-profile
+collection and the subsequent unchanged strict production matrix remain unrun.
+This is a source checkpoint awaiting independent final review and root admission.
+It neither explains the original timing failure nor proves a speed improvement.
