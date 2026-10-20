@@ -2,13 +2,13 @@
 
 use super::{
     acquire_refresh_worker_lease, claim_refresh_queue, discard_refresh_lease, mark_refresh_queued,
-    owner_alive_for_token, prune_feedback_sidecars, read_state, reclaim_lease_if_token,
-    refresh_lease_is_stale, refresh_lease_pid, refresh_lease_token, refresh_lock_path,
-    release_refresh_lease_if_owned, replace_refresh_lease_if_owned, restore_refresh_queue,
-    state_is_valid, state_path, write_state, AgentFeedbackConfig, DeliveryLease, DeliveryState,
-    LeaseMutex, HANDOFF_GRACE_MILLIS, REFRESH_MIN_INTERVAL_ENV, REFRESH_READY_ENV,
-    REFRESH_SUPERVISOR_CLAIM_ENV, REFRESH_SUPERVISOR_DEADLINE_ENV, REFRESH_SUPERVISOR_ENV,
-    REFRESH_SUPERVISOR_PID_ENV, REFRESH_TOKEN_ENV,
+    now, now_millis, owner_alive_for_token, process_owner_alive, prune_feedback_sidecars,
+    read_state, reclaim_lease_if_token, refresh_lease_is_stale, refresh_lease_owned,
+    refresh_lease_pid, refresh_lease_token, refresh_lock_path, release_refresh_lease_if_owned,
+    replace_refresh_lease_if_owned, restore_refresh_queue, state_is_valid, state_path, write_state,
+    AgentFeedbackConfig, DeliveryLease, LeaseMutex, HANDOFF_GRACE_MILLIS, REFRESH_MIN_INTERVAL_ENV,
+    REFRESH_READY_ENV, REFRESH_SUPERVISOR_CLAIM_ENV, REFRESH_SUPERVISOR_DEADLINE_ENV,
+    REFRESH_SUPERVISOR_ENV, REFRESH_SUPERVISOR_PID_ENV, REFRESH_TOKEN_ENV,
 };
 
 use crate::cli::agent_trajectory;
