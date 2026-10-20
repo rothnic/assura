@@ -1,0 +1,38 @@
+{
+  "id": "w02-release-story",
+  "name": "w02-release-story",
+  "title": "W02 current release story adaptation",
+  "description": "Focused execution child for Bead ae-mmh and the existing W02 contract; adapt preserved prepared work to current published release and integration source.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "w02-release-story",
+  "assignee": "w02-release-story",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/w02-release-story",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": "09-04-maturity-portfolio-strategy",
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-w02-release-story",
+      "owner": "w02-release-story",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/w02-release-story",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}

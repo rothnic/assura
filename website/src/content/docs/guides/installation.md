@@ -4,6 +4,9 @@ description: How to install or build Assura
 ---
 
 Assura ships as a prebuilt CLI. Normal usage does not require Rust.
+The latest published release is [v0.4.1](https://github.com/rothnic/assura/releases/tag/v0.4.1).
+A source checkout can contain later changes; those are not installed by the
+public release script until a new release is published.
 
 ## Requirements
 
@@ -102,8 +105,13 @@ The binary is available at `target/release/assura`.
 
 ```bash
 assura --version
+assura-full --version
 assura --help
 ```
+
+Keep both executables together and confirm the selected version matches the
+release you intended to install. If the installer reports an older executable
+first on `PATH`, follow its correction and repeat these checks in a fresh shell.
 
 The first useful project check is:
 

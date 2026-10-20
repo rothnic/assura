@@ -1,6 +1,8 @@
 ---
 import policyDemo from '../../data/policy-demo.json';
 
+const repair = policyDemo.repair;
+
 const markers = new Map(policyDemo.markers.map((marker) => [marker.match, marker.id]));
 
 const splitYamlLine = (text: string) => {
@@ -67,9 +69,55 @@ const treeRows = policyDemo.tree.map((row) => ({
     ))}</code></pre>
   </section>
 
+  <section class="recorded-repair" aria-labelledby="recorded-repair-title">
+    <p class="eyebrow">Config → violation → rename → recheck</p>
+    <h3 id="recorded-repair-title">One recorded naming repair</h3>
+    <p>Recorded CLI output from this fixture, not executed in your browser.
+      The operation below renames one file; it is not autonomous repair.</p>
+    <p>CLI, generator and fixture input revision: <code>{policyDemo.source_revision}</code>.
+      Source checkout output; published release output may differ.</p>
+    <div class="layer-list">
+      <article class="layer-row">
+        <span>1</span>
+        <div><h4>Keep the configuration</h4><p><code>.ts: kebab-case | max_lines:500</code></p></div>
+      </article>
+      <article class="layer-row" data-repair-stage="before">
+        <span>2</span>
+        <div>
+          <h4>Check the wrong name · Exit {repair.before.exit_code}</h4>
+          <p>{repair.before.report.violations[0].message}</p>
+          <code>{repair.before.report.violations[0].rule}</code>
+        </div>
+      </article>
+      <article class="layer-row">
+        <span>3</span>
+        <div><h4>Recorded file rename</h4><p><code>{repair.from}</code> → <code>{repair.to}</code></p></div>
+      </article>
+      <article class="layer-row" data-repair-stage="after">
+        <span>4</span>
+        <div>
+          <h4>Recheck the same policy · Exit {repair.after.exit_code}</h4>
+          <p>{repair.after.report.files_checked} files · {repair.after.report.dirs_checked} directories · {repair.after.report.violations.length} violations</p>
+        </div>
+      </article>
+    </div>
+    {repair.config_preserved && repair.file_contents_preserved && <p>Configuration and file contents unchanged.</p>}
+    <p>The unrepaired file also failed a second check (exit {repair.unrepaired_exit_code}).</p>
+    <p>Selected fields from the actual CLI JSON follow; other report fields are omitted.</p>
+    <div class="recorded-json">
+      {(['before', 'after'] as const).map((stage) => (
+        <details>
+          <summary>{stage === 'before' ? 'Violation' : 'Recheck'}: selected CLI JSON fields</summary>
+          <code>{repair[stage].command}</code>
+          <pre><code>{JSON.stringify(repair[stage].report, null, 2)}</code></pre>
+        </details>
+      ))}
+    </div>
+  </section>
+
   <section class="tree-panel" aria-labelledby="policy-tree-title">
     <header>
-      <span>Fixture explorer</span>
+      <span>Separate policy examples</span>
       <h3 id="policy-tree-title">Policy, paths, and violations</h3>
     </header>
     <ul class="tree-root tree-flat">
@@ -94,6 +142,8 @@ const treeRows = policyDemo.tree.map((row) => ({
       <span>{policyDemo.summary.files_checked} files · {policyDemo.summary.dirs_checked} dirs</span>
     </footer>
     <p class="policy-evidence-note">
+      These additional naming and line-limit violations are not repaired by the
+      single rename above.
       The tree organizes policy scopes and observed fixture paths. Only red rows
       are violations emitted by <code>{policyDemo.command}</code>; observed paths
       are not per-path pass records or a separate CLI format.
@@ -111,3 +161,18 @@ const treeRows = policyDemo.tree.map((row) => ({
     </div>
   </details>
 </div>
+
+<style>
+  .recorded-repair { min-width: 0; padding: 1rem; border: 1px solid var(--border); border-radius: 0.5rem; background: var(--surface); }
+  .recorded-repair h3 { margin: 0.5rem 0; font-size: 1.3rem; }
+  .recorded-repair p { color: var(--muted); line-height: 1.5; }
+  .recorded-repair h4 { margin: 0; font-size: 0.95rem; }
+  .recorded-repair code { overflow-wrap: anywhere; font-size: 0.85rem; }
+  .recorded-repair .layer-list { margin-top: 1rem; }
+  .recorded-repair .layer-row { padding: 0.8rem 0; }
+  .recorded-repair .layer-row p { margin: 0.35rem 0 0; font-size: 0.85rem; }
+  .recorded-json { display: grid; gap: 0.75rem; }
+  .recorded-json summary { cursor: pointer; color: var(--text); }
+  .recorded-json pre { white-space: pre-wrap; overflow-wrap: anywhere; margin-bottom: 0; color: var(--text); }
+  .tree-panel { grid-column: 1 / -1; }
+</style>

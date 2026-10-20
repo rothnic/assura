@@ -1,0 +1,38 @@
+{
+  "id": "10-17-nu05-installer-shadow",
+  "name": "10-17-nu05-installer-shadow",
+  "title": "Fix installer shadowed PATH resolution",
+  "description": "Implement NU05 ae-8kr: after successful installation, report installed version and actual shell command resolution when an older PATH entry shadows the destination; provide a concrete correction without modifying shell files or replacing another install. Verify assura and assura-full companions and a fresh-shell version canary after correction. Preserve checksum/error/install behavior; add focused installer coverage and record proof.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "Unix installer PATH diagnostics, focused fixture, and release-contract CI step",
+  "package": null,
+  "priority": "P2",
+  "creator": "nu05-installer-shadow",
+  "assignee": "nu05-installer-shadow",
+  "createdAt": "2026-10-17",
+  "completedAt": null,
+  "branch": "fix/nu05-installer-shadow",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-17-nu05-installer-shadow",
+      "owner": "nu05-installer-shadow",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu05-installer-shadow",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#goal"
+    }
+  }
+}

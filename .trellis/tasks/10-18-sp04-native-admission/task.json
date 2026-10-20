@@ -1,0 +1,38 @@
+{
+  "id": "sp04-native-admission",
+  "name": "sp04-native-admission",
+  "title": "SP04 native performance history admission correctness",
+  "description": "Correct native performance history admission by opaque timestamp and executing commit within the existing baseline key. Deduplicate identical executions, reject conflicting duplicates fail-closed, exclude the exact target from history and checked-current fallback, and preserve unseen-environment provisional fallback. No schema/API/policy change. Implementation awaits release of an admitted local validation lane.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "native-performance-history-admission",
+  "package": null,
+  "priority": "P2",
+  "creator": "sp04-native-admission",
+  "assignee": "sp04-native-admission",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/sp04-native-admission",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-sp04-native-admission",
+      "owner": "sp04-native-admission",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/sp04-native-admission",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "root Beads ae-mwl; delegated to /root/native_admission_implement for SP04 candidate only"
+    }
+  }
+}

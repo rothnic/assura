@@ -214,6 +214,7 @@
       }
     }
   ],
+  "source_revision": "d89b330f5f65d237d1a8dfb5b0c1ebdda646b23c",
   "status": "fail",
   "structure": {
     "dirs_checked": 11,

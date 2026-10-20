@@ -3,17 +3,22 @@ const comparisons = [
   {
     tool: 'Language linters',
     goodAt: 'Details inside source files for one language or runtime.',
-    adds: 'One fast language-agnostic policy for line limits, structure, Markdown, config, generated files, and agent guidance.',
+    adds: 'Configured repository structure, required paths and guidance alongside native lint, type checks and tests.',
   },
   {
     tool: 'LS-Lint',
-    goodAt: 'Fast filesystem naming rules.',
-    adds: 'File-content checks, reusable policy layers, rule-specific repair guidance, agent output, and warm sessions.',
+    goodAt: 'Filesystem naming, regex rules and file or directory cardinality.',
+    adds: 'Use Assura when content conventions or repair feedback meet an additional need; keep LS-Lint when its policy is sufficient.',
   },
   {
     tool: 'Pre-commit',
-    goodAt: 'Running local gates after a batch of work.',
-    adds: 'Earlier project-review signals and the same bounded policy at the eventual gate.',
+    goodAt: 'Installing, selecting and running multi-language hooks.',
+    adds: 'Run Assura as another check under the existing runner; retain native commands and hook ownership.',
+  },
+  {
+    tool: 'Dependency tools',
+    goodAt: 'Import direction, dependency relationships and unused code analysis.',
+    adds: 'Repository path conventions alongside specialist dependency analysis. File presence does not establish code usage or test quality.',
   },
   {
     tool: 'CI',

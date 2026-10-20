@@ -1,0 +1,38 @@
+{
+  "id": "nu06-missing-config",
+  "name": "nu06-missing-config",
+  "title": "NU06 missing config recovery",
+  "description": "Implement reviewed recovery guidance for missing Assura config in check, review, and doctor JSON modes.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "src/cli/check.rs; src/cli/check/report.rs; tests/missing_config_diagnostics.rs; docs/validation.md; website/src/content/docs/guides/adoption-walkthrough.md; .trellis/tasks/10-18-nu06-missing-config",
+  "package": null,
+  "priority": "P1",
+  "creator": "codex-nu06",
+  "assignee": "codex-nu06",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "fix/nu06-missing-config",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu06-missing-config",
+      "owner": "codex-nu06",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/nu06-missing-config",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority-and-ownership"
+    }
+  }
+}

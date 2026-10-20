@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.public-roadmap.v1",
-  "updated": "2026-09-05",
+  "updated": "2026-10-18",
   "source": ".trellis/spec/assura/roadmap.md",
   "groups": [
     {
@@ -17,7 +17,7 @@
       "title": "Now",
       "items": [
         {"label": "Repository Convention Core", "summary": "Make explainable local policy and deterministic merge gates dependable for agent-assisted development.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/execution-backlog.md"},
-        {"label": "Trustworthy Release Evidence", "summary": "Repair watch and performance evidence, then prove a single candidate across every retained platform obligation.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md"},
+        {"label": "Trustworthy Release Evidence", "summary": "Reconcile published v0.4.1 availability with current source, retain dated performance evidence, and verify every advertised support obligation.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/reliability-packet.md"},
         {"label": "Safe Agent Initialization", "summary": "Evaluate project-owned patterns, explicit activation, preservation, and native CI recipes without autonomous repair.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md"}
       ]
     },
@@ -26,7 +26,7 @@
       "title": "Next",
       "items": [
         {"label": "Blinded Setup Evaluation", "summary": "Measure fixed-fixture initialization and follow-on changes before promoting specialized setup outcomes.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/initialization-packet.md"},
-        {"label": "Evidence Based Release", "summary": "Prepare release and portfolio artifacts only after the retained contract has same-candidate proof.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md"}
+        {"label": "Evidence Based Release", "summary": "Use same-candidate technical proof, independent setup evaluation and outside retained-use evidence before the next release decision.", "detail_path": ".trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md", "href": "https://github.com/rothnic/assura/blob/master/.trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md"}
       ]
     }
   ]

@@ -5,8 +5,116 @@ description: "Resolve Assura build prerequisites and route isolated VPS validati
 
 # Assura Local Build
 
-Use this skill when build or validation commands fail for local environment
-reasons rather than Rust code errors.
+Use this skill before a long local validation run, or when build/validation
+commands fail for environment reasons rather than Rust code errors.
+
+## Local preflight
+
+From the candidate root, wrap the exact command without changing its argv:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/local-preflight.py \
+  --repo "$PWD" --socket-relative --require-bash-mapfile --website-tools \
+  -- cargo xtask pr
+```
+
+The helper resolves the effective target with offline, locked, no-dependency
+Cargo metadata. Supported entries are direct Cargo build/test/check/clippy/fmt/
+run/bench/doc/metadata commands and the repository's xtask alias. Cargo options
+stop at `--`; forwarded application options remain untouched. External manifests,
+`-C` source routing, custom command aliases and prebuilt xtask/wrapper launchers
+are unsupported and rejected rather than given unrelated metadata proof.
+It emits one JSON record to stderr, then execs the command with
+its inherited environment and exit behavior; capture the command's exit in your
+outer receipt. A rejected preflight never launches that command. Dirty source
+is reported, not cleaned. Metadata and identity probes are not build/test credit.
+
+## Capture a validation invocation
+
+`capture-validation.py` supports POSIX systems (macOS and Linux). It rejects
+other platforms before creating evidence or launching the command; the mode
+0700 evidence-directory contract is POSIX-only.
+
+Use `capture-validation.py` when a task needs a durable record of one command's
+exact argv, raw stdout/stderr bytes and observed direct-child exit. The caller
+must provide existing repo and evidence root directories that it owns. Set any
+required environment, including `TMPDIR`, target and export directories,
+before invoking it:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/capture-validation.py \
+  --repo "$PWD" --evidence-root /absolute/path/to/existing/evidence \
+  --label cargo-metadata --record-env TMPDIR \
+  -- cargo metadata --offline --locked --no-deps --format-version 1
+```
+
+Each run creates a fresh mode-0700 directory with `receipt.json`, `stdout.bin`
+and `stderr.bin`. Only explicitly named non-secret environment values and
+repository-relative ordinary-file hashes are recorded. To compose local
+preflight, pass its existing command as the captured argv; its JSON remains in
+raw stderr and the receipt records only the helper invocation's exit. The
+caller separately inspects that helper record. The caller also retains the
+outer Codex/SSH tool session handle: the recorded PID cannot recover a lost
+session result.
+
+On handled INT/TERM the wrapper signals only its direct child and waits up to
+five seconds. Interruption always returns nonzero; a null child return code
+means the wrapper could not observe the child's exit. If evidence persistence
+fails after launch, the wrapper sends a bounded termination to that direct
+child, records capture failure separately from the child's observed result,
+and returns nonzero. When the evidence store also rejects the fallback receipt,
+stderr reports the run ID, PID, child result and persistence error. A `claimed`
+or `running` receipt without a terminal observation is unknown, including the
+spawn-to-PID write window. Descendants are not signalled or claimed as reaped. Run focused
+controls with:
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/capture-validation-tests.py
+```
+
+Capture records invocation evidence only; interpret test counts, artifacts and
+command-specific success from the owning validation workflow. Focused controls
+include mocked platform rejection and fault injection for running and terminal
+receipt writes; they do not establish Windows execution behavior.
+
+Choose profiles for the actual route: socket checks for Unix-socket tests,
+`--require-bash-mapfile` for evidence/pr/full (the CI scope classifier), and
+`--website-tools` for docs/pr/full. Omit unrelated profiles for ordinary Cargo.
+Socket checks require an explicit, nonempty, absolute inherited `TMPDIR` that
+is an existing caller-owned `0700` directory with verified disk backing. Python's
+TEMP/TMP/default fallback is not used to guess Rust's temp root. The socket budget
+uses the literal inherited spelling, preserving `.` and repeated separators.
+Canonical paths are used only for filesystem checks. The projected default socket
+includes `.tmpXXXXXX` and the hot-session filename. Darwin's 104-byte capacity includes NUL and applies only on Darwin.
+`--socket-relative <suffix>` selects another known test suffix, not a shorter
+stand-in for the command's actual longest path.
+
+`--target-dir <path>` asserts the effective Cargo target and explicitly declares
+an external directory task-dedicated; it does not set `CARGO_TARGET_DIR`. An
+external target must already exist, belong to the caller and exclude other
+writers. Confirm its workload ownership separately. `--tmpdir` likewise asserts
+the inherited value without setting it. Set child-only environment explicitly
+before invoking the helper; it creates no directories or global configuration.
+
+Targets inside another Assura checkout are rejected. General Cargo commands may
+use a declared external target. `xtask docs`, `pr`, `full`, `website-demo-data`
+and `website-config-examples` require the local target. Equivalent direct xtask
+package and local-manifest launches are recognized, including separated,
+attached and equal package-value forms. `run_pr` reaches
+`run_docs` in `xtask/src/main.rs`, and the demo/example helpers read
+`target/debug/assura-full` in `xtask/src/website_demo.rs`.
+
+Website probes retain xtask's pnpm/npm/node fallback and check selected pnpm
+against `website/package.json`. They record package/lock and executable hashes,
+child cwd/PATH and Node identity for the current simple Astro script. This
+no-build probe is not proof of arbitrary nested build subprocesses; retain
+actual build-child evidence when required. No Node version is invented as a pin.
+
+Run the fake-tool controls (no Cargo/website builds or installs):
+
+```bash
+python3 .agents/skills/assura-local-build/scripts/local-preflight-tests.py
+```
 
 ## OpenSSL Discovery
 

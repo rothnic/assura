@@ -16,7 +16,7 @@ should call the same contracts rather than invent parallel validation.
 | `assura check --format agent` | Supported | Stable JSON shape for wrappers and agent integrations. |
 | `assura check --format agent --agent codex` | Supported adapter | Optional Codex `UserPromptSubmit` delivery adapter. |
 | `assura agent` | Supported | Local coding-agent command group with JSON defaults for diagnostics, context packs, graph/search queries, relation checks, and safe-fix previews. |
-| `assura agent integration` | Supported next-release | Managed project-local install/activate/update/deactivate/remove/status/doctor lifecycle for Codex, OpenCode, Claude, and Pi. |
+| `assura agent integration` | Supported in v0.4.1 | Managed project-local install/activate/update/deactivate/remove/status/doctor lifecycle for Codex, OpenCode, Claude, and Pi. |
 | `assura editor session` | Supported | Local JSON-line editor protocol with LSP-shaped diagnostics, context, code-action preview methods, and conservative reload metadata. |
 | `integrations/editors/vscode` | Supported beta local package | Local VS Code adapter over shared CLI, daemon, and editor-session contracts. Package tests and smoke scripts gate metadata, daemon visibility, one-shot fallback, and preview-only safe fixes. Marketplace publication is deferred. |
 | `assura content agent-context` | Supported | Generic project-intelligence capability schema for wrappers; not agent-specific. |

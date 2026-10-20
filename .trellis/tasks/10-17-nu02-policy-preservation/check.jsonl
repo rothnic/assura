@@ -1,0 +1,4 @@
+{"file":".trellis/spec/assura/agent-ready-onboarding.md","reason":"Acceptance and behavior claims must remain aligned with the onboarding spec."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Focused check must preserve explicit closure semantics."}
+{"file":".trellis/tasks/10-17-new-user-review-backlog/research/python-trial.md","reason":"Supports fixture fidelity and identifies source state to preserve."}
+{"file":".trellis/tasks/10-17-new-user-review-backlog/research/typescript-trial.md","reason":"Supports fixture fidelity and identifies source state to preserve."}

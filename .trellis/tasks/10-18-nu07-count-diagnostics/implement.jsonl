@@ -1,0 +1,3 @@
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Preserve exists count matching, direct-child scope, allowed patterns, severities and rule semantics."}
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Keep agent check output and blocking/advisory exit contracts stable."}
+{"file":"/Users/nroth/workspace/.assura-review-20261017/nu07-research/nu07-source-discovery.md","reason":"Authoritative read-only source path, acceptance evidence, and narrow implementation plan for NU07."}

@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/agent-ready-onboarding.md","reason":"Authoritative onboarding behavior and report contract."}
+{"file":".trellis/spec/assura/structure-enforcement.md","reason":"Defines explicit closed-scope behavior and validation outcomes."}
+{"file":".trellis/spec/guides/code-reuse-thinking-guide.md","reason":"Required check before changing policy templates or adding helpers."}
+{"file":".trellis/tasks/10-17-new-user-review-backlog/research/python-trial.md","reason":"Retained Python project evidence for the disposable fixture reproduction."}
+{"file":".trellis/tasks/10-17-new-user-review-backlog/research/typescript-trial.md","reason":"Retained TypeScript project evidence for the disposable fixture reproduction."}

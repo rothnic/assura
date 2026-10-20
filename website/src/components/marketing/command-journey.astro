@@ -1,10 +1,15 @@
 ---
+import {
+  checkCommand, onboardingCommand, reviewCommand, releaseScope,
+  releaseStatus,
+} from '../../data/marketing';
+
 const primaryCommands = [
   {
     label: 'Review',
     phase: 'During agent work',
     role: 'Advisory signal',
-    command: 'assura review',
+    command: reviewCommand,
     body: 'Compare the branch and worktree, rank attention, and show the next useful action without blocking the loop.',
     facts: ['Changed work', 'Hot directories', 'Advisory result'],
     tone: 'review',
@@ -13,7 +18,7 @@ const primaryCommands = [
     label: 'Check',
     phase: 'Before commit or merge',
     role: 'Policy gate',
-    command: 'assura check',
+    command: checkCommand,
     body: 'Evaluate the configured project contract and return a deterministic pass or fail for hooks and CI.',
     facts: ['Configured rules', 'Exact violations', 'Pass / fail exit'],
     tone: 'check',
@@ -23,11 +28,11 @@ const primaryCommands = [
 const supportingCommands = [
   {
     label: 'Set up the baseline',
-    command: 'assura agent onboard',
+    command: onboardingCommand,
   },
   {
-    label: 'Investigate one path',
-    command: 'assura explain <path>',
+    label: 'Investigate the current project directory',
+    command: 'assura explain .',
   },
 ];
 ---
@@ -41,6 +46,10 @@ const supportingCommands = [
     <p class="eyebrow">The command model</p>
     <h2 id="journey-title">Review the change. Check the contract.</h2>
     <p>Review keeps agents informed while work is moving. Check makes the final policy decision.</p>
+    <p class="command-release-status">
+      <strong>{releaseStatus}</strong>
+      <span>{releaseScope}</span>
+    </p>
   </div>
 
   <div class="command-model" aria-label="Review and check command roles">
@@ -72,3 +81,33 @@ const supportingCommands = [
     ))}
   </div>
 </section>
+
+<style>
+  .journey-section .command-release-status,
+  .journey-section .command-role {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .journey-section .command-release-status {
+    gap: 0.5rem;
+    overflow-wrap: anywhere;
+  }
+
+  .journey-section .supporting-commands > div {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    align-content: start;
+    gap: 0.5rem;
+  }
+
+  .journey-section .command-role > code,
+  .journey-section .supporting-commands code {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: normal;
+    font-size: 0.85rem;
+    text-align: left;
+  }
+</style>

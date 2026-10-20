@@ -1,0 +1,2 @@
+{"file":".trellis/spec/assura/index.md","reason":"Review the missing-config behavior against product boundaries and evidence rules."}
+{"file":".agents/skills/assura-rust-quality/references/tests-and-review.md","reason":"Review observable CLI tests and meaningful negative controls."}

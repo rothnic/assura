@@ -170,6 +170,8 @@ jobs:
     - uses: actions/checkout@v4
     - name: Run release process contracts
       run: python3 tests/release_process_contract_tests.py
+    - name: Run Unix installer PATH resolution contracts
+      run: python3 tests/installer_path_resolution_tests.py
 
   validate-windows-release-contract:
     name: Windows Release Negative Contract
