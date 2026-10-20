@@ -58,3 +58,16 @@ with reviewed evidence; do not force a split for counts.
 src/cli/agent_nudge_delivery.rs; src/cli/agent_nudge_delivery_refresh.rs; this task.
 No configuration, other production modules, dependencies, workflows, broad test
 refactor or public contract edits. Request root judgment on a concrete exception.
+
+## Implementation and focused validation record
+
+Candidate `152c94ebdee4d07842df4f760d38a0fcd2b504f5` extracts the reviewed 13-function refresh lifecycle into the 485-line private child module. All 13 function bodies and 21 parent test bodies match the baseline; no public surface, test body, deadline, or runtime policy changed.
+
+Focused commands (Rust/Cargo 1.94.1; `CARGO_BUILD_JOBS=2`; private APFS TMPDIR; worktree-local target):
+
+- `cargo test --lib cli::agent_nudge_delivery::tests`: 21 passed, 0 failed, 0 ignored.
+- `cargo test -p assura --test agent_surface_cli agent_nudge`: 11 passed, 0 failed, 0 ignored.
+- `cargo test -p assura --test agent_trajectory_cli`: 9 passed, 0 failed, 0 ignored.
+- `cargo fmt --all` and `git diff --check`: exit 0.
+
+Raw command receipts and resource samples are in the external implementation evidence directory `nu09/nudge-refresh-implementation-20261020`. Earlier compile failures and the successful-but-zero-test `--bin` selector are retained there without pass credit; see `implementation-report.md`. Full PR/current-base hosted gates remain pending.
