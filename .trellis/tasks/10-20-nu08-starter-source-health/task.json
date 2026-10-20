@@ -1,0 +1,38 @@
+{
+  "id": "nu08-starter-source-health",
+  "name": "nu08-starter-source-health",
+  "title": "NU08 explicit Python and Rust starter health",
+  "description": "Bead ae-4nm: extend existing advisory source-health recipe coverage to Python/Rust with explicit default boundaries and preserve authored policy.",
+  "status": "planning",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nu08-implement",
+  "assignee": "nu08-implement",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "feat/nu08-starter-source-health",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-20-nu08-starter-source-health",
+      "owner": "nu08-implement",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/feat/nu08-starter-source-health",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
