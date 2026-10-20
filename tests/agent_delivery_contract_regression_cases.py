@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 from pathlib import Path
 from unittest import mock
@@ -10,6 +11,7 @@ from agent_delivery_contract_support import (
     fixture_repo,
     git,
     task_cli,
+    write_fake_github,
 )
 from common import delivery_cli, delivery_status
 from common.delivery import DeliveryValidationError, collect_inventory, load_delivery_intent
@@ -384,6 +386,127 @@ class RepairRegressionCases:
         )
 
 class RemoteFreshnessCases:
+    def _stale_tracking_candidate(
+        self, terminal: bool
+    ) -> tuple[Path, tempfile.TemporaryDirectory[str], Path, DeliveryStore]:
+        repo, base_oid, tip, directory = fixture_repo()
+        git(repo, "update-ref", "refs/remotes/origin/master", tip)
+        repository = delivery_cli.repository_identity(repo)
+        task_json = repo / ".trellis/tasks/01-01-candidate/task.json"
+        task = json.loads(task_json.read_text(encoding="utf-8"))
+        intent_data = task["meta"]["delivery"]
+        intent_data["repository"] = repository
+        intent_data["base_ref"] = "refs/remotes/origin/master"
+        task_json.write_text(json.dumps(task), encoding="utf-8")
+        git(repo, "add", str(task_json.relative_to(repo)))
+        git(repo, "commit", "-m", "bind delivery freshness fixture")
+        tip = git(repo, "rev-parse", "HEAD")
+        git(repo, "update-ref", "refs/remotes/origin/master", tip)
+
+        provider_pr = {
+            "number": 14,
+            "state": "MERGED",
+            "title": "Candidate",
+            "url": "https://github.com/rothnic/assura/pull/14",
+            "headRefName": "candidate",
+            "headRefOid": tip,
+            "baseRefName": "master",
+            "baseRefOid": base_oid,
+            "mergeCommit": {"oid": tip},
+            "mergedAt": "2026-09-14T00:00:00Z",
+            "mergeStateStatus": "CLEAN",
+            "reviewDecision": "APPROVED",
+            "reviews": [
+                {
+                    "id": "review-14",
+                    "author": {"login": "independent-reviewer"},
+                    "state": "APPROVED",
+                }
+            ],
+            "statusCheckRollup": [
+                {
+                    "__typename": "CheckRun",
+                    "databaseId": "job-14",
+                    "name": "process-contracts",
+                    "status": "COMPLETED",
+                    "detailsUrl": "https://github.com/rothnic/assura/actions/runs/run-14/job/job-14",
+                    "conclusion": "SUCCESS",
+                }
+            ],
+        }
+        fake_gh = repo / ".test-bin" / ("gh.py" if os.name == "nt" else "gh")
+        write_fake_github(fake_gh, [provider_pr])
+
+        evidence = {
+            "review": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "github",
+                "repository": repository,
+                "evidence_ref": "https://github.com/rothnic/assura/pull/14#pullrequestreview-14",
+                "result": "approved",
+                "head_oid": tip,
+                "pr_number": 14,
+                "reviewer": "independent-reviewer",
+                "reviewer_role": "architect",
+                "review_id": "review-14",
+                "findings": [],
+            },
+            "checks": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "github",
+                "repository": repository,
+                "evidence_ref": "https://github.com/rothnic/assura/actions/runs/run-14",
+                "result": "passed",
+                "conclusion": "success",
+                "head_oid": tip,
+                "base_oid": tip,
+                "pr_number": 14,
+                "run_id": "run-14",
+                "job_id": "job-14",
+                "check_name": "process-contracts",
+            },
+            "postmerge": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "local",
+                "repository": repository,
+                "evidence_ref": "test:postmerge-14",
+                "result": "verified",
+                "head_oid": tip,
+                "base_oid": tip,
+                "merge_oid": tip,
+            },
+            "acceptance": {
+                "schema_version": "assura.delivery-evidence.v1",
+                "source": "owner",
+                "repository": repository,
+                "evidence_ref": "test:acceptance-14",
+                "result": "accepted",
+                "head_oid": tip,
+                "acceptance_ref": "prd.md#acceptance",
+                "authority_ref": "test:delivery-authority",
+                "approved_by": "release-authority",
+                "artifact_sha256": "e" * 64,
+            },
+        }
+        store = DeliveryStore(repo / ".git" / "assura" / "delivery-v1")
+        store.create(
+            "candidate-1",
+            {
+                "repository": repository,
+                "task_path": ".trellis/tasks/01-01-candidate/task.json",
+                "owner": "tester",
+                "attached_branch_ref": "refs/heads/candidate",
+                "authority_ref": "test:delivery-authority",
+                "phase": "verified" if terminal else "integrated_pending_verification",
+                "session_state": "paused",
+                "outcome": "delivered" if terminal else None,
+                "closure": "verified" if terminal else "open",
+                "observed_tip": tip,
+                "evidence": evidence,
+            },
+        )
+        return repo, directory, task_json, store
+
     def test_close_and_archive_reject_stale_origin_tracking_base(self) -> None:
         task_path = ".trellis/tasks/01-01-candidate"
         for action, terminal in (("close", False), ("archive", True)):
