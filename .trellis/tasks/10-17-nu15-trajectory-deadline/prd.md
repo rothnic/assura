@@ -6,6 +6,10 @@ Find and fix the demonstrated post-merge Windows stable `agent_trajectory_cli` d
 
 The observed failure is from merge `ba4804bb6abdadc1ccc12c41397dd2402a914171`, workflow run `39094826608`, Windows job `117579008335`: `shallow_clones_and_multiple_worktrees_keep_coverage_honest` failed at `tests/agent_trajectory_cli.rs:77` with `trajectory refresh deadline exceeded`. The pre-merge Windows run passed. Source evidence and the three independent read-only reviews are preserved in `/Users/nroth/workspace/.assura-review-20261017/`.
 
+## Root-authorized observability increment
+
+Root authorizes preparing this candidate for a possible reviewed integration as an observability increment: the opt-in diagnostics and paired Windows probes improve evidence for a future reproduction. The phase responsible for the historical failure remains unknown, and this increment is not a demonstrated cause correction or a claim that the failure was noise. NU15's full diagnosis/correction acceptance below remains open; this does not close NU15 or NU13/NU14. Any merge requires current-base source, current required local and hosted gates, and independent review of the exact candidate head. The original task-level restriction on this worker's merge/push actions remains in force; root retains those actions.
+
 ## Acceptance
 
 - Preserve the default product refresh/inspect timeout at 2,000 ms; do not widen it or weaken assertions, skip coverage, retry unchanged failing runs, or call the failure runner noise without evidence.
