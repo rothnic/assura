@@ -7,6 +7,17 @@ import sys
 import tempfile
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / ".trellis" / "scripts"))
+
+RELEASE_ARCHIVES = (
+    "assura-linux-amd64.tar.gz",
+    "assura-linux-musl-amd64.tar.gz",
+    "assura-macos-amd64.tar.gz",
+    "assura-macos-arm64.tar.gz",
+    "assura-windows-amd64.zip",
+)
+
 from common.delivery import GithubUnavailable
 
 class FakeGithub:

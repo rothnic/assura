@@ -10,8 +10,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / ".trellis" / "scripts"))
+from agent_delivery_contract_support import ROOT
 
 from agent_delivery_contract_core_cases import (  # noqa: E402
     CommonJsonIOCases,
