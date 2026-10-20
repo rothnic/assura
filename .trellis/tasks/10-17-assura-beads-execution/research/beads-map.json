@@ -36,7 +36,8 @@
     "W04": "ae-p9m"
   },
   "discovered_ids": {
-    "NU14": "ae-fg4"
+    "NU14": "ae-fg4",
+    "NU15": "ae-hbx"
   },
   "discovered_relations": [
     {
@@ -44,6 +45,12 @@
       "prerequisite_source_key": "NU14",
       "type": "blocks",
       "reason": "Actual native delivered-closure defect exposed after reviewed merge"
+    },
+    {
+      "dependent_source_key": "NU14",
+      "prerequisite_source_key": "NU15",
+      "type": "blocks",
+      "reason": "Exact PR356 merge Windows trajectory deadline failure holds post-merge acceptance; diagnostic investigation preserves the original failure"
     }
   ]
 }
