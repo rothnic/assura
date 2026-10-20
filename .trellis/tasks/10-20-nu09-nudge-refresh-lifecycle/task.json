@@ -1,0 +1,38 @@
+{
+  "id": "nu09-nudge-refresh-lifecycle",
+  "name": "nu09-nudge-refresh-lifecycle",
+  "title": "NU09 separate nudge refresh lifecycle",
+  "description": "Bead ae-whr.6: isolate the cohesive private refresh process lifecycle while preserving selection/state/lease policy and all21testcontracts.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P3",
+  "creator": "nu09-refresh-implement",
+  "assignee": "nu09-refresh-implement",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "refactor/nu09-nudge-refresh-lifecycle",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-20-nu09-nudge-refresh-lifecycle",
+      "owner": "nu09-refresh-implement",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/refactor/nu09-nudge-refresh-lifecycle",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
