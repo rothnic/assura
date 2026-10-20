@@ -310,5 +310,21 @@ quality:
         "echo team policy full"
     );
     assert!(before_config["quality"]["scopes"]["team_policy"].is_mapping());
-    assert_eq!(before_plan, quality_plan(&project, &changed));
+    let after_plan = quality_plan(&project, &changed);
+    assert_eq!(after_plan["checks"], before_plan["checks"]);
+    let scopes = after_plan["scopes"]
+        .as_array()
+        .expect("selected quality scopes");
+    assert_eq!(scopes.len(), 2);
+    let authored = scopes.iter().find(|scope| scope["id"] == "team_policy");
+    assert_eq!(authored, Some(&before_plan["scopes"][0]));
+    let generated = scopes.iter().find(|scope| scope["id"] == "policy");
+    assert_eq!(
+        generated,
+        Some(&serde_json::json!({
+            "id": "policy",
+            "matched_paths": ["src/team.py"],
+            "checks": ["assura check"],
+        }))
+    );
 }
