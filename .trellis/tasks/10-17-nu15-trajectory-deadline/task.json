@@ -12,7 +12,7 @@
   "assignee": "nu15-trajectory-deadline",
   "createdAt": "2026-10-17",
   "completedAt": null,
-  "branch": "refs/heads/fix/nu15-trajectory-deadline",
+  "branch": "fix/nu15-trajectory-deadline",
   "base_branch": "refs/remotes/origin/master",
   "worktree_path": null,
   "commit": null,
