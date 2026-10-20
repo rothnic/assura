@@ -121,3 +121,18 @@ The earlier local all-targets gate passed1484 tests, zero failed, one manual
 performance audit ignored. That macOS run did not execute the Windows-only
 protocol. Corrected-head independent review and actual Windows CI remain
 required; no Windows behavioral pass is claimed.
+
+
+## Hosted runtime correction (2026-10-20)
+
+Head5ee185cc compiled and its ordinary Windows suite passed, but the focused
+positive helper protocol timed out before READY. The retained failure is at
+external nu17/hosted-failure-5ee185cc-20261020. Three read-only diagnoses
+identified missing child diagnostics. A subsequent exact-argv Rust libtest
+canary reproduced the same-line test-name prefix before READY, which the
+strict parser rejected while the helper waited for GO. Root inserts a leading
+newline to frame the marker independently, preserving exact matching, all
+deadlines, membership checks and receipt requirements. Bounded stdout/stderr
+and actual helper/Job/count diagnostics now accompany the original error.
+No Windows success or Ctrl-C acceptance is claimed before corrected hosted
+execution; the prior failed run remains unfavorable.

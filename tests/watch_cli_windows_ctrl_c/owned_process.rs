@@ -1,12 +1,11 @@
 //! Bounded process and output ownership for the native Windows watch test.
 
 use serde_json::Value;
-use std::fs::File;
-use std::io::{BufRead, BufReader, Read};
+use std::io::Read;
 use std::os::windows::io::AsRawHandle;
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::mpsc::{self, Receiver, SyncSender, TrySendError};
+use std::sync::mpsc::{self, Receiver, TrySendError};
 use std::sync::Arc;
 use std::thread::{self, JoinHandle};
 use std::time::{Duration, Instant};

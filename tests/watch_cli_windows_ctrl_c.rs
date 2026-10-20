@@ -261,7 +261,9 @@ fn helper_protocol() -> Result<Value, String> {
         "# NU17 fixture\n",
     )
     .map_err(|error| format!("write watch fixture: {error}"))?;
-    println!("{READY_MARKER}");
+    // libtest pretty output leaves its test-name prefix on the current line.
+    // Start the protocol on its own line without relaxing exact marker matching.
+    println!("\n{READY_MARKER}");
     io::stdout()
         .flush()
         .map_err(|error| format!("flush helper readiness: {error}"))?;
@@ -482,6 +484,8 @@ fn run_helper_case(mode: &str, expected_bin: &Path, expected_hash: &str) -> Resu
     let mut stdout = spawn_bounded_line_reader(child.stdout.take().unwrap());
     let (stderr_overflow, stderr_reader) = spawn_bounded_drain(child.stderr.take().unwrap());
     let mut protocol_error = None;
+    let mut diagnostic_stdout = Vec::new();
+    let mut diagnostic_stderr = Vec::new();
     let mut helper_proof = None;
     let mut ready_count = 0usize;
     let mut watch_ready_count = 0usize;
@@ -497,6 +501,8 @@ fn run_helper_case(mode: &str, expected_bin: &Path, expected_hash: &str) -> Resu
             .recv_timeout(deadline.saturating_duration_since(Instant::now()))
         {
             Ok(line) => {
+                let remaining = (64 * 1024usize).saturating_sub(diagnostic_stdout.len());
+                diagnostic_stdout.extend_from_slice(&line[..line.len().min(remaining)]);
                 let text = String::from_utf8_lossy(&line);
                 let text = text.trim();
                 if text == READY_MARKER {
@@ -681,12 +687,12 @@ fn run_helper_case(mode: &str, expected_bin: &Path, expected_hash: &str) -> Resu
             protocol_error.get_or_insert(error);
         }
         match join_bounded(stderr_reader, "helper stderr reader") {
-            Ok(stderr) if !stderr.is_empty() => {
-                protocol_error.get_or_insert_with(|| {
-                    format!("helper stderr: {}", String::from_utf8_lossy(&stderr))
-                });
+            Ok(stderr) => {
+                if !stderr.is_empty() {
+                    protocol_error.get_or_insert_with(|| "helper emitted stderr".into());
+                }
+                diagnostic_stderr = stderr;
             }
-            Ok(_) => {}
             Err(error) => {
                 protocol_error.get_or_insert(error);
             }
@@ -697,6 +703,8 @@ fn run_helper_case(mode: &str, expected_bin: &Path, expected_hash: &str) -> Resu
         });
     }
     while let Ok(line) = stdout.lines.try_recv() {
+        let remaining = (64 * 1024usize).saturating_sub(diagnostic_stdout.len());
+        diagnostic_stdout.extend_from_slice(&line[..line.len().min(remaining)]);
         let text = String::from_utf8_lossy(&line);
         let text = text.trim();
         if text == READY_MARKER {
@@ -741,7 +749,14 @@ fn run_helper_case(mode: &str, expected_bin: &Path, expected_hash: &str) -> Resu
             .get_or_insert_with(|| format!("owned job is not proven empty: {job_active:?}"));
     }
     if let Some(error) = protocol_error {
-        return Err(error);
+        return Err(format!(
+            "{error}; helper_pid={}, helper_exit={helper_exit:?}, job_active={job_active:?}, \
+             ready_count={ready_count}, watch_ready_count={watch_ready_count}, receipt_count={receipt_count}; \
+             bounded helper stdout={:?}; bounded helper stderr={:?}",
+            child.id(),
+            String::from_utf8_lossy(&diagnostic_stdout),
+            String::from_utf8_lossy(&diagnostic_stderr)
+        ));
     }
     let mut proof = helper_proof.unwrap();
     proof["outer"] = json!({
@@ -844,4 +859,23 @@ fn receipt_validator_rejects_missing_ack_event_exit_and_receipt() {
         .unwrap()
         .remove("watch_in_job");
     assert!(!final_receipt_is_valid(&missing_job_proof));
+}
+
+#[test]
+fn helper_ready_marker_has_a_standalone_protocol_line() {
+    let transcript = format!("running 1 test\ntest fixture_helper_entry ... \n{READY_MARKER}\n");
+    let mut output = spawn_bounded_line_reader(std::io::Cursor::new(transcript.into_bytes()));
+    output
+        .finish()
+        .expect("bounded transcript reader completes");
+    let lines = output.lines.try_iter().collect::<Vec<_>>();
+    assert_eq!(
+        lines
+            .iter()
+            .filter(|line| String::from_utf8_lossy(line).trim() == READY_MARKER)
+            .count(),
+        1
+    );
+    let old_same_line = format!("test fixture_helper_entry ... {READY_MARKER}");
+    assert_ne!(old_same_line.trim(), READY_MARKER);
 }
