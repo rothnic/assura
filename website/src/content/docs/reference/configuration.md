@@ -212,8 +212,13 @@ into the project. Checks use only that project-owned file; there is no hidden
 recipe lookup at runtime. `agentic-core` requires root `AGENTS.md` and
 `README.md`, constrains optional project-local skills, and provides repair
 links. `structure-health` adds advisory line and direct-child thresholds plus
-recursive coverage. It deliberately does not guess project naming. Edit or
-remove any generated policy to match the project.
+recursive coverage. Its recursive 500-line, low-severity selector covers
+`.md`, `.js`, `.jsx`, `.ts`, `.tsx`, `.py`, and `.rs` files. The standalone and
+combined recipes exclude `**/{.git,node_modules,target,dist,coverage}/**`;
+excluded files receive no source-health check. Generated, vendor, and
+environment directories are not universally excluded, so add project-owned
+exclusions when those paths should be skipped. It deliberately does not guess
+project naming. Edit or remove any generated policy to match the project.
 
 For a project that already has `.assura/config.yml`, preview the additive merge
 before writing it:

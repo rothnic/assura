@@ -28,6 +28,16 @@ Onboarding materializes ordinary, editable `agentic-core` and
 `structure-health` YAML into `.assura/config.yml`. Runtime validation depends
 only on that project-owned file; it must not require hidden recipe lookup.
 
+The `structure-health` baseline recursively checks `.md`, `.js`, `.jsx`, `.ts`,
+`.tsx`, `.py`, and `.rs` files at a 500-line, low-severity threshold. Standalone
+and combined init recipes exclude `**/{.git,node_modules,target,dist,coverage}/**`.
+Onboarding instead excludes `.assura/**`, `.git/**`, `target/**`,
+`node_modules/**`, `dist/**`, and `**/dist/**`, without a default `coverage`
+exclusion. Excluded files receive no source-health check. Generated, vendor,
+and environment paths are not universally excluded. Existing recipe conflicts
+must remain visible because the effective project-owned rule may differ from
+this baseline.
+
 The report includes `rule_recommendations[]` with:
 
 | Field | Contract |
@@ -118,6 +128,8 @@ Public evaluator output exposes only aggregate state, not paths, ids, or text.
 - Landing-page coverage separating applied policy from undecided policy.
 - Generated handoff coverage for evidence inspection, stable-scope closure,
   focused questions, and final `review` plus `check` verification.
+- Starter source-health coverage for the seven recursive extensions, the
+  500-line advisory boundary, and the distinct recipe and onboarding exclusions.
 - Evaluator coverage for matching, missing-file, missing-fragment, malformed,
   and symlinked guidance assertions; omitted assertions remain unavailable.
 

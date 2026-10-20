@@ -197,6 +197,18 @@ existing project value was preserved for review. Assura does not recommend
 language, framework, naming, or domain rules until the project provides enough
 evidence or a user confirms those choices.
 
+When active, the source-health baseline checks `.md`, `.js`, `.jsx`, `.ts`,
+`.tsx`, `.py`, and `.rs` recursively, with low-severity findings above 500
+lines. Onboarding excludes `.assura/**`, `.git/**`, `target/**`,
+`node_modules/**`, `dist/**`, and `**/dist/**`; this list does not exclude
+`coverage`. Standalone and combined init recipes use
+`**/{.git,node_modules,target,dist,coverage}/**` instead. Excluded files receive
+no source-health check. Generated, vendor, and environment directories are not
+universally excluded, and existing configuration conflicts can make the
+effective rule differ from the baseline. Inspect the materialized config to
+see the active policy and add project-owned exclusions for paths that should be
+skipped.
+
 ## Generated Packet
 
 `assura agent onboard` writes a small packet under `.assura/onboarding/`:

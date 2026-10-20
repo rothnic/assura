@@ -5377,19 +5377,7 @@ fn check_test_relationships(checks: &mut Checks) {
     let mut unexpected_ignored = Vec::new();
     for root in ["src", "tests", "crates/assura-check-cli/tests"] {
         for path in collect_files(root, Some(".rs")) {
-            for (index, line) in read(&path).lines().enumerate() {
-                if line.contains("#[ignore")
-                    && !(rel(&path) == "tests/ls_lint_parity_regression_tests.rs"
-                        && line.contains("manual performance audit fixture"))
-                {
-                    unexpected_ignored.push(format!(
-                        "{}:{}: {}",
-                        rel(&path),
-                        index + 1,
-                        line.trim()
-                    ));
-                }
-            }
+            unexpected_ignored.extend(unexpected_ignored_tests(&rel(&path), &read(&path)));
         }
     }
     checks.require(
@@ -5399,6 +5387,45 @@ fn check_test_relationships(checks: &mut Checks) {
             unexpected_ignored.join(", ")
         ),
     );
+}
+
+fn unexpected_ignored_tests(path: &str, source: &str) -> Vec<String> {
+    let windows_harness = path == "tests/watch_cli_windows_ctrl_c.rs";
+    // CI invokes the outer test explicitly; its helper requires that owned console.
+    let windows_declarations = [
+        "#[test]\n#[ignore = \"requires an isolated Windows console and owned job object\"]\nfn ctrl_c_stops_watch_in_owned_console() {",
+        "#[test]\n#[ignore = \"invoked only by the owned outer test\"]\nfn fixture_helper_entry() {",
+    ];
+    let lines = source.lines().map(str::trim).collect::<Vec<_>>();
+    let normalized = lines.join("\n");
+    let scoped_to_windows = lines.contains(&"#![cfg(windows)]");
+    let mut unexpected = Vec::new();
+    if windows_harness {
+        for declaration in windows_declarations {
+            if normalized.matches(declaration).count() != 1 || !scoped_to_windows {
+                unexpected.push(format!("{path}: missing or duplicated Windows-only audited test declaration: {declaration}"));
+            }
+        }
+    }
+    for (index, line) in lines.iter().enumerate() {
+        if !line.contains("#[ignore") {
+            continue;
+        }
+        let manual_performance = path == "tests/ls_lint_parity_regression_tests.rs"
+            && line.contains("manual performance audit fixture");
+        let audited_windows = windows_harness
+            && scoped_to_windows
+            && index > 0
+            && index + 1 < lines.len()
+            && windows_declarations.iter().any(|declaration| {
+                lines[index - 1..=index + 1].join("\n") == *declaration
+                    && normalized.matches(declaration).count() == 1
+            });
+        if !manual_performance && !audited_windows {
+            unexpected.push(format!("{path}:{}: {line}", index + 1));
+        }
+    }
+    unexpected
 }
 
 fn check_docs_release_performance(checks: &mut Checks) {
@@ -6728,6 +6755,32 @@ fn check_lint_suppression_reasons(checks: &mut Checks) {
 
 #[cfg(test)]
 mod tests {
+    #[test]
+    fn ignored_test_audit_accepts_only_the_owned_windows_harness() {
+        let path = "tests/watch_cli_windows_ctrl_c.rs";
+        let source = include_str!("../../tests/watch_cli_windows_ctrl_c.rs");
+        assert!(unexpected_ignored_tests(path, source).is_empty());
+        assert!(!unexpected_ignored_tests("tests/other.rs", source).is_empty());
+        for changed in [
+            source.replace("#![cfg(windows)]", ""),
+            source.replace("requires an isolated Windows console and owned job object", "later"),
+            source.replace("fn fixture_helper_entry() {", "fn unrelated_helper() {"),
+            source.replace("#[ignore = \"invoked only by the owned outer test\"]", ""),
+            format!("{source}\n#[test]\n#[ignore]\nfn unrelated() {{}}\n"),
+            format!("{source}\n#[test]\n#[ignore = \"invoked only by the owned outer test\"]\nfn fixture_helper_entry() {{}}\n"),
+        ] {
+            assert!(!unexpected_ignored_tests(path, &changed).is_empty());
+        }
+        assert!(unexpected_ignored_tests(
+            "tests/ls_lint_parity_regression_tests.rs",
+            "#[ignore = \"manual performance audit fixture\"]",
+        )
+        .is_empty());
+        assert!(
+            !unexpected_ignored_tests("tests/other.rs", "#[ignore]\nfn arbitrary() {}").is_empty()
+        );
+    }
+
     use super::*;
     use serde_json::json;
 

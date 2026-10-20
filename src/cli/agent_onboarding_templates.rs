@@ -277,7 +277,7 @@ structure:
   # Recursive advisory defaults.
   ./**/:
     ./: $folder-health
-    .{{md,js,jsx,ts,tsx}}: max_lines:500 | severity:low
+    .{{md,js,jsx,ts,tsx,py,rs}}: max_lines:500 | severity:low
 
 exclude:
   - ".assura/**"
@@ -544,7 +544,7 @@ fn onboarding_rules(detected: &DetectedSection, status: &str) -> String {
         _ => "The selected config does not contain the recommended project-owned recipes.",
     };
     format!(
-        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nUse project evidence to define language, framework, naming, layout, and generated-output rules. Ask the project owner only where the intended policy remains ambiguous.\n",
+        "# Assura Rule Recommendations\n\nDetected project type: `{}`.\nRecommendation status: `{status}`.\n\n{status_detail}\n\nThe `agentic-core` and `structure-health` recipes are copied into `.assura/config.yml`; the project owns and can edit every selected rule.\n\nIncluded policy layers:\n\n- `$agent-entrypoint`\n- `$skill-entrypoint`\n- `$skill`\n- `$folder-health`\n- `$closed`\n\nWhen the generated source-health rule is active, it checks `.md`, `.js`, `.jsx`, `.ts`, `.tsx`, `.py`, and `.rs` files recursively with low severity above 500 lines. The onboarding default excludes `.assura/**`, `.git/**`, `target/**`, `node_modules/**`, `dist/**`, and `**/dist/**`; it does not exclude `coverage`. Standalone and combined init recipes instead exclude `**/{{.git,node_modules,target,dist,coverage}}/**`. Excluded files receive no source-health check. Generated, vendor, and environment directories are not universally excluded; add project-owned exclusions when needed. Existing configuration conflicts may leave the effective rules different from this baseline, so inspect `.assura/config.yml` to determine which rule is active.\n\nUse project evidence to define language, framework, naming, layout, and generated-output rules. Ask the project owner only where the intended policy remains ambiguous.\n",
         detected.project_type,
     )
 }
