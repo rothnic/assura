@@ -1,0 +1,38 @@
+{
+  "id": "nu09-delivery-test-cohesion",
+  "name": "nu09-delivery-test-cohesion",
+  "title": "NU09 cohesive delivery contract test modules",
+  "description": "Bead ae-whr.5: preserve all delivery test behavior and selector identities while partitioning cohesive test scenarios.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nu09-partition-implement",
+  "assignee": "nu09-partition-implement",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "refactor/nu09-delivery-test-cohesion",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-20-nu09-delivery-test-cohesion",
+      "owner": "nu09-partition-implement",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/refactor/nu09-delivery-test-cohesion",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
