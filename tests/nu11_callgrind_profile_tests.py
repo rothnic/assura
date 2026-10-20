@@ -90,6 +90,53 @@ class Nu11ProfileContractTests(unittest.TestCase):
                     NU11.record_resource_guard(evidence, "unknown", REPOSITORY_ROOT)
             self.assertEqual(evidence.state["resource_snapshots"]["unknown"]["outcome"], "unknown")
 
+    def test_bootstrap_io_recheck_retains_initial_rejection_and_admits_after_one_idle(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+            io = {**self.resources(), "psi_full_avg10": {"memory": 0, "io": 15.86}}
+            with patch.object(NU11, "read_host_resources", side_effect=[io, self.resources()]), patch.object(NU11.time, "sleep") as sleep:
+                NU11.admit_after_bootstrap(evidence, REPOSITORY_ROOT)
+            sleep.assert_called_once_with(30)
+            state = json.loads((Path(temporary) / "run.json").read_text())
+            self.assertTrue(state["resource_snapshots"]["before-runtime-tools"]["rejection_reasons"])
+            self.assertEqual(state["bootstrap_admission_recheck"]["outcome"], "admitted_after_idle")
+            self.assertEqual(len(state["resource_snapshots"]), 2)
+
+    def test_bootstrap_second_io_rejection_is_terminal(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+            io = {**self.resources(), "psi_full_avg10": {"memory": 0, "io": 15.86}}
+            with patch.object(NU11, "read_host_resources", side_effect=[io.copy(), io.copy()]) as read, patch.object(NU11.time, "sleep") as sleep:
+                with self.assertRaisesRegex(NU11.GateFailure, "resource pressure"):
+                    NU11.admit_after_bootstrap(evidence, REPOSITORY_ROOT)
+            self.assertEqual(read.call_count, 2)
+            sleep.assert_called_once_with(30)
+            self.assertEqual(evidence.state["bootstrap_admission_recheck"]["outcome"], "rejected_or_unknown")
+
+    def test_bootstrap_non_io_mixed_and_unknown_rejections_never_wait(self):
+        for snapshot in [{**self.resources(), "memory_available": 1},
+                         {**self.resources(), "psi_full_avg10": {"memory": 5, "io": 15.86}},
+                         {**self.resources(), "load_1m": 9, "psi_full_avg10": {"memory": 0, "io": 15.86}},
+                         {**self.resources(), "load_1m": float("nan")}]:
+            with self.subTest(snapshot=snapshot), tempfile.TemporaryDirectory() as temporary:
+                evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+                with patch.object(NU11, "read_host_resources", return_value=snapshot) as read, patch.object(NU11.time, "sleep") as sleep:
+                    with self.assertRaises(NU11.GateFailure):
+                        NU11.admit_after_bootstrap(evidence, REPOSITORY_ROOT)
+                self.assertEqual(read.call_count, 1)
+                sleep.assert_not_called()
+
+    def test_bootstrap_io_recheck_requires_budget_before_sleep(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+            evidence.started -= NU11.JOB_TIMEOUT - 20
+            io = {**self.resources(), "psi_full_avg10": {"memory": 0, "io": 15.86}}
+            with patch.object(NU11, "read_host_resources", return_value=io) as read, patch.object(NU11.time, "sleep") as sleep:
+                with self.assertRaisesRegex(NU11.GateFailure, "insufficient job budget"):
+                    NU11.admit_after_bootstrap(evidence, REPOSITORY_ROOT)
+            self.assertEqual(read.call_count, 1)
+            sleep.assert_not_called()
+
     def test_filename_negative_rejects_abnormal_capture_even_with_expected_json(self):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

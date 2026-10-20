@@ -176,3 +176,17 @@ not an observed value from that run. Root accepts three read-only diagnoses:
 use Python's public freedesktop_os_release decoder and retain exact source file
 bytes/hash and parsed values before rejecting. Exact Debian ID/version12, amd64,
 root, immutable container digest and all later tool/control guards remain.
+
+
+## Bounded startup admission recovery
+
+Root accepts three independent diagnoses that the d619 dispatch stopped
+correctly at I/O PSI full avg10 15.86%, above the unchanged 5% limit. No
+pressure cause, duration or later clearance is inferred. The independently
+reviewed recovery allows only the pre-tool guard, on a sole known I/O rejection,
+to retain the initial rejection, perform no work for 30 seconds, then call the
+same strict guard once with a distinct retained snapshot. Mixed/unknown/other
+rejections stop immediately; insufficient active budget prevents the wait.
+Second rejection is terminal, with no loop. All main, periodic and profile
+guards remain unchanged and immediate. This does not turn the failed prior
+run into success or permit repeating a timing experiment.

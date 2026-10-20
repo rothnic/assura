@@ -129,7 +129,7 @@ jobs:
                 raise module.GateFailure("workflow start time is in the future")
             evidence.started -= elapsed
             evidence.check_budget()
-            module.record_resource_guard(evidence, "before-runtime-tools", Path.cwd())
+            module.admit_after_bootstrap(evidence, Path.cwd())
             phase["outcome"] = "admitted"
         except BaseException as error:
             phase.update(outcome="rejected_or_unknown", failure=f"{type(error).__name__}: {error}")

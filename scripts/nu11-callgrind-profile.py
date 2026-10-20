@@ -632,6 +632,36 @@ def record_resource_guard(evidence: Evidence, label: str, repo: Path, *, command
         evidence.check_budget()
 
 
+def admit_after_bootstrap(evidence: Evidence, repo: Path) -> None:
+    """Allow one idle recheck of a sole, known startup I/O-pressure rejection."""
+    initial = "before-runtime-tools"
+    try:
+        record_resource_guard(evidence, initial, repo)
+        return
+    except GateFailure:
+        snapshot = evidence.state.get("resource_snapshots", {}).get(initial, {})
+        if snapshot.get("rejection_reasons") != ["io PSI full avg10 at least 5 percent"]:
+            raise
+        if snapshot["load_1m"] > 2 * snapshot["cpu_count"]:
+            raise
+    transition = {"initial_snapshot": initial, "outcome": "paused_io", "idle_seconds": 30}
+    evidence.state["bootstrap_admission_recheck"] = transition
+    evidence.save()
+    try:
+        evidence.check_budget()
+        if JOB_TIMEOUT - (time.monotonic() - evidence.started) <= 30:
+            raise GateFailure("insufficient job budget for one idle I/O admission recheck")
+        time.sleep(30)
+        evidence.check_budget()
+        record_resource_guard(evidence, "before-runtime-tools-after-idle", repo)
+        transition["outcome"] = "admitted_after_idle"
+    except BaseException:
+        transition["outcome"] = "rejected_or_unknown"
+        raise
+    finally:
+        evidence.save()
+
+
 def require_filename_negative(evidence: Evidence, result: Result, root: Path) -> None:
     if result.exit_code not in (0, 1):
         raise GateFailure("negative filename control returned an unexpected exit")

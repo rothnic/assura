@@ -37,7 +37,7 @@ class R03PerformanceVarianceContractTests(unittest.TestCase):
         self.assertLess(profile_job.index("Verify checked-out source"), profile_job.index("Install Rust"))
         self.assertLess(profile_job.index("Verify checked-out source"), profile_job.index("Admit resources before Rust and Node setup"))
         self.assertLess(profile_job.index("Admit resources before Rust and Node setup"), profile_job.index("Install Rust"))
-        self.assertIn('module.record_resource_guard(evidence, "before-runtime-tools"', profile_job)
+        self.assertIn('module.admit_after_bootstrap(evidence', profile_job)
         self.assertIn("ASSURA_NU11_STARTED_UTC", profile_job)
         self.assertIn("snapshot.debian.org/archive/debian/20260918T000000Z", profile_job)
         self.assertNotIn("--allow-unauthenticated", profile_job)
