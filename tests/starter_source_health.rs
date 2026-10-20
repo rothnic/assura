@@ -185,6 +185,21 @@ fn starter_health_is_consistent_across_init_and_onboarding_materializations() {
     );
     assert!(onboarding_config["quality"]["scopes"]["python"].is_null());
     assert!(onboarding_config["quality"]["scopes"]["rust"].is_null());
+    let rules = fs::read_to_string(onboarding.path().join(".assura/onboarding/rules.md"))
+        .expect("generated rules guidance");
+    for expected in [
+        "When the generated source-health rule is active",
+        "`.md`, `.js`, `.jsx`, `.ts`, `.tsx`, `.py`, and `.rs`",
+        "low severity above 500 lines",
+        "`.assura/**`, `.git/**`, `target/**`, `node_modules/**`, `dist/**`, and `**/dist/**`",
+        "it does not exclude `coverage`",
+        "init recipes instead exclude `**/{.git,node_modules,target,dist,coverage}/**`",
+        "Excluded files receive no source-health check",
+        "Generated, vendor, and environment directories are not universally excluded",
+        "Existing configuration conflicts may leave the effective rules different from this baseline",
+    ] {
+        assert!(rules.contains(expected), "missing guidance: {expected}");
+    }
     assert_source_health_behavior(&onboarding);
 }
 
