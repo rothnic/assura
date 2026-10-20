@@ -37,7 +37,7 @@ pub(super) use refresh::{
     start_refresh_watchdog,
 };
 #[cfg(test)]
-pub(super) use refresh::{
+use refresh::{
     finish_refresh_with_min_interval, request_refresh, settle_refresh_queue, supervise_refresh,
 };
 
