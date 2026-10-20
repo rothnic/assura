@@ -328,7 +328,7 @@ const STRUCTURE_HEALTH_STARTER_CONFIG: &str = r#"rules:
 structure:
   ./**/:
     ./: $folder-health
-    .{md,js,jsx,ts,tsx}: max_lines:500 | severity:low
+    .{md,js,jsx,ts,tsx,py,rs}: max_lines:500 | severity:low
 
 exclude:
   - "**/{.git,node_modules,target,dist,coverage}/**"
@@ -379,7 +379,7 @@ structure:
 
   ./**/:
     ./: $folder-health
-    .{md,js,jsx,ts,tsx}: max_lines:500 | severity:low
+    .{md,js,jsx,ts,tsx,py,rs}: max_lines:500 | severity:low
 
 exclude:
   - "**/{.git,node_modules,target,dist,coverage}/**"
