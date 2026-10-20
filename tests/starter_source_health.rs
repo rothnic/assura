@@ -296,6 +296,6 @@ quality:
         after_config["quality"]["scopes"]["team_policy"]["pr"][0],
         "echo team policy full"
     );
-    assert!(before_config["quality"]["scopes"]["team_policy"].is_object());
+    assert!(before_config["quality"]["scopes"]["team_policy"].is_mapping());
     assert_eq!(before_plan, quality_plan(&project, &changed));
 }
