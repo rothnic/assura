@@ -11,6 +11,7 @@ import threading
 import time
 import unittest
 from pathlib import Path
+from types import SimpleNamespace
 from unittest.mock import patch
 
 
@@ -24,6 +25,60 @@ SPEC.loader.exec_module(NU11)
 
 
 class Nu11ProfileContractTests(unittest.TestCase):
+    def resources(self):
+        return {"memory_total": 1000, "memory_available": 500, "load_1m": 1,
+                "cpu_count": 4, "disk_free": NU11.MIN_DISK_FREE,
+                "psi_full_avg10": {"memory": 0, "io": 0}}
+
+    def test_resource_pressure_rejects_memory_io_and_disk_and_unknown_counters(self):
+        healthy = self.resources()
+        self.assertEqual(NU11.resource_rejections(healthy), [])
+        for bad in [{**healthy, "memory_available": 99},
+                    {**healthy, "disk_free": NU11.MIN_DISK_FREE - 1},
+                    {**healthy, "psi_full_avg10": {"memory": 5, "io": 0}},
+                    {**healthy, "psi_full_avg10": {"memory": 0, "io": 5}}]:
+            self.assertTrue(NU11.resource_rejections(bad))
+        with self.assertRaises(NU11.GateFailure):
+            NU11.resource_rejections({**healthy, "load_1m": float("nan")})
+
+    def test_resource_guard_requires_two_high_load_samples_and_retains_rejection(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+            high = {**self.resources(), "load_1m": 9}
+            with patch.object(NU11, "read_host_resources", side_effect=[high.copy(), high.copy()]), \
+                    patch.object(NU11.time, "sleep") as sleep:
+                with self.assertRaisesRegex(NU11.GateFailure, "two samples"):
+                    NU11.record_resource_guard(evidence, "load", REPOSITORY_ROOT)
+            sleep.assert_called_once_with(30)
+            stored = json.loads((Path(temporary) / "run.json").read_text())
+            self.assertEqual(len(stored["resource_snapshots"]), 2)
+            self.assertTrue(stored["resource_snapshots"]["load-load-confirmation"]["rejection_reasons"])
+
+    def test_transient_load_can_clear_and_missing_resource_data_stops(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+            with patch.object(NU11, "read_host_resources", side_effect=[{**self.resources(), "load_1m": 9}, self.resources()]), \
+                    patch.object(NU11.time, "sleep"):
+                NU11.record_resource_guard(evidence, "transient", REPOSITORY_ROOT)
+            with patch.object(NU11, "read_host_resources", side_effect=OSError("missing PSI")):
+                with self.assertRaisesRegex(NU11.GateFailure, "unavailable"):
+                    NU11.record_resource_guard(evidence, "unknown", REPOSITORY_ROOT)
+            self.assertEqual(evidence.state["resource_snapshots"]["unknown"]["outcome"], "unknown")
+
+    def test_filename_negative_rejects_abnormal_capture_even_with_expected_json(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            (root / "negative.stdout").write_text(json.dumps({"success": False, "violations": [{"path": "FileName.js"}]}))
+            evidence = NU11.Evidence(root, {}, REPOSITORY_ROOT)
+            fields = {"name": "filename-negative-control", "stdout": "negative.stdout", "exit_code": 1, "timed_out": False,
+                      "overflow": False, "stop_reason": None, "cleanup_complete": True}
+            for exit_code in (0, 1):
+                NU11.require_filename_negative(evidence, SimpleNamespace(**{**fields, "exit_code": exit_code}), root)
+            for changes in [{"stop_reason": "descendant_process_remains"}, {"cleanup_complete": False},
+                            {"timed_out": True}, {"overflow": True}, {"exit_code": 2}]:
+                with self.assertRaises(NU11.GateFailure):
+                    NU11.require_filename_negative(evidence, SimpleNamespace(**{**fields, **changes}), root)
+
     def capture(self, root: Path, name: str, code: str, *, timeout: float = 3,
                 limit: int = 4096, produced_file: Path | None = None,
                 produced_file_limit: int = NU11.PROFILE_LIMIT):
@@ -153,6 +208,20 @@ class Nu11ProfileContractTests(unittest.TestCase):
             with self.assertRaises(NU11.GateFailure):
                 evidence.require(result)
 
+    def test_pressure_during_a_long_capture_stops_and_reaps_the_owned_child(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            evidence = NU11.Evidence(root, {"PATH": os.environ.get("PATH", "")}, REPOSITORY_ROOT)
+            with patch.object(NU11, "RESOURCE_CHECK_INTERVAL", 0), \
+                    patch.object(NU11, "record_resource_guard", side_effect=NU11.GateFailure("injected pressure")) as guard:
+                with self.assertRaisesRegex(NU11.GateFailure, "injected pressure"):
+                    evidence.capture("pressure", [sys.executable, "-c", "import time; time.sleep(10)"],
+                                     cwd=REPOSITORY_ROOT, timeout=3)
+            guard.assert_called_once()
+            stored = json.loads((root / "run.json").read_text())["commands"][0]
+            self.assertEqual(stored["lifecycle"], "aborted")
+            self.assertTrue(stored["cleanup_complete"])
+
     def test_deadline_timeout_is_distinct_and_reaps_the_group(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             _, result = self.capture(Path(temporary), "timeout", "import time; time.sleep(10)", timeout=0.15)
@@ -209,7 +278,7 @@ class Nu11ProfileContractTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             evidence = NU11.Evidence(Path(temporary), {"PATH": os.environ.get("PATH", "")}, REPOSITORY_ROOT)
             evidence.started = time.monotonic() - NU11.JOB_TIMEOUT + 0.15
-            with self.assertRaisesRegex(NU11.GateFailure, "45-minute budget"):
+            with self.assertRaisesRegex(NU11.GateFailure, "active run budget"):
                 evidence.capture(
                     "job-budget", [sys.executable, "-c", "import time; time.sleep(10)"],
                     cwd=REPOSITORY_ROOT, timeout=5,

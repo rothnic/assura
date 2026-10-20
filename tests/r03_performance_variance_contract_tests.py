@@ -31,6 +31,13 @@ class R03PerformanceVarianceContractTests(unittest.TestCase):
         self.assertIn("if: ${{ inputs.mode == 'callgrind' }}", workflow)
         self.assertIn("scripts/nu11-callgrind-profile.py", workflow)
         self.assertIn("debian:bookworm-20260918-slim@sha256:", workflow)
+        profile_job = workflow.split("  callgrind:", 1)[1]
+        self.assertLess(profile_job.index("Reject source or ref mismatch"), profile_job.index("Bootstrap checkout prerequisites"))
+        self.assertLess(profile_job.index("Bootstrap checkout prerequisites"), profile_job.index("uses: actions/checkout@v4"))
+        self.assertLess(profile_job.index("Verify checked-out source"), profile_job.index("Install Rust"))
+        self.assertIn("ASSURA_NU11_STARTED_UTC", profile_job)
+        self.assertIn("snapshot.debian.org/archive/debian/20260918T000000Z", profile_job)
+        self.assertNotIn("--allow-unauthenticated", profile_job)
 
         self.assertIn("--iterations 16", runner)
         self.assertIn("cargo xtask performance-no-slower", runner)

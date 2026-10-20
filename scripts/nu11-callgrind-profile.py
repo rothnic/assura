@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import platform
 import re
@@ -26,10 +27,13 @@ IMAGE = "debian:bookworm-20260918-slim@sha256:f3034a6ec3c1205360777c4aae76234998
 PROFILE_COUNT = 3
 CONTROL_TIMEOUT = 30
 PROFILE_TIMEOUT = 120
-JOB_TIMEOUT = 45 * 60
+# Leave five minutes of the outer job for bounded cleanup and artifact upload.
+JOB_TIMEOUT = 40 * 60
 CAPTURE_LIMIT = 8 * 1024 * 1024
 PROFILE_LIMIT = 128 * 1024 * 1024
 EVIDENCE_LIMIT = 512 * 1024 * 1024
+MIN_DISK_FREE = 10 * 1024 * 1024 * 1024
+RESOURCE_CHECK_INTERVAL = 300
 TERM_GRACE_SECONDS = 0.5
 REAP_GRACE_SECONDS = 0.5
 PIPE_DRAIN_SECONDS = 1.0
@@ -38,6 +42,7 @@ ENV_KEYS = (
     "CARGO_TARGET_DIR", "RUSTUP_TOOLCHAIN", "GITHUB_ACTIONS", "GITHUB_REF",
     "GITHUB_SHA", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "GITHUB_WORKFLOW",
     "GITHUB_JOB", "CI", "ASSURA_NU11_COMMIT", "ASSURA_NU11_MODE", "ASSURA_NU11_FIXTURE_ROOT",
+    "ASSURA_NU11_STARTED_UTC",
 )
 
 
@@ -193,7 +198,7 @@ class Evidence:
 
     def check_budget(self) -> None:
         if time.monotonic() - self.started > JOB_TIMEOUT:
-            raise GateFailure("NU11 job exceeded its 45-minute budget")
+            raise GateFailure("NU11 active run budget expired")
         total = sum(path.stat().st_size for path in self.root.rglob("*") if path.is_file())
         if total > EVIDENCE_LIMIT:
             raise GateFailure("NU11 retained evidence exceeded 512 MiB")
@@ -212,7 +217,7 @@ class Evidence:
     ) -> Result:
         remaining_job = JOB_TIMEOUT - (time.monotonic() - self.started)
         if remaining_job <= 0:
-            raise GateFailure("NU11 job exceeded its 45-minute budget")
+            raise GateFailure("NU11 active run budget expired")
         if timeout <= 0 or limit <= 0:
             raise ValueError("capture timeout and output limit must be positive")
         output_dir = self.root / "commands"
@@ -254,6 +259,8 @@ class Evidence:
         direct_child_reaped = False
         process_group_gone: bool | None = None
         terminal_record_saved = False
+        last_resource_check = start_mono
+        resource_checks = 0
 
         def close_resources() -> None:
             nonlocal selector
@@ -291,6 +298,10 @@ class Evidence:
                 streams[path] = path.open("wb")
 
             while selector.get_map() or process.poll() is None:
+                if time.monotonic() - last_resource_check >= RESOURCE_CHECK_INTERVAL:
+                    resource_checks += 1
+                    record_resource_guard(self, f"{name}-resources-{resource_checks}", cwd, command_deadline=deadline)
+                    last_resource_check = time.monotonic()
                 remaining = deadline - time.monotonic()
                 if (
                     produced_file is not None
@@ -549,6 +560,85 @@ def command_hashes(paths: Sequence[Path]) -> dict[str, str]:
     return {str(path): sha256_file(path) for path in paths}
 
 
+def read_host_resources(repo: Path) -> dict[str, Any]:
+    memory = {}
+    for line in Path("/proc/meminfo").read_text().splitlines():
+        key, value = line.split(":", 1)
+        if key in {"MemTotal", "MemAvailable"}:
+            amount, unit = value.split()
+            if unit != "kB":
+                raise GateFailure("unsupported Linux memory counter unit")
+            memory[key] = int(amount) * 1024
+    pressure = {}
+    for kind in ("memory", "io"):
+        rows = Path(f"/proc/pressure/{kind}").read_text().splitlines()
+        full = next(row for row in rows if row.startswith("full "))
+        pressure[kind] = float(dict(field.split("=", 1) for field in full.split()[1:])["avg10"])
+    return {
+        "memory_total": memory["MemTotal"],
+        "memory_available": memory["MemAvailable"],
+        "psi_full_avg10": pressure,
+        "load_1m": os.getloadavg()[0],
+        "cpu_count": len(os.sched_getaffinity(0)),
+        "disk_free": shutil.disk_usage(repo).free,
+    }
+
+
+def resource_rejections(snapshot: dict[str, Any]) -> list[str]:
+    values = [snapshot[key] for key in ("memory_total", "memory_available", "load_1m", "cpu_count", "disk_free")]
+    values.extend(snapshot["psi_full_avg10"][kind] for kind in ("memory", "io"))
+    if any(isinstance(value, bool) or not isinstance(value, (int, float)) or not math.isfinite(value) or value < 0 for value in values):
+        raise GateFailure("invalid resource counter")
+    if snapshot["memory_total"] <= 0 or snapshot["cpu_count"] <= 0:
+        raise GateFailure("resource capacity is unknown")
+    reasons = []
+    if snapshot["memory_available"] < snapshot["memory_total"] * 0.10:
+        reasons.append("available memory below 10 percent")
+    for kind in ("memory", "io"):
+        if snapshot["psi_full_avg10"][kind] >= 5:
+            reasons.append(f"{kind} PSI full avg10 at least 5 percent")
+    if snapshot["disk_free"] < MIN_DISK_FREE:
+        reasons.append("free disk below the 10 GiB build/evidence reserve")
+    return reasons
+
+
+def record_resource_guard(evidence: Evidence, label: str, repo: Path, *, command_deadline: float | None = None) -> None:
+    # The infrastructure policy requires two elevated-load samples 30s apart.
+    for sample in range(2):
+        key = label if sample == 0 else f"{label}-load-confirmation"
+        try:
+            snapshot = read_host_resources(repo)
+            reasons = resource_rejections(snapshot)
+        except (OSError, ValueError, KeyError, StopIteration, GateFailure) as error:
+            evidence.state.setdefault("resource_snapshots", {})[key] = {"outcome": "unknown", "failure": str(error)}
+            evidence.save()
+            raise GateFailure(f"resource admission unavailable: {label}") from error
+        high_load = snapshot["load_1m"] > 2 * snapshot["cpu_count"]
+        if high_load and sample == 1:
+            reasons.append("load above twice CPU capacity in two samples 30 seconds apart")
+        snapshot.update(observed_utc=time.time(), observed_monotonic=time.monotonic(), rejection_reasons=reasons)
+        evidence.state.setdefault("resource_snapshots", {})[key] = snapshot
+        evidence.save()
+        if reasons:
+            raise GateFailure(f"resource pressure stops collection: {'; '.join(reasons)}")
+        if not high_load:
+            return
+        evidence.check_budget()
+        if JOB_TIMEOUT - (time.monotonic() - evidence.started) <= 30:
+            raise GateFailure("insufficient job budget to confirm elevated host load")
+        if command_deadline is not None and command_deadline - time.monotonic() <= 30:
+            raise GateFailure("insufficient command budget to confirm elevated host load")
+        time.sleep(30)
+        evidence.check_budget()
+
+
+def require_filename_negative(evidence: Evidence, result: Result, root: Path) -> None:
+    if result.exit_code not in (0, 1):
+        raise GateFailure("negative filename control returned an unexpected exit")
+    evidence.require(result, exit_code=result.exit_code)
+    validate_cli_output(result, root, expected_success=False)
+
+
 def record_host_snapshot(evidence: Evidence, label: str, repo: Path) -> None:
     result = evidence.capture(
         label,
@@ -563,9 +653,11 @@ def record_host_snapshot(evidence: Evidence, label: str, repo: Path) -> None:
         timeout=CONTROL_TIMEOUT,
     )
     evidence.require(result, context=f"host telemetry capture failed: {label}")
+    record_resource_guard(evidence, label, repo)
 
 
 def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], run_root: Path) -> None:
+    record_resource_guard(evidence, "host-admission", repo)
     apt_sources = run_root / "debian-snapshot.list"
     apt_sources.write_text(
         f"deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/{SNAPSHOT} bookworm main\n",
@@ -780,9 +872,7 @@ def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], 
     original.rename(invalid)
     try:
         negative = evidence.capture("filename-negative-control", cli_command(diagnostic, fixture), cwd=fixture, timeout=PROFILE_TIMEOUT)
-        if negative.exit_code not in (0, 1) or negative.timed_out or negative.overflow:
-            raise GateFailure("negative filename control did not complete within bounds")
-        validate_cli_output(negative, run_root, expected_success=False)
+        require_filename_negative(evidence, negative, run_root)
     finally:
         if invalid.exists():
             invalid.rename(original)
@@ -841,6 +931,7 @@ def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], 
     evidence.save()
 
     report = run_root / "strict-production-report.json"
+    record_host_snapshot(evidence, "host-before-strict-matrix", repo)
     strict_report = evidence.capture("strict-production-matrix", [str(assura), "performance-report", "--output", str(report), "--iterations", "16"], cwd=repo, timeout=900, produced_file=report, produced_file_limit=PROFILE_LIMIT)
     evidence.state["strict_report"] = {
         "exists": report.is_file(),
@@ -851,6 +942,7 @@ def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], 
     evidence.require(strict_report, context="unchanged strict production report failed")
     gate = evidence.capture("strict-production-gate", [str(xtask), "performance-no-slower", str(report)], cwd=repo, timeout=CONTROL_TIMEOUT)
     evidence.require(gate, context="unchanged strict production gate failed")
+    record_host_snapshot(evidence, "host-after-strict-matrix", repo)
     evidence.state["binary_hashes_after_gate"] = command_hashes(required_binaries)
     if evidence.state["binary_hashes_before"] != evidence.state["binary_hashes_after_gate"]:
         raise GateFailure("strict production matrix changed a measured executable")
@@ -875,6 +967,10 @@ def main() -> int:
     if not run_id.isdigit() or not attempt.isdigit():
         print("NU11 workflow run id and attempt must be numeric", file=sys.stderr)
         return 2
+    started_utc = source_env.get("ASSURA_NU11_STARTED_UTC", "")
+    if not started_utc.isdigit() or not 0 <= time.time() - int(started_utc) < JOB_TIMEOUT:
+        print("NU11 workflow start time is missing, future, or outside the active budget", file=sys.stderr)
+        return 2
     root = repo / "target/performance/nu11-callgrind-profile" / f"{commit}-{run_id}-{attempt}"
     if root.exists():
         print(f"refusing to overwrite NU11 evidence: {root}", file=sys.stderr)
@@ -891,6 +987,7 @@ def main() -> int:
     target.parent.mkdir(parents=True, exist_ok=True)
     env = limited_environment(source_env, tmpdir=tmpdir, target=target)
     evidence = Evidence(root, env, repo)
+    evidence.started -= time.time() - int(started_utc)
     try:
         execute(evidence, repo, Path(env["ASSURA_NU11_FIXTURE_ROOT"]), env, root)
     except (GateFailure, OSError, subprocess.SubprocessError, json.JSONDecodeError) as error:

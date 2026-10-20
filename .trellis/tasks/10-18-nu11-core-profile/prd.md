@@ -107,3 +107,31 @@ Rust exporter compilation, container/Valgrind compatibility, actual three-profil
 collection and the subsequent unchanged strict production matrix remain unrun.
 This is a source checkpoint awaiting independent final review and root admission.
 It neither explains the original timing failure nor proves a speed improvement.
+
+
+## Final-review corrections and execution admission (2026-10-20)
+
+Root accepted F1/F2: filename controls now require normal capture lifecycle and
+confirmed cleanup, and resource snapshots enforce admission. The existing
+infrastructure policy supplies available memory >=10%, memory/I/O PSI full
+avg10 <5%, and load <=twice CPU capacity in two samples at least30s apart.
+CPU PSI remains telemetry; that policy defines no separate CPU-PSI cutoff.
+This experiment additionally requires a 10GiB free-disk reserve. Missing or
+invalid counters stop as inconclusive. Long command captures check every five
+minutes and stop/reap their owned child if admission fails.
+
+The root-approved bootstrap adjustment permits only signed-snapshot vendor apt
+prerequisites in the digest-pinned disposable container before checkout. The
+full SHA and candidate-ref guard runs first; actual checkout HEAD and cleanliness
+are verified before Rust/Node setup, compilation or profiling. Bootstrap uses
+authenticated Debian apt metadata over HTTP to acquire CA/Git/curl/xz/Python3;
+the subsequent existing apt stage uses HTTPS. Logs, exits, package versions
+and signed-metadata hashes are retained separately even on early failure.
+Native snapshot Python3 avoids assuming an Ubuntu Python binary works in Debian.
+The active run budget is 40minutes from the first source/ref guard, within the
+outer45minute job, reserving five minutes for teardown/artifact upload.
+
+Eighteen focused Python controls and three R03 contracts now pass; raw failed
+fixture attempts remain retained. Rust exporter compilation and actual container
+bootstrap/Valgrind/profile/strict-matrix behavior remain unproven. Independent
+scoped rereview is required before the source is published for execution.

@@ -67,6 +67,30 @@ jobs:
         [[ "$GITHUB_SHA" == "$ASSURA_NU11_COMMIT" ]]
         [[ "$GITHUB_REF" == refs/heads/* ]]
         [[ "$GITHUB_REF" != refs/heads/master && "$GITHUB_REF" != refs/heads/main ]]
+        echo "ASSURA_NU11_STARTED_UTC=$(date +%s)" >> "$GITHUB_ENV"
+    - name: Bootstrap checkout prerequisites from the signed snapshot
+      shell: bash
+      timeout-minutes: 5
+      run: |
+        set -euo pipefail
+        bootstrap="$RUNNER_TEMP/nu11-bootstrap"
+        mkdir -m 700 "$bootstrap"
+        printf '%s\n' 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20260918T000000Z bookworm main' > "$bootstrap/sources.list"
+        opts=(-o "Dir::Etc::sourcelist=$bootstrap/sources.list" -o Dir::Etc::sourceparts=- -o Acquire::Check-Valid-Until=false -o Acquire::Retries=0 -o Acquire::http::Timeout=30)
+        set +e
+        timeout 120 apt-get "${opts[@]}" update > "$bootstrap/update.stdout" 2> "$bootstrap/update.stderr"
+        status=$?
+        printf '%s\n' "$status" > "$bootstrap/update.exit"
+        set -e
+        [[ "$status" == 0 ]]
+        set +e
+        DEBIAN_FRONTEND=noninteractive timeout 120 apt-get "${opts[@]}" install -y --no-install-recommends git ca-certificates curl xz-utils python3 > "$bootstrap/install.stdout" 2> "$bootstrap/install.stderr"
+        status=$?
+        printf '%s\n' "$status" > "$bootstrap/install.exit"
+        set -e
+        [[ "$status" == 0 ]]
+        dpkg-query -W git ca-certificates curl xz-utils python3 > "$bootstrap/packages.txt"
+        sha256sum /var/lib/apt/lists/*InRelease > "$bootstrap/signed-metadata.sha256"
     - uses: actions/checkout@v4
       with:
         ref: ${{ inputs.commit }}
@@ -78,10 +102,6 @@ jobs:
         [[ -z "$(git status --porcelain --untracked-files=normal)" ]]
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
-    - name: Setup Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
     - name: Setup Node
       uses: actions/setup-node@v4
       with:
@@ -93,6 +113,8 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: nu11-callgrind-${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
-        path: target/performance/nu11-callgrind-profile/${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
+        path: |
+          target/performance/nu11-callgrind-profile/${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
+          ${{ runner.temp }}/nu11-bootstrap
         if-no-files-found: warn
         retention-days: 14
