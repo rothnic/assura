@@ -77,5 +77,31 @@ alongside `selected_markdown`; the existing seven-field predicate and Markdown
 selection condition remain unchanged. Raw receipt/stdout/stderr and the three
 read-only triages are preserved under
 `nu18/compile-failure-83a8c667/` and
-`nu18/focused-validation-83a8c667/`. The two-target focused command remains
-unrun on the corrected source and is admitted to the environment agent.
+`nu18/focused-validation-83a8c667/`. At that checkpoint the corrected command
+was unrun; the subsequent actual results are recorded below.
+
+## Current validation
+
+The corrected focused command passed all 12 tests on `2d6c327`: eight doctor
+tests and four pattern-scope tests, with no failures, ignores or filtering.
+The single admitted full local PR gate on clean `3424c084` exited zero:
+1,487 passed, zero failed, and one existing manual performance audit ignored
+across 110 result rows. Target-state, evidence, strict all-feature Clippy,
+54 YAML examples, current demo data and the 48-page website build passed.
+Raw captures and exact tool/source hashes are external under
+`nu18/full-validation-preparation-20261020/`.
+
+The normal current-base merge `a7557943` incorporates integration `702cd6d0`.
+All eight owned Rust/test blobs remain identical to the validated source;
+the canonical demo input revision remains `ff5e10ce`, so its five revision
+fields need no further generation. Both protected performance payloads remain
+byte-identical. Independent Luna review accepted this source and proof reuse
+in `nu18/current-base-702-20261020/final-integration-source-review-a7557943.md`.
+Exact final-head hosted checks, root merge and postmerge closure remain open.
+
+The successful local gate retained two new minimal-feature unused/dead-code
+warnings for the private full-CLI bridge and the pre-existing prepared-config
+warning. All-feature Clippy with warnings denied passed. The website also
+emitted its known optional custom-404 lookup warning and completed the build.
+These observations remain in the raw evidence; no warning suppression or gate
+change was made. The earlier compile failure remains failed evidence.
