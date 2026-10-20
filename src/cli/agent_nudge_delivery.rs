@@ -553,8 +553,6 @@ fn prune_sends(state: &mut DeliveryState, now: i64) {
     }
 }
 
-// allow-reason: the spawn boundary keeps worker, lease, cadence, and deadline inputs explicit.
-#[allow(clippy::too_many_arguments)]
 fn mark_refresh_queued(lock: &Path) {
     let queued = lock.with_extension("queued");
     let _ = OpenOptions::new().write(true).create_new(true).open(queued);

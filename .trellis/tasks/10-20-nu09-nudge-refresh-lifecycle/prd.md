@@ -71,3 +71,16 @@ Focused commands (Rust/Cargo 1.94.1; `CARGO_BUILD_JOBS=2`; private APFS TMPDIR; 
 - `cargo fmt --all` and `git diff --check`: exit 0.
 
 Raw command receipts and resource samples are in the external implementation evidence directory `nu09/nudge-refresh-implementation-20261020`. Earlier compile failures and the successful-but-zero-test `--bin` selector are retained there without pass credit; see `implementation-report.md`. Full PR/current-base hosted gates remain pending.
+
+## Full PR correction
+
+The first full PR attempt at 7e97bf55 exited 1 after 1,491 passing tests,
+zero failures and one existing platform ignore. Evidence and target-state
+checks passed; strict Clippy rejected spawn_refresh_pair because extraction
+left its existing documented function-local allowance on mark_refresh_queued.
+Docs were not reached. Three independent Luna triages accepted moving the
+original comment/attribute pair to its original function in the new module;
+no new allowance, signature, policy threshold or runtime behavior changes.
+Preserve attached attributes and documentation as well as all function bodies.
+Raw failure and root decision remain in external NU09 full-validation evidence.
+Affected strict Clippy and final full PR checks remain required after correction.
