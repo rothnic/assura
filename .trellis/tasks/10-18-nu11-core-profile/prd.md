@@ -163,3 +163,16 @@ from the shell/container path, so bootstrap raw outputs are unavailable for
 that failed run. The workflow now passes the actual bootstrap path through a
 step output and errors on missing files. Retained job logs prove step success
 only; no missing raw package metadata, resource, tool or profile proof is invented.
+
+
+## Container identity correction (2026-10-20)
+
+Changed-source dispatch39436491559 on9a5cc01c proved exact checkout trust,
+resource admission, Rust/Node setup and actual artifact upload. It stopped at
+the runner's raw-text OS identity guard before package resolution or profiles.
+The uploaded archive12271626055 is retained with matching SHA087f6408. Raw
+os-release was not saved, so quotedVERSION_ID remains a supported hypothesis,
+not an observed value from that run. Root accepts three read-only diagnoses:
+use Python's public freedesktop_os_release decoder and retain exact source file
+bytes/hash and parsed values before rejecting. Exact Debian ID/version12, amd64,
+root, immutable container digest and all later tool/control guards remain.

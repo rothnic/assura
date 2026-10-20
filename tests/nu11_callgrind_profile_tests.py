@@ -12,7 +12,7 @@ import time
 import unittest
 from pathlib import Path
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import mock_open, patch
 
 
 REPOSITORY_ROOT = Path(__file__).resolve().parents[1]
@@ -25,6 +25,31 @@ SPEC.loader.exec_module(NU11)
 
 
 class Nu11ProfileContractTests(unittest.TestCase):
+    def test_container_identity_decodes_quotes_and_rejects_wrong_values(self):
+        cases = [
+            ('ID=debian\nVERSION_ID="12"\n', True),
+            ('ID="debian"\nVERSION_ID=12\n', True),
+            ('ID=ubuntu\nVERSION_ID="12"\n', False),
+            ('ID=debian\nVERSION_ID="120"\n', False),
+            ('ID=debian\n', False),
+        ]
+        for raw, accepted in cases:
+            with self.subTest(raw=raw), tempfile.TemporaryDirectory() as temporary:
+                evidence = NU11.Evidence(Path(temporary), {}, REPOSITORY_ROOT)
+                # Exercise the public stdlib decoder against the real assignment text.
+                with patch.object(NU11.platform, "_os_release_cache", None), \
+                        patch("builtins.open", mock_open(read_data=raw)), \
+                        patch.object(NU11.Path, "read_bytes", return_value=raw.encode()):
+                    if accepted:
+                        NU11.require_container_identity(evidence)
+                    else:
+                        with self.assertRaisesRegex(NU11.GateFailure, "pinned Debian"):
+                            NU11.require_container_identity(evidence)
+                self.assertEqual((Path(temporary) / "os-release").read_bytes(), raw.encode())
+                state = json.loads((Path(temporary) / "run.json").read_text())
+                self.assertEqual(state["os_release_sha256"], NU11.sha256_bytes(raw.encode()))
+                self.assertEqual(state["os_release"]["ID"], "debian" if "ubuntu" not in raw else "ubuntu")
+
     def resources(self):
         return {"memory_total": 1000, "memory_available": 500, "load_1m": 1,
                 "cpu_count": 4, "disk_free": NU11.MIN_DISK_FREE,

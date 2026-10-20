@@ -656,6 +656,20 @@ def record_host_snapshot(evidence: Evidence, label: str, repo: Path) -> None:
     record_resource_guard(evidence, label, repo)
 
 
+def require_container_identity(evidence: Evidence) -> None:
+    """Retain the actual OS file and require the reviewed distro values."""
+    raw = Path("/etc/os-release").read_bytes()
+    saved = evidence.root / "os-release"
+    saved.write_bytes(raw)
+    evidence.state["os_release_sha256"] = sha256_bytes(raw)
+    evidence.save()
+    identity = platform.freedesktop_os_release()
+    evidence.state["os_release"] = identity
+    evidence.save()
+    if identity.get("ID") != "debian" or identity.get("VERSION_ID") != "12":
+        raise GateFailure("profile job is not running in the pinned Debian Bookworm container")
+
+
 def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], run_root: Path) -> None:
     record_resource_guard(evidence, "host-admission", repo)
     apt_sources = run_root / "debian-snapshot.list"
@@ -677,9 +691,7 @@ def execute(evidence: Evidence, repo: Path, fixture: Path, env: dict[str, str], 
     })
     evidence.save()
 
-    os_release = Path("/etc/os-release").read_text(encoding="utf-8")
-    if "ID=debian" not in os_release or "VERSION_ID=12" not in os_release:
-        raise GateFailure("profile job is not running in the pinned Debian Bookworm container")
+    require_container_identity(evidence)
     if platform.machine() not in {"x86_64", "amd64"}:
         raise GateFailure("profile job architecture is not the reviewed amd64 platform")
     if os.geteuid() != 0:
