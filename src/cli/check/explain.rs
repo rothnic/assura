@@ -293,8 +293,13 @@ pub(in crate::cli) fn explain_structure_path_with_markdown(
         })
         .collect();
     let effective_rules = summarize_effective_rules(&effective);
-    let skipped_checks =
-        explain_skipped_checks(kind, excluded, rel.as_path(), markdown_selection.as_ref());
+    let skipped_checks = explain_skipped_checks(
+        kind,
+        excluded,
+        rel.as_path(),
+        &effective_rules,
+        markdown_selection.as_ref(),
+    );
     let mut next_actions = Vec::new();
     if excluded {
         next_actions.push(PathExplainNextAction {
@@ -363,6 +368,7 @@ fn explain_skipped_checks(
     kind: &str,
     excluded: bool,
     rel: &Path,
+    rules: &PathExplainRules,
     selected_markdown: Option<&SelectedMarkdown<'_>>,
 ) -> Vec<PathExplainSkip> {
     let mut skipped = Vec::new();

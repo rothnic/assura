@@ -66,4 +66,16 @@ already scoped to `cli`, but the items were not visible to sibling
 `pub(in crate::cli)`. Individual fields remain at their prior visibility;
 doctor consumes only the existing compact renderer and serde output. This
 does not add or change any externally public Rust API. The Rust visibility
-canary is static evidence only; Cargo tests remain unrun pending root review.
+canary is static evidence only.
+
+The first admitted focused Cargo run on `83a8c667` exited 101 before either
+integration test ran. Its seven E0425 diagnostics identified a removed
+`rules` argument still used by the pre-existing ordinary-file
+`file_structure_rules` predicate in `explain_skipped_checks`. The correction
+restores that parameter and passes the already computed `&effective_rules`
+alongside `selected_markdown`; the existing seven-field predicate and Markdown
+selection condition remain unchanged. Raw receipt/stdout/stderr and the three
+read-only triages are preserved under
+`nu18/compile-failure-83a8c667/` and
+`nu18/focused-validation-83a8c667/`. The two-target focused command remains
+unrun on the corrected source and is admitted to the environment agent.
