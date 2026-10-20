@@ -94,6 +94,8 @@ pub use explain::{
     PathExplainScope, PathExplainSkip,
 };
 #[cfg(feature = "yaml-config")]
+pub(super) use explain::{explain_structure_path_with_markdown, SelectedMarkdownPolicy};
+#[cfg(feature = "yaml-config")]
 pub use explain_rules::{PathExplainFilePatternRule, PathExplainRules};
 use glob::Pattern;
 use ls_fast_plan::FastScope;

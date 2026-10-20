@@ -1,5 +1,6 @@
 //! Shared rule helpers for structure-first CLI validation.
 
+use super::patterns::best_file_pattern_match;
 use super::scope_patterns::{path_has_scope_magic, CompiledScopePattern};
 use crate::config::config::{
     merge_markdown_rule_configs, split_naming_conventions, DirectoryBundle, DirectoryNode,
@@ -19,6 +20,35 @@ pub(super) struct EffectiveRules {
     pub(super) self_directory: Option<Arc<DirectoryBundle>>,
     pub(super) markdown: Option<Arc<MarkdownBundle>>,
     pub(super) limit_children: Option<Arc<ChildrenLimitConfig>>,
+}
+
+pub(super) struct SelectedMarkdown<'a> {
+    pub(super) pattern: Option<&'a str>,
+    pub(super) bundle: &'a MarkdownBundle,
+}
+
+pub(super) fn select_markdown<'a>(
+    rules: &'a EffectiveRules,
+    filename: &str,
+    rel: &Path,
+    compiled_patterns: &HashMap<String, Pattern>,
+) -> Option<SelectedMarkdown<'a>> {
+    if let Some((pattern, bundle)) = rules
+        .files
+        .as_ref()
+        .and_then(|files| files.markdown_patterns.as_ref())
+        .and_then(|patterns| best_file_pattern_match(patterns, filename, rel, compiled_patterns))
+    {
+        return Some(SelectedMarkdown {
+            pattern: Some(pattern),
+            bundle,
+        });
+    }
+
+    rules.markdown.as_deref().map(|bundle| SelectedMarkdown {
+        pattern: None,
+        bundle,
+    })
 }
 
 #[derive(Debug, Clone)]

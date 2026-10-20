@@ -2,14 +2,15 @@
 
 use super::args::CheckOutputFormat;
 use super::check::{
-    explain_structure_path, run_structure_check_with_target_mode, CheckError, CheckTargetMode,
-    PathExplainReport,
+    explain_structure_path_with_markdown, run_structure_check_with_target_mode, CheckError,
+    CheckTargetMode, PathExplainReport, SelectedMarkdownPolicy,
 };
 pub(super) use super::doctor_report::{
     DoctorItem, DoctorNextAction, DoctorViolation, ProjectDoctorBuild, ProjectDoctorReport,
 };
 use super::ExitCode;
 use crate::config::loader::ConfigLoader;
+use serde::Serialize;
 use std::path::{Path, PathBuf};
 
 pub(super) const DOCTOR_AGENT_SCHEMA: &str = "assura.project-doctor.agent.v1";
@@ -42,9 +43,12 @@ pub async fn explain_command(
     config: Option<PathBuf>,
     format: CheckOutputFormat,
 ) -> ExitCode {
-    match explain_structure_path(path, config) {
-        Ok(report) => {
-            println!("{}", render_explain(&report, format));
+    match explain_structure_path_with_markdown(path, config) {
+        Ok((report, selected_markdown)) => {
+            println!(
+                "{}",
+                render_explain(&report, selected_markdown.as_ref(), format)
+            );
             ExitCode::Success
         }
         Err(error) => {
@@ -114,13 +118,42 @@ fn render_doctor(report: &ProjectDoctorReport, format: CheckOutputFormat) -> Str
     }
 }
 
-fn render_explain(report: &PathExplainReport, format: CheckOutputFormat) -> String {
+#[derive(Serialize)]
+struct CliExplainReport<'a> {
+    #[serde(flatten)]
+    report: &'a PathExplainReport,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    selected_markdown: Option<&'a SelectedMarkdownPolicy>,
+}
+
+fn render_explain(
+    report: &PathExplainReport,
+    selected_markdown: Option<&SelectedMarkdownPolicy>,
+    format: CheckOutputFormat,
+) -> String {
     match format {
-        CheckOutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
-        CheckOutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
-        CheckOutputFormat::Agent => super::doctor_agent::render_agent_explain(report),
+        CheckOutputFormat::Json => serde_json::to_string_pretty(&CliExplainReport {
+            report,
+            selected_markdown,
+        })
+        .unwrap_or_default(),
+        CheckOutputFormat::Yaml => serde_yaml::to_string(&CliExplainReport {
+            report,
+            selected_markdown,
+        })
+        .unwrap_or_default(),
+        CheckOutputFormat::Agent => {
+            super::doctor_agent::render_agent_explain(report, selected_markdown)
+        }
         CheckOutputFormat::Text | CheckOutputFormat::Advice | CheckOutputFormat::Status => {
-            report.render_text()
+            let mut text = report.render_text();
+            if let Some(selected_markdown) = selected_markdown {
+                text.push_str(&format!(
+                    "\nselected_markdown={}",
+                    selected_markdown.render_compact()
+                ));
+            }
+            text
         }
     }
 }

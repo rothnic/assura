@@ -1,0 +1,38 @@
+{
+  "id": "nu18-markdown-explain",
+  "name": "nu18-markdown-explain",
+  "title": "NU18 selected Markdown policy in explain",
+  "description": "Bead ae-whr.4: expose selected effective Markdown check_links and matcher/directory origin through CLI explain; share existing canonical selection and preserve public Rust report APIs. Independent review before root merge.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nu18-markdown-explain",
+  "assignee": "nu18-markdown-explain",
+  "createdAt": "2026-10-20",
+  "completedAt": null,
+  "branch": "feat/nu18-markdown-explain",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-20-nu18-markdown-explain",
+      "owner": "nu18-markdown-explain",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/feat/nu18-markdown-explain",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
