@@ -256,6 +256,46 @@ jobs:
       run: bash scripts/summarize-rust-cache.sh "Test Suite" "${{ steps.rust-cache.outputs.cache-hit }}" "assura-debug-${{ runner.os }}-${{ matrix.rust }}"
     - name: Run tests
       run: cargo test --all-features
+    - name: Prove watch handles Ctrl-C in an owned console
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        $output = & cargo test --all-features --test watch_cli_windows_ctrl_c ctrl_c_stops_watch_in_owned_console -- --ignored --exact --nocapture --test-threads=1 2>&1
+        $cargoExit = $LASTEXITCODE
+        $lines = @($output | ForEach-Object { "$_" })
+        $lines | ForEach-Object { Write-Host $_ }
+        if ($cargoExit -ne 0) { exit $cargoExit }
+
+        $summaries = @($lines | Where-Object { $_ -match '^test result: ok\. 1 passed; 0 failed; 0 ignored; 0 measured; [0-9]+ filtered out; finished in ' })
+        $allSummaries = @($lines | Where-Object { $_ -match '^test result:' })
+        if ($summaries.Count -ne 1 -or $allSummaries.Count -ne 1) {
+          throw "Expected exactly one passing outer test, found $($summaries.Count) matching summaries and $($allSummaries.Count) total summaries"
+        }
+
+        $receiptLines = @($lines | Where-Object { $_.StartsWith('NU17_CTRL_C_RECEIPT ') })
+        if ($receiptLines.Count -ne 1) { throw "Expected exactly one final NU17 receipt, found $($receiptLines.Count)" }
+        $receipt = $receiptLines[0].Substring('NU17_CTRL_C_RECEIPT '.Length) | ConvertFrom-Json
+        if ($receipt.schema -ne 'assura.nu17.ctrl-c.v1') { throw 'Unexpected NU17 receipt schema' }
+        $positive = $receipt.positive
+        $ids = @($positive.console_process_ids | Sort-Object -Unique)
+        if ($positive.initial_event_success -ne $true -or $positive.send_calls -ne 1 -or $positive.event_code -ne 0 -or !$positive.ack -or
+            $positive.watch_exit_code -ne 0 -or $positive.elapsed_ms -gt 10000 -or
+            !$positive.watch_in_job -or !$positive.watch_artifact_absent -or
+            $ids.Count -ne 2 -or $ids -notcontains $positive.helper_pid -or
+            $ids -notcontains $positive.watch_pid -or $ids -contains $positive.outer_pid -or
+            $positive.outer.helper_exit_code -ne 0 -or $positive.outer.job_active_processes -ne 0) {
+          throw 'Positive Ctrl-C receipt failed independent validation'
+        }
+        $noSend = $receipt.no_send
+        $noSendIds = @($noSend.console_process_ids | Sort-Object -Unique)
+        if ($noSend.initial_event_success -ne $true -or $noSend.send_calls -ne 0 -or $noSend.ack -or $noSend.event_code -ne 4294967295 -or
+            !$noSend.watch_alive_before_cleanup -or !$noSend.watch_reaped -or
+            !$noSend.watch_artifact_absent -or !$noSend.watch_in_job -or
+            $noSendIds.Count -ne 2 -or $noSendIds -notcontains $noSend.helper_pid -or
+            $noSendIds -notcontains $noSend.watch_pid -or $noSendIds -contains $noSend.outer_pid -or
+            $noSend.outer.helper_exit_code -ne 0 -or $noSend.outer.job_active_processes -ne 0) {
+          throw 'No-send control receipt failed independent validation'
+        }
     - name: Capture watch scope normalization evidence
       env:
         ASSURA_WATCH_NORMALIZATION_DEBUG: "1"

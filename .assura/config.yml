@@ -359,10 +359,18 @@ extensions:
             - crates/assura-check-cli/tests/compiled_requirements_traceability_cli.rs
       allowed_ignore_reasons:
         - manual_performance_audit
+        - windows_owned_console_ci_only
+        - windows_owned_helper_entry
       ignored_tests:
         - path: tests/ls_lint_parity_regression_tests.rs
           test: ls_lint_parity_audit_performance_shapes
           reason: manual_performance_audit
+        - path: tests/watch_cli_windows_ctrl_c.rs
+          test: ctrl_c_stops_watch_in_owned_console
+          reason: windows_owned_console_ci_only
+        - path: tests/watch_cli_windows_ctrl_c.rs
+          test: fixture_helper_entry
+          reason: windows_owned_helper_entry
   module_topologies:
     - id: public_rust_modules
       severity: high
@@ -1505,8 +1513,16 @@ structure:
           allowed_names:
             - "fixtures"
             - "ls_lint_rule_coverage"
+            - "watch_cli_windows_ctrl_c"
           allow_extra: false
         children:
+          watch_cli_windows_ctrl_c/:
+            files:
+              naming: "snake_case"
+              max_lines: 1000
+              allowed_names:
+                - "owned_process.rs"
+              allow_extra: false
           ls_lint_rule_coverage/:
             files:
               naming: "snake_case"

@@ -1,0 +1,38 @@
+{
+  "id": "nu17-windows-ctrl-c",
+  "name": "nu17-windows-ctrl-c",
+  "title": "NU17 isolated native Windows Ctrl-C proof",
+  "description": "Bead ae-whr.2: add isolated owned-console Windows-only Ctrl-C test and exact CI receipt validation; preserve production/CtrlBreak/timeouts. Root approved v2+independent corrections. Source-only now; no local Cargo while NU03 lane active.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": "native-windows-ctrl-c-proof",
+  "package": null,
+  "priority": "P2",
+  "creator": "nu17-windows-ctrl-c",
+  "assignee": "nu17-windows-ctrl-c",
+  "createdAt": "2026-10-18",
+  "completedAt": null,
+  "branch": "test/nu17-windows-ctrl-c",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "10-18-nu17-windows-ctrl-c",
+      "owner": "nu17-windows-ctrl-c",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/test/nu17-windows-ctrl-c",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": "prd.md#authority"
+    }
+  }
+}
