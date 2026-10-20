@@ -3,7 +3,7 @@
   "name": "nu08-starter-source-health",
   "title": "NU08 explicit Python and Rust starter health",
   "description": "Bead ae-4nm: extend existing advisory source-health recipe coverage to Python/Rust with explicit default boundaries and preserve authored policy.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,

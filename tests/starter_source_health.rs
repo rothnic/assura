@@ -102,6 +102,7 @@ fn assert_source_health_behavior(project: &TempDir) {
     write_lines(project, "packages/alpha/src/within-limit.py", 500);
     write_lines(project, "packages/beta/tests/within-limit.rs", 500);
     write_lines(project, "docs/within-limit.md", 500);
+    write_lines(project, "docs/oversized.md", 501);
     write_lines(project, "packages/alpha/src/oversized.js", 501);
     write_lines(project, "packages/beta/tests/oversized.ts", 501);
     write_lines(project, "target/ignored.py", 501);
@@ -113,6 +114,7 @@ fn assert_source_health_behavior(project: &TempDir) {
         "packages/beta/tests/module.rs",
         "packages/alpha/src/oversized.js",
         "packages/beta/tests/oversized.ts",
+        "docs/oversized.md",
     ] {
         assert!(
             has_path(&paths, expected),
