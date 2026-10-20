@@ -100,6 +100,40 @@ jobs:
         set -euo pipefail
         [[ "$(git rev-parse HEAD)" == "$ASSURA_NU11_COMMIT" ]]
         [[ -z "$(git status --porcelain --untracked-files=normal)" ]]
+    - name: Admit resources before Rust and Node setup
+      timeout-minutes: 2
+      run: |
+        python3 - <<'PY'
+        import hashlib, importlib.util, json, os, sys, time
+        from pathlib import Path
+        root = Path(os.environ["RUNNER_TEMP"]) / "nu11-bootstrap"
+        script = Path("scripts/nu11-callgrind-profile.py").resolve()
+        phase = {"phase": "pre-tool-admission", "source_commit": os.environ["ASSURA_NU11_COMMIT"],
+                 "script_sha256": hashlib.sha256(script.read_bytes()).hexdigest(), "outcome": "checking"}
+        evidence = None
+        try:
+            spec = importlib.util.spec_from_file_location("nu11_profile", script)
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[spec.name] = module
+            spec.loader.exec_module(module)
+            evidence = module.Evidence(root, {}, Path.cwd())
+            elapsed = time.time() - int(os.environ["ASSURA_NU11_STARTED_UTC"])
+            if elapsed < 0:
+                raise module.GateFailure("workflow start time is in the future")
+            evidence.started -= elapsed
+            evidence.check_budget()
+            module.record_resource_guard(evidence, "before-runtime-tools", Path.cwd())
+            phase["outcome"] = "admitted"
+        except BaseException as error:
+            phase.update(outcome="rejected_or_unknown", failure=f"{type(error).__name__}: {error}")
+            raise
+        finally:
+            if evidence is not None:
+                evidence.state.update(phase)
+                evidence.save()
+            else:
+                (root / "admission.json").write_text(json.dumps(phase, indent=2) + "\n")
+        PY
     - name: Install Rust
       uses: dtolnay/rust-toolchain@stable
     - name: Setup Node

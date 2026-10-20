@@ -135,3 +135,16 @@ Eighteen focused Python controls and three R03 contracts now pass; raw failed
 fixture attempts remain retained. Rust exporter compilation and actual container
 bootstrap/Valgrind/profile/strict-matrix behavior remain unproven. Independent
 scoped rereview is required before the source is published for execution.
+
+
+The pre-tool resource guard is also wired immediately after verified checkout,
+before Rust/Node setup. It imports the same checked-out guard implementation,
+retains source/script identity and admitted or rejected/unknown phase evidence
+in the bootstrap artifact, and shares the first-guard active-budget origin.
+The bounded indispensable vendor bootstrap is the explicit preceding exception.
+The three workflow contracts pass after this wiring; actual Linux admission
+remains unrun. Local Rust all-targets on source51ccd672 completed0 with1484
+passed/0failed/2intentional ignores. The exact ignored exporter then passed1/1;
+a deliberate second invocation rejected overwrite with101 and left all803
+fixture/manifest files hash-identical. Later changes touch only workflow, its
+contract tests and this metadata; Rust/Cargo/exporter inputs are unchanged.
