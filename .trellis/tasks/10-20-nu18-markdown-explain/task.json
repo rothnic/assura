@@ -29,8 +29,8 @@
       "candidate_id": "10-20-nu18-markdown-explain",
       "owner": "nu18-markdown-explain",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/feat/nu18-markdown-explain",
-      "branch_ref": null,
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/feat/nu18-markdown-explain",
       "acceptance_ref": "prd.md#acceptance",
       "authority_ref": "prd.md#authority"
     }
