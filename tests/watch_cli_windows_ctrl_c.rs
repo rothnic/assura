@@ -1,21 +1,20 @@
 #![cfg(windows)]
 
-use serde_json::{Value, json};
+use serde_json::{json, Value};
 use sha2::{Digest, Sha256};
 use std::fs::File;
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, Read, Write};
 use std::os::windows::process::CommandExt;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
-use std::sync::mpsc;
 use std::thread;
 use std::time::{Duration, Instant};
 use tempfile::TempDir;
 use windows_sys::Win32::System::Console::{
-    CTRL_C_EVENT, GenerateConsoleCtrlEvent, GetConsoleProcessList, SetConsoleCtrlHandler,
+    GenerateConsoleCtrlEvent, GetConsoleProcessList, SetConsoleCtrlHandler, CTRL_C_EVENT,
 };
-use windows_sys::Win32::System::Threading::{CREATE_NEW_CONSOLE, GetCurrentProcessId};
+use windows_sys::Win32::System::Threading::{GetCurrentProcessId, CREATE_NEW_CONSOLE};
 
 const READY_MARKER: &str = "NU17_HELPER_READY";
 const HELPER_RECEIPT_PREFIX: &str = "NU17_HELPER_RECEIPT ";
@@ -163,11 +162,12 @@ fn exact_console_members(proof: &Value) -> bool {
     actual == expected && !actual.contains(&outer)
 }
 
+#[path = "watch_cli_windows_ctrl_c/owned_process.rs"]
 mod owned_process;
 
 use owned_process::{
-    Job, WatchChild, join_bounded, spawn_bounded_drain, spawn_bounded_line_reader,
-    terminate_child_and_reap, wait_child_until,
+    join_bounded, spawn_bounded_drain, spawn_bounded_line_reader, terminate_child_and_reap,
+    wait_child_until, Job, WatchChild,
 };
 
 fn console_snapshot() -> Result<ConsoleSnapshot, String> {

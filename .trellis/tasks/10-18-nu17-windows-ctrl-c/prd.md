@@ -102,3 +102,22 @@ Current source review disposition: /Users/nroth/workspace/.assura-review-2026101
 Source-only implementation first. No local Cargo while NU03 owns build lane;
 root releases validation separately. All unexpected gates preserve raw and stop
 for three read-only triages. Historic Mac timeout remains unexplained.
+
+
+## Hosted compile correction (2026-10-20)
+
+PR374's first Windows job failed before running tests: the root integration
+target's bare module declaration searched tests/owned_process.rs instead of
+the approved nested helper. Three independent read-only reviews identified
+that path error and the associated type-inference diagnostics. The declaration
+now names the exact private helper path. Unused imports left after extraction
+were removed. The separate hosted formatting failure is corrected through
+workspace cargo fmt, with the ordinary import/wrapping changes retained.
+Neither change alters console membership, deadlines, receipt validation or
+cleanup assertions. The original failed logs remain external under
+nu17/hosted-failure-d15697a0-20261020.
+
+The earlier local all-targets gate passed1484 tests, zero failed, one manual
+performance audit ignored. That macOS run did not execute the Windows-only
+protocol. Corrected-head independent review and actual Windows CI remain
+required; no Windows behavioral pass is claimed.
