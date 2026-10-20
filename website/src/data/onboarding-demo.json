@@ -408,7 +408,7 @@
   ],
   "rendered_text": "Assura agent onboarding\nVersion      assura 0.4.1\nProject      node confidence=high\nAgent        codex confidence=explicit\nPolicy       agentic-core + structure-health -> $agent-entrypoint (applied)\nHost         codex generated=true activated=true structurally_verified=true conflicted=false\nHost status  post_activation=structurally_verified doctor=pass host_approval=unavailable follow_up=Review the generated project hooks, then trust the project and approve its hooks in Codex.\nContent      none=inactive\nQuality      no configured native tools\nLifecycle    agent-working-loop=nudge pre-commit-warning=warn pre-push-or-ci-gate=gate\nVerified     structure_config=pass onboarding_packet=pass\nReview       needs-review blocking=0 advisory=0 inactive_signals=5\nDeferred     project_specialization, content_models\nNext         Specialize from repository evidence\nPacket       .assura/onboarding/agent-next.md",
   "schema": "assura.website-onboarding-demo.v1",
-  "source_revision": "1a3a86091b9242f5e718956a7eb139d907a1c54b",
+  "source_revision": "5f7ca26de7aab9265c21b65740b431621492b8c0",
   "verified": [
     {
       "detail": ".assura/config.yml loaded and checked",
