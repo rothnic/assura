@@ -150,3 +150,16 @@ The helper now uses that configured nonempty fixture and preserves bounded
 watcher stderr and observed cleanup status on protocol failure. Existing
 deadlines, exact console/Job ownership and positive/no-send receipt gates stay
 unchanged. Mac fixture proof does not establish Windows Ctrl-C acceptance.
+
+
+## Final receipt framing correction
+
+The f450 Windows run passed the focused Rust test and emitted an actual
+positive Ctrl-C receipt (ACK, event0, watcher exit0 in5ms) and passing no-send
+control with both owned Jobs empty. The outer PowerShell gate still failed:
+libtest prefixed the final receipt on the test-name line. Three independent
+diagnoses support the same leading-newline framing at the final output,
+preserving strict StartsWith extraction and all receipt assertions. Earlier
+failure stays failed. Separate Ubuntu adoption smoke passed, then artifact
+finalization failed ECONNRESET; this requires no source correction and is not
+a successful hosted job. Corrected-source hosted gates remain required.

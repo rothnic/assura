@@ -802,7 +802,7 @@ fn ctrl_c_stops_watch_in_owned_console() {
         final_receipt_is_valid(&receipt),
         "receipt validator rejected actual proof: {receipt}"
     );
-    println!("{FINAL_RECEIPT_PREFIX}{receipt}");
+    println!("\n{FINAL_RECEIPT_PREFIX}{receipt}");
 }
 
 #[test]
@@ -879,20 +879,22 @@ fn receipt_validator_rejects_missing_ack_event_exit_and_receipt() {
 }
 
 #[test]
-fn helper_ready_marker_has_a_standalone_protocol_line() {
-    let transcript = format!("running 1 test\ntest fixture_helper_entry ... \n{READY_MARKER}\n");
-    let mut output = spawn_bounded_line_reader(std::io::Cursor::new(transcript.into_bytes()));
-    output
-        .finish()
-        .expect("bounded transcript reader completes");
-    let lines = output.lines.try_iter().collect::<Vec<_>>();
-    assert_eq!(
-        lines
-            .iter()
-            .filter(|line| String::from_utf8_lossy(line).trim() == READY_MARKER)
-            .count(),
-        1
-    );
-    let old_same_line = format!("test fixture_helper_entry ... {READY_MARKER}");
-    assert_ne!(old_same_line.trim(), READY_MARKER);
+fn protocol_markers_require_standalone_lines() {
+    for marker in [READY_MARKER, FINAL_RECEIPT_PREFIX.trim_end()] {
+        let transcript = format!("running 1 test\ntest fixture_helper_entry ... \n{marker}\n");
+        let mut output = spawn_bounded_line_reader(std::io::Cursor::new(transcript.into_bytes()));
+        output
+            .finish()
+            .expect("bounded transcript reader completes");
+        let lines = output.lines.try_iter().collect::<Vec<_>>();
+        assert_eq!(
+            lines
+                .iter()
+                .filter(|line| String::from_utf8_lossy(line).trim() == marker)
+                .count(),
+            1
+        );
+        let old_same_line = format!("test fixture_helper_entry ... {marker}");
+        assert_ne!(old_same_line.trim(), marker);
+    }
 }
