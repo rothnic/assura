@@ -136,3 +136,17 @@ deadlines, membership checks and receipt requirements. Bounded stdout/stderr
 and actual helper/Job/count diagnostics now accompany the original error.
 No Windows success or Ctrl-C acceptance is claimed before corrected hosted
 execution; the prior failed run remains unfavorable.
+
+
+## Configured watcher fixture correction (2026-10-20)
+
+Head4bf0356e now reached READY, but the watch stream disconnected before its
+initial report (helper exit101, owned Job empty). The bounded diagnostics
+exposed that stage; Ctrl-C was never sent. Three read-only diagnoses identified
+the missing project configuration, and the retained source-bound Mac canary
+reproduced missing-config exit4. Adding a finite Markdown naming policy gave
+a successful initial watch report, while a planted BadName.md failed check1.
+The helper now uses that configured nonempty fixture and preserves bounded
+watcher stderr and observed cleanup status on protocol failure. Existing
+deadlines, exact console/Job ownership and positive/no-send receipt gates stay
+unchanged. Mac fixture proof does not establish Windows Ctrl-C acceptance.

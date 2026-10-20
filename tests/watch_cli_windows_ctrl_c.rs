@@ -263,6 +263,14 @@ fn helper_protocol() -> Result<Value, String> {
     .map_err(|error| format!("write watch fixture: {error}"))?;
     // libtest pretty output leaves its test-name prefix on the current line.
     // Start the protocol on its own line without relaxing exact marker matching.
+    let fixture = temp.as_ref().unwrap().path();
+    std::fs::create_dir(fixture.join(".assura"))
+        .map_err(|error| format!("create watch configuration directory: {error}"))?;
+    std::fs::write(
+        fixture.join(".assura/config.yml"),
+        "structure:\n  ./:\n    files:\n      naming_patterns:\n        \"*.md\": SCREAMING_SNAKE_CASE\n",
+    )
+    .map_err(|error| format!("write nonempty watch naming policy: {error}"))?;
     println!("\n{READY_MARKER}");
     io::stdout()
         .flush()
@@ -404,9 +412,13 @@ fn helper_protocol() -> Result<Value, String> {
             None
         }
     };
+    let mut watch_stderr = Vec::new();
     if watch.is_reaped() {
-        if let Err(error) = watch.finish_readers() {
-            protocol_error.get_or_insert(error);
+        match watch.finish_readers() {
+            Ok(stderr) => watch_stderr = stderr,
+            Err(error) => {
+                protocol_error.get_or_insert(error);
+            }
         }
     } else {
         // Keep the fixture available until the outer owner terminates the exact job.
@@ -424,7 +436,12 @@ fn helper_protocol() -> Result<Value, String> {
         protocol_error = Some("could not unregister helper Ctrl-C handler".into());
     }
     if let Some(error) = protocol_error {
-        return Err(error);
+        return Err(format!(
+            "{error}; watch_pid={watch_pid}, watch_cleanup_exit={cleanup_status:?}, \
+             watch_reaped={}, bounded watch stderr={:?}",
+            watch.is_reaped(),
+            String::from_utf8_lossy(&watch_stderr)
+        ));
     }
     Ok(json!({
         "mode": match mode { HelperMode::Positive => "positive", HelperMode::NoSend => "no-send" },
