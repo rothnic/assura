@@ -198,3 +198,38 @@ hand-edited revisions or second writing generation occurred. The static current
 macOS census is59 requested integration tests plus6 quality/config unit tests;
 that census is preparation, not test execution proof. Focused execution and
 fresh regular/full binding remain the next admitted preparation steps.
+
+
+## Current source behavior and full gate (2026-10-20)
+
+Source `ba102d9a3fcc146b1576a557672a65a8a44b2549` includes the current
+SP04 integration base. Fresh 59 integration controls and the exact six declared
+quality/config unit controls passed. The actual existing pre-commit runner
+composition produced the expected four outcomes: positive 0, native failure 1,
+Assura failure 1, and Assura removed 0; native lint/test order and identity
+controls passed in every case. No shared checkout hooks were installed.
+
+The Oct18 full-PR capture was interrupted across a host restart and has no
+observed exit. Its original receipt and streams remain unchanged and uncredited.
+After three independent recovery reviews and fresh source/tool/resource admission,
+one new same-input full-PR capture completed with observed exit 0: 110 Cargo
+summary rows, 1,490 passed, zero failed, one manual performance audit ignored,
+and zero filtered tests. The gate also validated 54 documentation YAML examples
+and built 48 website pages (Pagefind indexed 53 HTML files). These counts describe
+the executed gate; they do not substitute for the required hosted OS matrix.
+All tracked inputs remained unchanged, with a clean checkout before and after.
+
+The successful site build retained `Entry docs → 404 was not found.` on stderr.
+The same warning exists in the earlier NU16 full gate and SP04 docs gate; no
+website source changed in this slice beyond canonical source-revision data.
+This is retained as existing documentation-build debt, not a suppressed failure
+or a claim that every website route/link was validated.
+
+Portable evidence pointers under the external review root: `resume-20261020/
+nu03-full-pr-recovery-result.md`, its adjacent test census, and `nu03/
+current-base-validation-v1/preparation/current-composition-proof.json`. The
+new full capture is `nu03/current-base-validation-v1/captures/
+full-pr-recovery-20261020-ff6c04c0-3f1c-49f6-b94d-e1aba4cf46c5`.
+Final independent review, exact-head hosted checks and root integration remain
+pending. The public Rust struct-field compatibility decision is pending Nick;
+YAML omission preserves the prior empty-exclusions behavior.
