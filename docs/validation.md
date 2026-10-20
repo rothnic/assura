@@ -188,6 +188,11 @@ Assura owns the high-level quality policy in `.assura/config.yml` under
 `quality.scopes`. Use `assura quality plan` to ask which checks apply to a
 changed-file set and workflow phase:
 
+Each scope may optionally define `exclude_paths`. A path must match `paths`
+and must not match `exclude_paths` to activate that scope. Omitted exclusions
+preserve existing behavior. Generated onboarding uses this for nested
+framework and dependency output directories in its Bun scope.
+
 ```bash
 printf 'docs/validation.md\nsrc/main.rs\n' \
   | assura quality plan . --files-from - --phase merge --format json

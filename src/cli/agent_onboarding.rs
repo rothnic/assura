@@ -477,8 +477,9 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
     let mut existing: Value =
         serde_yaml::from_str(&existing_contents).map_err(|error| error.to_string())?;
     normalize_existing_root(&mut existing);
-    let defaults: Value =
+    let mut defaults: Value =
         serde_yaml::from_str(&file.contents).map_err(|error| error.to_string())?;
+    preserve_existing_bun_scope(&existing, &mut defaults);
     let changed = merge_missing_values(&mut existing, &defaults);
     if changed {
         let merged = serde_yaml::to_string(&existing).map_err(|error| error.to_string())?;
@@ -491,6 +492,26 @@ fn materialize_config(project_root: &Path, file: GeneratedFile) -> Result<FileAc
         existed,
         required: file.required,
     })
+}
+
+fn preserve_existing_bun_scope(existing: &Value, defaults: &mut Value) {
+    let key = |name: &str| Value::String(name.to_string());
+    let has_existing_bun_scope = existing
+        .get(key("quality"))
+        .and_then(|quality| quality.get(key("scopes")))
+        .and_then(Value::as_mapping)
+        .is_some_and(|scopes| scopes.contains_key(key("bun")));
+    if !has_existing_bun_scope {
+        return;
+    }
+
+    if let Some(default_scopes) = defaults
+        .get_mut(key("quality"))
+        .and_then(|quality| quality.get_mut(key("scopes")))
+        .and_then(Value::as_mapping_mut)
+    {
+        default_scopes.remove(key("bun"));
+    }
 }
 
 /// Refuses to read or write a generated destination when any existing path

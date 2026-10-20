@@ -25,3 +25,8 @@ Run the focused test first. For Rust behavior, then run `cargo xtask fast`; use
 Record the candidate SHA, cwd, binary, command exits, negative control, and
 remaining limits. An independent review checks the tested SHA, not merely the
 branch tip.
+
+When a test-only diagnostic changes while the full tier is deferred, run
+Clippy for the affected package and integration target with warnings denied
+before the next hosted run. A passing behavioral test does not execute that
+lint gate; preserve the exact local and hosted toolchain boundaries.

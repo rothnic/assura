@@ -1,0 +1,17 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/10-18-nu03-quality-scopes/prd.md", "reason": "Scoped outcome and admission constraint."}
+{"file": ".trellis/tasks/10-18-nu03-quality-scopes/research/nu03-red-test-design.md", "reason": "Source trace and proposed positive, negative, preservation, and runner controls."}
+{"file": "src/cli/agent_onboarding_quality.rs", "reason": "Existing generated-quality renderer; primary expected edit surface."}
+{"file": "src/cli/agent_onboarding.rs", "reason": "Onboarding merge/preservation call site; change only if NU02 coordination requires it."}
+{"file": "src/cli/quality.rs", "reason": "Current matching behavior and planner boundary; avoid broad semantics."}
+{"file": "tests/quality_onboarding_contract.rs", "reason": "Existing generated Bun config and planner contract tests."}
+{"file": "tests/git_hook_lifecycle.rs", "reason": "Existing supported pre-commit lifecycle test surface."}
+{"file": ".trellis/spec/assura/agent-ready-onboarding.md", "reason": "Evidence and owner-policy preservation contract."}
+{"file": ".trellis/spec/assura/agent-harness-hooks.md", "reason": "Supported hook lifecycle and ownership contract."}
+{"file": "src/config/config/quality.rs", "reason": "Add the additive scope-level exclusion field with empty serde default."}
+{"file": "src/config/config/validation/quality.rs", "reason": "Validate relative exclude globs with field-specific context."}
+{"file": "src/config/config/validation.rs", "reason": "Existing relative-pattern validation helper."}
+{"file": "src/cli/check.rs", "reason": "Possible crate-internal bridge to existing compiled exclusion helpers."}
+{"file": "src/cli/check/rules.rs", "reason": "Existing CompiledExclusion and is_excluded_rel_with semantics to reuse."}
+{"file": "src/cli/check/compiled_config.rs", "reason": "Existing exclusion compilation pattern."}
+{"file": ".trellis/spec/assura/tooling-stabilization.md", "reason": "Existing quality-scope planning contract."}

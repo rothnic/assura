@@ -368,12 +368,65 @@ fn session_check_reloads_external_config_without_watcher_event() {
         .arg(&status_file)
         .output()
         .unwrap();
-    assert!(clean_status.status.success());
 
-    writeln!(stdin, "QUIT").unwrap();
-    stdin.flush().unwrap();
-    assert!(session.wait().unwrap().success());
+    // Preserve enough evidence to distinguish dirty, unreadable, invalid, and
+    // clean-but-nonzero status records if the hosted assertion fails. Read at
+    // most one byte beyond the existing 14-byte format to detect extra data.
+    let status_file_diagnostic = {
+        let mut bytes = Vec::with_capacity(15);
+        let read_result = std::fs::File::open(&status_file)
+            .and_then(|file| file.take(15).read_to_end(&mut bytes));
+        match read_result {
+            Err(error) => format!("read_error={error}; bytes_read={}", bytes.len()),
+            Ok(_) => {
+                let hex = bytes
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<Vec<_>>()
+                    .join("");
+                let fields = if bytes.len() >= 14 {
+                    let version = u64::from_le_bytes([
+                        bytes[4], bytes[5], bytes[6], bytes[7], bytes[8], bytes[9], bytes[10],
+                        bytes[11],
+                    ]);
+                    let dirty = match bytes[12] {
+                        0 => "clean",
+                        1 => "dirty",
+                        _ => "invalid",
+                    };
+                    format!(
+                        "magic={:?}, version_hash={version}, dirty_flag={} ({dirty}), stored_exit_code={}, trailing_bytes_detected={}",
+                        &bytes[..4],
+                        bytes[12],
+                        bytes[13],
+                        bytes.len() > 14,
+                    )
+                } else {
+                    format!("incomplete_record_bytes={}", bytes.len())
+                };
+                format!("{fields}; raw_hex={hex}")
+            }
+        }
+    };
+    let clean_status_code = clean_status.status.code();
+    let clean_status_stdout = String::from_utf8_lossy(&clean_status.stdout).into_owned();
+    let clean_status_stderr = String::from_utf8_lossy(&clean_status.stderr).into_owned();
+
+    let _ = writeln!(stdin, "QUIT");
+    let _ = stdin.flush();
+    drop(stdin);
+    let session_exit = session.wait();
 
     let _ = server.kill();
     let _ = server.wait();
+
+    assert_eq!(
+        clean_status_code,
+        Some(0),
+        "expected a clean stored status with exit 0; status stdout:\n{clean_status_stdout}\nstatus stderr:\n{clean_status_stderr}\nstatus file: {status_file_diagnostic}"
+    );
+    assert!(
+        matches!(session_exit, Ok(status) if status.success()),
+        "session did not exit successfully: {session_exit:?}"
+    );
 }

@@ -394,7 +394,42 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
     )
     .expect("valid config YAML");
     let bun = &config["quality"]["scopes"]["bun"];
-    assert_eq!(bun["paths"][0], "src/**");
+    for path in [
+        "src/**",
+        "tests/**",
+        "app/**",
+        "components/**",
+        "lib/**",
+        "hooks/**",
+        "artifacts/**",
+        "package.json",
+        "bun.lock",
+    ] {
+        assert!(
+            bun["paths"].as_sequence().unwrap().contains(&path.into()),
+            "generated Bun paths must include {path}: {bun:?}"
+        );
+    }
+    for path in [
+        ".next/**",
+        "**/.next/**",
+        "node_modules/**",
+        "**/node_modules/**",
+        "dist/**",
+        "**/dist/**",
+        "coverage/**",
+        "**/coverage/**",
+        ".turbo/**",
+        "**/.turbo/**",
+    ] {
+        assert!(
+            bun["exclude_paths"]
+                .as_sequence()
+                .unwrap()
+                .contains(&path.into()),
+            "generated Bun exclusions must include {path}: {bun:?}"
+        );
+    }
     assert_eq!(
         bun["frequent"],
         serde_yaml::Value::Sequence(vec!["bun run lint".into()])
@@ -404,6 +439,230 @@ fn onboarding_a_bun_project_uses_only_declared_quality_scripts() {
         serde_yaml::Value::Sequence(vec!["bun run test".into()])
     );
     assert!(bun["pr"].is_null(), "type-check gates must not be invented");
+
+    for path in ["app/page.tsx", "components/button.tsx", "lib/domain.ts"] {
+        assert_eq!(
+            successful_plan_json(&project, &[path], "frequent")["checks"],
+            serde_json::json!(["assura check", "bun run lint"]),
+            "authored source path must select declared lint: {path}"
+        );
+        assert_eq!(
+            successful_plan_json(&project, &[path], "pre-push")["checks"],
+            serde_json::json!(["assura check", "bun run lint", "bun run test"]),
+            "authored source path must select declared lint and test: {path}"
+        );
+    }
+    for path in [
+        ".next/server/app/page.js",
+        "app/.next/server/page.js",
+        "lib/node_modules/pkg/index.js",
+        "components/dist/button.js",
+        "coverage/coverage-final.json",
+        "app/.turbo/cache/item",
+        "node_modules/pkg/index.js",
+        "dist/app.js",
+    ] {
+        let plan = successful_plan_json(&project, &[path], "pre-push");
+        assert_eq!(
+            plan["checks"],
+            serde_json::json!(["assura check"]),
+            "generated output must not select Bun: {path}"
+        );
+        assert!(
+            !plan["scopes"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|scope| scope["id"] == "bun"),
+            "generated output must not match Bun scope: {path}: {plan}"
+        );
+    }
+    assert_eq!(
+        successful_plan_json(&project, &["docs/guide.md"], "pre-push")["checks"],
+        serde_json::json!(["assura check"]),
+        "unrelated paths must not select Bun"
+    );
+}
+
+#[test]
+fn onboarding_preserves_existing_bun_scope_without_adding_generated_exclusions() {
+    let authored_scope_variants = [
+        (
+            "missing exclusions",
+            r#"      paths: ["app/**"]
+      always: ["assura check"]
+      frequent: ["bun run lint"]
+      pre_push: ["bun run test"]"#,
+        ),
+        (
+            "explicitly empty exclusions",
+            r#"      paths: ["app/**"]
+      exclude_paths: []
+      always: ["assura check"]
+      frequent: ["bun run lint"]
+      pre_push: ["bun run test"]"#,
+        ),
+    ];
+
+    for (label, authored_scope_yaml) in authored_scope_variants {
+        let project = TempDir::new().expect("project directory");
+        fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+        fs::create_dir_all(project.path().join("app")).expect("app directory");
+        fs::write(project.path().join("app/page.tsx"), "export default 1;\n").expect("Bun source");
+        fs::write(
+            project.path().join("package.json"),
+            r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check .","test":"bun test"}}"#,
+        )
+        .expect("package manifest");
+        fs::write(
+            project.path().join(".assura/config.yml"),
+            format!(
+                "structure:\n  ./:\n    extra: true\nquality:\n  scopes:\n    bun:\n{authored_scope_yaml}\n"
+            ),
+        )
+        .expect("authored Assura configuration");
+
+        let original_config: serde_yaml::Value = serde_yaml::from_str(
+            &fs::read_to_string(project.path().join(".assura/config.yml"))
+                .expect("authored config is readable"),
+        )
+        .expect("authored config is valid YAML");
+        let original_scope = original_config["quality"]["scopes"]["bun"].clone();
+
+        let tools = TempDir::new().expect("tool directory");
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+
+            let bun = tools.path().join("bun");
+            fs::write(&bun, "#!/bin/sh\nexit 0\n").expect("Bun fixture");
+            let mut permissions = fs::metadata(&bun).expect("Bun metadata").permissions();
+            permissions.set_mode(0o755);
+            fs::set_permissions(&bun, permissions).expect("Bun executable");
+        }
+        #[cfg(windows)]
+        fs::write(tools.path().join("bun.CMD"), "@exit /b 0\r\n").expect("Bun fixture");
+
+        for pass in 1..=2 {
+            let output = Command::new(assura_full_bin())
+                .args(["agent", "onboard"])
+                .arg(project.path())
+                .args(["--format", "json"])
+                .env("PATH", tools.path())
+                .env("PATHEXT", ".CMD")
+                .output()
+                .expect("assura agent onboard runs");
+            assert!(
+                output.status.success(),
+                "{label} pass {pass} failed:\nstdout:\n{}\nstderr:\n{}",
+                String::from_utf8_lossy(&output.stdout),
+                String::from_utf8_lossy(&output.stderr)
+            );
+
+            let persisted: serde_yaml::Value = serde_yaml::from_str(
+                &fs::read_to_string(project.path().join(".assura/config.yml"))
+                    .expect("persisted config is readable"),
+            )
+            .expect("persisted config remains valid YAML");
+            assert_eq!(
+                persisted["quality"]["scopes"]["bun"], original_scope,
+                "onboarding must preserve the complete authored Bun scope ({label}, pass {pass})"
+            );
+
+            let plan = successful_plan_json(&project, &["app/.next/server/page.js"], "frequent");
+            assert_eq!(
+                plan["checks"],
+                serde_json::json!(["assura check", "bun run lint"]),
+                "authored scope must retain its effective nested .next behavior ({label}, pass {pass})"
+            );
+            assert_eq!(
+                plan["scopes"][0]["matched_paths"],
+                serde_json::json!(["app/.next/server/page.js"]),
+                "nested .next must remain selected by the authored scope ({label}, pass {pass})"
+            );
+        }
+    }
+}
+
+#[test]
+fn onboarding_adds_generated_bun_scope_when_missing_from_existing_config() {
+    let project = TempDir::new().expect("project directory");
+    fs::create_dir_all(project.path().join(".assura")).expect("Assura directory");
+    fs::create_dir_all(project.path().join("src")).expect("source directory");
+    fs::create_dir_all(project.path().join("app")).expect("app directory");
+    fs::write(project.path().join("src/lib.rs"), "pub fn fixture() {}\n").expect("Rust source");
+    fs::write(project.path().join("app/page.tsx"), "export default 1;\n").expect("Bun source");
+    fs::write(
+        project.path().join("package.json"),
+        r#"{"packageManager":"bun@1.1.0","scripts":{"lint":"biome check .","test":"bun test"}}"#,
+    )
+    .expect("package manifest");
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        "structure:\n  ./:\n    extra: true\nquality:\n  scopes:\n    rust:\n      paths: [\"src/**\"]\n      always: [\"assura check\"]\n",
+    )
+    .expect("configuration without Bun scope");
+    let original: serde_yaml::Value = serde_yaml::from_str(
+        &fs::read_to_string(project.path().join(".assura/config.yml"))
+            .expect("authored config is readable"),
+    )
+    .expect("authored config is valid YAML");
+
+    let tools = TempDir::new().expect("tool directory");
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::PermissionsExt;
+
+        let bun = tools.path().join("bun");
+        fs::write(&bun, "#!/bin/sh\nexit 0\n").expect("Bun fixture");
+        let mut permissions = fs::metadata(&bun).expect("Bun metadata").permissions();
+        permissions.set_mode(0o755);
+        fs::set_permissions(&bun, permissions).expect("Bun executable");
+    }
+    #[cfg(windows)]
+    fs::write(tools.path().join("bun.CMD"), "@exit /b 0\r\n").expect("Bun fixture");
+
+    let run_onboard = || {
+        Command::new(assura_full_bin())
+            .args(["agent", "onboard"])
+            .arg(project.path())
+            .args(["--format", "json"])
+            .env("PATH", tools.path())
+            .env("PATHEXT", ".CMD")
+            .output()
+            .expect("assura agent onboard runs")
+    };
+    for pass in 1..=2 {
+        let output = run_onboard();
+        assert!(
+            output.status.success(),
+            "pass {pass} failed:\nstdout:\n{}\nstderr:\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr)
+        );
+        let persisted: serde_yaml::Value = serde_yaml::from_str(
+            &fs::read_to_string(project.path().join(".assura/config.yml"))
+                .expect("persisted config is readable"),
+        )
+        .expect("persisted config remains valid YAML");
+        assert_eq!(
+            persisted["quality"]["scopes"]["rust"], original["quality"]["scopes"]["rust"],
+            "existing non-Bun quality scope remains unchanged"
+        );
+        let bun = &persisted["quality"]["scopes"]["bun"];
+        assert!(
+            bun["exclude_paths"]
+                .as_sequence()
+                .unwrap()
+                .contains(&"**/.next/**".into()),
+            "new Bun scope receives generated exclusions: {bun:?}"
+        );
+        assert_eq!(
+            successful_plan_json(&project, &["app/.next/server/page.js"], "frequent")["checks"],
+            serde_json::json!(["assura check"]),
+            "new Bun scope excludes nested framework output"
+        );
+    }
 }
 
 #[test]
