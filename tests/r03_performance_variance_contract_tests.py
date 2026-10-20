@@ -61,6 +61,26 @@ class R03PerformanceVarianceContractTests(unittest.TestCase):
             runner.index('> "$output_dir/binaries-before.sha256"'),
         )
 
+    def test_profile_source_verification_rejects_failed_or_dirty_status(self) -> None:
+        workflow = WORKFLOW.read_text(encoding="utf-8")
+        step = workflow.split("    - name: Verify checked-out source before tool setup\n", 1)[1].split("    - name: Admit resources", 1)[0]
+        shell = "\n".join(line[8:] for line in step.split("      run: |\n", 1)[1].splitlines())
+        self.assertIn('git config --system --add safe.directory "$GITHUB_WORKSPACE"', shell)
+        self.assertNotIn("safe.directory '*'", shell)
+        self.assertIn("${{ steps.nu11_bootstrap.outputs.evidence_path }}", workflow)
+        self.assertNotIn("${{ runner.temp }}/nu11-bootstrap", workflow)
+        with tempfile.TemporaryDirectory() as temporary_directory:
+            root = Path(temporary_directory)
+            (root / "nu11-bootstrap").mkdir()
+            git = root / "git"
+            git.write_text("#!/bin/sh\ncase \"$1\" in\n  config) exit 0;;\n  rev-parse) printf '%s\\n' \"$ASSURA_NU11_COMMIT\";;\n  status) printf '%s' \"$STUB_STATUS\"; exit \"$STUB_EXIT\";;\n  *) exit 99;;\nesac\n")
+            git.chmod(0o700)
+            for status, exit_code, expected in [("", "0", 0), ("?? foreign", "0", 1), ("", "128", 128)]:
+                with self.subTest(status=status, exit_code=exit_code):
+                    env = os.environ | {"PATH": str(root) + os.pathsep + os.environ["PATH"], "GITHUB_WORKSPACE": str(root), "RUNNER_TEMP": str(root), "ASSURA_NU11_COMMIT": "a" * 40, "STUB_STATUS": status, "STUB_EXIT": exit_code}
+                    result = subprocess.run(["bash", "-c", shell], env=env, capture_output=True, text=True)
+                    self.assertEqual(result.returncode, expected, result.stderr)
+
     def test_original_variance_runner_is_byte_identical_to_base(self) -> None:
         self.assertEqual(
             hashlib.sha256(RUNNER.read_bytes()).hexdigest(),

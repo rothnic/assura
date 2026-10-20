@@ -69,11 +69,13 @@ jobs:
         [[ "$GITHUB_REF" != refs/heads/master && "$GITHUB_REF" != refs/heads/main ]]
         echo "ASSURA_NU11_STARTED_UTC=$(date +%s)" >> "$GITHUB_ENV"
     - name: Bootstrap checkout prerequisites from the signed snapshot
+      id: nu11_bootstrap
       shell: bash
       timeout-minutes: 5
       run: |
         set -euo pipefail
         bootstrap="$RUNNER_TEMP/nu11-bootstrap"
+        echo "evidence_path=$bootstrap" >> "$GITHUB_OUTPUT"
         mkdir -m 700 "$bootstrap"
         printf '%s\n' 'deb [check-valid-until=no] http://snapshot.debian.org/archive/debian/20260918T000000Z bookworm main' > "$bootstrap/sources.list"
         opts=(-o "Dir::Etc::sourcelist=$bootstrap/sources.list" -o Dir::Etc::sourceparts=- -o Acquire::Check-Valid-Until=false -o Acquire::Retries=0 -o Acquire::http::Timeout=30)
@@ -98,8 +100,13 @@ jobs:
       shell: bash
       run: |
         set -euo pipefail
-        [[ "$(git rev-parse HEAD)" == "$ASSURA_NU11_COMMIT" ]]
-        [[ -z "$(git status --porcelain --untracked-files=normal)" ]]
+        # This exact trust entry lives only in the disposable job container.
+        git config --system --add safe.directory "$GITHUB_WORKSPACE"
+        git config --system --get-all safe.directory > "$RUNNER_TEMP/nu11-bootstrap/git-safe-directory.txt"
+        actual_head="$(git rev-parse HEAD)"
+        [[ "$actual_head" == "$ASSURA_NU11_COMMIT" ]]
+        source_status="$(git status --porcelain --untracked-files=normal)"
+        [[ -z "$source_status" ]]
     - name: Admit resources before Rust and Node setup
       timeout-minutes: 2
       run: |
@@ -149,6 +156,6 @@ jobs:
         name: nu11-callgrind-${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
         path: |
           target/performance/nu11-callgrind-profile/${{ inputs.commit }}-${{ github.run_id }}-${{ github.run_attempt }}
-          ${{ runner.temp }}/nu11-bootstrap
-        if-no-files-found: warn
+          ${{ steps.nu11_bootstrap.outputs.evidence_path }}
+        if-no-files-found: error
         retention-days: 14

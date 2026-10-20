@@ -148,3 +148,18 @@ passed/0failed/2intentional ignores. The exact ignored exporter then passed1/1;
 a deliberate second invocation rejected overwrite with101 and left all803
 fixture/manifest files hash-identical. Later changes touch only workflow, its
 contract tests and this metadata; Rust/Cargo/exporter inputs are unchanged.
+
+
+## First hosted bootstrap correction (2026-10-20)
+
+The first exact-head optional dispatch39435808765 on50e6016b failed at Git
+ownership verification after signed-snapshot bootstrap and exact checkout.
+Resource admission, Rust/Node setup and profiling were skipped. Three readonly
+reviews accepted the exact-checkout trust correction inside the disposable
+container; root authorizes only that system Git entry, preserving full-SHA and
+fail-closed status checks. No host configuration or wildcard trust is changed.
+The upload step also found no files: its host-context runner.temp path differed
+from the shell/container path, so bootstrap raw outputs are unavailable for
+that failed run. The workflow now passes the actual bootstrap path through a
+step output and errors on missing files. Retained job logs prove step success
+only; no missing raw package metadata, resource, tool or profile proof is invented.
