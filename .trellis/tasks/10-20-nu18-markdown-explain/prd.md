@@ -48,9 +48,22 @@ root merge; verify merged outcome/native closure and clean owned refs/worktree.
 
 Base a1d2f0aaf405a8d7e6359eb4c42aaaa4251a599e. Reviewed scope and public-contract
 decision: external nu18/implementation-scope.md and
-nu18/public-contract-scope-review.md. Candidate source work has not started.
-Root admits source editing and cheap format/diff/context/structure checks only.
-NU15 owns the local Cargo validation lane; do not build/test/install, publish,
-write Beads/native state or dispatch agents. Root will admit focused runtime
-proof after resource and source review. Preserve failed gates for three-way
-read-only diagnosis; do not weaken assertions or gate thresholds.
+nu18/public-contract-scope-review.md. Candidate source implementation began at
+6baf31f2. Root admits source editing and cheap format/diff/context/structure
+checks only. NU15 owns the local Cargo validation lane; do not build/test/install,
+publish, write Beads/native state or dispatch agents. Root will admit focused
+runtime proof after resource and source review. Preserve failed gates for
+three-way read-only diagnosis; do not weaken assertions or gate thresholds.
+
+## Scoped correction
+
+The independent Rust 1.94.1 visibility canary at
+`nu18/visibility-canary.json` (stderr alongside it) produced E0364/E0603 when
+the private CLI adapter and its selected-policy return type were declared
+`pub(super)` in `cli::check::explain`: the existing `cli::check` re-export was
+already scoped to `cli`, but the items were not visible to sibling
+`cli::doctor`. The minimal correction scopes only those two declarations to
+`pub(in crate::cli)`. Individual fields remain at their prior visibility;
+doctor consumes only the existing compact renderer and serde output. This
+does not add or change any externally public Rust API. The Rust visibility
+canary is static evidence only; Cargo tests remain unrun pending root review.

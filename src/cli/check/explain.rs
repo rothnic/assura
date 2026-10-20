@@ -163,7 +163,7 @@ pub struct PathExplainNextAction {
 }
 
 #[derive(Debug, Clone, Serialize)]
-pub(super) struct SelectedMarkdownPolicy {
+pub(in crate::cli) struct SelectedMarkdownPolicy {
     pub(super) selection_kind: &'static str,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub(super) pattern: Option<String>,
@@ -189,7 +189,7 @@ pub fn explain_structure_path(
     explain_structure_path_with_markdown(path, config_path).map(|(report, _)| report)
 }
 
-pub(super) fn explain_structure_path_with_markdown(
+pub(in crate::cli) fn explain_structure_path_with_markdown(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
 ) -> Result<(PathExplainReport, Option<SelectedMarkdownPolicy>), CheckError> {
