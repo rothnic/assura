@@ -281,13 +281,26 @@ quality:
     fs::write(&changed, "src/team.py\n").expect("changed path fixture");
 
     let before_config = config(&project);
+    assert_eq!(before_config["structure"]["./"]["extra"], true);
+    assert_eq!(before_config["structure"]["./"]["TEAM.md"], "exists:0-1");
     let before_plan = quality_plan(&project, &changed);
+    let expected_checks =
+        serde_json::json!(["assura check", "echo team policy", "echo team policy full"]);
+    assert_eq!(before_plan["checks"], expected_checks);
+    assert_eq!(
+        before_plan["scopes"],
+        serde_json::json!([{
+            "id": "team_policy",
+            "matched_paths": ["src/team.py"],
+            "checks": expected_checks,
+        }])
+    );
     onboard(&project);
 
     let after_config = config(&project);
     assert_eq!(after_config["rules"]["team-file"]["max_lines"], 80);
-    assert_eq!(after_config["structure"]["./"]["extra"], true);
-    assert_eq!(after_config["structure"]["./"]["TEAM.md"], "exists:0-1");
+    assert_eq!(after_config["structure"]["extra"], true);
+    assert_eq!(after_config["structure"]["TEAM.md"], "exists:0-1");
     assert_eq!(
         after_config["quality"]["scopes"]["team_policy"]["paths"][0],
         "src/**"
