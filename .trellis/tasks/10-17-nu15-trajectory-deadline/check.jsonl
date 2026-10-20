@@ -1,0 +1,5 @@
+{"file":".trellis/spec/assura/codex-agent-feedback.md","reason":"Check output compatibility and reject any new public feedback surface."}
+{"file":".agents/skills/assura-rust-quality/references/errors-and-effects.md","reason":"Verify timeout/error behavior remains bounded and observable."}
+{"file":".agents/skills/assura-rust-quality/references/performance.md","reason":"Verify no unsupported timing claim or hidden default-budget expansion."}
+{"file":".agents/skills/assura-rust-quality/references/tests-and-review.md","reason":"Confirm meaningful positive/negative and Windows-specific proof requirements."}
+{"file":".trellis/tasks/10-17-nu15-trajectory-deadline/research/discriminating-plan.md","reason":"Check that evidence and platform limits support any correction or completion claim."}

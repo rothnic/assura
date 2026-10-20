@@ -7,9 +7,119 @@ use crate::config::config::AgentFeedbackTrajectoryConfig;
 use glob::Pattern;
 use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
-use std::time::Instant;
+use std::time::{Duration, Instant};
 
 use exec::{run_git, GitOutput};
+
+thread_local! {
+    static ACTIVE_DIAGNOSTICS: std::cell::RefCell<Option<DiagnosticTrace>> = const { std::cell::RefCell::new(None) };
+}
+
+const MAX_GIT_DIAGNOSTIC_EVENTS: usize = 16;
+const MAX_INSPECTION_DIAGNOSTIC_STAGES: usize = 4;
+
+fn valid_diagnostic_label(label: &str) -> bool {
+    !label.is_empty()
+        && label.len() <= 32
+        && label
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+}
+
+struct DiagnosticTrace {
+    label: String,
+    last_phase: Option<&'static str>,
+    events: Vec<(&'static str, u128, &'static str)>,
+    stages: Vec<(&'static str, u128)>,
+}
+
+pub(super) struct DiagnosticGuard {
+    started: Instant,
+}
+
+pub(super) fn diagnostics_enabled() -> bool {
+    ACTIVE_DIAGNOSTICS.with(|active| active.borrow().is_some())
+}
+
+impl DiagnosticGuard {
+    pub(super) fn record_stage(&self, stage: &'static str, elapsed: Duration) {
+        ACTIVE_DIAGNOSTICS.with(|active| {
+            let mut active = active.borrow_mut();
+            let Some(trace) = active.as_mut() else {
+                return;
+            };
+            if trace.stages.len() < MAX_INSPECTION_DIAGNOSTIC_STAGES {
+                trace.stages.push((stage, elapsed.as_millis()));
+            }
+        });
+    }
+
+    pub(super) fn finish(self, stage: &'static str) {
+        let elapsed = self.started.elapsed().as_millis();
+        ACTIVE_DIAGNOSTICS.with(|active| {
+            let mut active = active.borrow_mut();
+            let Some(trace) = active.as_mut() else {
+                return;
+            };
+            for (phase, elapsed_ms, outcome) in trace.events.drain(..) {
+                eprintln!("trajectory-diagnostic label={} phase={phase} elapsed_ms={elapsed_ms} elapsed_scope=git_child_lifecycle_wall outcome={outcome}", trace.label);
+            }
+            for (stage, elapsed_ms) in trace.stages.drain(..) {
+                eprintln!("trajectory-diagnostic label={} stage={stage} elapsed_ms={elapsed_ms}", trace.label);
+            }
+            eprintln!("trajectory-diagnostic label={} stage={stage} elapsed_ms={elapsed} last_git_phase={}", trace.label, trace.last_phase.unwrap_or("none"));
+        });
+    }
+}
+
+impl Drop for DiagnosticGuard {
+    fn drop(&mut self) {
+        ACTIVE_DIAGNOSTICS.with(|active| *active.borrow_mut() = None);
+    }
+}
+
+pub(super) fn begin_diagnostics(started: Instant) -> Option<DiagnosticGuard> {
+    let label = std::env::var("ASSURA_TRAJECTORY_DIAGNOSTIC_LABEL")
+        .ok()
+        .filter(|label| valid_diagnostic_label(label))?;
+    ACTIVE_DIAGNOSTICS.with(|active| {
+        *active.borrow_mut() = Some(DiagnosticTrace {
+            label,
+            last_phase: None,
+            events: Vec::with_capacity(MAX_GIT_DIAGNOSTIC_EVENTS),
+            stages: Vec::with_capacity(MAX_INSPECTION_DIAGNOSTIC_STAGES),
+        });
+    });
+    Some(DiagnosticGuard { started })
+}
+
+#[cfg(test)]
+mod diagnostic_tests {
+    use super::valid_diagnostic_label;
+
+    #[test]
+    fn diagnostic_labels_are_bounded_and_safe_for_stderr() {
+        assert!(valid_diagnostic_label("shallow_clone"));
+        assert!(valid_diagnostic_label("primary-worktree_2"));
+        assert!(!valid_diagnostic_label(""));
+        assert!(!valid_diagnostic_label(&"a".repeat(33)));
+        assert!(!valid_diagnostic_label("contains space"));
+        assert!(!valid_diagnostic_label("line\nbreak"));
+    }
+}
+
+fn record_diagnostic(phase: &'static str, elapsed: Duration, outcome: &'static str) {
+    ACTIVE_DIAGNOSTICS.with(|active| {
+        let mut active = active.borrow_mut();
+        let Some(trace) = active.as_mut() else {
+            return;
+        };
+        trace.last_phase = Some(phase);
+        if trace.events.len() < MAX_GIT_DIAGNOSTIC_EVENTS {
+            trace.events.push((phase, elapsed.as_millis(), outcome));
+        }
+    });
+}
 
 pub(super) fn reset_refresh_cancellation() {
     exec::reset_refresh_cancellation();
@@ -196,6 +306,7 @@ pub(super) fn discover(
         &["rev-parse", "--show-toplevel"],
         8 * 1024,
         deadline,
+        "discover.repo_root",
     ) else {
         return Ok(unavailable(
             worktree_root,
@@ -217,17 +328,25 @@ pub(super) fn discover(
             &["rev-parse", "--git-common-dir"],
             8 * 1024,
             deadline,
+            "discover.common_dir",
         ),
     );
     let git_dir = resolve_git_path(
         &repo_root,
-        git_text(&repo_root, &["rev-parse", "--git-dir"], 8 * 1024, deadline),
+        git_text(
+            &repo_root,
+            &["rev-parse", "--git-dir"],
+            8 * 1024,
+            deadline,
+            "discover.git_dir",
+        ),
     );
     let branch = git_text(
         &repo_root,
         &["symbolic-ref", "--quiet", "--short", "HEAD"],
         8 * 1024,
         deadline,
+        "discover.branch",
     )
     .map(|value| value.trim().to_string());
     let head_sha = git_text(
@@ -235,6 +354,7 @@ pub(super) fn discover(
         &["rev-parse", "--verify", "HEAD"],
         8 * 1024,
         deadline,
+        "discover.head",
     )
     .map(|value| value.trim().to_string());
     let (integration_ref, integration_sha) =
@@ -247,6 +367,7 @@ pub(super) fn discover(
                 &["merge-base", "HEAD", reference],
                 8 * 1024,
                 deadline,
+                "discover.merge_base",
             )
         })
         .map(|value| value.trim().to_string());
@@ -255,6 +376,7 @@ pub(super) fn discover(
         &["rev-parse", "--is-shallow-repository"],
         8 * 1024,
         deadline,
+        "discover.shallow",
     )
     .is_some_and(|value| value.trim() == "true");
     let status = status_facts(&repo_root, deadline);
@@ -460,7 +582,13 @@ fn collect_history_with_paths(
     }
     args.push(reference.to_string());
     let borrowed = args.iter().map(String::as_str).collect::<Vec<_>>();
-    let text = match run_git(repo_root, &borrowed, MAX_HISTORY_BYTES, deadline) {
+    let text = match run_git(
+        repo_root,
+        &borrowed,
+        MAX_HISTORY_BYTES,
+        deadline,
+        "collect.history",
+    ) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("history_output_truncated".to_string()),
         GitOutput::Failed => return Err("history_unavailable".to_string()),
@@ -553,6 +681,7 @@ fn collect_pending(
                 ],
                 8 * 1024,
                 input.deadline,
+                "collect.pending_count",
             )
         })
         .and_then(|value| value.trim().parse::<u64>().ok());
@@ -585,7 +714,13 @@ fn collect_pending(
         diff_base,
         "--",
     ];
-    let text = match run_git(repo_root, &args, MAX_HISTORY_BYTES, input.deadline) {
+    let text = match run_git(
+        repo_root,
+        &args,
+        MAX_HISTORY_BYTES,
+        input.deadline,
+        "collect.pending_diff",
+    ) {
         GitOutput::Text(text) => text,
         GitOutput::Truncated => return Err("pending_diff_output_truncated".to_string()),
         GitOutput::Failed => return Err("pending_diff_unavailable".to_string()),
@@ -638,6 +773,7 @@ fn trees_match(
         ],
         MAX_STATUS_BYTES,
         deadline,
+        "collect.tree_match",
     ) {
         GitOutput::Text(text) => Some(text.trim().is_empty()),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
@@ -730,6 +866,7 @@ fn status_facts(repo_root: &Path, deadline: Option<Instant>) -> StatusFacts {
         &["status", "--porcelain=v1", "--untracked-files=normal"],
         MAX_STATUS_BYTES,
         deadline,
+        "discover.status",
     );
     let (text, truncated, files_available, unavailable, timed_out) = match output {
         GitOutput::Text(text) => (text, false, true, false, false),
@@ -781,6 +918,7 @@ fn resolve_integration_ref(
             &["rev-parse", "--verify", "--quiet", candidate],
             8 * 1024,
             deadline,
+            "discover.integration_ref",
         ) {
             return (Some(candidate.to_string()), Some(sha.trim().to_string()));
         }
@@ -805,8 +943,9 @@ fn git_text(
     args: &[&str],
     limit: usize,
     deadline: Option<Instant>,
+    phase: &'static str,
 ) -> Option<String> {
-    match run_git(repo_root, args, limit, deadline) {
+    match run_git(repo_root, args, limit, deadline, phase) {
         GitOutput::Text(text) => Some(text),
         GitOutput::Failed | GitOutput::Truncated | GitOutput::TimedOut => None,
     }

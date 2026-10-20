@@ -115,7 +115,7 @@ finish native reconciliation before closing NU13. SP01 is the core filesystem
 attribution slice;
 measure repeated metadata/enumeration/discovery before retaining optimization.
 
-## Discovered closure prerequisite
+## Discovered closure prerequisite (initial observation)
 
 PR #355's 29 exact-merge checks now pass and canonical website routes respond
 200. Native closure still falsely rejects GitHub MERGED/UNKNOWN, and initial
@@ -133,3 +133,24 @@ public API/dependency, generic owner-transfer feature or broad refactor.
 Independent final Luna review and affected script/structure/evidence/hosted
 checks precede merge. Register the discovered prerequisite in the recovered
 Beads graph and preserve original source snapshots.
+
+## Subsequent prerequisite disposition
+
+NU14 (`ae-fg4`) merged as PR #356 at
+`ba4804bb6abdadc1ccc12c41397dd2402a914171` after independent Luna review,
+corrections and final hosted checks. The supported native delivered close for
+NU13 subsequently succeeded at generation 3 from its original candidate
+checkout, using the updated helper; no receipt or binding was rewritten.
+
+PR #356's exact post-merge Windows test job `117579008335` in run
+`39094826608` failed `shallow_clones_and_multiple_worktrees_keep_coverage_honest`
+with `trajectory refresh deadline exceeded` (8 passed, 1 failed). NU15
+(`ae-hbx`) is the discovered prerequisite for NU14's remaining post-merge
+acceptance, so those affected Beads outcomes remain open. Three independent
+Luna probes precede bounded diagnostics; the cause is unverified. The existing
+2-second product budget, workload, required suite and failure evidence remain
+in force. A diagnostic draft or an unrelated later green run cannot close it.
+
+The source map records this discovered dependency separately from the
+original intake graph. Beads remains the live scheduler; these observations
+explain the new prerequisite and do not constitute a second status queue.

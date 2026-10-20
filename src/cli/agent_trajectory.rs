@@ -363,7 +363,10 @@ fn inspect_at(
         .map(|value| value.collection.timeout_ms)
         .unwrap_or(DEFAULT_INSPECT_TIMEOUT_MS)
         .clamp(1, 10_000);
-    let deadline = Instant::now() + Duration::from_millis(timeout_ms);
+    let refresh_started = Instant::now();
+    let deadline = refresh_started + Duration::from_millis(timeout_ms);
+    let mut diagnostics = git::begin_diagnostics(refresh_started);
+    let discovery_started = Instant::now();
     let input = git::discover(
         project_root,
         now,
@@ -371,12 +374,18 @@ fn inspect_at(
         config.map_or(500, |value| u64::from(value.collection.max_commits)),
         Some(deadline),
     )?;
+    if let Some(diagnostics) = diagnostics.as_ref() {
+        diagnostics.record_stage("discovery", discovery_started.elapsed());
+    }
     let generation = git::generation(&input, CLASSIFICATION_VERSION, now);
     let cache_key = snapshot::CacheKey::new(&input, CLASSIFICATION_VERSION);
     let cache_read = snapshot::read(&cache_key);
 
     if let Some(previous) = cache_read.snapshot.as_ref() {
         if previous.generation == generation && previous.coverage == "complete" {
+            if let Some(diagnostics) = diagnostics.take() {
+                diagnostics.finish("cache_hit");
+            }
             let mut cached = previous.clone();
             cached.freshness = Freshness {
                 snapshot: "cache_hit".to_string(),
@@ -405,7 +414,11 @@ fn inspect_at(
         return Err("trajectory refresh already in flight".to_string());
     };
 
+    let collection_started = Instant::now();
     let collection = git::collect(&input, now);
+    if let Some(diagnostics) = diagnostics.as_ref() {
+        diagnostics.record_stage("collection", collection_started.elapsed());
+    }
     let cache_source = if cache_read.snapshot.is_some() {
         "stale"
     } else {
@@ -421,6 +434,9 @@ fn inspect_at(
         config,
     );
     if Instant::now() >= deadline || super::agent_nudge_delivery::refresh_deadline_expired() {
+        if let Some(diagnostics) = diagnostics.take() {
+            diagnostics.finish("deadline");
+        }
         return Err("trajectory refresh deadline exceeded".to_string());
     }
     if let Err(error) = snapshot::write(&cache_key, &snapshot) {
@@ -433,6 +449,9 @@ fn inspect_at(
             .push("cache_write_failed".to_string());
         snapshot.coverage = "partial".to_string();
         let _ = error;
+    }
+    if let Some(diagnostics) = diagnostics.take() {
+        diagnostics.finish("complete");
     }
     Ok(snapshot)
 }
