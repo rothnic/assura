@@ -3,6 +3,7 @@
 use super::doctor::{DoctorItem, DoctorNextAction, ProjectDoctorReport, DOCTOR_AGENT_SCHEMA};
 use crate::cli::check::{
     PathExplainNextAction, PathExplainReport, PathExplainRules, PathExplainScope, PathExplainSkip,
+    SelectedMarkdownPolicy,
 };
 use serde::Serialize;
 
@@ -40,7 +41,7 @@ impl From<&ProjectDoctorReport> for AgentDoctorReport {
 }
 
 #[derive(Debug, Clone, Serialize)]
-struct AgentExplainReport {
+struct AgentExplainReport<'a> {
     schema: &'static str,
     relative_path: String,
     kind: &'static str,
@@ -48,12 +49,18 @@ struct AgentExplainReport {
     applied_scopes: Vec<PathExplainScope>,
     effective_rules: PathExplainRules,
     matched_file_patterns: Vec<crate::cli::check::PathExplainFilePatternRule>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    selected_markdown: Option<&'a SelectedMarkdownPolicy>,
     skipped_checks: Vec<PathExplainSkip>,
     next_actions: Vec<PathExplainNextAction>,
 }
 
-impl From<&PathExplainReport> for AgentExplainReport {
-    fn from(report: &PathExplainReport) -> Self {
+impl<'a> From<(&'a PathExplainReport, Option<&'a SelectedMarkdownPolicy>)>
+    for AgentExplainReport<'a>
+{
+    fn from(
+        (report, selected_markdown): (&'a PathExplainReport, Option<&'a SelectedMarkdownPolicy>),
+    ) -> Self {
         Self {
             schema: EXPLAIN_AGENT_SCHEMA,
             relative_path: report.relative_path.clone(),
@@ -62,6 +69,7 @@ impl From<&PathExplainReport> for AgentExplainReport {
             applied_scopes: report.applied_scopes.clone(),
             effective_rules: report.effective_rules.clone(),
             matched_file_patterns: report.matched_file_patterns.clone(),
+            selected_markdown,
             skipped_checks: report.skipped_checks.clone(),
             next_actions: report.next_actions.clone(),
         }
@@ -72,6 +80,10 @@ pub(super) fn render_agent_doctor(report: &ProjectDoctorReport) -> String {
     serde_json::to_string_pretty(&AgentDoctorReport::from(report)).unwrap_or_default()
 }
 
-pub(super) fn render_agent_explain(report: &PathExplainReport) -> String {
-    serde_json::to_string_pretty(&AgentExplainReport::from(report)).unwrap_or_default()
+pub(super) fn render_agent_explain(
+    report: &PathExplainReport,
+    selected_markdown: Option<&SelectedMarkdownPolicy>,
+) -> String {
+    serde_json::to_string_pretty(&AgentExplainReport::from((report, selected_markdown)))
+        .unwrap_or_default()
 }

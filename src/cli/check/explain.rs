@@ -7,8 +7,9 @@ use super::explain_rules::{
 };
 use super::report::CheckError;
 use super::rule_plan::{self, rules_for_dir};
-use super::rules::is_excluded_rel_with;
+use super::rules::{is_excluded_rel_with, select_markdown, SelectedMarkdown};
 use super::scope_patterns::CompiledScopePattern;
+use crate::config::config::MarkdownBundle;
 use crate::config::loader::ConfigLoader;
 use serde::Serialize;
 use std::path::{Path, PathBuf};
@@ -161,11 +162,37 @@ pub struct PathExplainNextAction {
     pub follow_up: String,
 }
 
+#[derive(Debug, Clone, Serialize)]
+pub(super) struct SelectedMarkdownPolicy {
+    pub(super) selection_kind: &'static str,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub(super) pattern: Option<String>,
+    pub(super) check_links: bool,
+}
+
+impl SelectedMarkdownPolicy {
+    pub(crate) fn render_compact(&self) -> String {
+        let selection = self
+            .pattern
+            .as_deref()
+            .map(|pattern| format!("pattern:{pattern}"))
+            .unwrap_or_else(|| "directory".to_string());
+        format!("{selection}[check_links={}]", self.check_links)
+    }
+}
+
 /// Explain the effective structure rules for one existing path.
 pub fn explain_structure_path(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
 ) -> Result<PathExplainReport, CheckError> {
+    explain_structure_path_with_markdown(path, config_path).map(|(report, _)| report)
+}
+
+pub(super) fn explain_structure_path_with_markdown(
+    path: Option<PathBuf>,
+    config_path: Option<PathBuf>,
+) -> Result<(PathExplainReport, Option<SelectedMarkdownPolicy>), CheckError> {
     let requested_path = match path {
         Some(path) => path,
         None => std::env::current_dir()?,
@@ -223,6 +250,17 @@ pub fn explain_structure_path(
         })
         .collect::<Vec<_>>();
     let effective = rules_for_dir(&effective_directory, &compiled.rule_scopes);
+    let markdown_selection =
+        if kind == "file" && rel.extension().and_then(|ext| ext.to_str()) == Some("md") {
+            rel.file_name()
+                .and_then(|name| name.to_str())
+                .and_then(|filename| {
+                    select_markdown(&effective, filename, &rel, &compiled.glob_patterns)
+                })
+        } else {
+            None
+        };
+    let selected_markdown = markdown_selection.as_ref().map(selected_markdown_policy);
     let matched_file_patterns = if kind == "file" {
         rel.file_name()
             .and_then(|name| name.to_str())
@@ -255,7 +293,8 @@ pub fn explain_structure_path(
         })
         .collect();
     let effective_rules = summarize_effective_rules(&effective);
-    let skipped_checks = explain_skipped_checks(kind, excluded, rel.as_path(), &effective_rules);
+    let skipped_checks =
+        explain_skipped_checks(kind, excluded, rel.as_path(), markdown_selection.as_ref());
     let mut next_actions = Vec::new();
     if excluded {
         next_actions.push(PathExplainNextAction {
@@ -284,7 +323,7 @@ pub fn explain_structure_path(
         follow_up: "assura check --format json .".to_string(),
     });
 
-    Ok(PathExplainReport {
+    Ok((PathExplainReport {
         schema: "assura.path-explain.v1",
         project_root: path_display(&project_root),
         config_path: path_display(&config_path),
@@ -305,14 +344,26 @@ pub fn explain_structure_path(
             detail: "Assura structure checks do not currently support inline suppressions for this path.".to_string(),
         }],
         next_actions,
-    })
+    }, selected_markdown))
+}
+
+fn selected_markdown_policy(selection: &SelectedMarkdown<'_>) -> SelectedMarkdownPolicy {
+    SelectedMarkdownPolicy {
+        selection_kind: if selection.pattern.is_some() {
+            "pattern"
+        } else {
+            "directory"
+        },
+        pattern: selection.pattern.map(str::to_string),
+        check_links: selection.bundle.check_links == Some(true),
+    }
 }
 
 fn explain_skipped_checks(
     kind: &str,
     excluded: bool,
     rel: &Path,
-    rules: &PathExplainRules,
+    selected_markdown: Option<&SelectedMarkdown<'_>>,
 ) -> Vec<PathExplainSkip> {
     let mut skipped = Vec::new();
     if excluded {
@@ -342,9 +393,8 @@ fn explain_skipped_checks(
         });
     } else if kind == "file"
         && is_markdown
-        && rules.markdown_require_frontmatter.is_none()
-        && rules.markdown_required_sections.is_empty()
-        && rules.markdown_lint_trailing_spaces.is_none()
+        && !selected_markdown
+            .is_some_and(|selection| markdown_bundle_is_configured(selection.bundle))
     {
         skipped.push(PathExplainSkip {
             name: "markdown_checks",
@@ -385,6 +435,24 @@ fn explain_skipped_checks(
     });
 
     skipped
+}
+
+fn markdown_bundle_is_configured(bundle: &MarkdownBundle) -> bool {
+    bundle.require_frontmatter.is_some()
+        || bundle.max_heading_depth.is_some()
+        || bundle.check_links.is_some()
+        || bundle
+            .required_sections
+            .as_ref()
+            .is_some_and(|sections| !sections.is_empty())
+        || bundle
+            .outline
+            .as_ref()
+            .is_some_and(|outline| !outline.is_empty())
+        || bundle.lint_trailing_spaces.is_some()
+        || bundle.lint_common.is_some()
+        || bundle.markdownlint_candidate.is_some()
+        || bundle.rules.as_ref().is_some_and(|rules| !rules.is_empty())
 }
 
 fn path_display(path: &Path) -> String {

@@ -7,7 +7,7 @@ use super::patterns::{
 };
 use super::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
 use super::rules::{
-    count_satisfies, display_rel, file_matches_any_extension, severity_for_bundle,
+    count_satisfies, display_rel, file_matches_any_extension, select_markdown, severity_for_bundle,
     severity_for_directory_bundle,
 };
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
@@ -208,15 +208,8 @@ impl StructureChecker {
             .and_then(|name| name.to_str())
             .unwrap_or("");
         #[cfg(feature = "yaml-config")]
-        let markdown = rules
-            .files
-            .as_ref()
-            .and_then(|files| files.markdown_patterns.as_ref())
-            .and_then(|patterns| {
-                best_file_pattern_match(patterns, filename, &rel, &self.glob_patterns)
-                    .map(|(_, markdown)| markdown)
-            })
-            .or(rules.markdown.as_deref());
+        let markdown = select_markdown(&rules, filename, &rel, &self.glob_patterns)
+            .map(|selection| selection.bundle);
         #[cfg(feature = "yaml-config")]
         let needs_markdown =
             path.extension().and_then(|ext| ext.to_str()) == Some("md") && markdown.is_some();
