@@ -54,6 +54,8 @@ commands:
         takes_value: true
       --owner-baseline:
         takes_value: true
+      --require-policy-digest:
+        takes_value: true
       --verbose:
         aliases: ["-v"]
       --quiet: {}

@@ -608,6 +608,49 @@ mod cli {
     }
 
     #[test]
+    fn required_owner_digest_rejects_missing_and_changed_bytes() {
+        use sha2::{Digest, Sha256};
+
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(4));
+        repo.write("change.rs", "one\ntwo\n");
+        repo.git(&["add", "-A"]);
+
+        let bytes = b"max_lines: 4\n";
+        let digest = format!("{:x}", Sha256::digest(bytes));
+        let pin = format!("user_baseline={digest}");
+        let required = ["--staged", "--require-policy-digest", &pin];
+        let absent = check(&repo, &required, None);
+        assert!(!absent.status.success());
+        assert!(String::from_utf8_lossy(&absent.stderr)
+            .contains("required user_baseline policy is missing"));
+
+        let owner = repo.0.join(".git/owner-policy.yml");
+        fs::write(&owner, bytes).unwrap();
+        let owner = owner.to_str().unwrap();
+        let args = [
+            "--staged",
+            "--owner-baseline",
+            owner,
+            "--require-policy-digest",
+            &pin,
+        ];
+        let passed = report(check(&repo, &args, None), 0);
+        let source = passed["policies"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|source| source["layer"] == "user_baseline")
+            .unwrap();
+        assert_eq!(source["sha256"], digest);
+        fs::write(owner, "max_lines: 4\n# Different bytes at the same path\n").unwrap();
+        let changed = check(&repo, &args, None);
+        assert!(!changed.status.success());
+        assert!(String::from_utf8_lossy(&changed.stderr)
+            .contains("user_baseline policy digest mismatch"));
+    }
+
+    #[test]
     fn owner_only_uses_the_ratchet_and_diagnoses_invalid_selection() {
         let repo = Repo::init("sha1");
         let owner = tempfile::tempdir().unwrap();

@@ -9,6 +9,7 @@ use crate::config::loader::ConfigLoader;
 use crate::policy::owner_budget::OwnerBudget;
 use crate::policy::source_selection::{select_snapshot_sources, Selection, SourceOrigin};
 use serde::Serialize;
+use sha2::{Digest, Sha256};
 use std::path::{Component, Path, PathBuf};
 
 const POLICY: &str = ".assura/config.yml";
@@ -47,6 +48,7 @@ struct Provenance {
     path: PathBuf,
     origin: SourceOrigin,
     tree: Option<String>,
+    sha256: String,
 }
 
 #[derive(Serialize)]
@@ -125,8 +127,9 @@ pub(in crate::cli) fn command(
     format: ChangeCheckFormat,
     owner_baseline: Option<&Path>,
     project_config: Option<&Path>,
+    require_policy_digest: &[String],
 ) -> ExitCode {
-    match run(scope, owner_baseline, project_config).and_then(|report| {
+    match run(scope, owner_baseline, project_config, require_policy_digest).and_then(|report| {
         match format {
             ChangeCheckFormat::Json => {
                 let output = serde_json::to_string_pretty(&report)
@@ -158,8 +161,8 @@ impl Report {
         );
         for source in &self.policies {
             println!(
-                "  {} policy: {:?} ({:?}, tree {:?})",
-                source.layer, source.path, source.origin, source.tree
+                "  {} policy: {:?} ({:?}, tree {:?}, sha256 {})",
+                source.layer, source.path, source.origin, source.tree, source.sha256
             );
         }
         for exemption in &self.exemptions {
@@ -185,6 +188,7 @@ fn run(
     scope: Scope<'_>,
     owner_baseline: Option<&Path>,
     project_config: Option<&Path>,
+    require_policy_digest: &[String],
 ) -> Result<Report, (ExitCode, String)> {
     let runtime_error = |error| (ExitCode::RuntimeError, error);
     let config_error = |error| (ExitCode::ConfigurationError, error);
@@ -203,19 +207,24 @@ fn run(
         ("scoped_owner", sources.scoped_owner),
     ] {
         if let Some(source) = source {
-            let result = read_external(&source.path).and_then(|bytes| OwnerBudget::parse(&bytes));
-            let budget = result.map_err(|error| {
+            let result = read_external(&source.path)
+                .and_then(|bytes| Ok((OwnerBudget::parse(&bytes)?, bytes)));
+            let (budget, bytes) = result.map_err(|error| {
                 config_error(format!(
                     "{layer} policy {:?} from {:?}: {error}",
                     source.path, source.origin,
                 ))
             })?;
-            policies.push((provenance(layer, source, None), Policy::Owner(budget)));
+            policies.push((
+                provenance(layer, source, None, &bytes),
+                Policy::Owner(budget),
+            ));
         }
     }
     let project = load_project(&snapshot, &cwd, sources.project).map_err(config_error)?;
     let policy_path = project.as_ref().map(|(source, _)| source.path.clone());
     policies.extend(project);
+    verify_policy_digests(&policies, require_policy_digest).map_err(config_error)?;
     if policies.is_empty() {
         return Err((
             ExitCode::NoConfigFound,
@@ -319,12 +328,46 @@ fn run(
     })
 }
 
-fn provenance(layer: &'static str, source: Selection, tree: Option<String>) -> Provenance {
+fn verify_policy_digests(
+    policies: &[(Provenance, Policy)],
+    required: &[String],
+) -> Result<(), String> {
+    for pin in required {
+        let (layer, digest) = pin
+            .split_once('=')
+            .filter(|(layer, digest)| {
+                matches!(*layer, "user_baseline" | "scoped_owner" | "project")
+                    && digest.len() == 64
+                    && digest.bytes().all(|byte| byte.is_ascii_hexdigit())
+            })
+            .ok_or("expected --require-policy-digest LAYER=SHA256")?;
+        let source = policies
+            .iter()
+            .map(|(source, _)| source)
+            .find(|source| source.layer == layer)
+            .ok_or_else(|| format!("required {layer} policy is missing"))?;
+        if !source.sha256.eq_ignore_ascii_case(digest) {
+            return Err(format!(
+                "{layer} policy digest mismatch: expected {digest}, found {}",
+                source.sha256,
+            ));
+        }
+    }
+    Ok(())
+}
+
+fn provenance(
+    layer: &'static str,
+    source: Selection,
+    tree: Option<String>,
+    bytes: &[u8],
+) -> Provenance {
     Provenance {
         layer,
         path: source.path,
         origin: source.origin,
         tree,
+        sha256: format!("{:x}", Sha256::digest(bytes)),
     }
 }
 
@@ -401,7 +444,7 @@ fn load_project(
     let config = ConfigLoader::parse(yaml).map_err(|error| format!("{}: {error}", location()))?;
     let checker = Box::new(StructureChecker::new(root.join(&prefix), config, false));
     Ok(Some((
-        provenance("project", source, tree),
+        provenance("project", source, tree, &bytes),
         Policy::Project { prefix, checker },
     )))
 }

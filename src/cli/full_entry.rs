@@ -96,6 +96,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             merge_base,
             head,
             owner_baseline,
+            require_policy_digest,
             format,
         } => {
             use super::git_snapshot::Scope;
@@ -120,6 +121,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                 format,
                 owner_baseline.as_deref(),
                 config_path.as_deref(),
+                &require_policy_digest,
             )
         }
         Commands::Status { path, format } => status_command(path, config_path, format).await,

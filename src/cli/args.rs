@@ -118,6 +118,13 @@ pub enum Commands {
         )]
         owner_baseline: Option<PathBuf>,
 
+        #[arg(
+            long,
+            value_name = "LAYER=SHA256",
+            help = "Require an exact policy layer digest (user_baseline, scoped_owner, or project)"
+        )]
+        require_policy_digest: Vec<String>,
+
         #[arg(short, long, value_enum, default_value = "text")]
         format: ChangeCheckFormat,
     },
