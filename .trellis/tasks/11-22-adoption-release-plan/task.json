@@ -1,0 +1,38 @@
+{
+  "id": "adoption-release-plan",
+  "name": "adoption-release-plan",
+  "title": "Plan Assura releases around repository adoption",
+  "description": "Reconcile the live Assura backlog and sequence adoption outcomes against the current release and architecture.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "nroth",
+  "createdAt": "2026-11-22",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "docs/assura-new-user-review-20261017",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-22-adoption-release-plan",
+      "owner": "nroth",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/docs/assura-new-user-review-20261017",
+      "branch_ref": null,
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
