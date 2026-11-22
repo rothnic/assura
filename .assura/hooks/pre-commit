@@ -5,6 +5,19 @@
 
 set -e
 
+if STAGED=$(git config --local --no-includes --type=bool --get assura.stagedPreCommit); then
+    if [ "$STAGED" = "true" ]; then
+        # Preserve Git's active index override when present. Git defaults to its own index.
+        exec assura check-change --staged
+    fi
+else
+    CONFIG_EXIT=$?
+    if [ "$CONFIG_EXIT" -ne 1 ]; then
+        echo "Error: could not read repository-local assura.stagedPreCommit." >&2
+        exit "$CONFIG_EXIT"
+    fi
+fi
+
 # Find the project root (directory containing .assura)
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 ASSURA_DIR="$PROJECT_ROOT/.assura"

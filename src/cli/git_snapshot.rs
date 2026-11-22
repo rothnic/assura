@@ -42,15 +42,10 @@ pub(crate) struct Snapshot {
 }
 
 impl Snapshot {
-    pub(crate) fn resolve(cwd: &Path, scope: Scope<'_>) -> Result<Self, String> {
+    pub(crate) fn resolve(cwd: &Path, scope: Scope<'_>, root: PathBuf) -> Result<Self, String> {
         // Keep Git's invocation directory stable, including for relative index overrides.
         let git_cwd = std::path::absolute(cwd)
             .map_err(|error| format!("resolve Git directory {cwd:?}: {error}"))?;
-        let root = git(&git_cwd, ["rev-parse", "--show-toplevel"])?;
-        let root = git_path(
-            root.strip_suffix(b"\n")
-                .ok_or("missing Git root terminator")?,
-        )?;
         let (baseline, selected) = match scope {
             Scope::Staged => (
                 head_or_empty(&git_cwd)?,

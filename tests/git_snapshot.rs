@@ -59,7 +59,7 @@ impl Repo {
     }
 
     fn staged(&self) -> Snapshot {
-        Snapshot::resolve(&self.0, Scope::Staged).unwrap()
+        resolve_snapshot(&self.0, Scope::Staged).unwrap()
     }
 }
 
@@ -67,6 +67,23 @@ impl Drop for Repo {
     fn drop(&mut self) {
         let _ = fs::remove_dir_all(&self.0);
     }
+}
+
+fn resolve_snapshot(cwd: &Path, scope: Scope<'_>) -> Result<Snapshot, String> {
+    let output = Command::new("git")
+        .current_dir(cwd)
+        .args(["rev-parse", "--show-toplevel"])
+        .output()
+        .unwrap();
+    assert_ok(&output);
+    let root = String::from_utf8(output.stdout).unwrap();
+    Snapshot::resolve(
+        cwd,
+        scope,
+        Path::new(root.trim_end_matches('\n'))
+            .canonicalize()
+            .unwrap(),
+    )
 }
 
 fn assert_ok(output: &Output) {
@@ -101,8 +118,8 @@ fn staged_paths_policy_and_content_share_a_pinned_tree() {
     repo.write("worktree-only", "worktree");
     repo.write("untracked", "worktree");
 
-    let snapshot = Snapshot::resolve(&repo.0.join(".assura"), Scope::Staged).unwrap();
-    assert_eq!(snapshot.root.canonicalize().unwrap(), repo.0);
+    let snapshot = resolve_snapshot(&repo.0.join(".assura"), Scope::Staged).unwrap();
+    assert_eq!(snapshot.root, repo.0);
     assert_eq!(
         snapshot.baseline.commit,
         Some(repo.git(&["rev-parse", "HEAD"]))
@@ -174,7 +191,7 @@ fn rejects_unmerged_index() {
     let output = repo.command().args(["merge", "other"]).output().unwrap();
     assert_eq!(output.status.code(), Some(1));
 
-    let error = Snapshot::resolve(&repo.0, Scope::Staged).unwrap_err();
+    let error = resolve_snapshot(&repo.0, Scope::Staged).unwrap_err();
     assert!(
         error.contains("unmerged") && error.contains("conflict"),
         "{error}"
@@ -266,7 +283,7 @@ fn path_limited_commit_uses_the_active_hook_index() {
 #[cfg(unix)]
 fn path_limited_hook_probe() {
     assert!(std::env::var_os("GIT_INDEX_FILE").is_some());
-    let snapshot = Snapshot::resolve(Path::new("."), Scope::Staged).unwrap();
+    let snapshot = resolve_snapshot(Path::new("."), Scope::Staged).unwrap();
     assert_eq!(snapshot.changes, [Change::Modified("chosen path".into())]);
     eprintln!("assura-hook-tree: {}", snapshot.selected.oid);
     assert_eq!(
@@ -333,7 +350,7 @@ fn committed_comparison_can_select_merge_base_or_direct_trees() {
     repo.git(&["checkout", "main"]);
     repo.write("main", "main");
     repo.commit("main");
-    let merge = Snapshot::resolve(
+    let merge = resolve_snapshot(
         &repo.0,
         Scope::MergeBase {
             target: "main",
@@ -345,7 +362,7 @@ fn committed_comparison_can_select_merge_base_or_direct_trees() {
     assert_eq!(merge.changes, [Change::Added("topic".into())]);
 
     let base = repo.git(&["rev-parse", "main^{tree}"]);
-    let direct = Snapshot::resolve(
+    let direct = resolve_snapshot(
         &repo.0,
         Scope::Direct {
             base: &base,
@@ -362,7 +379,7 @@ fn committed_comparison_can_select_merge_base_or_direct_trees() {
             Change::Added("topic".into())
         ]
     );
-    assert!(Snapshot::resolve(
+    assert!(resolve_snapshot(
         &repo.0,
         Scope::Direct {
             base: "missing",
@@ -384,7 +401,7 @@ fn linked_worktrees_keep_independent_staged_trees() {
     repo.git(&["-C", "linked", "add", "file"]);
 
     let first = repo.staged();
-    let linked = Snapshot::resolve(&repo.0.join("linked"), Scope::Staged).unwrap();
+    let linked = resolve_snapshot(&repo.0.join("linked"), Scope::Staged).unwrap();
     assert_eq!(first.baseline.oid, linked.baseline.oid);
     assert_ne!(first.selected.oid, linked.selected.oid);
     assert_eq!(
@@ -404,7 +421,7 @@ fn merge_base_requires_unique_shared_history() {
     repo.commit("base");
     let tree = repo.git(&["rev-parse", "HEAD^{tree}"]);
     let unrelated = repo.git(&["commit-tree", &tree, "-m", "unrelated"]);
-    let no_base = Snapshot::resolve(
+    let no_base = resolve_snapshot(
         &repo.0,
         Scope::MergeBase {
             target: "HEAD",
@@ -436,7 +453,7 @@ fn merge_base_requires_unique_shared_history() {
         "-m",
         "second",
     ]);
-    let ambiguous = Snapshot::resolve(
+    let ambiguous = resolve_snapshot(
         &repo.0,
         Scope::MergeBase {
             target: &first,
@@ -476,7 +493,16 @@ mod cli {
 
     fn check(repo: &Repo, args: &[&str], index: Option<&Path>) -> Output {
         let mut command = Command::new(env!("CARGO_BIN_EXE_assura"));
-        command.current_dir(&repo.0).env_remove("GIT_INDEX_FILE");
+        let home = repo.0.join(".git/fixture-home");
+        command
+            .current_dir(&repo.0)
+            .env_remove("GIT_INDEX_FILE")
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .env("GIT_CONFIG_GLOBAL", home.join("gitconfig"))
+            .env("HOME", &home)
+            .env("USERPROFILE", &home)
+            .env("APPDATA", &home)
+            .env("XDG_CONFIG_HOME", &home);
         if let Some(index) = index {
             command.env("GIT_INDEX_FILE", index);
         }
@@ -499,6 +525,163 @@ mod cli {
     }
 
     #[test]
+    fn owner_verdict_survives_project_selection_exclusion_and_advisory_severity() {
+        let repo = Repo::init("sha1");
+        let owner = tempfile::tempdir().unwrap();
+        let baseline = owner.path().join("baseline.yml");
+        let scoped = owner.path().join("scoped.yml");
+        fs::write(&baseline, "max_lines: 2\nexemptions: ['.assura/**']\n").unwrap();
+        fs::write(&scoped, "max_lines: 10\n").unwrap();
+        repo.git(&["config", "assura.ownerPolicy", scoped.to_str().unwrap()]);
+        repo.write(".assura/config.yml", policy(2));
+        repo.write("ignored/new", "a\nb\nc\n");
+        repo.git(&["add", "-A"]);
+        let args = ["--staged", "--owner-baseline", baseline.to_str().unwrap()];
+        let blocked = report(check(&repo, &args, None), 1);
+        assert_eq!(blocked["findings"].as_array().unwrap().len(), 1);
+        assert_eq!(blocked["findings"][0]["layer"], "user_baseline");
+        assert_eq!(blocked["findings"][0]["path"], "ignored/new");
+        assert_eq!(blocked["policies"][0]["origin"], "explicit");
+        assert!(blocked["policies"][1]["origin"]["git"].is_string());
+        assert_eq!(blocked["policies"][2]["tree"], blocked["selected"]["tree"]);
+
+        let alternate = repo.0.join(".assura/alternate.yml");
+        repo.write(
+            &alternate,
+            "structure:\n  ./:
+    files:\n      max_lines: 2\n      severity: low\nexclude: ['.assura/**']\n",
+        );
+        repo.git(&["add", "--", ".assura/alternate.yml"]);
+        fs::remove_file(&alternate).unwrap();
+        let args = [args.as_slice(), &["--config", alternate.to_str().unwrap()]].concat();
+        let blocked = report(check(&repo, &args, None), 1);
+        assert_eq!(blocked["findings"][0]["blocking"], true);
+        assert_eq!(blocked["findings"][1]["layer"], "project");
+        assert_eq!(blocked["findings"][1]["blocking"], false);
+        assert_eq!(blocked["policies"][2]["origin"], "explicit");
+
+        #[cfg(unix)]
+        {
+            let alias = owner.path().join("checkout");
+            std::os::unix::fs::symlink(&repo.0, &alias).unwrap();
+            let alias = alias.join(".assura/alternate.yml");
+            assert_eq!(
+                report(
+                    check(
+                        &repo,
+                        &[
+                            "--staged",
+                            "--owner-baseline",
+                            baseline.to_str().unwrap(),
+                            "--config",
+                            alias.to_str().unwrap(),
+                        ],
+                        None
+                    ),
+                    1
+                )["findings"],
+                blocked["findings"],
+            );
+        }
+
+        fs::write(
+            &baseline,
+            "max_lines: 2\nexemptions: ['.assura/**', 'ignored/**']\n",
+        )
+        .unwrap();
+        let exempted = report(check(&repo, &args, None), 0);
+        assert_eq!(exempted["findings"].as_array().unwrap().len(), 1);
+        assert!(exempted["exemptions"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|hit| hit["layer"] == "user_baseline" && hit["pattern"] == "ignored/**"));
+
+        fs::write(&scoped, "max_lines: 2\nexemptions: ['.assura/**']\n").unwrap();
+        let blocked = report(check(&repo, &args, None), 1);
+        assert_eq!(blocked["findings"][0]["layer"], "scoped_owner");
+
+        repo.git(&["rm", "--cached", "-f", ".assura/alternate.yml"]);
+        let missing = check(&repo, &args, None);
+        assert_eq!(missing.status.code(), Some(2));
+        assert!(String::from_utf8_lossy(&missing.stderr).contains("absent from selected tree"));
+    }
+
+    #[test]
+    fn required_owner_digest_rejects_missing_and_changed_bytes() {
+        use sha2::{Digest, Sha256};
+
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(4));
+        repo.commit("project policy");
+        repo.write("change.rs", "one\ntwo\n");
+        repo.git(&["add", "-A"]);
+
+        let bytes = b"max_lines: 4\n";
+        let digest = format!("{:x}", Sha256::digest(bytes));
+        let pin = format!("user_baseline={digest}");
+        let required = ["--staged", "--require-policy-digest", &pin];
+        let absent = check(&repo, &required, None);
+        assert!(!absent.status.success());
+        assert!(String::from_utf8_lossy(&absent.stderr)
+            .contains("required user_baseline policy is missing"));
+
+        let owner = repo.0.join(".git/owner-policy.yml");
+        fs::write(&owner, bytes).unwrap();
+        let owner = owner.to_str().unwrap();
+        let args = [
+            "--staged",
+            "--owner-baseline",
+            owner,
+            "--require-policy-digest",
+            &pin,
+        ];
+        let passed = report(check(&repo, &args, None), 0);
+        let source = passed["policies"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|source| source["layer"] == "user_baseline")
+            .unwrap();
+        assert_eq!(source["sha256"], digest);
+        fs::write(owner, "max_lines: 4\n# Different bytes at the same path\n").unwrap();
+        let changed = check(&repo, &args, None);
+        assert!(!changed.status.success());
+        assert!(String::from_utf8_lossy(&changed.stderr)
+            .contains("user_baseline policy digest mismatch"));
+    }
+
+    #[test]
+    fn owner_only_uses_the_ratchet_and_diagnoses_invalid_selection() {
+        let repo = Repo::init("sha1");
+        let owner = tempfile::tempdir().unwrap();
+        let policy = owner.path().join("owner.yml");
+        fs::write(&policy, "max_lines: 2\n").unwrap();
+        repo.git(&["config", "assura.ownerPolicy", policy.to_str().unwrap()]);
+        repo.write("legacy", "a\nb\nc\n");
+        repo.commit("legacy debt");
+        repo.write("legacy", "a\nb\nchanged\n");
+        repo.git(&["add", "-A"]);
+        assert!(report(check(&repo, &["--staged"], None), 0)["policy_path"].is_null());
+        repo.write("legacy", "a\nb\nchanged\nd\n");
+        repo.git(&["add", "-A"]);
+        repo.commit("growth");
+        repo.write(".assura/config.yml", "invalid unstaged config");
+        let blocked = report(
+            check(&repo, &["--base", "HEAD^", "--head", "HEAD"], None),
+            1,
+        );
+        assert_eq!(blocked["findings"][0]["baseline_lines"], 3);
+        assert_eq!(blocked["findings"][0]["allowed_lines"], 3);
+        fs::remove_file(&policy).unwrap();
+        let bad = check(&repo, &["--staged"], None);
+        assert_eq!(bad.status.code(), Some(2));
+        let diagnostic = String::from_utf8_lossy(&bad.stderr);
+        assert!(diagnostic.contains("assura.ownerPolicy"), "{diagnostic}");
+        assert!(diagnostic.contains("owner.yml"), "{diagnostic}");
+    }
+
+    #[test]
     fn active_index_rules_and_bytes_drive_the_same_verdict_after_commit() {
         let repo = Repo::init("sha1");
         let config = ".assura/config.yml";
@@ -515,8 +698,7 @@ mod cli {
         repo.write("ordinary index", "a\nb\nc\nd\n");
         repo.git(&["add", "--", config, "ordinary index"]);
 
-        // Git resolves a relative index from the command's working directory.
-        // A Windows extended-length path from canonicalize() cannot be locked by Git.
+        // Keep the index relative to the fixture root so Git can lock it on Windows.
         let index = Path::new(".git/alternate-index");
         assert_ok(
             &repo

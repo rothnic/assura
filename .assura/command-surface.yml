@@ -49,6 +49,13 @@ commands:
   - name: "assura check-change"
     allow_positionals: false
     flags:
+      --config:
+        aliases: ["-c"]
+        takes_value: true
+      --owner-baseline:
+        takes_value: true
+      --require-policy-digest:
+        takes_value: true
       --verbose:
         aliases: ["-v"]
       --quiet: {}

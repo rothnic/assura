@@ -26,7 +26,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | Command | Status | Evidence |
 | --- | --- | --- |
 | `assura check` | Supported | Rust test suite, Assura self-check, installable adoption smoke. |
-| `assura check-change` | Experimental Git snapshot check | Preview for v0.5.0. Reads project policy and checked bytes from the selected Git tree. Use `--staged` alone, or use exactly one of `--base` and `--merge-base` with `--head`. An explicit `--config` override is rejected. |
+| `assura check-change` | Experimental Git snapshot check | Preview for v0.5.0. Use `--staged` or select a commit range with `--base` or `--merge-base` and `--head`. Reads checked bytes and any in-checkout project policy from the selected Git tree. `--config` selects the project layer and `--owner-baseline` selects the independent user layer. In CI use `--require-policy-digest LAYER=SHA256` for each pinned input to reject missing or different policy bytes. |
 | `assura check --format json` | Supported | Installable adoption smoke and CLI report tests. |
 | `assura check --format yaml` | Supported | CLI report formatter tests. |
 | `assura check --format advice` | Supported | Agent feedback rendering tests and real-project feedback fixtures. |
@@ -92,6 +92,42 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura daemon logs` | Supported next-release local daemon logs | Daemon CLI tests prove bounded JSON log output from `.assura/daemon/daemon.log`. |
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Supported next-release continuous validation | Watch lifecycle tests prove requested-path scope, initial full validation, safe warm changed-path checks, project-wide-policy fallback, bounded burst coalescing, project-local and external config reload, atomic replacement of file scopes, configured exclusions, runtime-output suppression, actionable text and JSON event metadata, clean interrupt shutdown during sustained edits, and visible termination on watcher failure. |
+
+## Managed pre-commit staged budgets
+
+With the current Assura-managed pre-commit hook installed by
+`assura hooks install`, enable staged budget blocking for this repository:
+
+```sh
+git config --local assura.stagedPreCommit true
+```
+
+The adapter reads this boolean directly from the repository-local Git config,
+shared by linked worktrees. Global settings and Git config includes cannot
+enable it. Inspect the setting and its source with
+`git config --local --no-includes --show-origin --get assura.stagedPreCommit`.
+Set it to `false` to restore the default working-tree check, which is advisory
+on feature branches and blocks on main/master.
+
+With the opt-in enabled, an ordinary `git commit` runs
+`assura check-change --staged` using the active index Git supplies, including
+the temporary index for a path-limited commit. Blocking findings and command
+errors stop the commit on any branch. Advisory findings retain their exit
+status. Use a snapshot-capable `assura` on `PATH`. The check reads in-tree
+project policy from the proposed commit and resolves external owner policy
+through the snapshot command's existing policy discovery. An owner policy can
+supply the budget by itself.
+
+Check `assura hooks status` for adoption in an existing installation. The
+installer preserves differing sidecars, including older pre-commit scripts.
+If the old sidecar is yours to replace, back it up and move it aside before
+installing the current hook.
+
+In CI, check the committed tree directly with
+`assura check-change --base "$before_commit" --head "$candidate_commit"`.
+Use the exact pre-commit HEAD as the base. Select any external policy files and
+pass `--require-policy-digest LAYER=SHA256` for each required layer. The digest
+check rejects a missing or changed policy before evaluating the commit.
 
 ## Editor Adapter Compatibility
 
