@@ -266,8 +266,8 @@ fn invalid_explicit_selection_and_malformed_git_config_fail() {
 }
 
 #[test]
-fn non_repo_is_valid_but_inaccessible_git_config_is_an_error() {
-    let mut fixture = Fixture::new();
+fn non_repo_is_valid_and_malformed_global_git_config_is_reported() {
+    let fixture = Fixture::new();
     let outside = fixture.tmp.path().canonicalize().unwrap();
     let local_project = fixture.source(".assura/config.yml");
     let found = fixture.select(&outside, None, None).unwrap();
@@ -275,9 +275,11 @@ fn non_repo_is_valid_but_inaccessible_git_config_is_an_error() {
     assert!(found.scoped_owner.is_none());
     assert_eq!(found.project_root, outside);
     assert_eq!(found.project.unwrap().path, local_project);
-    fixture.global = fixture.repo.clone();
+    fs::write(&fixture.global, "[broken\n").unwrap();
+    let error = fixture.select(&fixture.repo, None, None).unwrap_err();
     assert!(
-        matches!(fixture.select(&fixture.repo, None, None), Err(SelectionError::Git { diagnostic, .. }) if diagnostic.contains("unable to access"))
+        matches!(&error, SelectionError::Git { diagnostic, .. } if diagnostic.contains("bad config")),
+        "{error}"
     );
 }
 
