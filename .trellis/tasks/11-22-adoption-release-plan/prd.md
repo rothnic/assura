@@ -32,15 +32,58 @@ same budgets while each project keeps ownership of its layout.
 ## Release targets
 
 Beads owns priority, dependencies and live status. These are planning targets
-for CLI artifacts. [The release train](../../../docs/release-train.md) governs
-candidate validation and publication.
+for CLI artifacts. A release earns its number by shipping an independently
+useful workflow. Hold a target at preview if its contract is still changing.
+Use patches to learn and fix regressions within a released contract. The
+[release train](../../../docs/release-train.md) governs candidate validation
+and publication.
 
 | Target | Priority | Outcome and work | Exit evidence |
 | --- | --- | --- | --- |
 | v0.4.2 | P1 | Prepare the landed adoption and reliability fixes for R06 release proof (`ae-we5`). Target actionable size guidance through existing commands (`ae-whr.7`), with an independent packaging path for the fixes if the guidance needs more work. | Verify clean install and upgrade from the same candidate on supported platforms. For the guidance, observe install or upgrade, nested invocation, a size failure, repair and successful recheck on an established repo, including one real supported hook event. |
 | v0.5.0 | P1 | Gate a change set against existing file budgets (`ae-whr.8`). Start with explicit working, staged and committed comparisons and one verified existing pre-commit route. Show current size, cap, base size and additions with exact scoped follow-up commands. | Replay the established-repo workflow. New and previously compliant files fit. Oversized legacy files can stay flat or shrink. Real Git events prove the selected index, including a path-limited commit. |
-| v0.6.0 | P1/P2 | Resolve persistent user, group and per-repository policy assignments, including a private project config (`ae-whr.9`, P1). Add narrowly configured added-line and addition-budget rules only where the replay finds gaps (`ae-whr.10`, P2). | A user can set up, inspect and remove private policy with no recurring flags. Prove two repositories, an out-of-tree linked worktree, isolation of owner rules, warm replacement and explicit CI reproduction. |
-| v0.7.0 | P2, conditional | Reduce repeated setup through user-installed runtime-resolving hooks (`ae-whr.11`) if portable-policy replay still shows setup friction. Start with one native agent and one Git runner. Add pre-push enforcement only after its ref contract is proved. | Real edit and Git events select the right inputs, leave unrelated projects quiet, preserve other hooks and survive update and removal. Extend coverage host by host after native proof. |
+| v0.6.0 | P1 | Resolve persistent user, group and per-repository policy assignments, including a private project config (`ae-whr.9`). | A user can set up, inspect and remove private policy with no recurring flags. Prove two repositories, an out-of-tree linked worktree, isolation of owner rules, warm replacement and explicit CI reproduction. |
+| Unassigned | P2, conditional | Add narrowly configured added-line or addition-budget rules (`ae-whr.10`) if replay exposes a material gap in existing tools. | The real workflow shows which rule is needed and when it should run. Separate tests prove additions versus net growth, pre-existing debt and exemptions. |
+| Unassigned | P2, conditional | Reduce repeated setup through user-installed runtime-resolving hooks (`ae-whr.11`) if portable-policy replay still shows setup friction. Start with one native agent and one Git runner. Add pre-push enforcement only after its ref contract is proved. | Real edit and Git events select the right inputs, leave unrelated projects quiet, preserve other hooks and survive update and removal. Extend coverage host by host after native proof. |
+
+Audit the complete candidate against the last public release before calling it
+v0.4.2. Compatible improvements to supported surfaces fit the patch.
+New public contracts belong in a minor release and shift the later targets.
+Keep v0.5.0 separate if the packaged single-repository workflow is useful
+with an existing project policy and hook. If the replay shows it needs private
+policy selection to be usable, keep it in preview and decide the next number
+for the combined workflow when the scope is known.
+
+## What Assura 1.0 Would Promise
+
+Assura 1.0 should make a compatibility commitment for a bounded
+repository-policy workflow. A maintainer can install or upgrade Assura, set
+explicit policy safely, understand a failure and repair it, and rely on the
+same declared policy and Git snapshot producing the same verdict locally and
+in CI. The stable contract would specify:
+
+- The supported config notation, source selection and precedence, rule IDs,
+  enforcement semantics, Git scope and baseline modes, and path explanations.
+  Include private and shared policy selection if the rollout validates it as
+  part of the core workflow.
+- The documented CLI arguments, exit behavior and machine-readable schemas
+  that automation can depend on, including bounded agent feedback. State the
+  supported platforms, harnesses and installation, update and removal paths.
+- An upgrade example from the last supported pre-1.0 release and a public
+  migration and deprecation policy. Use the existing support and compatibility
+  ledgers to name the surfaces that receive the v1 stability commitment.
+  Global automation and broader integrations qualify on their own evidence.
+  Existing supported surfaces and four-host obligations stay in force unless
+  the maintainer separately approves a documented change.
+
+The existing [F05 readiness decision](../09-04-maturity-portfolio-strategy/research/adoption-packet.md#f05)
+(`ae-220`) owns the go, narrow, or continue-beta decision. It requires R06
+same-candidate install proof, A07 independent correctness, F02 retained use,
+and the documented 30-day, 50-session, three-repository soak, including four
+hosts if the existing matrix is retained. Preserve Q02 and Q07 prerequisites.
+Wrong verdicts, unsafe setup, failed upgrades and silent enforcement gaps
+hold a stability claim. Completing the adoption targets supplies evidence
+to F05. Continue the 0.x train while the contract or proof is still moving.
 
 ## Architecture decisions for the slices
 
@@ -216,3 +259,7 @@ remains planned. Beads scope and acceptance were refreshed in `ae-whr.8` and
 The premortem refined `ae-whr.7`, `ae-whr.8`, `ae-whr.9` and `ae-whr.11`.
 Their targets and prerequisite edges were verified after readback. The
 local store was backed up at Dolt head `7sdsn0svdt25h3d9j15c4cgle0rciaiv`.
+
+The version review left `ae-whr.10` and `ae-whr.11` unassigned and recorded
+the existing F05 decision in `ae-220`. A fresh restore verified all three
+updates at local Dolt head `6g89an9vv706s5ss6a3pk91pd5sh4gb7`.

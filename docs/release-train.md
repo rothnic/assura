@@ -21,10 +21,15 @@ GitHub artifacts.
 ## Planned Adoption Releases
 
 The [adoption release plan](../.trellis/tasks/11-22-adoption-release-plan/prd.md)
-assigns Beads work to v0.4.2 for adoption fixes and actionable repair,
-v0.5.0 for change-scoped file budgets, v0.6.0 for reusable owner policy and
-additional diff rules, and a conditional v0.7.0 for user-installed hooks.
-Each target advances through candidate evidence and the release procedure below.
+targets v0.4.2 for compatible adoption and reliability fixes, v0.5.0 for
+change-scoped file budgets, and v0.6.0 for reusable owner policy. Additional
+diff rules and user-installed hooks get a version after adoption evidence
+justifies them. Each target advances through the release procedure below.
+
+The [F05 stability decision](../.trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md#f05)
+governs 1.0 separately. Pre-1.0 versions can continue through v0.10.0 and
+beyond. The public compatibility contract and retained-use evidence govern
+promotion.
 
 ## Readiness Command
 
