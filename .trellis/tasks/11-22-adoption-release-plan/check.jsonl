@@ -1,0 +1,2 @@
+{"file": ".trellis/spec/assura/agent-harness-hooks.md", "reason": "Require native activation proof and preserve existing hook ownership"}
+{"file": ".trellis/spec/assura/codex-agent-feedback.md", "reason": "Validate actual findings across existing check and hook surfaces"}

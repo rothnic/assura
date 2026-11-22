@@ -18,6 +18,14 @@ GitHub artifacts.
 - Use release candidates such as `0.2.0-rc.1` when a larger surface needs
   installable validation before a final pre-1.0 release.
 
+## Planned Adoption Releases
+
+The [adoption release plan](../.trellis/tasks/11-22-adoption-release-plan/prd.md)
+assigns Beads work to v0.4.2 for adoption fixes and actionable repair,
+v0.5.0 for change-scoped file budgets, v0.6.0 for reusable owner policy and
+additional diff rules, and a conditional v0.7.0 for user-installed hooks.
+Each target advances through candidate evidence and the release procedure below.
+
 ## Readiness Command
 
 Run the release-readiness command before opening a release PR:
