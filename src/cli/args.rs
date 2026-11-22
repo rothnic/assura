@@ -24,6 +24,13 @@ pub struct Cli {
     pub quiet: bool,
 }
 
+/// Output formats for explicit Git comparisons.
+#[derive(Clone, Copy, Debug, ValueEnum)]
+pub enum ChangeCheckFormat {
+    Text,
+    Json,
+}
+
 #[derive(Subcommand, Debug)]
 pub enum Commands {
     #[command(about = "Run full validation")]
@@ -72,6 +79,40 @@ pub enum Commands {
 
         #[arg(long)]
         watch: bool,
+    },
+
+    #[command(
+        about = "Ratchet file max_lines against an explicit Git snapshot",
+        long_about = "Check changed files using the repository-root .assura/config.yml from the selected Git tree. Existing oversized files can stay flat or shrink. New files must fit the configured limit."
+    )]
+    #[command(group(clap::ArgGroup::new("comparison").required(true).args(["staged", "base", "merge_base"])))]
+    CheckChange {
+        #[arg(
+            long,
+            conflicts_with = "head",
+            help = "Compare the active Git index with HEAD"
+        )]
+        staged: bool,
+
+        #[arg(
+            long,
+            requires = "head",
+            help = "Compare directly against this commit or tree"
+        )]
+        base: Option<String>,
+
+        #[arg(
+            long,
+            requires = "head",
+            help = "Compare against the unique merge base of this commit and --head"
+        )]
+        merge_base: Option<String>,
+
+        #[arg(long, requires = "comparison", help = "Selected commit or tree")]
+        head: Option<String>,
+
+        #[arg(short, long, value_enum, default_value = "text")]
+        format: ChangeCheckFormat,
     },
 
     #[command(about = "Show project status")]

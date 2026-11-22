@@ -69,6 +69,8 @@ mod editor_args;
 #[cfg(feature = "full-cli")]
 pub mod full_entry;
 #[cfg(feature = "full-cli")]
+mod git_snapshot;
+#[cfg(feature = "full-cli")]
 pub mod hooks;
 #[cfg(feature = "full-cli")]
 mod init_recipes;

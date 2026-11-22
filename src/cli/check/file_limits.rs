@@ -57,12 +57,9 @@ impl StructureChecker {
         content: Option<&str>,
         report: &mut StructureCheckReport,
     ) {
-        let matched = files.max_lines_patterns.as_ref().and_then(|patterns| {
-            best_file_pattern_match(patterns, filename, rel, &self.glob_patterns)
-        });
-        let matched_pattern = matched.map(|(pattern, _)| pattern);
-        let max_lines = matched.map(|(_, value)| *value).or(files.max_lines);
-        if let (Some(max_lines), Some(content)) = (max_lines, content) {
+        if let (Some((max_lines, matched_pattern)), Some(content)) =
+            (self.file_line_budget(rel, files, filename), content)
+        {
             let line_count = content.lines().count();
             if line_count > max_lines && !self.is_excluded_rel(rel) {
                 let overage = line_count - max_lines;
@@ -93,6 +90,20 @@ impl StructureChecker {
                 report.violations.push(violation);
             }
         }
+    }
+
+    pub(super) fn file_line_budget<'a>(
+        &self,
+        rel: &Path,
+        files: &'a FileBundle,
+        filename: &str,
+    ) -> Option<(usize, Option<&'a str>)> {
+        let matched = files.max_lines_patterns.as_ref().and_then(|patterns| {
+            best_file_pattern_match(patterns, filename, rel, &self.glob_patterns)
+        });
+        matched
+            .map(|(pattern, limit)| (*limit, Some(pattern)))
+            .or_else(|| files.max_lines.map(|limit| (limit, None)))
     }
 }
 
@@ -135,7 +146,7 @@ fn line_budget_actions(_report: &StructureCheckReport, _rel: &Path) -> Option<Ve
     None
 }
 
-fn pattern_severity(
+pub(super) fn pattern_severity(
     files: &FileBundle,
     matched_pattern: Option<&str>,
     filename: &str,
@@ -153,7 +164,7 @@ fn pattern_severity(
         .unwrap_or_else(|| severity_for_bundle(files))
 }
 
-fn repair_message<'a>(
+pub(super) fn repair_message<'a>(
     files: &'a FileBundle,
     matched_pattern: Option<&str>,
     filename: &str,

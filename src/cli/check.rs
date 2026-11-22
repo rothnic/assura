@@ -67,6 +67,8 @@ mod rules;
 #[cfg(test)]
 mod rules_tests;
 mod scope_patterns;
+#[cfg(feature = "full-cli")]
+pub(super) mod snapshot;
 mod support_matrix;
 mod support_matrix_docs;
 mod test_relationship;

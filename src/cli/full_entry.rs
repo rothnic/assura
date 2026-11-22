@@ -90,6 +90,38 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             })
             .await
         }
+        Commands::CheckChange {
+            staged,
+            base,
+            merge_base,
+            head,
+            format,
+        } => {
+            use super::git_snapshot::Scope;
+            if config_path.is_some() {
+                eprintln!(
+                    "Error: check-change reads .assura/config.yml from the selected Git tree"
+                );
+                return ExitCode::ConfigurationError;
+            }
+            let scope = match (
+                staged,
+                base.as_deref(),
+                merge_base.as_deref(),
+                head.as_deref(),
+            ) {
+                (true, None, None, None) => Scope::Staged,
+                (false, Some(base), None, Some(head)) => Scope::Direct { base, head },
+                (false, None, Some(target), Some(head)) => Scope::MergeBase { target, head },
+                _ => {
+                    eprintln!(
+                        "Error: choose --staged, --base with --head, or --merge-base with --head"
+                    );
+                    return ExitCode::ConfigurationError;
+                }
+            };
+            super::check::snapshot::command(scope, format)
+        }
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Doctor { path, format } => super::doctor_command(path, config_path, format).await,
         Commands::Review { path, format, base } => {
