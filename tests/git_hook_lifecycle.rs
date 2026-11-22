@@ -137,6 +137,166 @@ fn command_output_text(output: &Output) -> String {
     )
 }
 
+#[cfg(unix)]
+#[test]
+fn staged_pre_commit_checks_only_the_proposed_paths_with_project_policy() {
+    assert_staged_pre_commit(false);
+}
+
+#[cfg(unix)]
+#[test]
+fn staged_pre_commit_checks_only_the_proposed_paths_with_owner_policy() {
+    assert_staged_pre_commit(true);
+}
+
+#[cfg(unix)]
+fn assert_staged_pre_commit(owner_only: bool) {
+    use std::fs;
+    use std::os::unix::fs::PermissionsExt;
+
+    let project = tempfile::tempdir().unwrap();
+    let root = project.path();
+    assert_git(root, &["init", "--quiet"]);
+    assert_git(root, &["config", "user.email", "assura@example.test"]);
+    assert_git(root, &["config", "user.name", "Assura test"]);
+    assert_git(root, &["config", "commit.gpgsign", "false"]);
+    assert_git(root, &["config", "core.hooksPath", ".fixture-hooks"]);
+
+    let external = tempfile::tempdir().unwrap();
+    if owner_only {
+        let policy = external.path().join("owner.yml");
+        fs::write(&policy, "max_lines: 2\n").unwrap();
+        assert_git(
+            root,
+            &["config", "assura.ownerPolicy", policy.to_str().unwrap()],
+        );
+    } else {
+        fs::create_dir(root.join(".assura")).unwrap();
+        fs::write(
+            root.join(".assura/config.yml"),
+            "structure:\n  ./:\n    files:\n      max_lines: 2\n",
+        )
+        .unwrap();
+        assert_git(root, &["add", ".assura/config.yml"]);
+    }
+    fs::write(root.join("chosen.txt"), "original\n").unwrap();
+    fs::write(root.join("unrelated.txt"), "original\n").unwrap();
+    assert_git(root, &["add", "chosen.txt", "unrelated.txt"]);
+    assert_git(root, &["commit", "--quiet", "-m", "initial"]);
+    assert_git(root, &["checkout", "--quiet", "-b", "feature"]);
+
+    GitHooksManager::new(root)
+        .unwrap()
+        .install(HookType::PreCommit, false)
+        .unwrap();
+    let bin = external.path().join("assura");
+    // Git has already prepared the commit index when this command runs.
+    fs::write(
+        &bin,
+        "#!/bin/sh\nset -e\nif [ \"$RESTORE_CHECKOUT\" = 1 ]; then\n  git show HEAD:chosen.txt > chosen.txt\nfi\nexec \"$TEST_ASSURA_BIN\" \"$@\"\n",
+    )
+    .unwrap();
+    fs::set_permissions(&bin, fs::Permissions::from_mode(0o755)).unwrap();
+    let path = std::env::join_paths(
+        std::iter::once(external.path().to_path_buf())
+            .chain(std::env::split_paths(&std::env::var_os("PATH").unwrap())),
+    )
+    .unwrap();
+    let global_config = external.path().join("gitconfig");
+    fs::write(&global_config, "[assura]\n\tstagedPreCommit = true\n").unwrap();
+    let commit = |restore_checkout: &str, paths: &[&str]| {
+        Command::new("git")
+            .current_dir(root)
+            .args(["commit", "--quiet", "-m", "fixture edit", "--"])
+            .args(paths)
+            .env("PATH", &path)
+            .env("TEST_ASSURA_BIN", assura_bin())
+            .env("RESTORE_CHECKOUT", restore_checkout)
+            .env("XDG_CONFIG_HOME", external.path())
+            .env("GIT_CONFIG_GLOBAL", &global_config)
+            .env("GIT_CONFIG_NOSYSTEM", "1")
+            .output()
+            .unwrap()
+    };
+
+    let oversized = b"one\ntwo\nthree\n";
+    fs::write(root.join("unrelated.txt"), oversized).unwrap();
+    assert_git(root, &["add", "unrelated.txt"]);
+    fs::write(root.join("chosen.txt"), oversized).unwrap();
+
+    if !owner_only {
+        // A global flag cannot opt this repository in.
+        let legacy = commit("0", &["chosen.txt"]);
+        assert!(legacy.status.success(), "{}", command_output_text(&legacy));
+        assert!(command_output_text(&legacy).contains("allows commits with warnings"));
+        assert_git(root, &["reset", "--soft", "HEAD^"]);
+        assert_git(root, &["reset", "--quiet", "HEAD", "--", "chosen.txt"]);
+    }
+    assert_git(
+        root,
+        &["config", "--local", "assura.stagedPreCommit", "true"],
+    );
+
+    let head = git(root, &["rev-parse", "HEAD"]).stdout;
+    let blocked = commit("1", &["chosen.txt"]);
+    let diagnostic = command_output_text(&blocked);
+    assert_eq!(blocked.status.code(), Some(1), "{diagnostic}");
+    assert!(
+        diagnostic.contains("\"chosen.txt\": 3 lines"),
+        "{diagnostic}"
+    );
+    assert!(!diagnostic.contains("unrelated.txt"), "{diagnostic}");
+    let layer = if owner_only {
+        "[scoped_owner/high]"
+    } else {
+        "[project/medium]"
+    };
+    assert!(diagnostic.contains(layer), "{diagnostic}");
+    assert_eq!(fs::read(root.join("chosen.txt")).unwrap(), b"original\n");
+    assert_eq!(git(root, &["rev-parse", "HEAD"]).stdout, head);
+    assert_eq!(git(root, &["show", ":unrelated.txt"]).stdout, oversized);
+
+    fs::write(root.join("chosen.txt"), "repaired\n").unwrap();
+    let repaired = commit("0", &["chosen.txt"]);
+    assert!(
+        repaired.status.success(),
+        "{}",
+        command_output_text(&repaired)
+    );
+    assert_eq!(
+        git(root, &["show", "HEAD:chosen.txt"]).stdout,
+        b"repaired\n"
+    );
+    assert_eq!(
+        git(root, &["show", "HEAD:unrelated.txt"]).stdout,
+        b"original\n"
+    );
+    assert_eq!(git(root, &["show", ":unrelated.txt"]).stdout, oversized);
+    assert_eq!(
+        git(root, &["diff", "--cached", "--name-only"]).stdout,
+        b"unrelated.txt\n"
+    );
+
+    if !owner_only {
+        let policy_path = root.join(".assura/config.yml");
+        let strict_policy = fs::read_to_string(&policy_path).unwrap();
+        fs::write(
+            &policy_path,
+            format!("{strict_policy}      severity: low\n"),
+        )
+        .unwrap();
+        assert_git(root, &["add", ".assura/config.yml"]);
+        fs::write(&policy_path, strict_policy).unwrap();
+        let advisory = commit("0", &[]);
+        let diagnostic = command_output_text(&advisory);
+        assert!(advisory.status.success(), "{diagnostic}");
+        assert!(
+            diagnostic.contains("[project/low] \"unrelated.txt\""),
+            "{diagnostic}"
+        );
+    }
+}
+
 #[test]
 fn hooks_run_pre_push_keeps_invalid_policy_advisory() {
     let project = tempfile::TempDir::new().unwrap();
