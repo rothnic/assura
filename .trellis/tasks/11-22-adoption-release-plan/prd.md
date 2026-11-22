@@ -90,6 +90,23 @@ v0.4.2. Package eligible reliability fixes independently of the workspace
 increment. Reclassify the candidate if its actual public delta requires a
 minor version.
 
+The initial patch audit compared the published `7ab1d826` source with
+`origin/master` at `9ae7d816`. Master includes new configured review
+advisories (`795c55a2`) and selected Markdown policy in explain (`4417eecf`).
+Treat those public behavior and output changes as separate from the compatible
+fix set. Candidate inputs to validate include policy-preserving onboarding
+(`6f926274`), missing-config guidance (`0812fa92`), and the targeted
+relationship fix (`43657628`). Resolve their dependencies against the exact
+candidate before assessing eligibility.
+
+The public POSIX installer already matches `9ae7d816`, including its PATH
+shadow diagnostic. On Intel macOS it installed both v0.4.1 binaries to clean
+directories using the explicit version and `latest`. Versions and binary
+SHA-256s matched between runs. Five installer fixture tests also passed,
+including checksum failure and PATH shadowing. This establishes the upgrade
+baseline. Replay clean install and upgrade with the v0.4.2 preview, then
+repeat from the public release.
+
 Build and validate the workspace pieces in SHA-pinned CI previews. First
 prove change scopes with an existing project config, then exercise persistent
 policy selection, then replay the guidance and actual scoped recheck on the
