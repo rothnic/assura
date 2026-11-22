@@ -446,3 +446,256 @@ fn merge_base_requires_unique_shared_history() {
     .unwrap_err();
     assert!(ambiguous.contains("multiple merge bases") && ambiguous.contains("direct comparison"));
 }
+
+#[test]
+fn non_regular_entries_are_not_file_content() {
+    let repo = Repo::init("sha1");
+    repo.write("folder/note", "one\n");
+    repo.commit("tree");
+    let snapshot = repo.staged();
+    assert!(snapshot
+        .read_file(Side::Selected, Path::new("folder"))
+        .is_err());
+    assert_eq!(
+        snapshot
+            .read_regular_file(Side::Selected, Path::new("folder"))
+            .unwrap(),
+        None,
+    );
+}
+
+#[cfg(feature = "full-cli")]
+mod cli {
+    use super::*;
+
+    fn policy(limit: usize) -> String {
+        format!(
+            "structure:\n  ./:\n    files:\n      max_lines: {limit}\nexclude:\n  - .assura/**\n  - ignored\n"
+        )
+    }
+
+    fn check(repo: &Repo, args: &[&str], index: Option<&Path>) -> Output {
+        let mut command = Command::new(env!("CARGO_BIN_EXE_assura"));
+        command.current_dir(&repo.0).env_remove("GIT_INDEX_FILE");
+        if let Some(index) = index {
+            command.env("GIT_INDEX_FILE", index);
+        }
+        command
+            .args(["check-change", "--format", "json"])
+            .args(args)
+            .output()
+            .unwrap()
+    }
+
+    fn report(output: Output, code: i32) -> serde_json::Value {
+        assert_eq!(
+            output.status.code(),
+            Some(code),
+            "{}\n{}",
+            String::from_utf8_lossy(&output.stdout),
+            String::from_utf8_lossy(&output.stderr),
+        );
+        serde_json::from_slice(&output.stdout).unwrap()
+    }
+
+    #[test]
+    fn active_index_rules_and_bytes_drive_the_same_verdict_after_commit() {
+        let repo = Repo::init("sha1");
+        let config = ".assura/config.yml";
+        repo.write(config, policy(3));
+        repo.write("legacy", "a\nb\nc\nd\n");
+        repo.write("flat", "a\nb\nc\nd\n");
+        repo.write("shrink", "a\nb\nc\nd\ne\n");
+        repo.write("growing debt", "a\nb\nc\nd\n");
+        repo.write("formerly compliant", "a\nb\n");
+        repo.commit("base");
+        let base = repo.git(&["rev-parse", "HEAD"]);
+
+        repo.write(config, policy(100));
+        repo.write("ordinary index", "a\nb\nc\nd\n");
+        repo.git(&["add", "--", config, "ordinary index"]);
+
+        let index = repo.0.join(".git/alternate-index");
+        assert_ok(
+            &repo
+                .command()
+                .env("GIT_INDEX_FILE", &index)
+                .args(["read-tree", "HEAD"])
+                .output()
+                .unwrap(),
+        );
+        repo.write(config, policy(2));
+        repo.write("flat", "a\nb\nc\nchanged\n");
+        repo.write("shrink", "a\nb\nc\nd\n");
+        repo.write("growing debt", "a\nb\nc\nd\ne\n");
+        repo.write("formerly compliant", "a\nb\nc\n");
+        repo.write("new file", "a\nb\nc\n");
+        repo.write("ignored/nested", "a\nb\nc\nd\n");
+        assert_ok(
+            &repo
+                .command()
+                .env("GIT_INDEX_FILE", &index)
+                .args([
+                    "add",
+                    "--",
+                    config,
+                    "flat",
+                    "shrink",
+                    "growing debt",
+                    "formerly compliant",
+                    "new file",
+                    "ignored/nested",
+                ])
+                .output()
+                .unwrap(),
+        );
+
+        repo.write(config, "broken: [\n");
+        repo.write("growing debt", "a\n");
+        repo.write("new file", "a\n");
+        repo.write("flat", "a\nb\nc\nd\ne\n");
+        let ordinary = report(check(&repo, &["--staged"], None), 0);
+        assert_eq!(ordinary["files_checked"], 1);
+
+        let staged = report(check(&repo, &["--staged"], Some(&index)), 1);
+        assert_eq!(staged["scope"], "staged");
+        assert_eq!(staged["baseline"]["commit"], base);
+        assert_eq!(staged["files_checked"], 5);
+        let findings = staged["findings"].as_array().unwrap();
+        let names: Vec<_> = findings
+            .iter()
+            .map(|finding| finding["path"].as_str().unwrap())
+            .collect();
+        assert_eq!(names, ["formerly compliant", "growing debt", "new file"]);
+        assert_eq!(findings[0]["baseline_lines"], 2);
+        assert_eq!(findings[1]["limit"], 2);
+        assert_eq!(findings[1]["allowed_lines"], 4);
+        assert_eq!(findings[1]["actual"], 5);
+        assert!(findings[2]["baseline_lines"].is_null());
+
+        assert_ok(
+            &repo
+                .command()
+                .env("GIT_INDEX_FILE", &index)
+                .args(["commit", "-m", "alternate snapshot"])
+                .output()
+                .unwrap(),
+        );
+        let committed = report(check(&repo, &["--base", &base, "--head", "HEAD"], None), 1);
+        assert_eq!(committed["scope"], "direct");
+        assert_eq!(committed["selected"]["tree"], staged["selected"]["tree"]);
+        assert_eq!(committed["findings"], staged["findings"]);
+        assert_eq!(
+            report(
+                check(&repo, &["--merge-base", &base, "--head", "HEAD"], None),
+                1
+            )["baseline"],
+            staged["baseline"],
+        );
+    }
+
+    #[test]
+    fn initial_policy_addition_and_selected_deletion_are_authoritative() {
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(2));
+        repo.write("new", "a\nb\nc\n");
+        repo.git(&["add", "-A"]);
+        let initial = report(check(&repo, &["--staged"], None), 1);
+        assert!(initial["baseline"]["commit"].is_null());
+        assert_eq!(initial["findings"][0]["path"], "new");
+        repo.commit("initial");
+        repo.git(&["rm", "--cached", ".assura/config.yml"]);
+        let missing = check(&repo, &["--staged"], None);
+        assert_eq!(missing.status.code(), Some(4));
+        assert!(String::from_utf8_lossy(&missing.stderr).contains("absent from selected tree"));
+        assert_eq!(
+            check(&repo, &["--base", "HEAD"], None).status.code(),
+            Some(2)
+        );
+        assert_eq!(
+            check(&repo, &["--base", "HEAD", "--head", "missing"], None)
+                .status
+                .code(),
+            Some(3)
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn advisory_finding_preserves_the_literal_git_path() {
+        let repo = Repo::init("sha1");
+        repo.write(
+            ".assura/config.yml",
+            "structure:\n  ./:\n    files:\n      max_lines: 2\n      severity: low\nexclude:\n  - .assura/**\n",
+        );
+        let path = ":path\\part\tline\n[*]";
+        repo.write(path, "a\nb\nc\n");
+        repo.git(&["add", "-A"]);
+        let staged = report(check(&repo, &["--staged"], None), 0);
+        assert_eq!(staged["success"], true);
+        assert_eq!(staged["findings"][0]["path"], path);
+        assert_eq!(staged["findings"][0]["blocking"], false);
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn older_git_fallback_only_accepts_a_missing_head_ref() {
+        use std::os::unix::fs::PermissionsExt;
+
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(2));
+        repo.git(&["add", "-A"]);
+
+        // Model the older Git option parser while using real Git for ref lookups.
+        let tools = tempfile::tempdir().unwrap();
+        let shim = tools.path().join("git");
+        fs::write(
+            &shim,
+            "#!/bin/sh\nif [ \"$2\" = show-ref ] && [ \"$3\" = --exists ]; then exit 129; fi\nPATH=$ASSURA_TEST_GIT_PATH exec git \"$@\"\n",
+        ).unwrap();
+        fs::set_permissions(&shim, fs::Permissions::from_mode(0o700)).unwrap();
+        let check = || {
+            Command::new(env!("CARGO_BIN_EXE_assura"))
+                .current_dir(&repo.0)
+                .env_remove("GIT_INDEX_FILE")
+                .env("PATH", tools.path())
+                .env("ASSURA_TEST_GIT_PATH", std::env::var_os("PATH").unwrap())
+                .args(["check-change", "--staged", "--format", "json"])
+                .output()
+                .unwrap()
+        };
+        assert!(report(check(), 0)["baseline"]["commit"].is_null());
+        repo.write(".git/refs/heads/main", "invalid ref\n");
+        assert_eq!(check().status.code(), Some(3));
+    }
+
+    #[test]
+    fn isolated_rename_can_inherit_debt_and_growth_still_fails() {
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(2));
+        repo.write("old name", "line 1\nline 2\nline 3\nline 4\nline 5\n");
+        repo.commit("base");
+        repo.git(&["mv", "old name", "new name"]);
+        let renamed = report(check(&repo, &["--staged"], None), 0);
+        assert_eq!(renamed["files_checked"], 1);
+        assert_eq!(renamed["findings"], serde_json::json!([]));
+
+        repo.write(
+            "new name",
+            "line 1\nline 2\nline 3\nline 4\nline 5\nline 6\n",
+        );
+        repo.git(&["add", "--", "new name"]);
+        let grown = report(check(&repo, &["--staged"], None), 1);
+        assert_eq!(grown["findings"][0]["allowed_lines"], 5);
+        assert_eq!(grown["findings"][0]["actual"], 6);
+
+        repo.write(
+            ".assura/config.yml",
+            "structure:\n  ./:\n    files:\n      max_lines: 2\n      max_lines_patterns:\n        'new name': 3\nexclude:\n  - .assura/**\n",
+        );
+        repo.git(&["add", "--", ".assura/config.yml"]);
+        let moved = report(check(&repo, &["--staged"], None), 1);
+        assert_eq!(moved["findings"][0]["allowed_lines"], 3);
+        assert!(moved["findings"][0]["baseline_lines"].is_null());
+    }
+}

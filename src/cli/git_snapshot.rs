@@ -114,6 +114,24 @@ impl Snapshot {
     /// Read any regular file from the chosen tree, including unchanged policy.
     /// A path absent from that tree yields None. Other Git entry types are errors.
     pub(crate) fn read_file(&self, side: Side, path: &Path) -> Result<Option<Vec<u8>>, String> {
+        self.read_tree_file(side, path, true)
+    }
+
+    /// Non-regular changed entries carry no file line budget.
+    pub(crate) fn read_regular_file(
+        &self,
+        side: Side,
+        path: &Path,
+    ) -> Result<Option<Vec<u8>>, String> {
+        self.read_tree_file(side, path, false)
+    }
+
+    fn read_tree_file(
+        &self,
+        side: Side,
+        path: &Path,
+        require_regular: bool,
+    ) -> Result<Option<Vec<u8>>, String> {
         if path.as_os_str().is_empty()
             || !path
                 .components()
@@ -152,8 +170,14 @@ impl Snapshot {
         let metadata = &entry[..tab];
         let blob = [b"100644 blob ".as_slice(), b"100755 blob ".as_slice()]
             .into_iter()
-            .find_map(|prefix| metadata.strip_prefix(prefix))
-            .ok_or_else(|| format!("unsupported Git entry at {path:?} in {}", tree.oid))?;
+            .find_map(|prefix| metadata.strip_prefix(prefix));
+        let Some(blob) = blob else {
+            return if require_regular {
+                Err(format!("unsupported Git entry at {path:?} in {}", tree.oid))
+            } else {
+                Ok(None)
+            };
+        };
         Ok(Some(git(&self.git_cwd, ["cat-file", "blob", &oid(blob)?])?))
     }
 }
@@ -175,7 +199,9 @@ fn head_or_empty(cwd: &Path) -> Result<Tree, String> {
                 reference.as_os_str(),
             ],
         )?;
-        if exists.status.code() == Some(2) {
+        if exists.status.code() == Some(2)
+            || (exists.status.code() == Some(129) && legacy_ref_missing(cwd, &reference)?)
+        {
             return Ok(Tree {
                 oid: oid(&git(cwd, ["mktree"])?)?,
                 commit: None,
@@ -185,6 +211,50 @@ fn head_or_empty(cwd: &Path) -> Result<Tree, String> {
     }
     let head = oid(&checked("rev-parse HEAD", head)?)?;
     commit_tree(cwd, revision(cwd, &head, "commit")?)
+}
+
+// Older Git lacks show-ref --exists. Its --verify error is also
+// used for malformed loose refs, so check the ref path before treating it as absent.
+fn legacy_ref_missing(cwd: &Path, reference: &Path) -> Result<bool, String> {
+    let exists = run_git(
+        cwd,
+        [
+            OsStr::new("show-ref"),
+            OsStr::new("--verify"),
+            reference.as_os_str(),
+        ],
+    )?;
+    if exists.status.success() {
+        return Ok(false);
+    }
+    let expected = [
+        b"fatal: '".as_slice(),
+        reference.as_os_str().as_encoded_bytes(),
+        b"' - not a valid ref\n",
+    ]
+    .concat();
+    if exists.status.code() != Some(128) || exists.stderr != expected {
+        return checked("show-ref --verify", exists).map(|_| false);
+    }
+    let path = git(
+        cwd,
+        [
+            OsStr::new("rev-parse"),
+            OsStr::new("--git-path"),
+            reference.as_os_str(),
+        ],
+    )?;
+    let path = git_path(
+        path.strip_suffix(b"\n")
+            .ok_or("missing Git ref path terminator")?,
+    )?;
+    match std::fs::symlink_metadata(cwd.join(path)) {
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
+        Err(error) => Err(format!("inspect Git ref {reference:?}: {error}")),
+        Ok(_) => Err(format!(
+            "cannot resolve existing Git HEAD ref {reference:?}"
+        )),
+    }
 }
 
 fn resolve_tree(cwd: &Path, name: &str) -> Result<Tree, String> {
@@ -315,6 +385,7 @@ fn run_git(
     Command::new("git")
         .arg("--no-replace-objects")
         .current_dir(cwd)
+        .env("LC_ALL", "C")
         .env("GIT_OPTIONAL_LOCKS", "0")
         .env("GIT_NO_LAZY_FETCH", "1")
         .args(args)
