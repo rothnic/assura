@@ -7,6 +7,45 @@ growing inherited policy debt, and get the information needed to repair a
 failure. A user who repeats this across repositories can eventually apply the
 same budgets while each project keeps ownership of its layout.
 
+## Delivery goal and definition of done
+
+Ship v0.4.2 as a reliable upgrade for existing users, then ship v0.5.0
+Workspace Flexibility so a developer can configure Assura once and check,
+repair and commit their changes across repositories and linked worktrees.
+The goal is complete when both versions are live and verified:
+
+- **v0.4.2 upgrade.** Audit the full candidate against v0.4.1, including
+  configuration, CLI, output and behavior. Replay the affected install,
+  onboarding and targeted-check journeys using the same packaged candidate.
+- **v0.5.0 workflow.** Pass the integrated acceptance below with one packaged
+  candidate. Verify a growing oversized file blocks the real commit, the
+  repair commands work from the reported directory, and clean CI reproduces
+  the verdict for the same bytes, policy and baseline.
+- **Merged source.** Each PR has independent review, resolved findings, and
+  required local and hosted checks tied to the final candidate on the current
+  base. Verify the merge and repeat affected acceptance on the merged source.
+- **Live release.** For each version, pass release readiness and smoke, verify
+  the merged SHA's previews, then publish an authorized annotated tag through
+  the release workflow. Verify its receipt and all five checksummed archives
+  across Linux GNU and musl, Windows, and Intel and Arm macOS. Check versions
+  for both bundled binaries, exercise the published installer for the explicit
+  version and latest, and smoke the advertised workflow from downloaded assets.
+  Confirm live documentation and install links show the shipped capabilities.
+- **Handoff.** Record PRs, merged SHAs, tags, workflow and artifact receipts,
+  and actual install and workflow results on the existing delivery cards.
+  Close owned worktree and branch records after verifying reachability.
+
+The coordinator owns dependency order, integration and publication. Give
+each implementation worker one worktree, explicit file ownership and a
+bounded test brief. Run the patch compatibility audit alongside independent
+guidance work once the delivery gate admits it. Sequence snapshot enforcement
+before its use in policy resolution and final hook and guidance integration.
+Use the least costly capable worker for scoped edits, fixtures and audits,
+and escalate for Git snapshot or policy-authority decisions when needed.
+Use a fresh GPT-6 Luna reviewer for independent review and scoped rereview.
+Keep long Rust builds off the Mac by using hosted CI or a verified vps-dev
+workspace with disk-backed scratch and available resources.
+
 ## Baseline
 
 - The 2026-11-22 fast-forward-only pull found `origin/master` at `9ae7d816`
