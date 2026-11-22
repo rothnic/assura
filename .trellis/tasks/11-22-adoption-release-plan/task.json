@@ -23,6 +23,7 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {
+    "execution_branches": ["goal/adoption-snapshot-check"],
     "delivery": {
       "schema_version": 1,
       "kind": "integration",
