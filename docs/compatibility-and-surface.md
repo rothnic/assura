@@ -125,8 +125,9 @@ installing the current hook.
 
 In CI, check the committed tree directly with
 `assura check-change --base "$before_commit" --head "$candidate_commit"`.
-Use the exact pre-commit HEAD as the base and pin any external policy files
-explicitly via the snapshot command's policy selectors.
+Use the exact pre-commit HEAD as the base. Select any external policy files and
+pass `--require-policy-digest LAYER=SHA256` for each required layer. The digest
+check rejects a missing or changed policy before evaluating the commit.
 
 ## Editor Adapter Compatibility
 
