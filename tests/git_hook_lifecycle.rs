@@ -202,6 +202,9 @@ fn assert_staged_pre_commit(owner_only: bool) {
             .chain(std::env::split_paths(&std::env::var_os("PATH").unwrap())),
     )
     .unwrap();
+    // Keep the config root separate from the executable named `assura`.
+    let config_home = external.path().join("config");
+    fs::create_dir(&config_home).unwrap();
     let global_config = external.path().join("gitconfig");
     fs::write(&global_config, "[assura]\n\tstagedPreCommit = true\n").unwrap();
     let commit = |restore_checkout: &str, paths: &[&str]| {
@@ -212,7 +215,8 @@ fn assert_staged_pre_commit(owner_only: bool) {
             .env("PATH", &path)
             .env("TEST_ASSURA_BIN", assura_bin())
             .env("RESTORE_CHECKOUT", restore_checkout)
-            .env("XDG_CONFIG_HOME", external.path())
+            .env("HOME", external.path())
+            .env("XDG_CONFIG_HOME", &config_home)
             .env("GIT_CONFIG_GLOBAL", &global_config)
             .env("GIT_CONFIG_NOSYSTEM", "1")
             .output()
@@ -283,7 +287,8 @@ fn assert_staged_pre_commit(owner_only: bool) {
         .env("PATH", &path)
         .env("TEST_ASSURA_BIN", assura_bin())
         .env("RESTORE_CHECKOUT", "0")
-        .env("XDG_CONFIG_HOME", external.path())
+        .env("HOME", external.path())
+        .env("XDG_CONFIG_HOME", &config_home)
         .env("GIT_CONFIG_GLOBAL", &global_config)
         .env("GIT_CONFIG_NOSYSTEM", "1")
         .output()
