@@ -613,6 +613,7 @@ mod cli {
 
         let repo = Repo::init("sha1");
         repo.write(".assura/config.yml", policy(4));
+        repo.commit("project policy");
         repo.write("change.rs", "one\ntwo\n");
         repo.git(&["add", "-A"]);
 

@@ -277,6 +277,24 @@ fn assert_staged_pre_commit(owner_only: bool) {
         b"unrelated.txt\n"
     );
 
+    let default_index = Command::new(root.join(".fixture-hooks/pre-commit"))
+        .current_dir(root)
+        .env_remove("GIT_INDEX_FILE")
+        .env("PATH", &path)
+        .env("TEST_ASSURA_BIN", assura_bin())
+        .env("RESTORE_CHECKOUT", "0")
+        .env("XDG_CONFIG_HOME", external.path())
+        .env("GIT_CONFIG_GLOBAL", &global_config)
+        .env("GIT_CONFIG_NOSYSTEM", "1")
+        .output()
+        .unwrap();
+    let diagnostic = command_output_text(&default_index);
+    assert_eq!(default_index.status.code(), Some(1), "{diagnostic}");
+    assert!(
+        diagnostic.contains("\"unrelated.txt\": 3 lines"),
+        "{diagnostic}"
+    );
+
     if !owner_only {
         let policy_path = root.join(".assura/config.yml");
         let strict_policy = fs::read_to_string(&policy_path).unwrap();

@@ -7,11 +7,7 @@ set -e
 
 if STAGED=$(git config --local --no-includes --type=bool --get assura.stagedPreCommit); then
     if [ "$STAGED" = "true" ]; then
-        # Git supplies the proposed index, including for path-limited commits.
-        if [ -z "${GIT_INDEX_FILE:-}" ]; then
-            echo "Error: Assura staged pre-commit requires Git's active GIT_INDEX_FILE." >&2
-            exit 1
-        fi
+        # Preserve Git's active index override when present. Git defaults to its own index.
         exec assura check-change --staged
     fi
 else
