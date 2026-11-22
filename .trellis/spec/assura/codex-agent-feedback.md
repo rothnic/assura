@@ -38,6 +38,13 @@ Primary check feedback options:
   explicitly updated first.
 - `assura check --format advice|status|agent` must share the same filtering and
   advisory options where practical.
+- A `max_lines` finding includes the actual count, effective limit, and lines
+  to cut or move. Guidance recommends splitting the file or escalating a
+  legitimate exception to the policy owner.
+- Agent output exposes `line_budget`. Raw JSON and YAML expose the same
+  fields in the violation's `metadata`. When Assura can reproduce the policy
+  context for a POSIX file target, `actions` lists explain then recheck,
+  each with a working directory and shell command. Status stays summary-only.
 - `--format agent` is the stable structured feedback format. `--agent codex`
   only wraps that feedback in Codex `UserPromptSubmit` hook JSON for delivery.
 - Codex `PostToolUse` delivery is an optional local adapter over
