@@ -3,7 +3,7 @@
   "name": "adoption-release-plan",
   "title": "Plan Assura releases around repository adoption",
   "description": "Reconcile the live Assura backlog and sequence adoption outcomes against the current release and architecture.",
-  "status": "planning",
+  "status": "in_progress",
   "dev_type": null,
   "scope": null,
   "package": null,
