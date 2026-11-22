@@ -38,8 +38,8 @@ candidate validation and publication.
 | Target | Priority | Outcome and work | Exit evidence |
 | --- | --- | --- | --- |
 | v0.4.2 | P1 | Package the landed adoption and reliability fixes. Give size violations an executable repair path through existing commands (`ae-whr.7`). Reuse R06 (`ae-we5`) for release proof. | Packaged clean install and upgrade, nested invocation, a size failure with runnable inspect and recheck instructions, a successful repair, and one real hook event. Preserve advisory behavior and existing schemas. |
-| v0.5.0 | P1 | Let one repository gate a change set against its existing file budgets (`ae-whr.8`). Show current size, cap, base size and additions, with exact scoped follow-up commands. | Replay the original workflow or a faithful fixture. New and previously compliant files fit. Oversized legacy files can stay flat or shrink. An untouched violation stays outside the file-budget comparison. |
-| v0.6.0 | P1/P2 | Apply opt-in owner-managed budgets across repositories (`ae-whr.9`, P1). Add narrowly configured added-line and addition-budget rules where the replay finds gaps (`ae-whr.10`, P2). | One policy works across two distinct layouts, including a repository without a project config. The same selected policy reproduces in CI. Explain shows the active sources and caches react to both layers changing. Added-line rules have separate negative controls. |
+| v0.5.0 | P1 | Let one repository gate a change set against its existing file budgets (`ae-whr.8`). Show current size, cap, base size and additions, with exact scoped follow-up commands. | Replay the reported workflow. New and previously compliant files fit. Oversized legacy files can stay flat or shrink. The commit check uses the staged snapshot and ignores untouched debt. |
+| v0.6.0 | P1/P2 | Resolve persistent user, group and per-repository policy assignments, including a private project config (`ae-whr.9`, P1). Add narrowly configured added-line and addition-budget rules where the replay finds gaps (`ae-whr.10`, P2). | The same short command works in two repositories and an out-of-tree linked worktree. Prove precedence, private config selection, cache invalidation and explicit CI reproduction. Added-line rules have separate negative controls. |
 | v0.7.0 | P2, conditional | Reduce repeated setup through user-installed runtime-resolving hooks (`ae-whr.11)) if the portable-policy replay still shows setup friction. Start with one native agent and one Git runner. | Real edit and Git events select the right inputs, leave unrelated projects quiet, preserve other hooks and survive update and removal. Extend coverage host by host after native proof. |
 
 ## Architecture decisions for the slices
@@ -73,9 +73,8 @@ candidate validation and publication.
   explain. A discovered malformed config is a diagnostic. Key cached
   results on all effective inputs and test replacement and removal while
   warm. Use built-in action IDs for commands and allow owner-authored
-  explanatory text with bounded output. Evaluate default home discovery
-  only once explicit selection proves the authority contract. On a shared
-  OS account this is a policy authority convention; enforcement against
+  explanatory text with bounded output. On a shared OS account this is a
+  policy authority convention. Enforcement against
   changes to user-owned inputs belongs in independently configured CI.
 - **Keep hooks thin.** Reuse the existing install, verify, update and remove
   lifecycle and one policy engine. Resolve context at event time. With no
@@ -89,6 +88,52 @@ candidate validation and publication.
   guidance and existing relationship facts still leave users guessing.
   Start with one demonstrated language and show actual relationship
   evidence where available. A filename match cannot establish test coverage.
+
+## Policy discovery and Git adoption
+
+The proposed v0.6.0 workflow is to configure policy once and then run ordinary
+Assura commands. Keep one effective-policy resolver for the CLI, explain and
+prepared checks so a later hook can use the same behavior.
+
+| Input | Proposed behavior |
+| --- | --- |
+| User policy | An optional user-owned file in the platform config directory can supply baseline budgets and behavior. Explicit selection has higher priority than the default location. A missing optional file is normal. An explicit invalid file is an error. |
+| Repository group | A user-owned Git conditional include can assign a shared Assura policy file to a directory of repositories once. Use `includeIf "gitdir:…/"` to anchor membership to repository metadata so linked checkouts can live elsewhere. This supports a policy file in the parent directory when explicitly selected. |
+| Private repository settings | Shared repository-local Git config can remember a per-repository policy assignment and optionally select an external project config. It travels to linked worktrees without adding tracked files. Show a deliberate project-layer replacement in explain when both files exist. An owner-selected baseline still applies. |
+| Project discovery | Keep the nearest `.assura/config.yml` within the target checkout unless the user explicitly selected another project file. A configured subdirectory can scope its own layout. Stop ordinary discovery at the Git boundary. With owner policy only, use the Git top level, or the invocation directory outside Git. |
+
+Pin automatic group membership to the repository context, using Git's common
+directory for identity and its reported checkout root for file resolution.
+Read the selected snapshot of in-tree project policy for staged or
+commit-tree checks. An unstaged config edit must not silently change a
+commit verdict. Local owner input is separate from tracked project input.
+Resolve selector paths independently of the invocation directory and cache
+resolved policy with selector and file identities and contents. Keep mutable
+results scoped to the worktree and comparison snapshot. Resolve Git scope once
+per check context, with no sibling-repository enumeration or remote requests.
+Prove that moving a
+linked checkout preserves its assignment and a second clone or unrelated repo
+cannot inherit a private assignment accidentally. Existing Git per-worktree
+settings can provide a deliberate exception where enabled.
+[Git worktree configuration](https://git-scm.com/docs/git-worktree#_configuration_file)
+and [conditional includes](https://git-scm.com/docs/git-config#_conditional_includes)
+describe these mechanisms.
+
+| Workflow | What Assura should check |
+| --- | --- |
+| Greenfield or repository-wide audit | Full project policy. A new repository can enforce layout from day one. |
+| Established repository, local edit | Working-tree changes and relevant non-ignored new files for quick feedback. Show existing debt separately as advisory context when requested. |
+| Established repository, commit | Compare the Git index against `HEAD` or an empty tree for the first commit. Inspect staged content, including partial staging. New or previously compliant files must fit. Existing oversized files may stay flat or shrink. Whole-project layout failures belong to the full check. |
+| Branch review and push | Compare committed snapshots. In CI use the intended target's merge base or a pinned comparison range. For pre-push use the refs Git supplies and a defined baseline for a new remote ref. Report missing history and an explicit way to choose the base. |
+
+Git supplies snapshots rather than authorship boundaries. Stage only the work
+for this commit or use a dedicated linked worktree to isolate mixed changes.
+Keep the repository identity shared while each worktree has its own index,
+working tree and comparison state. Validate staged and unstaged changes to the
+same file, independent linked indexes, an untouched legacy violation and an
+oversized file that grows by one line.
+[Git diff snapshots](https://git-scm.com/docs/git-diff)
+and [pre-push inputs](https://git-scm.com/docs/githooks#_pre_push) define the inputs.
 
 ## Outstanding work from the existing queue
 
@@ -118,3 +163,12 @@ through the known Dolt 2.5.0 server. Five entries and their dependency edges
 were read back with no cycles. A fresh native backup restore contained all
 five entries at local Dolt head `7dop11d98csoanr004eaa67jllagulp1`.
 The existing uncommitted local `issue_prefix` setting was preserved.
+
+An isolated Git 2.47.1 fixture confirmed that a `gitdir` group assignment
+applied in the repository and in a linked checkout outside the group. A
+repository-local selection overrode both and survived a worktree move.
+The moved checkout kept independent staged bytes, and an unrelated repository
+had no assignment. This verifies the Git mechanism. Assura policy resolution
+remains planned. Beads scope and acceptance were refreshed in `ae-whr.8` and
+`ae-whr.9`, read back and backed up at Dolt head
+`buts2o2pprpf0r087tjkve6jkb9jphin`.
