@@ -83,7 +83,7 @@ pub enum Commands {
 
     #[command(
         about = "Ratchet file max_lines against an explicit Git snapshot",
-        long_about = "Check changed files using the repository-root .assura/config.yml from the selected Git tree. Existing oversized files can stay flat or shrink. New files must fit the configured limit."
+        long_about = "Check changed files against project and owner line budgets. In-checkout project policy comes from the selected Git tree. Owner policy YAML has a max_lines limit and optional repository-relative exemptions (glob strings). Existing oversized files can stay flat or shrink. New files must fit the configured limit."
     )]
     #[command(group(clap::ArgGroup::new("comparison").required(true).args(["staged", "base", "merge_base"])))]
     CheckChange {
@@ -110,6 +110,13 @@ pub enum Commands {
 
         #[arg(long, requires = "comparison", help = "Selected commit or tree")]
         head: Option<String>,
+
+        #[arg(
+            long,
+            value_name = "PATH",
+            help = "Select an owner baseline policy file"
+        )]
+        owner_baseline: Option<PathBuf>,
 
         #[arg(short, long, value_enum, default_value = "text")]
         format: ChangeCheckFormat,

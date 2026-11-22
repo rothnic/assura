@@ -6,7 +6,8 @@ use std::{
     process::{Command, Output},
 };
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, serde::Serialize)]
+#[serde(rename_all = "snake_case")]
 pub(crate) enum SourceOrigin {
     UserDefault,
     Explicit,
@@ -68,10 +69,31 @@ pub(crate) enum SelectionError {
 }
 
 /// Choose the three policy inputs without loading their contents.
+#[allow(
+    dead_code,
+    reason = "Working-tree consumers are wired in a later slice"
+)]
 pub(crate) fn select_sources(
     target: &Path,
     explicit_baseline: Option<&Path>,
     explicit_project: Option<&Path>,
+) -> Result<PolicySources, SelectionError> {
+    select_policy_sources(target, explicit_baseline, explicit_project, false)
+}
+
+pub(crate) fn select_snapshot_sources(
+    target: &Path,
+    explicit_baseline: Option<&Path>,
+    explicit_project: Option<&Path>,
+) -> Result<PolicySources, SelectionError> {
+    select_policy_sources(target, explicit_baseline, explicit_project, true)
+}
+
+fn select_policy_sources(
+    target: &Path,
+    explicit_baseline: Option<&Path>,
+    explicit_project: Option<&Path>,
+    snapshot: bool,
 ) -> Result<PolicySources, SelectionError> {
     let home = env::home_dir();
     select(
@@ -80,6 +102,7 @@ pub(crate) fn select_sources(
         explicit_project,
         default_user_baseline(home.as_deref()).as_deref(),
         home.as_deref(),
+        snapshot,
         || Command::new("git"),
     )
 }
@@ -106,6 +129,7 @@ fn select(
     explicit_project: Option<&Path>,
     default_baseline: Option<&Path>,
     home: Option<&Path>,
+    snapshot: bool,
     git: impl Fn() -> Command,
 ) -> Result<PolicySources, SelectionError> {
     let metadata = fs::metadata(target).map_err(|err| io_error("inspect target", target, err))?;
@@ -151,7 +175,13 @@ fn select(
     };
 
     let scalar = |key| match checkout {
-        Some(_) => git_scalar(&start, &run, key, home),
+        Some(_) => git_scalar(
+            &start,
+            &run,
+            key,
+            home,
+            snapshot && key == "assura.projectConfig",
+        ),
         None => Ok(None),
     };
     let scoped_owner = scalar("assura.ownerPolicy")?;
@@ -159,6 +189,12 @@ fn select(
         .as_ref()
         .map_or_else(|| start.clone(), |git| git.root.clone());
     let project = match explicit_project {
+        Some(path) if snapshot => Some(selection(
+            "project config",
+            path,
+            SourceOrigin::Explicit,
+            home,
+        )?),
         Some(path) => Some(selected(
             "project config",
             path,
@@ -167,6 +203,7 @@ fn select(
         )?),
         None => match scalar("assura.projectConfig")? {
             Some(source) => Some(source),
+            None if snapshot => None,
             None => {
                 let mut discovered = None;
                 for dir in start.ancestors().take_while(|dir| {
@@ -240,6 +277,7 @@ fn git_scalar(
     run: &impl Fn(&[&str]) -> Result<Output, SelectionError>,
     key: &'static str,
     home: Option<&Path>,
+    defer_read: bool,
 ) -> Result<Option<Selection>, SelectionError> {
     let args = ["config", "--null", "--show-origin", "--get", key];
     let output = run(&args)?;
@@ -251,13 +289,16 @@ fn git_scalar(
         std::str::from_utf8(&output.stdout).map_err(|_| invalid_output(directory, key))?;
     let mut fields = decoded.split('\0');
     match (fields.next(), fields.next(), fields.next(), fields.next()) {
-        (Some(origin), Some(value), Some(""), None) if !origin.is_empty() => selected(
-            key,
-            Path::new(value),
-            SourceOrigin::Git(origin.to_owned()),
-            home,
-        )
-        .map(Some),
+        (Some(origin), Some(value), Some(""), None) if !origin.is_empty() => {
+            let resolve = if defer_read { selection } else { selected };
+            resolve(
+                key,
+                Path::new(value),
+                SourceOrigin::Git(origin.to_owned()),
+                home,
+            )
+            .map(Some)
+        }
         _ => Err(invalid_output(directory, key)),
     }
 }
@@ -311,6 +352,28 @@ fn selected(
     origin: SourceOrigin,
     home: Option<&Path>,
 ) -> Result<Selection, SelectionError> {
+    let selection = selection(layer, path, origin, home)?;
+    let Selection { path, origin } = &selection;
+    let metadata = fs::metadata(path)
+        .map_err(|err| io_error(format!("inspect {layer} from {origin:?}"), path, err))?;
+    if !metadata.is_file() {
+        return Err(SelectionError::InvalidPath {
+            layer,
+            origin: selection.origin,
+            path: selection.path,
+        });
+    }
+    fs::File::open(path)
+        .map_err(|err| io_error(format!("open {layer} from {origin:?}"), path, err))?;
+    Ok(selection)
+}
+
+fn selection(
+    layer: &'static str,
+    path: &Path,
+    origin: SourceOrigin,
+    home: Option<&Path>,
+) -> Result<Selection, SelectionError> {
     let resolved = if path.is_absolute() {
         Some(path.to_path_buf())
     } else {
@@ -325,17 +388,6 @@ fn selected(
             path: path.to_path_buf(),
         });
     };
-    let metadata = fs::metadata(&resolved)
-        .map_err(|err| io_error(format!("inspect {layer} from {origin:?}"), &resolved, err))?;
-    if !metadata.is_file() {
-        return Err(SelectionError::InvalidPath {
-            layer,
-            origin,
-            path: resolved,
-        });
-    }
-    fs::File::open(&resolved)
-        .map_err(|err| io_error(format!("open {layer} from {origin:?}"), &resolved, err))?;
     Ok(Selection {
         path: resolved,
         origin,

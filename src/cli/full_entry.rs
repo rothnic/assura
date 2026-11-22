@@ -95,15 +95,10 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             base,
             merge_base,
             head,
+            owner_baseline,
             format,
         } => {
             use super::git_snapshot::Scope;
-            if config_path.is_some() {
-                eprintln!(
-                    "Error: check-change reads .assura/config.yml from the selected Git tree"
-                );
-                return ExitCode::ConfigurationError;
-            }
             let scope = match (
                 staged,
                 base.as_deref(),
@@ -120,7 +115,12 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
                     return ExitCode::ConfigurationError;
                 }
             };
-            super::check::snapshot::command(scope, format)
+            super::check::snapshot::command(
+                scope,
+                format,
+                owner_baseline.as_deref(),
+                config_path.as_deref(),
+            )
         }
         Commands::Status { path, format } => status_command(path, config_path, format).await,
         Commands::Doctor { path, format } => super::doctor_command(path, config_path, format).await,

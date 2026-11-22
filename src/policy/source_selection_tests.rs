@@ -63,6 +63,7 @@ impl Fixture {
             project,
             Some(&home.join("default.yml")),
             Some(&home),
+            false,
             || self.command(),
         )
     }
