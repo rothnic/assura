@@ -41,7 +41,7 @@ impact assessment, and matching manifest, documentation, and test changes.
 | Surface | Level | Policy |
 | --- | --- | --- |
 | `assura check` structure validation | Supported | Bugs that produce incorrect pass/fail results are release blockers. |
-| `assura check-change` | Experimental Git snapshot check | Preview for v0.5.0. Ratchets project file line budgets against an explicit staged or committed comparison. |
+| `assura check-change` | Experimental Git snapshot check | Preview for v0.5.0. Ratchets project and independently enforced owner file line budgets against an explicit staged or committed comparison. |
 | `assura check --format json` and `--format yaml` | Supported | Schema changes must be called out in release notes before 1.0. |
 | `assura check --format advice` and `--format status` | Supported | Guided and compact output must stay deterministic enough for local hooks and agent tools. |
 | `assura check --format agent` | Supported | Agent JSON shape must remain deterministic and documented. |
