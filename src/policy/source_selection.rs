@@ -68,32 +68,11 @@ pub(crate) enum SelectionError {
     },
 }
 
-/// Choose the three policy inputs without loading their contents.
-#[allow(
-    dead_code,
-    reason = "Working-tree consumers are wired in a later slice"
-)]
-pub(crate) fn select_sources(
-    target: &Path,
-    explicit_baseline: Option<&Path>,
-    explicit_project: Option<&Path>,
-) -> Result<PolicySources, SelectionError> {
-    select_policy_sources(target, explicit_baseline, explicit_project, false)
-}
-
+/// Choose external policy inputs without inspecting in-checkout project policy.
 pub(crate) fn select_snapshot_sources(
     target: &Path,
     explicit_baseline: Option<&Path>,
     explicit_project: Option<&Path>,
-) -> Result<PolicySources, SelectionError> {
-    select_policy_sources(target, explicit_baseline, explicit_project, true)
-}
-
-fn select_policy_sources(
-    target: &Path,
-    explicit_baseline: Option<&Path>,
-    explicit_project: Option<&Path>,
-    snapshot: bool,
 ) -> Result<PolicySources, SelectionError> {
     let home = env::home_dir();
     select(
@@ -102,7 +81,7 @@ fn select_policy_sources(
         explicit_project,
         default_user_baseline(home.as_deref()).as_deref(),
         home.as_deref(),
-        snapshot,
+        true,
         || Command::new("git"),
     )
 }
