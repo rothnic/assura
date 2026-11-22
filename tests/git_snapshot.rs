@@ -697,11 +697,12 @@ mod cli {
         repo.write("ordinary index", "a\nb\nc\nd\n");
         repo.git(&["add", "--", config, "ordinary index"]);
 
-        let index = repo.0.join(".git/alternate-index");
+        // Keep the index relative to the fixture root so Git can lock it on Windows.
+        let index = Path::new(".git/alternate-index");
         assert_ok(
             &repo
                 .command()
-                .env("GIT_INDEX_FILE", &index)
+                .env("GIT_INDEX_FILE", index)
                 .args(["read-tree", "HEAD"])
                 .output()
                 .unwrap(),
@@ -716,7 +717,7 @@ mod cli {
         assert_ok(
             &repo
                 .command()
-                .env("GIT_INDEX_FILE", &index)
+                .env("GIT_INDEX_FILE", index)
                 .args([
                     "add",
                     "--",
@@ -739,7 +740,7 @@ mod cli {
         let ordinary = report(check(&repo, &["--staged"], None), 0);
         assert_eq!(ordinary["files_checked"], 1);
 
-        let staged = report(check(&repo, &["--staged"], Some(&index)), 1);
+        let staged = report(check(&repo, &["--staged"], Some(index)), 1);
         assert_eq!(staged["scope"], "staged");
         assert_eq!(staged["baseline"]["commit"], base);
         assert_eq!(staged["files_checked"], 5);
@@ -758,7 +759,7 @@ mod cli {
         assert_ok(
             &repo
                 .command()
-                .env("GIT_INDEX_FILE", &index)
+                .env("GIT_INDEX_FILE", index)
                 .args(["commit", "-m", "alternate snapshot"])
                 .output()
                 .unwrap(),
