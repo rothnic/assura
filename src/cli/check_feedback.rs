@@ -2,6 +2,8 @@
 
 use super::StructureCheckReport;
 use serde::Serialize;
+use serde_json::Value;
+use std::fmt::Write as _;
 use std::path::Path;
 
 /// Guided check output format.
@@ -47,6 +49,8 @@ struct FeedbackMessage {
     blocking: bool,
     problem: String,
     corrective_context: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    line_budget: Option<Value>,
     guidance: Vec<&'static str>,
     references: Vec<&'static str>,
 }
@@ -168,6 +172,11 @@ pub fn create_check_feedback(
             blocking: violation.blocking,
             problem: violation.message.clone(),
             corrective_context: violation.corrective_context.clone(),
+            line_budget: violation
+                .metadata
+                .as_ref()
+                .filter(|_| violation.rule == "max_lines")
+                .cloned(),
             guidance: guidance_for_rule(&violation.rule),
             references: DEFAULT_REFERENCES.to_vec(),
         })
@@ -326,7 +335,6 @@ fn render_text(feedback: &CheckFeedback) -> String {
     }
 
     output.push('\n');
-    use std::fmt::Write as _;
     for message in &feedback.messages {
         let _ = writeln!(
             output,
@@ -336,6 +344,7 @@ fn render_text(feedback: &CheckFeedback) -> String {
         let _ = writeln!(output, "  Blocking: {}", message.blocking);
         output.push_str(&format!("  Problem: {}\n", message.problem));
         let _ = writeln!(output, "  Fix: {}", message.corrective_context);
+        write_line_budget_actions(&mut output, message.line_budget.as_ref());
         for guidance in &message.guidance {
             output.push_str(&format!("  Next: {guidance}\n"));
         }
@@ -345,6 +354,65 @@ fn render_text(feedback: &CheckFeedback) -> String {
         ));
     }
     output
+}
+
+pub(super) enum TextFindingOrder {
+    FixFirst,
+    BlockingFirst,
+}
+
+pub(super) fn format_text_report(report: &StructureCheckReport, order: TextFindingOrder) -> String {
+    let mut output = format!(
+        "Assura structure check\n======================\n\
+         Project root: {}\nConfig: {}\nChecked path: {}\n\
+         Files checked: {}\nDirectories checked: {}\nViolations: {}\n",
+        report.project_root.display(),
+        report.config_path.display(),
+        report.checked_path.display(),
+        report.files_checked,
+        report.dirs_checked,
+        report.violation_count(),
+    );
+
+    if report.violations.is_empty() {
+        output.push_str("\nAll configured structure checks passed.\n");
+        return output;
+    }
+
+    output.push_str("\nViolations\n----------\n");
+    for violation in &report.violations {
+        let _ = writeln!(
+            output,
+            "{} [{}:{}] {}",
+            violation.path.display(),
+            violation.severity,
+            violation.rule,
+            violation.message,
+        );
+        let fix = format!("  Fix: {}", violation.corrective_context);
+        let blocking = format!("  Blocking: {}", violation.blocking);
+        let lines = match order {
+            TextFindingOrder::FixFirst => [fix, blocking],
+            TextFindingOrder::BlockingFirst => [blocking, fix],
+        };
+        let [first, second] = lines;
+        let _ = write!(output, "{first}\n{second}\n");
+        if violation.rule == "max_lines" {
+            write_line_budget_actions(&mut output, violation.metadata.as_ref());
+        }
+    }
+    output
+}
+
+pub(super) fn write_line_budget_actions(output: &mut String, budget: Option<&Value>) {
+    let Some(actions) = budget.and_then(|value| value["actions"].as_array()) else {
+        return;
+    };
+    for action in actions {
+        if let (Some(cwd), Some(command)) = (action["cwd"].as_str(), action["command"].as_str()) {
+            let _ = writeln!(output, "  From {cwd:?}: {command}");
+        }
+    }
 }
 
 fn summarize_check_feedback(
@@ -387,6 +455,7 @@ fn guidance_for_rule(rule: &str) -> Vec<&'static str> {
     }
 
     match rule {
+        "max_lines" => vec![],
         "file_naming" => vec![
             "Rename the file to match the configured file naming convention for its directory.",
             "Check `.assura/config.yml` for the effective file naming rule before editing nearby files.",
