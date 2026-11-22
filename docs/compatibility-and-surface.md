@@ -26,6 +26,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | Command | Status | Evidence |
 | --- | --- | --- |
 | `assura check` | Supported | Rust test suite, Assura self-check, installable adoption smoke. |
+| `assura check-change` | Experimental Git snapshot check | Preview for v0.5.0. Reads project policy and checked bytes from the selected Git tree. |
 | `assura check --format json` | Supported | Installable adoption smoke and CLI report tests. |
 | `assura check --format yaml` | Supported | CLI report formatter tests. |
 | `assura check --format advice` | Supported | Agent feedback rendering tests and real-project feedback fixtures. |

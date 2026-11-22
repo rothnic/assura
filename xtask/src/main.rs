@@ -4209,6 +4209,11 @@ const CLI_COMMAND_VARIANT_ROWS: &[CliCommandVariantRow] = &[
     },
     CliCommandVariantRow {
         enum_name: "Commands",
+        variant_name: "CheckChange",
+        command_surface_names: &["assura check-change"],
+    },
+    CliCommandVariantRow {
+        enum_name: "Commands",
         variant_name: "Status",
         command_surface_names: &["assura status"],
     },
@@ -4580,6 +4585,18 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
         compatibility_markers: &["| `assura check` | Supported |"],
         source_markers: &["Commands::Check"],
         test_markers: &["tests/cli_check_tests.rs", "run_check", "--format"],
+        exception_markers: &[],
+    },
+    SupportMatrixRow {
+        surface: "assura check-change",
+        command_surface_names: &["assura check-change"],
+        support_policy_markers: &["`assura check-change` | Experimental Git snapshot check"],
+        compatibility_markers: &["| `assura check-change` | Experimental Git snapshot check |"],
+        source_markers: &["Commands::CheckChange"],
+        test_markers: &[
+            "tests/git_snapshot.rs",
+            "active_index_rules_and_bytes_drive_the_same_verdict_after_commit",
+        ],
         exception_markers: &[],
     },
     SupportMatrixRow {

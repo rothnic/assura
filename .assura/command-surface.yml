@@ -46,6 +46,22 @@ commands:
       --ls-lint-target-semantics: {}
       --watch: {}
       --cache: {}
+  - name: "assura check-change"
+    allow_positionals: false
+    flags:
+      --staged: {}
+      --base:
+        takes_value: true
+      --merge-base:
+        takes_value: true
+      --head:
+        takes_value: true
+      --format:
+        aliases: ["-f"]
+        takes_value: true
+        values: ["text", "json"]
+      --help:
+        aliases: ["-h"]
   - name: "assura status"
     allow_positionals: true
     flags:

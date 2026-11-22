@@ -564,6 +564,8 @@ extensions:
           status: supported
         - surface: "command:assura check --cache"
           status: supported
+        - surface: "command:assura check-change"
+          status: experimental
         - surface: "command:assura status"
           status: supported
         - surface: "command:assura status --format json"
