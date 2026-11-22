@@ -21,10 +21,13 @@ GitHub artifacts.
 ## Planned Adoption Releases
 
 The [adoption release plan](../.trellis/tasks/11-22-adoption-release-plan/prd.md)
-targets v0.4.2 for compatible adoption and reliability fixes, v0.5.0 for
-change-scoped file budgets, and v0.6.0 for reusable owner policy. Additional
-diff rules and user-installed hooks get a version after adoption evidence
-justifies them. Each target advances through the release procedure below.
+targets v0.4.2 for compatible reliability and adoption fixes to the current
+release. The next minor, provisionally v0.5.0, delivers one workspace
+workflow with change-scoped enforcement, reusable policy across repositories
+and worktrees, and actionable repair guidance. Use CI previews to validate
+its pieces and v0.5.x patches for compatible follow-up improvements.
+Additional diff rules and user-installed hooks get a version after adoption
+evidence justifies them. Each target advances through the release procedure below.
 
 The [F05 stability decision](../.trellis/tasks/09-04-maturity-portfolio-strategy/research/adoption-packet.md#f05)
 governs 1.0 separately. Pre-1.0 versions can continue through v0.10.0 and

@@ -40,19 +40,50 @@ and publication.
 
 | Target | Priority | Outcome and work | Exit evidence |
 | --- | --- | --- | --- |
-| v0.4.2 | P1 | Prepare the landed adoption and reliability fixes for R06 release proof (`ae-we5`). Target actionable size guidance through existing commands (`ae-whr.7`), with an independent packaging path for the fixes if the guidance needs more work. | Verify clean install and upgrade from the same candidate on supported platforms. For the guidance, observe install or upgrade, nested invocation, a size failure, repair and successful recheck on an established repo, including one real supported hook event. |
-| v0.5.0 | P1 | Gate a change set against existing file budgets (`ae-whr.8`). Start with explicit working, staged and committed comparisons and one verified existing pre-commit route. Show current size, cap, base size and additions with exact scoped follow-up commands. | Replay the established-repo workflow. New and previously compliant files fit. Oversized legacy files can stay flat or shrink. Real Git events prove the selected index, including a path-limited commit. |
-| v0.6.0 | P1 | Resolve persistent user, group and per-repository policy assignments, including a private project config (`ae-whr.9`). | A user can set up, inspect and remove private policy with no recurring flags. Prove two repositories, an out-of-tree linked worktree, isolation of owner rules, warm replacement and explicit CI reproduction. |
+| v0.4.2 | P1 | Package compatible fixes to the existing install, onboarding and validation experience using R06 (`ae-we5`). Eligible changes include installer shadow detection, policy-preserving setup, missing-config diagnostics, and targeted-check fixes that pass the candidate compatibility audit. | Verify clean install and upgrade from the same candidate on supported platforms. Replay the affected existing behaviors and document the public-surface delta from v0.4.1. |
+| v0.5.0 | P1 | Deliver workspace flexibility as one increment. Select policy once across repos and worktrees (`ae-whr.9`), gate the intended working, staged or committed change without making inherited violations block that change (`ae-whr.8`), and explain and recheck the repair in that same scope (`ae-whr.7`). | The same packaged candidate proves the combined workflow from setup through repair and CI. Test a tracked-policy repo and a private-policy repo, a linked checkout outside the group, and a real path-limited commit using the existing pre-commit route. |
+| v0.5.x | As evidenced | Ship compatible fixes and improvements to the released workspace workflow. Examples include clearer policy-origin diagnostics and faster repeated checks. | Pin the prior release and candidate. Prove the improvement and preserve config meaning, Git scope, verdicts and automation contracts for unaffected inputs. |
 | Unassigned | P2, conditional | Add narrowly configured added-line or addition-budget rules (`ae-whr.10`) if replay exposes a material gap in existing tools. | The real workflow shows which rule is needed and when it should run. Separate tests prove additions versus net growth, pre-existing debt and exemptions. |
 | Unassigned | P2, conditional | Reduce repeated setup through user-installed runtime-resolving hooks (`ae-whr.11`) if portable-policy replay still shows setup friction. Start with one native agent and one Git runner. Add pre-push enforcement only after its ref contract is proved. | Real edit and Git events select the right inputs, leave unrelated projects quiet, preserve other hooks and survive update and removal. Extend coverage host by host after native proof. |
 
 Audit the complete candidate against the last public release before calling it
-v0.4.2. Compatible improvements to supported surfaces fit the patch.
-New public contracts belong in a minor release and shift the later targets.
-Keep v0.5.0 separate if the packaged single-repository workflow is useful
-with an existing project policy and hook. If the replay shows it needs private
-policy selection to be usable, keep it in preview and decide the next number
-for the combined workflow when the scope is known.
+v0.4.2. Package eligible reliability fixes independently of the workspace
+increment. Reclassify the candidate if its actual public delta requires a
+minor version.
+
+Build and validate the workspace pieces in SHA-pinned CI previews. First
+prove change scopes with an existing project config, then exercise persistent
+policy selection, then replay the guidance and actual scoped recheck on the
+combined artifact. Guidance work on existing commands can proceed in parallel.
+Promote v0.5.0 when the integrated outcome passes. Use the last version
+component for compatible changes to the supported workflow. New public
+contracts go through minor-release selection.
+
+## v0.5.0 Workspace Flexibility
+
+A developer can bring the same Assura policy to existing repos, keep any
+project policy in place, and check and repair the change they intend to commit.
+They configure the workspace once and use the same short commands from a
+regular checkout or a linked worktree.
+
+The packaged release must demonstrate one connected workflow:
+
+1. Assign shared policy to two repositories. Keep one repository's checked-in
+   layout config, and select an external config for the other without adding
+   tracked files. Verify that an out-of-tree linked worktree resolves the same
+   owner policy and uses its own checkout and index.
+2. Make a legitimate change in an established repo with existing size debt.
+   Prove that the existing pre-commit route checks the intended staged bytes,
+   that an untouched violation stays outside the verdict, and that making a
+   touched oversized file grow triggers a finding.
+3. Follow the finding's inspect and recheck commands, fix the problem, and
+   pass the same scoped check. In a clean CI checkout, reproduce the verdict
+   for the same staged tree after committing, using the explicitly selected
+   policy and matching baseline.
+
+The existing per-repo hook route is enough for this workflow. One-time global
+hook installation, pre-push enforcement and extra diff rules remain
+conditional follow-ups with their own evidence.
 
 ## What Assura 1.0 Would Promise
 
@@ -89,13 +120,13 @@ to F05. Continue the 0.x train while the contract or proof is still moving.
 
 - **Guide the repair from the finding.** Start with effective limit, actual
   count, amount to cut, an exact path-scoped explain or recheck, and brief
-  owner escalation when a legitimate edit cannot fit. Reuse corrective
-  context in the patch. In the change-budget release, add structured actions
-  to finding-bearing formats and render the same policy result in hooks.
+  owner escalation when a legitimate edit cannot fit. Reuse existing
+  corrective context. Add structured actions for the change-budget workflow
+  and render the same policy result in hooks.
   Use the same comparison context for the rerun and for any optional review
-  link. Preserve the summary contract of status, existing schemas in the
-  patch, and hook output caps. Prove that emitted commands run from the
-  stated directory, including a path with spaces, using the packaged CLI.
+  link. Preserve the summary contract of status, document any structured
+  schema delta, and keep existing hook output caps. Use the packaged CLI to
+  prove that commands run from the stated directory for a path with spaces.
 - **Compare the content being checked.** An explicit base resolves to a
   commit and comparison point. Local repair needs working edits and new
   non-ignored paths. Commit checks need the index, and CI and push checks
@@ -134,7 +165,7 @@ to F05. Continue the 0.x train while the contract or proof is still moving.
 
 ## Policy discovery and Git adoption
 
-The proposed v0.6.0 workflow is to configure policy once and then run ordinary
+The proposed v0.5.0 workflow is to configure policy once and then run ordinary
 Assura commands. Keep one effective-policy resolver for the CLI, explain and
 prepared checks so a later hook can use the same behavior.
 
@@ -225,8 +256,8 @@ release conditions.
 | --- | --- |
 | The commit check sees ordinary staged or working files instead of the proposed commit. Rename inference or a silently chosen merge base changes the verdict. | v0.5.0 requires the active index, deterministic rename eligibility and explicit committed comparisons. |
 | An existing pre-push hook looks successful while it checks the checkout. | Keep native push enforcement conditional on a later, separately verified ref-aware adapter. |
-| A project exclusion hides an owner finding, a warm daemon keeps stale policy, or CI succeeds after using a different input. | v0.6.0 requires independent owner eligibility and verdicts, resolver freshness across supported consumers, and explicit pinned CI inputs. |
-| A fixture passes while adopters still get stuck, or optional guidance holds the reliability patch. | Observe the packaged repair workflow, keep the existing release-proof dependencies visible, and give the landed fixes their own packaging path. |
+| A project exclusion hides an owner finding, a warm daemon keeps stale policy, or CI succeeds after using a different input. | The workspace increment requires independent owner eligibility and verdicts, resolver freshness across supported consumers, and explicit pinned CI inputs. |
+| A fixture passes while adopters still get stuck, or workspace work holds the reliability patch. | Observe the packaged v0.5.0 repair workflow, keep the existing release-proof dependencies visible, and give the landed fixes their own packaging path. |
 | Global hooks disrupt existing runners or add repeated latency. | Require coexistence and A06 measurements before advancing the conditional rollout. Keep added-line rules and wider host coverage tied to observed demand. |
 
 The coordinator reproduced two Git cases in a disposable SHA-256 repository.
@@ -263,3 +294,7 @@ local store was backed up at Dolt head `7sdsn0svdt25h3d9j15c4cgle0rciaiv`.
 The version review left `ae-whr.10` and `ae-whr.11` unassigned and recorded
 the existing F05 decision in `ae-220`. A fresh restore verified all three
 updates at local Dolt head `6g89an9vv706s5ss6a3pk91pd5sh4gb7`.
+
+The workspace increment review grouped `ae-whr.7`, `ae-whr.8` and
+`ae-whr.9` under v0.5.0. The existing prerequisite edges and conditional
+follow-ups were verified at local Dolt head `lsfih1kv3fkblal7ot6qfm89q9kh7n2r`.
