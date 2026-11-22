@@ -5,7 +5,7 @@ use super::{
 };
 use crate::cli::check_feedback::{
     format_text_report, render_agent_feedback, render_check_feedback, render_codex_agent_feedback,
-    write_line_budget_actions, CheckFeedbackFormat, FeedbackOptions,
+    write_line_budget_actions, CheckFeedbackFormat, FeedbackOptions, TextFindingOrder,
 };
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
@@ -336,7 +336,7 @@ struct BatchReport<'a> {
 
 fn format_report(report: &StructureCheckReport, format: OutputFormat, options: &Options) -> String {
     match format {
-        OutputFormat::Text => format_text_report(report),
+        OutputFormat::Text => format_text_report(report, TextFindingOrder::FixFirst),
         OutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
         OutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
         OutputFormat::Advice => format_feedback(report, options, CheckFeedbackFormat::Advice),

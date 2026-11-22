@@ -4,7 +4,7 @@ use crate::cli::args::{AgentTarget, CheckOutputFormat};
 use crate::cli::check::StructureCheckReport;
 use crate::cli::check_feedback::{
     format_text_report, render_agent_feedback, render_check_feedback, render_codex_agent_feedback,
-    CheckFeedbackFormat, FeedbackOptions,
+    CheckFeedbackFormat, FeedbackOptions, TextFindingOrder,
 };
 use crate::cli::CheckCommandOptions;
 
@@ -15,7 +15,7 @@ pub fn format_structure_report(
     options: &CheckCommandOptions,
 ) -> String {
     match format {
-        CheckOutputFormat::Text => format_text_report(report),
+        CheckOutputFormat::Text => format_text_report(report, TextFindingOrder::BlockingFirst),
         CheckOutputFormat::Json => serde_json::to_string_pretty(report).unwrap_or_default(),
         CheckOutputFormat::Yaml => serde_yaml::to_string(report).unwrap_or_default(),
         CheckOutputFormat::Advice => format_feedback(report, options, CheckFeedbackFormat::Advice),

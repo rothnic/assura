@@ -356,7 +356,12 @@ fn render_text(feedback: &CheckFeedback) -> String {
     output
 }
 
-pub(super) fn format_text_report(report: &StructureCheckReport) -> String {
+pub(super) enum TextFindingOrder {
+    FixFirst,
+    BlockingFirst,
+}
+
+pub(super) fn format_text_report(report: &StructureCheckReport, order: TextFindingOrder) -> String {
     let mut output = format!(
         "Assura structure check\n======================\n\
          Project root: {}\nConfig: {}\nChecked path: {}\n\
@@ -376,16 +381,22 @@ pub(super) fn format_text_report(report: &StructureCheckReport) -> String {
 
     output.push_str("\nViolations\n----------\n");
     for violation in &report.violations {
-        let _ = write!(
+        let _ = writeln!(
             output,
-            "{} [{}:{}] {}\n  Fix: {}\n  Blocking: {}\n",
+            "{} [{}:{}] {}",
             violation.path.display(),
             violation.severity,
             violation.rule,
             violation.message,
-            violation.corrective_context,
-            violation.blocking,
         );
+        let fix = format!("  Fix: {}", violation.corrective_context);
+        let blocking = format!("  Blocking: {}", violation.blocking);
+        let lines = match order {
+            TextFindingOrder::FixFirst => [fix, blocking],
+            TextFindingOrder::BlockingFirst => [blocking, fix],
+        };
+        let [first, second] = lines;
+        let _ = write!(output, "{first}\n{second}\n");
         if violation.rule == "max_lines" {
             write_line_budget_actions(&mut output, violation.metadata.as_ref());
         }

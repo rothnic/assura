@@ -73,6 +73,8 @@ fn max_lines_feedback_commands_replay_the_selected_policy() {
     let verbose = check(&["--verbose", file]);
     assert_eq!(verbose.status.code(), Some(1));
     let verbose = String::from_utf8_lossy(&verbose.stdout);
+    let (before_fix, _) = verbose.split_once("  Fix:").expect("corrective context");
+    assert!(before_fix.lines().any(|line| line == "  Blocking: true"));
     assert!(verbose.find(explain_command).unwrap() < verbose.find(recheck_command).unwrap());
     let raw = check(&["--format", "json", file]);
     assert_eq!(raw.status.code(), Some(1));
