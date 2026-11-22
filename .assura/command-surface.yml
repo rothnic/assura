@@ -49,6 +49,9 @@ commands:
   - name: "assura check-change"
     allow_positionals: false
     flags:
+      --verbose:
+        aliases: ["-v"]
+      --quiet: {}
       --staged: {}
       --base:
         takes_value: true
