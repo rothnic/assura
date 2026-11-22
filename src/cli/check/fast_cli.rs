@@ -4,8 +4,8 @@ use super::{
     CheckError, CheckTargetMode, StructureCheckReport,
 };
 use crate::cli::check_feedback::{
-    render_agent_feedback, render_check_feedback, render_codex_agent_feedback, CheckFeedbackFormat,
-    FeedbackOptions,
+    format_text_report, render_agent_feedback, render_check_feedback, render_codex_agent_feedback,
+    write_line_budget_actions, CheckFeedbackFormat, FeedbackOptions,
 };
 use serde::Serialize;
 use std::ffi::{OsStr, OsString};
@@ -417,45 +417,10 @@ fn format_batch_text_report(reports: &[StructureCheckReport]) -> String {
                 violation.corrective_context,
                 violation.blocking,
             );
+            if violation.rule == "max_lines" {
+                write_line_budget_actions(&mut output, violation.metadata.as_ref());
+            }
         }
-    }
-    output
-}
-
-fn format_text_report(report: &StructureCheckReport) -> String {
-    let mut output = String::new();
-    output.push_str("Assura structure check\n");
-    output.push_str("======================\n");
-    output.push_str(&format!(
-        "Project root: {}\n",
-        report.project_root.display()
-    ));
-    output.push_str(&format!("Config: {}\n", report.config_path.display()));
-    output.push_str(&format!(
-        "Checked path: {}\n",
-        report.checked_path.display()
-    ));
-    output.push_str(&format!("Files checked: {}\n", report.files_checked));
-    output.push_str(&format!("Directories checked: {}\n", report.dirs_checked));
-    output.push_str(&format!("Violations: {}\n", report.violation_count()));
-
-    if report.violations.is_empty() {
-        output.push_str("\nAll configured structure checks passed.\n");
-        return output;
-    }
-
-    output.push_str("\nViolations\n----------\n");
-    for violation in &report.violations {
-        let _ = write!(
-            output,
-            "{} [{}:{}] {}\n  Fix: {}\n  Blocking: {}\n",
-            violation.path.display(),
-            violation.severity,
-            violation.rule,
-            violation.message,
-            violation.corrective_context,
-            violation.blocking,
-        );
     }
     output
 }

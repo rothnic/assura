@@ -328,7 +328,7 @@ fn corrective_context_for_rule(rule: &str) -> &'static str {
             "Rename the file to an allowed extension or update files.extensions for this scope."
         }
         "max_lines" => {
-            "Split the file along a natural responsibility boundary, or raise max_lines on the matching file directive or directory files rule when the larger file is intentional."
+            "Split the file along a natural responsibility boundary. If a legitimate change cannot fit, ask the policy owner to review it."
         }
         "max_size" => {
             "Reduce the file size, or raise max_size on the matching file directive or directory files rule when the larger file is intentional."

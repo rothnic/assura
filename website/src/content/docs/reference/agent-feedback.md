@@ -107,6 +107,15 @@ Agent messages include `path`, `rule`, `severity`, `severity_label`,
 `blocking`, `problem`, and `corrective_context` so integrations do not need to
 parse human prose.
 
+For a `max_lines` finding, agent messages also include a `line_budget`
+object. The raw JSON and YAML reports expose the same object as the finding's
+`metadata`. Its `actual`, `limit`, and `overage` fields are line counts.
+The ordered `actions` array contains `explain` and `recheck` entries when
+Assura can reproduce the selected project context for that file. Each entry
+has an `id`, a working directory (`cwd`), and a POSIX shell `command`.
+Run the command from that directory. An empty array means scoped commands
+could not be supplied. Status output stays a one-line summary.
+
 ## Event-Aware Nudges
 
 Use `assura agent nudge` when a wrapper can observe session or tool events and
