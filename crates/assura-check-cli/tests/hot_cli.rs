@@ -377,3 +377,80 @@ fn session_check_reloads_external_config_without_watcher_event() {
     let _ = server.kill();
     let _ = server.wait();
 }
+
+#[test]
+fn hot_project_check_reselects_git_policy_and_recovers_after_removal() {
+    let temp = tempfile::tempdir().unwrap();
+    let project = temp.path().join("hot-git-project");
+    write_project(&project, "good-file.ts");
+    let first = temp.path().join("first.yml");
+    let second = temp.path().join("second.yml");
+    write_config(&first, "kebab-case");
+    write_config(&second, "snake_case");
+
+    let command = |binary: &str| {
+        let mut command = Command::new(binary);
+        for (key, _) in std::env::vars_os() {
+            if key.to_string_lossy().starts_with("GIT_") {
+                command.env_remove(key);
+            }
+        }
+        command
+            .current_dir(&project)
+            .env("GIT_CONFIG_GLOBAL", temp.path().join("global.gitconfig"))
+            .env("GIT_CONFIG_NOSYSTEM", "1");
+        command
+    };
+    let git = |args: &[&str]| {
+        let output = command("git").args(args).output().unwrap();
+        assert!(output.status.success(), "{output:?}");
+    };
+    // Keep the Git config outside the watched tree so only the request's
+    // freshness check can notice a selector switch.
+    let git_dir = temp.path().join("git");
+    git(&[
+        "init",
+        "-q",
+        "--separate-git-dir",
+        git_dir.to_str().unwrap(),
+    ]);
+    let select = |path: &Path| git(&["config", "assura.projectConfig", path.to_str().unwrap()]);
+    select(&first);
+
+    let mut server = command(env!("CARGO_BIN_EXE_assura-checkd"))
+        .args(["--listen", &daemon_listen_arg(&temp, "git.sock"), "--root"])
+        .arg(&project)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .unwrap();
+    let Some(addr) = read_daemon_addr_or_skip(&mut server) else {
+        panic!("Git selector regression test requires a working server socket");
+    };
+
+    let check = || {
+        command(env!("CARGO_BIN_EXE_assura-check-client"))
+            .arg(&addr)
+            .output()
+            .unwrap()
+            .status
+            .code()
+    };
+    let initial = check();
+    select(&second);
+    let switched = check();
+    fs::remove_file(&second).unwrap();
+    let missing = check();
+    write_config(&second, "snake_case");
+    let restored = check();
+    git(&["config", "--unset", "assura.projectConfig"]);
+    let default_selection = check();
+
+    server.kill().unwrap();
+    server.wait().unwrap();
+    assert_eq!(initial, Some(0));
+    assert_eq!(switched, Some(1));
+    assert_eq!(missing, Some(2));
+    assert_eq!(restored, Some(1));
+    assert_eq!(default_selection, Some(0));
+}

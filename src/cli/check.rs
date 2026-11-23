@@ -57,6 +57,8 @@ mod patterns;
 mod prepared;
 #[cfg(feature = "yaml-config")]
 mod profiling;
+#[cfg(feature = "yaml-config")]
+mod project;
 mod release_contract;
 mod report;
 mod repository_references;
@@ -75,8 +77,6 @@ mod test_relationship;
 mod traversal;
 mod validators;
 
-#[cfg(feature = "yaml-config")]
-use crate::cli::config::ConfigDiscovery;
 use crate::config::config::Config;
 #[cfg(feature = "yaml-config")]
 use crate::config::loader::ConfigLoader;
@@ -95,8 +95,8 @@ pub use explain::{
     explain_structure_path, PathExplainNextAction, PathExplainReport, PathExplainRuleSource,
     PathExplainScope, PathExplainSkip,
 };
-#[cfg(feature = "yaml-config")]
-pub(super) use explain::{explain_structure_path_with_markdown, SelectedMarkdownPolicy};
+#[cfg(feature = "full-cli")]
+pub(super) use explain::{explain_structure_path_for_cli, SelectedMarkdownPolicy};
 #[cfg(feature = "yaml-config")]
 pub use explain_rules::{PathExplainFilePatternRule, PathExplainRules};
 use glob::Pattern;
@@ -111,6 +111,8 @@ pub(crate) use prepared::PreparedChangedPathsReport;
 pub use prepared::PreparedStructureCheck;
 #[cfg(feature = "yaml-config")]
 pub use profiling::{run_structure_check_with_timings, StructureCheckTimings};
+#[cfg(feature = "yaml-config")]
+use project::discover_project;
 pub use report::{CheckError, StructureCheckReport, StructureViolation};
 #[cfg(not(feature = "yaml-config"))]
 #[derive(Debug, Default)]
@@ -225,64 +227,6 @@ pub fn run_structure_check_with_config(
         CheckTargetMode::Recursive,
         &mut timings,
     )
-}
-
-#[cfg(feature = "yaml-config")]
-pub(super) fn discover_project(
-    checked_path: &Path,
-    config_path: Option<PathBuf>,
-) -> Result<(PathBuf, PathBuf), CheckError> {
-    if let Some(config_path) = config_path {
-        let config_path = config_path.canonicalize()?;
-        let assura_dir = config_path
-            .parent()
-            .ok_or_else(|| CheckError::InvalidConfigLocation(config_path.clone()))?;
-        let project_root =
-            if assura_dir.file_name().and_then(|name| name.to_str()) == Some(".assura") {
-                assura_dir
-                    .parent()
-                    .ok_or_else(|| CheckError::InvalidConfigLocation(config_path.clone()))?
-                    .to_path_buf()
-            } else {
-                checked_path
-                    .is_file()
-                    .then(|| {
-                        checked_path.parent().map(|parent| {
-                            if parent.as_os_str().is_empty() {
-                                PathBuf::from(".")
-                            } else {
-                                parent.to_path_buf()
-                            }
-                        })
-                    })
-                    .flatten()
-                    .unwrap_or_else(|| checked_path.to_path_buf())
-            };
-
-        return Ok((project_root.canonicalize()?, config_path));
-    }
-
-    if checked_path.is_dir() {
-        let direct_config_path = checked_path.join(".assura/config.yml");
-        if direct_config_path.exists() {
-            return Ok((checked_path.to_path_buf(), direct_config_path));
-        }
-    }
-
-    let config_path = ConfigDiscovery::find_config_path(checked_path)
-        .ok_or_else(|| CheckError::no_config(checked_path))?;
-
-    if !config_path.exists() {
-        return Err(CheckError::no_config(checked_path));
-    }
-
-    let project_root = config_path
-        .parent()
-        .and_then(Path::parent)
-        .ok_or_else(|| CheckError::InvalidConfigLocation(config_path.clone()))?
-        .canonicalize()?;
-
-    Ok((project_root, config_path.canonicalize()?))
 }
 
 pub(in crate::cli::check) struct StructureChecker {

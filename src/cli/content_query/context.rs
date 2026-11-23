@@ -1,7 +1,7 @@
 //! Content query context loading and error handling.
 
 use super::ContentCommands;
-use crate::cli::check::{run_structure_check, StructureCheckReport};
+use crate::cli::check::{run_structure_check, CheckError, StructureCheckReport};
 use crate::cli::AgentQueryArg;
 use crate::cli::ExitCode;
 use crate::config::config::Config;
@@ -88,8 +88,28 @@ impl QueryContext {
                 config_path.display()
             ))
         })?;
-        let model = RepositoryModel::from_config(&project_root, &config)
-            .map_err(format_content_findings)?;
+        Self::from_config(
+            project_root.clone(),
+            config_path.clone(),
+            &config,
+            semantic_enabled,
+            code_symbols_enabled,
+            references_enabled,
+            || run_structure_check(Some(project_root), Some(config_path), false),
+        )
+    }
+
+    pub(crate) fn from_config(
+        project_root: PathBuf,
+        config_path: PathBuf,
+        config: &Config,
+        semantic_enabled: bool,
+        code_symbols_enabled: bool,
+        references_enabled: bool,
+        structure_check: impl FnOnce() -> Result<StructureCheckReport, CheckError>,
+    ) -> Result<Self, ContentQueryError> {
+        let model =
+            RepositoryModel::from_config(&project_root, config).map_err(format_content_findings)?;
         let repository =
             ContentRepository::try_new(model.clone()).map_err(format_content_findings)?;
         let validation = repository.validate(&project_root);
@@ -99,19 +119,17 @@ impl QueryContext {
         ingest_markdown_reference_facts(&mut ingestor, &project_root);
         if references_enabled {
             ingest_source_reference_facts(&mut ingestor, &project_root);
-            ingest_frontmatter_reference_facts(&mut ingestor, &project_root, &config);
+            ingest_frontmatter_reference_facts(&mut ingestor, &project_root, config);
         }
         if code_symbols_enabled {
             ingestor.ingest_local_rust_code_symbols(&project_root);
         }
         ingestor.ingest_repository_validation(&validation);
-        let structure_report =
-            run_structure_check(Some(project_root.clone()), Some(config_path.clone()), false)
-                .map_err(|error| {
-                    ContentQueryError::runtime(format!(
-                        "failed to collect safe-fix structure diagnostics: {error}"
-                    ))
-                })?;
+        let structure_report = structure_check().map_err(|error| {
+            ContentQueryError::runtime(format!(
+                "failed to collect safe-fix structure diagnostics: {error}"
+            ))
+        })?;
         ingest_safe_fix_structure_report(&mut ingestor, structure_report);
         if code_symbols_enabled {
             ingestor.ingest_content_code_symbol_refs(&model, &validation);

@@ -3,5 +3,5 @@
 pub(crate) mod naming;
 #[cfg(feature = "full-cli")]
 pub(crate) mod owner_budget;
-#[cfg(feature = "full-cli")]
+#[cfg(feature = "yaml-config")]
 pub(crate) mod source_selection;

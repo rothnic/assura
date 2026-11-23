@@ -170,6 +170,7 @@ pub(in crate::cli) struct SelectedMarkdownPolicy {
     pub(super) check_links: bool,
 }
 
+#[cfg(feature = "full-cli")]
 impl SelectedMarkdownPolicy {
     pub(crate) fn render_compact(&self) -> String {
         let selection = self
@@ -186,13 +187,20 @@ pub fn explain_structure_path(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
 ) -> Result<PathExplainReport, CheckError> {
-    explain_structure_path_with_markdown(path, config_path).map(|(report, _)| report)
+    explain_structure_path_for_cli(path, config_path).map(|(report, _, _)| report)
 }
 
-pub(in crate::cli) fn explain_structure_path_with_markdown(
+pub(in crate::cli) fn explain_structure_path_for_cli(
     path: Option<PathBuf>,
     config_path: Option<PathBuf>,
-) -> Result<(PathExplainReport, Option<SelectedMarkdownPolicy>), CheckError> {
+) -> Result<
+    (
+        PathExplainReport,
+        Option<SelectedMarkdownPolicy>,
+        Option<String>,
+    ),
+    CheckError,
+> {
     let requested_path = match path {
         Some(path) => path,
         None => std::env::current_dir()?,
@@ -202,7 +210,8 @@ pub(in crate::cli) fn explain_structure_path_with_markdown(
     }
 
     let checked_path = requested_path.canonicalize()?;
-    let (project_root, config_path) = super::discover_project(&checked_path, config_path)?;
+    let (project_root, config_path, git_origin) =
+        super::project::discover_project_with_origin(&checked_path, config_path)?;
     if !checked_path.starts_with(&project_root) {
         return Err(CheckError::OutsideProject {
             checked_path,
@@ -318,7 +327,7 @@ pub(in crate::cli) fn explain_structure_path_with_markdown(
                 "Add a structure scope if {} needs policy.",
                 path_display(&rel)
             ),
-            follow_up: "Edit .assura/config.yml structure".to_string(),
+            follow_up: format!("Edit structure in {}", path_display(&config_path)),
         });
     }
     next_actions.push(PathExplainNextAction {
@@ -349,7 +358,7 @@ pub(in crate::cli) fn explain_structure_path_with_markdown(
             detail: "Assura structure checks do not currently support inline suppressions for this path.".to_string(),
         }],
         next_actions,
-    }, selected_markdown))
+    }, selected_markdown, git_origin))
 }
 
 fn selected_markdown_policy(selection: &SelectedMarkdown<'_>) -> SelectedMarkdownPolicy {

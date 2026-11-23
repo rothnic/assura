@@ -9,9 +9,12 @@ use std::{
 #[derive(Debug, PartialEq, Eq, serde::Serialize)]
 #[serde(rename_all = "snake_case")]
 pub(crate) enum SourceOrigin {
+    #[cfg(feature = "full-cli")]
     UserDefault,
+    #[cfg(feature = "full-cli")]
     Explicit,
     Git(String),
+    #[cfg(feature = "full-cli")]
     Discovered,
 }
 
@@ -21,6 +24,7 @@ pub(crate) struct Selection {
     pub(crate) origin: SourceOrigin,
 }
 
+#[cfg(feature = "full-cli")]
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct Checkout {
     pub(crate) root: PathBuf,
@@ -28,6 +32,7 @@ pub(crate) struct Checkout {
     pub(crate) git_dir: PathBuf,
 }
 
+#[cfg(feature = "full-cli")]
 #[derive(Debug, PartialEq, Eq)]
 pub(crate) struct PolicySources {
     pub(crate) checkout: Option<Checkout>,
@@ -69,6 +74,7 @@ pub(crate) enum SelectionError {
 }
 
 /// Choose external policy inputs without inspecting in-checkout project policy.
+#[cfg(feature = "full-cli")]
 pub(crate) fn select_snapshot_sources(
     target: &Path,
     explicit_baseline: Option<&Path>,
@@ -88,6 +94,7 @@ pub(crate) fn select_snapshot_sources(
     )
 }
 
+#[cfg(feature = "full-cli")]
 fn default_user_baseline(home: Option<&Path>) -> Option<PathBuf> {
     let config = if cfg!(windows) {
         PathBuf::from(env::var_os("APPDATA")?)
@@ -104,6 +111,7 @@ fn default_user_baseline(home: Option<&Path>) -> Option<PathBuf> {
         .then(|| config.join("assura/policy.yml"))
 }
 
+#[cfg(feature = "full-cli")]
 fn select(
     target: &Path,
     explicit_baseline: Option<&Path>,
@@ -125,14 +133,7 @@ fn select(
     let start = start
         .canonicalize()
         .map_err(|err| io_error("resolve target directory", start, err))?;
-    let run = |args: &[&str]| {
-        git()
-            .current_dir(&start)
-            .env("LC_ALL", "C")
-            .args(args)
-            .output()
-            .map_err(|err| io_error(format!("run git {}", args.join(" ")), &start, err))
-    };
+    let run = |args: &[&str]| run_git(git(), &start, args);
 
     let checkout = match git_path(&start, &run, "--show-toplevel", true)? {
         Some(root) => Some(Checkout {
@@ -214,6 +215,34 @@ fn select(
     })
 }
 
+/// Resolve the Git-selected project layer for a working-tree target.
+pub(crate) fn select_worktree_project(
+    start: &Path,
+) -> Result<Option<(PathBuf, Selection)>, SelectionError> {
+    let run = |args: &[&str]| run_git(Command::new("git"), start, args);
+    // allow-reason: Rust 1.85 fixed the Windows lookup. Rust 1.87 removed the deprecation.
+    #[allow(deprecated)]
+    let home = env::home_dir();
+    let source = git_scalar(start, &run, "assura.projectConfig", home.as_deref(), true)?;
+    let Some(source) = source else {
+        return Ok(None);
+    };
+    let Some(root) = git_path(start, &run, "--show-toplevel", true)? else {
+        return Ok(None);
+    };
+    let source = readable("assura.projectConfig", source)?;
+    Ok(Some((root, source)))
+}
+
+fn run_git(mut git: Command, start: &Path, args: &[&str]) -> Result<Output, SelectionError> {
+    git.current_dir(start)
+        .env("LC_ALL", "C")
+        .args(args)
+        .output()
+        .map_err(|err| io_error(format!("run git {}", args.join(" ")), start, err))
+}
+
+#[cfg(feature = "full-cli")]
 fn required_git_path(
     directory: &Path,
     run: &impl Fn(&[&str]) -> Result<Output, SelectionError>,
@@ -311,6 +340,7 @@ fn io_error(operation: impl Into<String>, path: &Path, source: io::Error) -> Sel
     }
 }
 
+#[cfg(feature = "full-cli")]
 fn optional_file(
     layer: &'static str,
     path: &Path,
@@ -333,7 +363,10 @@ fn selected(
     origin: SourceOrigin,
     home: Option<&Path>,
 ) -> Result<Selection, SelectionError> {
-    let selection = selection(layer, path, origin, home)?;
+    readable(layer, selection(layer, path, origin, home)?)
+}
+
+fn readable(layer: &'static str, selection: Selection) -> Result<Selection, SelectionError> {
     let Selection { path, origin } = &selection;
     let metadata = fs::metadata(path)
         .map_err(|err| io_error(format!("inspect {layer} from {origin:?}"), path, err))?;
@@ -375,6 +408,6 @@ fn selection(
     })
 }
 
-#[cfg(test)]
+#[cfg(all(test, feature = "full-cli"))]
 #[path = "source_selection_tests.rs"]
 mod tests;

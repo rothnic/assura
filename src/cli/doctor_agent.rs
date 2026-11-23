@@ -51,15 +51,19 @@ struct AgentExplainReport<'a> {
     matched_file_patterns: Vec<crate::cli::check::PathExplainFilePatternRule>,
     #[serde(skip_serializing_if = "Option::is_none")]
     selected_markdown: Option<&'a SelectedMarkdownPolicy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    config_path: Option<&'a str>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    project_config_git_origin: Option<&'a str>,
     skipped_checks: Vec<PathExplainSkip>,
     next_actions: Vec<PathExplainNextAction>,
 }
 
-impl<'a> From<(&'a PathExplainReport, Option<&'a SelectedMarkdownPolicy>)>
-    for AgentExplainReport<'a>
-{
-    fn from(
-        (report, selected_markdown): (&'a PathExplainReport, Option<&'a SelectedMarkdownPolicy>),
+impl<'a> AgentExplainReport<'a> {
+    fn new(
+        report: &'a PathExplainReport,
+        selected_markdown: Option<&'a SelectedMarkdownPolicy>,
+        project_config_git_origin: Option<&'a str>,
     ) -> Self {
         Self {
             schema: EXPLAIN_AGENT_SCHEMA,
@@ -70,6 +74,8 @@ impl<'a> From<(&'a PathExplainReport, Option<&'a SelectedMarkdownPolicy>)>
             effective_rules: report.effective_rules.clone(),
             matched_file_patterns: report.matched_file_patterns.clone(),
             selected_markdown,
+            config_path: project_config_git_origin.map(|_| report.config_path.as_str()),
+            project_config_git_origin,
             skipped_checks: report.skipped_checks.clone(),
             next_actions: report.next_actions.clone(),
         }
@@ -83,7 +89,12 @@ pub(super) fn render_agent_doctor(report: &ProjectDoctorReport) -> String {
 pub(super) fn render_agent_explain(
     report: &PathExplainReport,
     selected_markdown: Option<&SelectedMarkdownPolicy>,
+    project_config_git_origin: Option<&str>,
 ) -> String {
-    serde_json::to_string_pretty(&AgentExplainReport::from((report, selected_markdown)))
-        .unwrap_or_default()
+    serde_json::to_string_pretty(&AgentExplainReport::new(
+        report,
+        selected_markdown,
+        project_config_git_origin,
+    ))
+    .unwrap_or_default()
 }
