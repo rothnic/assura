@@ -223,13 +223,7 @@ pub(crate) fn select_worktree_project(
     // allow-reason: Rust 1.85 fixed the Windows lookup. Rust 1.87 removed the deprecation.
     #[allow(deprecated)]
     let home = env::home_dir();
-    let source = match git_scalar(start, &run, "assura.projectConfig", home.as_deref(), true) {
-        // Filesystem discovery also works in installations without Git.
-        Err(SelectionError::Io { source, .. }) if source.kind() == io::ErrorKind::NotFound => {
-            return Ok(None);
-        }
-        result => result?,
-    };
+    let source = git_scalar(start, &run, "assura.projectConfig", home.as_deref(), true)?;
     let Some(source) = source else {
         return Ok(None);
     };

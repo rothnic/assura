@@ -68,6 +68,41 @@ fn assert_exit(output: Output, code: i32) -> Output {
     output
 }
 
+#[cfg(unix)]
+#[test]
+fn missing_git_executable_cannot_bypass_a_private_project_policy() {
+    let fixture = Fixture::new();
+    let checked_in = fixture.repo.join(".assura/config.yml");
+    fs::create_dir(checked_in.parent().unwrap()).unwrap();
+    fs::write(&checked_in, "structure:\n  README.md: exists:1\n").unwrap();
+    let private = fixture.root.join("private.yml");
+    fs::write(&private, "structure:\n  MISSING.md: exists:1\n").unwrap();
+    fixture.git(&[
+        "config",
+        "--local",
+        "assura.projectConfig",
+        private.to_str().unwrap(),
+    ]);
+    assert_exit(fixture.assura(&["check", "."]), 1);
+
+    let no_git = fixture.root.join("empty-path");
+    fs::create_dir(&no_git).unwrap();
+    let invoke = |args: &[&str]| {
+        fixture
+            .command(env!("CARGO_BIN_EXE_assura"))
+            .env("PATH", &no_git)
+            .args(args)
+            .output()
+            .unwrap()
+    };
+    let error = assert_exit(invoke(&["check", "."]), 2);
+    assert!(String::from_utf8_lossy(&error.stderr).contains("run git config"));
+    assert_exit(
+        invoke(&["check", "--config", checked_in.to_str().unwrap(), "."]),
+        0,
+    );
+}
+
 #[test]
 fn git_local_project_policy_replaces_checkout_policy_and_explains_its_origin() {
     let fixture = Fixture::new();

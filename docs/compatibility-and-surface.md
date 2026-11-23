@@ -118,7 +118,8 @@ A repository can select a private layout file with
 The selected project file replaces discovery of `.assura/config.yml` for
 `assura check .`, `assura explain README.md`, and snapshot checks. An explicit
 `--config` takes precedence for the invocation. Explain reports the Git origin
-of the selected layout policy. Prepared checks refresh implicit selection when
+of the selected layout policy. Implicit policy selection in a Git checkout
+requires Git on `PATH`. Prepared checks refresh implicit selection when
 they reload policy, and a watch session refreshes selection on its next
 validation batch. For file budgets, stage your edits and run
 `assura check-change --staged` to see the policy layers and verdict.
