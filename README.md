@@ -114,6 +114,7 @@ exclude:
 | Surface | Contract | Availability |
 | --- | --- | --- |
 | `assura check` and text/JSON/YAML/advice/status/agent formats | Supported configured-policy gate | `v0.3.0`; `v0.4.1` |
+| `assura check-change` | Supported Git snapshot check for project and owner line budgets | Planned for `v0.5.0` |
 | `assura init`, `status`, `migrate`, hooks, quality planning, performance report | Supported setup and automation | `v0.3.0`; `v0.4.1` |
 | `assura review`, `doctor`, and `explain` | Supported advisory, diagnosis, and policy-evidence workflow | `v0.4.1` |
 | `assura agent onboard` and `assura agent nudge` | Supported onboarding and bounded event feedback | `v0.4.1` |

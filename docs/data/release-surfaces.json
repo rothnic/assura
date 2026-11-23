@@ -346,6 +346,19 @@
       "expected_exit": 0
     },
     {
+      "id": "git-snapshot-check",
+      "label": "Git snapshot policy checks",
+      "status": "supported",
+      "first_release": "unreleased",
+      "detail_path": "docs/compatibility-and-surface.md",
+      "marketing_claim": false,
+      "evidence_status": "verified",
+      "evidence_refs": ["tests/git_snapshot.rs", "tests/git_hook_lifecycle.rs"],
+      "command": "assura check-change",
+      "smoke_args": ["check-change", "--help"],
+      "expected_exit": 0
+    },
+    {
       "id": "cold-ls-lint-comparison",
       "label": "Cold LS-Lint comparison cohort",
       "status": "supported",
