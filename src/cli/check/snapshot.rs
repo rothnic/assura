@@ -12,6 +12,9 @@ use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::path::{Component, Path, PathBuf};
 
+#[path = "snapshot_feedback.rs"]
+mod feedback;
+
 const POLICY: &str = ".assura/config.yml";
 
 #[derive(Serialize)]
@@ -25,6 +28,8 @@ struct Report {
     exemptions: Vec<Exemption>,
     files_checked: usize,
     findings: Vec<Finding>,
+    actions: Vec<Action>,
+    guidance: Vec<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -120,6 +125,14 @@ struct Finding {
     baseline_lines: Option<usize>,
     allowed_lines: usize,
     repair_message: Option<String>,
+    overage: usize,
+}
+
+#[derive(Serialize)]
+struct Action {
+    id: &'static str,
+    cwd: PathBuf,
+    command: String,
 }
 
 pub(in crate::cli) fn command(
@@ -149,41 +162,6 @@ pub(in crate::cli) fn command(
     }
 }
 
-impl Report {
-    fn print_text(&self) {
-        println!(
-            "{} max_lines check: {} → {} ({}, {} files checked)",
-            self.scope,
-            self.baseline.tree,
-            self.selected.tree,
-            if self.success { "passed" } else { "failed" },
-            self.files_checked,
-        );
-        for source in &self.policies {
-            println!(
-                "  {} policy: {:?} ({:?}, tree {:?}, sha256 {})",
-                source.layer, source.path, source.origin, source.tree, source.sha256
-            );
-        }
-        for exemption in &self.exemptions {
-            println!(
-                "  {} exemption {:?} applies to {:?}",
-                exemption.layer, exemption.pattern, exemption.path
-            );
-        }
-        for finding in &self.findings {
-            println!(
-                "[{}/{}] {:?}: {} lines exceeds the allowed {} (configured limit {}). Lines to cut or move: {}.",
-                finding.layer, finding.severity, finding.path, finding.actual, finding.allowed_lines, finding.limit,
-                finding.actual - finding.allowed_lines,
-            );
-            if let Some(message) = &finding.repair_message {
-                println!("  Policy message: {}", message.escape_debug());
-            }
-        }
-    }
-}
-
 fn run(
     scope: Scope<'_>,
     owner_baseline: Option<&Path>,
@@ -195,11 +173,11 @@ fn run(
     let cwd = std::env::current_dir().map_err(|error| runtime_error(error.to_string()))?;
     let sources = select_snapshot_sources(&cwd, owner_baseline, project_config)
         .map_err(|error| config_error(error.to_string()))?;
-    let root = &sources
+    let checkout = sources
         .checkout
         .as_ref()
-        .ok_or_else(|| runtime_error(format!("check-change requires a Git checkout at {cwd:?}")))?
-        .root;
+        .ok_or_else(|| runtime_error(format!("check-change requires a Git checkout at {cwd:?}")))?;
+    let root = &checkout.root;
     let snapshot = Snapshot::resolve(&cwd, scope, root.clone()).map_err(runtime_error)?;
     let mut policies = Vec::new();
     for (layer, source) in [
@@ -229,7 +207,8 @@ fn run(
         return Err((
             ExitCode::NoConfigFound,
             format!(
-                "{POLICY} is absent from selected tree {} and no owner policy was selected",
+                "{POLICY} is absent from selected tree {} and no owner policy was selected. \
+                 Select policy with --config, --owner-baseline, or Git config assura.ownerPolicy.",
                 snapshot.selected.oid,
             ),
         ));
@@ -306,15 +285,17 @@ fn run(
                     baseline_lines,
                     allowed_lines,
                     repair_message: budget.repair_message,
+                    overage: actual - allowed_lines,
                 });
             }
         }
     }
     findings.sort_by(|left, right| left.path.cmp(&right.path));
-    Ok(Report {
+    let mut report = Report {
         success: !findings.iter().any(|finding| finding.blocking),
         scope: match scope {
             Scope::Staged => "staged",
+            Scope::Worktree { .. } => "worktree",
             Scope::Direct { .. } => "direct",
             Scope::MergeBase { .. } => "merge-base",
         },
@@ -325,7 +306,21 @@ fn run(
         exemptions,
         files_checked,
         findings,
-    })
+        actions: Vec::new(),
+        guidance: Vec::new(),
+    };
+    if !report.findings.is_empty() {
+        let alternate_index = std::env::var_os("GIT_INDEX_FILE")
+            .is_some_and(|index| cwd.join(index) != checkout.git_dir.join("index"));
+        report.add_guidance(&cwd, root, alternate_index);
+    } else if report.scope == "staged" && snapshot.changes.is_empty() {
+        report.guidance.push(if report.baseline.commit.is_some() {
+            "The active index has no staged changes. Stage your edits or run assura check-change --worktree HEAD."
+        } else {
+            "The active index has no staged changes. Stage the files for your first commit and recheck."
+        });
+    }
+    Ok(report)
 }
 
 fn verify_policy_digests(

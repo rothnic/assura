@@ -1,12 +1,15 @@
 //! Resolve Git comparisons before applying policy. Paths are repository-relative.
 
 use std::ffi::{OsStr, OsString};
+use std::fs;
 use std::path::{Component, Path, PathBuf};
 use std::process::{Command, Output};
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 #[derive(Clone, Copy)]
 pub(crate) enum Scope<'a> {
     Staged,
+    Worktree { base: &'a str },
     Direct { base: &'a str, head: &'a str },
     MergeBase { target: &'a str, head: &'a str },
 }
@@ -47,6 +50,10 @@ impl Snapshot {
         let git_cwd = std::path::absolute(cwd)
             .map_err(|error| format!("resolve Git directory {cwd:?}: {error}"))?;
         let (baseline, selected) = match scope {
+            Scope::Worktree { base } => (
+                commit_tree(&git_cwd, revision(&git_cwd, base, "commit")?)?,
+                working_tree(&git_cwd)?,
+            ),
             Scope::Staged => (
                 head_or_empty(&git_cwd)?,
                 Tree {
@@ -78,6 +85,15 @@ impl Snapshot {
                 )
             }
         };
+        Self::from_trees(git_cwd, root, baseline, selected)
+    }
+
+    fn from_trees(
+        git_cwd: PathBuf,
+        root: PathBuf,
+        baseline: Tree,
+        selected: Tree,
+    ) -> Result<Self, String> {
         let diff = git(
             &git_cwd,
             [
@@ -177,15 +193,82 @@ impl Snapshot {
     }
 }
 
+fn working_tree(cwd: &Path) -> Result<Tree, String> {
+    let index = git_path_line(cwd, ["rev-parse", "--git-path", "index"])?;
+    let git_dir = git_path_line(cwd, ["rev-parse", "--absolute-git-dir"])?;
+    let scratch = private_index(&git_dir)?;
+    let scratch_index = scratch.0.join("index");
+    copy_index(&cwd.join(index), &scratch_index)?;
+    let git = |args: &[&str]| {
+        let output = git_command(cwd)
+            .env("GIT_INDEX_FILE", &scratch_index)
+            .args(["-c", "core.fsmonitor=false"])
+            .args(["-c", "core.splitIndex=false"])
+            .args(args)
+            .output()
+            .map_err(|error| format!("failed to run Git in {cwd:?}: {error}"))?;
+        checked(&format!("{args:?}"), output)
+    };
+    // Reject unmerged entries before add could resolve them in the private index.
+    git(&["write-tree"])?;
+    git(&["add", "--all"])?;
+    Ok(Tree {
+        oid: oid(&git(&["write-tree"])?)?,
+        commit: None,
+    })
+}
+
+fn git_path_line(
+    cwd: &Path,
+    args: impl IntoIterator<Item = impl AsRef<OsStr>> + std::fmt::Debug,
+) -> Result<PathBuf, String> {
+    let bytes = git(cwd, args)?;
+    let line = bytes
+        .strip_suffix(b"\n")
+        .ok_or("missing Git path terminator")?;
+    git_path(line)
+}
+
+fn copy_index(source: &Path, target: &Path) -> Result<(), String> {
+    let mut index = match fs::File::open(source) {
+        Ok(index) => index,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => return Ok(()),
+        Err(error) => return Err(format!("open Git index {source:?}: {error}")),
+    };
+    let mut copy = || -> std::io::Result<()> {
+        let modified = index.metadata()?.modified()?;
+        let mut scratch = fs::File::create(target)?;
+        std::io::copy(&mut index, &mut scratch)?;
+        // Keep Git's ability to detect racily clean files from the index timestamp.
+        scratch.set_modified(modified)
+    };
+    copy().map_err(|error| format!("copy Git index {source:?} to {target:?}: {error}"))
+}
+
+struct SnapshotIndex(PathBuf);
+
+fn private_index(git_dir: &Path) -> Result<SnapshotIndex, String> {
+    static NEXT: AtomicUsize = AtomicUsize::new(0);
+    let path = git_dir.join(format!(
+        "assura-snapshot-{}-{}",
+        std::process::id(),
+        NEXT.fetch_add(1, Ordering::Relaxed)
+    ));
+    fs::create_dir(&path)
+        .map_err(|error| format!("create private Git index at {path:?}: {error}"))?;
+    Ok(SnapshotIndex(path))
+}
+
+impl Drop for SnapshotIndex {
+    fn drop(&mut self) {
+        let _ = fs::remove_dir_all(&self.0);
+    }
+}
+
 fn head_or_empty(cwd: &Path) -> Result<Tree, String> {
     let head = run_git(cwd, ["rev-parse", "--verify", "--quiet", "HEAD"])?;
     if head.status.code() == Some(1) {
-        let reference = git(cwd, ["symbolic-ref", "HEAD"])?;
-        let reference = git_path(
-            reference
-                .strip_suffix(b"\n")
-                .ok_or("missing Git HEAD terminator")?,
-        )?;
+        let reference = git_path_line(cwd, ["symbolic-ref", "HEAD"])?;
         let exists = run_git(
             cwd,
             [
@@ -231,17 +314,13 @@ fn legacy_ref_missing(cwd: &Path, reference: &Path) -> Result<bool, String> {
     if exists.status.code() != Some(128) || exists.stderr != expected {
         return checked("show-ref --verify", exists).map(|_| false);
     }
-    let path = git(
+    let path = git_path_line(
         cwd,
         [
             OsStr::new("rev-parse"),
             OsStr::new("--git-path"),
             reference.as_os_str(),
         ],
-    )?;
-    let path = git_path(
-        path.strip_suffix(b"\n")
-            .ok_or("missing Git ref path terminator")?,
     )?;
     match std::fs::symlink_metadata(cwd.join(path)) {
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(true),
@@ -377,23 +456,28 @@ fn run_git(
     cwd: &Path,
     args: impl IntoIterator<Item = impl AsRef<OsStr>>,
 ) -> Result<Output, String> {
-    Command::new("git")
-        .arg("--no-replace-objects")
-        .current_dir(cwd)
-        .env("LC_ALL", "C")
-        .env("GIT_OPTIONAL_LOCKS", "0")
-        .env("GIT_NO_LAZY_FETCH", "1")
+    git_command(cwd)
         .args(args)
         .output()
         .map_err(|error| format!("failed to run Git in {cwd:?}: {error}"))
 }
 
-fn git(cwd: &Path, args: impl IntoIterator<Item = impl AsRef<OsStr>>) -> Result<Vec<u8>, String> {
-    let args: Vec<_> = args
-        .into_iter()
-        .map(|arg| arg.as_ref().to_owned())
-        .collect();
-    checked(&format!("{args:?}"), run_git(cwd, &args)?)
+fn git_command(cwd: &Path) -> Command {
+    let mut command = Command::new("git");
+    command
+        .arg("--no-replace-objects")
+        .current_dir(cwd)
+        .env("LC_ALL", "C")
+        .env("GIT_OPTIONAL_LOCKS", "0")
+        .env("GIT_NO_LAZY_FETCH", "1");
+    command
+}
+
+fn git(
+    cwd: &Path,
+    args: impl IntoIterator<Item = impl AsRef<OsStr>> + std::fmt::Debug,
+) -> Result<Vec<u8>, String> {
+    checked(&format!("{args:?}"), run_git(cwd, args)?)
 }
 
 fn checked(operation: &str, output: Output) -> Result<Vec<u8>, String> {

@@ -156,6 +156,94 @@ fn staged_paths_policy_and_content_share_a_pinned_tree() {
 }
 
 #[test]
+fn working_tree_pins_explicit_base_edits_and_nonignored_paths() {
+    let repo = Repo::init("sha1");
+    repo.write(".gitignore", "ignored*\n");
+    repo.write(".assura/config.yml", "base policy");
+    repo.write("committed", "base");
+    repo.write("deleted", "base");
+    repo.write("edited", "base");
+    repo.write("inherited", "unchanged");
+    repo.commit("base");
+    repo.git(&["tag", "baseline"]);
+    repo.write("committed", "newer commit");
+    repo.commit("head");
+    repo.write("edited", "staged");
+    repo.git(&["add", "edited"]);
+    repo.write("edited", "working edit");
+    repo.write(".assura/config.yml", "working policy");
+    repo.write("untracked [file]", "working addition");
+    repo.write("ignored scratch", "private");
+    fs::remove_file(repo.0.join("deleted")).unwrap();
+
+    let index = repo.0.join(".git/index");
+    let before = fs::read(&index).unwrap();
+    let modified = fs::metadata(&index).unwrap().modified().unwrap();
+    let snapshot = resolve_snapshot(
+        &repo.0.join(".assura"),
+        Scope::Worktree { base: "baseline" },
+    )
+    .unwrap();
+    assert_eq!(fs::read(&index).unwrap(), before);
+    assert_eq!(fs::metadata(&index).unwrap().modified().unwrap(), modified);
+    assert_eq!(fs::read(repo.0.join("edited")).unwrap(), b"working edit");
+    assert_eq!(repo.git(&["show", ":edited"]), "staged");
+    assert_eq!(
+        snapshot.baseline.commit,
+        Some(repo.git(&["rev-parse", "baseline"]))
+    );
+    assert_eq!(snapshot.selected.commit, None);
+    assert_eq!(
+        snapshot.changes,
+        [
+            Change::Modified(".assura/config.yml".into()),
+            Change::Modified("committed".into()),
+            Change::Deleted("deleted".into()),
+            Change::Modified("edited".into()),
+            Change::Added("untracked [file]".into()),
+        ]
+    );
+
+    repo.write("edited", "later edit");
+    repo.write(".assura/config.yml", "later policy");
+    fs::remove_file(repo.0.join("untracked [file]")).unwrap();
+    repo.git(&["tag", "-f", "baseline", "HEAD"]);
+    assert_eq!(
+        read(&snapshot, Side::Baseline, "committed").unwrap(),
+        b"base"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "edited").unwrap(),
+        b"working edit"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, ".assura/config.yml").unwrap(),
+        b"working policy"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "untracked [file]").unwrap(),
+        b"working addition"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "inherited").unwrap(),
+        b"unchanged"
+    );
+    assert_eq!(read(&snapshot, Side::Selected, "ignored scratch"), None);
+    assert_eq!(read(&snapshot, Side::Selected, "deleted"), None);
+    let error = resolve_snapshot(
+        &repo.0,
+        Scope::Worktree {
+            base: "missing-base",
+        },
+    )
+    .unwrap_err();
+    assert!(
+        error.contains("resolve Git commit \"missing-base\""),
+        "{error}"
+    );
+}
+
+#[test]
 fn initial_commit_uses_repository_format_empty_tree() {
     for format in ["sha1", "sha256"] {
         let repo = Repo::init(format);
@@ -191,11 +279,18 @@ fn rejects_unmerged_index() {
     let output = repo.command().args(["merge", "other"]).output().unwrap();
     assert_eq!(output.status.code(), Some(1));
 
-    let error = resolve_snapshot(&repo.0, Scope::Staged).unwrap_err();
-    assert!(
-        error.contains("unmerged") && error.contains("conflict"),
-        "{error}"
-    );
+    let before = fs::read(repo.0.join(".git/index")).unwrap();
+    for result in [
+        resolve_snapshot(&repo.0, Scope::Staged),
+        resolve_snapshot(&repo.0, Scope::Worktree { base: "HEAD" }),
+    ] {
+        let error = result.unwrap_err();
+        assert!(
+            error.contains("unmerged") && error.contains("conflict"),
+            "{error}"
+        );
+    }
+    assert_eq!(fs::read(repo.0.join(".git/index")).unwrap(), before);
 }
 
 #[cfg(unix)]
@@ -390,7 +485,7 @@ fn committed_comparison_can_select_merge_base_or_direct_trees() {
 }
 
 #[test]
-fn linked_worktrees_keep_independent_staged_trees() {
+fn linked_worktrees_keep_independent_trees() {
     let repo = Repo::init("sha1");
     repo.write("file", "base");
     repo.commit("base");
@@ -412,6 +507,17 @@ fn linked_worktrees_keep_independent_staged_trees() {
         read(&linked, Side::Selected, "file"),
         Some(b"linked index".to_vec())
     );
+
+    repo.write("linked/file", "linked edit");
+    let checkout = repo.0.join("linked");
+    let working = resolve_snapshot(&checkout, Scope::Worktree { base: "HEAD" }).unwrap();
+    assert_eq!(working.changes, [Change::Modified("file".into())]);
+    assert_eq!(
+        read(&working, Side::Selected, "file").unwrap(),
+        b"linked edit"
+    );
+    assert_eq!(repo.git(&["-C", "linked", "show", ":file"]), "linked index");
+    assert_eq!(repo.git(&["show", ":file"]), "main index");
 }
 
 #[test]
@@ -525,6 +631,39 @@ mod cli {
     }
 
     #[test]
+    fn working_check_reports_changes_that_are_not_staged() {
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(2));
+        repo.write(".gitignore", "ignored.txt\n");
+        repo.write("README.md", "baseline\n");
+        repo.commit("baseline");
+        repo.write("README.md", "one\ntwo\nthree\n");
+        repo.write("ignored.txt", "one\ntwo\nthree\n");
+
+        let staged = report(check(&repo, &["--staged"], None), 0);
+        assert_eq!(staged["files_checked"], 0);
+        assert!(staged["guidance"][0]
+            .as_str()
+            .unwrap()
+            .contains("--worktree HEAD"));
+        let working = report(check(&repo, &["--worktree", "HEAD"], None), 1);
+        assert_eq!(working["scope"], "worktree");
+        assert_eq!(working["files_checked"], 1);
+        assert_eq!(working["findings"][0]["path"], "README.md");
+        #[cfg(unix)]
+        assert!(working["actions"].as_array().unwrap().iter().any(|action| {
+            action["id"] == "recheck" && action["command"].as_str().unwrap().contains("--worktree ")
+        }));
+        assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "");
+
+        repo.write("README.md", "repaired\n");
+        assert_eq!(
+            report(check(&repo, &["--worktree", "HEAD"], None), 0)["success"],
+            true
+        );
+    }
+
+    #[test]
     fn owner_verdict_survives_project_selection_exclusion_and_advisory_severity() {
         let repo = Repo::init("sha1");
         let owner = tempfile::tempdir().unwrap();
@@ -605,6 +744,88 @@ mod cli {
         let missing = check(&repo, &args, None);
         assert_eq!(missing.status.code(), Some(2));
         assert!(String::from_utf8_lossy(&missing.stderr).contains("absent from selected tree"));
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn snapshot_feedback_commands_replay_and_recheck_the_same_budget() {
+        let repo = Repo::init("sha1");
+        let tools = tempfile::tempdir().unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let shim = tools.path().join("assura");
+        fs::write(&shim, "#!/bin/sh\nexec \"$TEST_ASSURA_BIN\" \"$@\"\n").unwrap();
+        fs::set_permissions(&shim, fs::Permissions::from_mode(0o755)).unwrap();
+        let fixture_owner = repo.0.join(".git/owner 'policy;$(false).yml");
+        fs::write(&fixture_owner, "max_lines: 2\n").unwrap();
+        repo.write(".assura/config.yml", policy(2));
+        repo.write("file with spaces.rs", "one\ntwo\nthree\n");
+        repo.commit("inherited debt");
+        repo.write("file with spaces.rs", "one\ntwo\nthree\nfour\n");
+        repo.git(&["add", "-u"]);
+        let blocked = report(
+            check(
+                &repo,
+                &[
+                    "--staged",
+                    "--owner-baseline",
+                    fixture_owner.to_str().unwrap(),
+                ],
+                None,
+            ),
+            1,
+        );
+        assert_eq!(blocked["findings"][0]["overage"], 1);
+        let fixture_index = repo.0.join(".git/alternate-index");
+        fs::copy(repo.0.join(".git/index"), &fixture_index).unwrap();
+        let alternate = report(
+            check(
+                &repo,
+                &[
+                    "--staged",
+                    "--owner-baseline",
+                    fixture_owner.to_str().unwrap(),
+                ],
+                Some(&fixture_index),
+            ),
+            1,
+        );
+        assert_eq!(alternate["actions"].as_array().unwrap().len(), 1);
+        assert_eq!(alternate["actions"][0]["id"], "replay");
+        assert_eq!(alternate["selected"], blocked["selected"]);
+        let run_action = |id| {
+            let action = blocked["actions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|action| action["id"] == id)
+                .unwrap();
+            let mut shell_path = vec![tools.path().to_path_buf()];
+            shell_path.extend(std::env::split_paths(&std::env::var_os("PATH").unwrap()));
+            Command::new("sh")
+                .args(["-c", action["command"].as_str().unwrap()])
+                .env("PATH", std::env::join_paths(shell_path).unwrap())
+                .env("TEST_ASSURA_BIN", env!("CARGO_BIN_EXE_assura"))
+                .env_remove("GIT_INDEX_FILE")
+                .env("GIT_CONFIG_NOSYSTEM", "1")
+                .env("GIT_CONFIG_GLOBAL", "/dev/null")
+                .output()
+                .unwrap()
+        };
+
+        let replay = run_action("replay");
+        assert_eq!(replay.status.code(), Some(1), "{replay:?}");
+        assert!(String::from_utf8_lossy(&replay.stdout).contains("Lines to cut or move: 1"));
+        repo.write("file with spaces.rs", "one\ntwo\nthree\n");
+        assert_eq!(run_action("recheck").status.code(), Some(1));
+        repo.git(&["add", "-u"]);
+        assert_ok(&run_action("recheck"));
+        assert_eq!(run_action("replay").status.code(), Some(1));
+        fs::write(&fixture_owner, "max_lines: 20\n").unwrap();
+        let drift = run_action("recheck");
+        assert_eq!(drift.status.code(), Some(2));
+        assert!(
+            String::from_utf8_lossy(&drift.stderr).contains("user_baseline policy digest mismatch")
+        );
     }
 
     #[test]
