@@ -85,7 +85,7 @@ pub enum Commands {
         about = "Ratchet file max_lines against an explicit Git snapshot",
         long_about = "Check changed files against project and owner line budgets. In-checkout project policy comes from the selected Git tree. Owner policy YAML has a max_lines limit and optional repository-relative exemptions (glob strings). Existing oversized files can stay flat or shrink. New files must fit the configured limit."
     )]
-    #[command(group(clap::ArgGroup::new("comparison").required(true).args(["staged", "base", "merge_base"])))]
+    #[command(group(clap::ArgGroup::new("comparison").required(true).args(["staged", "worktree", "base", "merge_base"])))]
     CheckChange {
         #[arg(
             long,
@@ -93,6 +93,14 @@ pub enum Commands {
             help = "Compare the active Git index with HEAD"
         )]
         staged: bool,
+
+        #[arg(
+            long,
+            conflicts_with = "head",
+            value_name = "BASE",
+            help = "Compare working files and non-ignored additions against this base commit"
+        )]
+        worktree: Option<String>,
 
         #[arg(
             long,

@@ -16,7 +16,9 @@ struct Fixture {
 impl Fixture {
     fn new() -> Self {
         let temp = TempDir::new().unwrap();
-        let root = temp.path().canonicalize().unwrap();
+        // Git for Windows cannot read a canonicalized extended-length
+        // GIT_CONFIG_GLOBAL path. Keep the temp directory's native spelling.
+        let root = temp.path().to_path_buf();
         let repo = root.join("repo");
         fs::create_dir_all(repo.join("docs")).unwrap();
         fs::write(repo.join("README.md"), "a\nb\n").unwrap();
@@ -220,11 +222,13 @@ fn git_selector_switch_refreshes_prepared_check_and_disk_cache() {
 
     // Move the winner from the local config to an included file.
     let include = fixture.root.join("selection.gitconfig");
-    fs::write(
-        &include,
-        format!("[assura]\n\tprojectConfig = {}\n", permissive.display()),
-    )
-    .unwrap();
+    fixture.git(&[
+        "config",
+        "--file",
+        include.to_str().unwrap(),
+        "assura.projectConfig",
+        permissive.to_str().unwrap(),
+    ]);
     fixture.git(&["config", "--unset", "assura.projectConfig"]);
     fixture.git(&["config", "include.path", include.to_str().unwrap()]);
     assert!(prepared.config_content_changed().unwrap());

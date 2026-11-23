@@ -26,7 +26,7 @@ publishes and verifies a `.sha256` file next to every archive.
 | Command | Status | Evidence |
 | --- | --- | --- |
 | `assura check` | Supported | Rust test suite, Assura self-check, installable adoption smoke. |
-| `assura check-change` | Supported Git snapshot check | Part of Workspace Flexibility in v0.5.0. Use `--staged` or select a commit range with `--base` or `--merge-base` and `--head`. Reads checked bytes and any in-checkout project policy from the selected Git tree. `--config` selects the project layer and `--owner-baseline` selects the independent user layer. In CI use `--require-policy-digest LAYER=SHA256` for each pinned input to reject missing or different policy bytes. |
+| `assura check-change` | Supported Git snapshot check | Part of Workspace Flexibility in v0.5.0. Use `--worktree BASE` for working edits and non-ignored additions, `--staged` for the active index, or `--base` or `--merge-base` with `--head` for committed comparisons. Reads checked bytes and any in-checkout project policy from the selected Git tree. `--config` selects the project layer and `--owner-baseline` selects the independent user layer. In CI use `--require-policy-digest LAYER=SHA256` for each pinned input to reject missing or different policy bytes. |
 | `assura check --format json` | Supported | Installable adoption smoke and CLI report tests. |
 | `assura check --format yaml` | Supported | CLI report formatter tests. |
 | `assura check --format advice` | Supported | Agent feedback rendering tests and real-project feedback fixtures. |
