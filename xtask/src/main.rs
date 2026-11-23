@@ -7655,46 +7655,37 @@ mod tests {
         );
         assert_eq!(release_tag_version("0.4.0"), None);
 
-        let report = release_surfaces_report("docs/data/release-surfaces.json", Some("v0.2.0"));
+        let path = env::temp_dir().join(format!(
+            "assura-release-surfaces-report-{}.json",
+            std::process::id()
+        ));
+        fs::write(
+            &path,
+            json!({
+                "schema_version": "assura.release-surfaces.v1",
+                "surfaces": [
+                    {"id": "published", "status": "supported", "first_release": "v0.2.0"},
+                    {"id": "candidate", "status": "supported", "first_release": "unreleased"},
+                    {"id": "planned", "status": "roadmap", "first_release": "unreleased"}
+                ]
+            })
+            .to_string(),
+        )
+        .expect("write release surface fixture");
+        let report =
+            release_surfaces_report(path.to_str().expect("utf-8 temp path"), Some("v0.2.0"));
+        fs::remove_file(path).expect("remove release surface fixture");
+        assert!(report.get("error").is_none(), "{report}");
+        assert_eq!(report["schema_version"], "assura.release-surfaces.v1");
         assert_eq!(
-            report.get("schema_version").and_then(Value::as_str),
-            Some("assura.release-surfaces.v1")
+            report["unreleased_user_facing_changes"],
+            json!([{
+                "id": "candidate",
+                "status": "supported",
+                "first_release": "unreleased",
+                "detail_path": ""
+            }])
         );
-        let unreleased = report
-            .get("unreleased_user_facing_changes")
-            .and_then(Value::as_array)
-            .expect("unreleased surfaces array");
-        if !unreleased.is_empty() {
-            assert!(unreleased
-                .iter()
-                .any(|surface| surface.get("id").and_then(Value::as_str)
-                    == Some("agent-ready-doctor-explain")));
-            assert!(unreleased.iter().all(|surface| {
-                surface.get("id").and_then(Value::as_str)
-                    != Some("project-intelligence-local-surfaces")
-            }));
-            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
-                .expect("release surfaces json");
-            assert!(surfaces
-                .get("surfaces")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-                .any(|surface| surface.get("id").and_then(Value::as_str)
-                    == Some("project-intelligence-local-surfaces")
-                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
-        } else {
-            let surfaces = serde_json::from_str::<Value>(&read("docs/data/release-surfaces.json"))
-                .expect("release surfaces json");
-            assert!(surfaces
-                .get("surfaces")
-                .and_then(Value::as_array)
-                .into_iter()
-                .flatten()
-                .any(|surface| surface.get("id").and_then(Value::as_str)
-                    == Some("project-intelligence-local-surfaces")
-                    && surface.get("first_release").and_then(Value::as_str) == Some("v0.2.0")));
-        }
     }
 
     #[test]
