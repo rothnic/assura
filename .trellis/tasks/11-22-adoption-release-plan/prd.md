@@ -141,6 +141,13 @@ The existing per-repo hook route is enough for this workflow. One-time global
 hook installation, pre-push enforcement and extra diff rules remain
 conditional follow-ups with their own evidence.
 
+The dogfood run added two v0.5.0 fixes to that per-repo route. A moved linked
+worktree must still enforce opted-in staged policy (`ae-whr.12`, P0).
+Hook verification must agree across invocation paths and make managed
+upgrades actionable (`ae-whr.13`, P1). The working-tree check, policy
+discovery and repair findings remain on `ae-whr.8`, `ae-whr.9` and
+`ae-whr.7` respectively.
+
 ## What Assura 1.0 Would Promise
 
 Assura 1.0 should make a compatibility commitment for a bounded
