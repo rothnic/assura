@@ -706,6 +706,88 @@ mod cli {
         assert!(String::from_utf8_lossy(&missing.stderr).contains("absent from selected tree"));
     }
 
+    #[cfg(unix)]
+    #[test]
+    fn snapshot_feedback_commands_replay_and_recheck_the_same_budget() {
+        let repo = Repo::init("sha1");
+        let tools = tempfile::tempdir().unwrap();
+        use std::os::unix::fs::PermissionsExt;
+        let shim = tools.path().join("assura");
+        fs::write(&shim, "#!/bin/sh\nexec \"$TEST_ASSURA_BIN\" \"$@\"\n").unwrap();
+        fs::set_permissions(&shim, fs::Permissions::from_mode(0o755)).unwrap();
+        let fixture_owner = repo.0.join(".git/owner 'policy;$(false).yml");
+        fs::write(&fixture_owner, "max_lines: 2\n").unwrap();
+        repo.write(".assura/config.yml", policy(2));
+        repo.write("file with spaces.rs", "one\ntwo\nthree\n");
+        repo.commit("inherited debt");
+        repo.write("file with spaces.rs", "one\ntwo\nthree\nfour\n");
+        repo.git(&["add", "-u"]);
+        let blocked = report(
+            check(
+                &repo,
+                &[
+                    "--staged",
+                    "--owner-baseline",
+                    fixture_owner.to_str().unwrap(),
+                ],
+                None,
+            ),
+            1,
+        );
+        assert_eq!(blocked["findings"][0]["overage"], 1);
+        let fixture_index = repo.0.join(".git/alternate-index");
+        fs::copy(repo.0.join(".git/index"), &fixture_index).unwrap();
+        let alternate = report(
+            check(
+                &repo,
+                &[
+                    "--staged",
+                    "--owner-baseline",
+                    fixture_owner.to_str().unwrap(),
+                ],
+                Some(&fixture_index),
+            ),
+            1,
+        );
+        assert_eq!(alternate["actions"].as_array().unwrap().len(), 1);
+        assert_eq!(alternate["actions"][0]["id"], "replay");
+        assert_eq!(alternate["selected"], blocked["selected"]);
+        let run_action = |id| {
+            let action = blocked["actions"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .find(|action| action["id"] == id)
+                .unwrap();
+            let mut shell_path = vec![tools.path().to_path_buf()];
+            shell_path.extend(std::env::split_paths(&std::env::var_os("PATH").unwrap()));
+            Command::new("sh")
+                .args(["-c", action["command"].as_str().unwrap()])
+                .env("PATH", std::env::join_paths(shell_path).unwrap())
+                .env("TEST_ASSURA_BIN", env!("CARGO_BIN_EXE_assura"))
+                .env_remove("GIT_INDEX_FILE")
+                .env("GIT_CONFIG_NOSYSTEM", "1")
+                .env("GIT_CONFIG_GLOBAL", "/dev/null")
+                .output()
+                .unwrap()
+        };
+
+        let replay = run_action("replay");
+        assert_eq!(replay.status.code(), Some(1), "{replay:?}");
+        assert!(String::from_utf8_lossy(&replay.stdout).contains("Lines to cut or move: 1"));
+        repo.write("file with spaces.rs", "one\ntwo\nthree\n");
+        assert_eq!(run_action("recheck").status.code(), Some(1));
+        repo.git(&["add", "-u"]);
+        assert_ok(&run_action("recheck"));
+        assert_eq!(run_action("replay").status.code(), Some(1));
+        fs::write(&fixture_owner, "max_lines: 20\n").unwrap();
+        let drift = run_action("recheck");
+        assert_eq!(drift.status.code(), Some(2));
+        assert!(
+            String::from_utf8_lossy(&drift.stderr).contains("user_baseline policy digest mismatch")
+        );
+    }
+
     #[test]
     fn required_owner_digest_rejects_missing_and_changed_bytes() {
         use sha2::{Digest, Sha256};

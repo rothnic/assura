@@ -25,6 +25,8 @@ struct Report {
     exemptions: Vec<Exemption>,
     files_checked: usize,
     findings: Vec<Finding>,
+    actions: Vec<Action>,
+    guidance: Vec<&'static str>,
 }
 
 #[derive(Serialize)]
@@ -120,6 +122,14 @@ struct Finding {
     baseline_lines: Option<usize>,
     allowed_lines: usize,
     repair_message: Option<String>,
+    overage: usize,
+}
+
+#[derive(Serialize)]
+struct Action {
+    id: &'static str,
+    cwd: PathBuf,
+    command: String,
 }
 
 pub(in crate::cli) fn command(
@@ -175,12 +185,107 @@ impl Report {
             println!(
                 "[{}/{}] {:?}: {} lines exceeds the allowed {} (configured limit {}). Lines to cut or move: {}.",
                 finding.layer, finding.severity, finding.path, finding.actual, finding.allowed_lines, finding.limit,
-                finding.actual - finding.allowed_lines,
+                finding.overage,
             );
             if let Some(message) = &finding.repair_message {
                 println!("  Policy message: {}", message.escape_debug());
             }
         }
+        for instruction in &self.guidance {
+            println!("  {instruction}");
+        }
+        for action in &self.actions {
+            println!("  {}\n    {}", action.id, action.command);
+        }
+    }
+
+    fn add_guidance(&mut self, cwd: &Path, root: &Path, alternate_index: bool) {
+        self.guidance.push(
+            "Split the file or move lines to fit. Ask the policy owner about a legitimate exception.",
+        );
+        if self
+            .policies
+            .iter()
+            .any(|policy| policy.layer == "scoped_owner")
+        {
+            self.guidance.push(
+                "Select the matching scoped owner policy through Git config (assura.ownerPolicy).",
+            );
+        }
+        self.guidance.push(
+            "For CI, match the reported policy layers and pin each SHA-256. Update policy paths for the CI checkout and provision external files separately.",
+        );
+        if let Some(replay) = self.action(
+            "replay",
+            cwd,
+            root,
+            &format!(
+                "--base {} --head {}",
+                self.baseline.tree, self.selected.tree
+            ),
+        ) {
+            self.actions.push(replay);
+        }
+        if self.scope != "staged" {
+            self.guidance.push(
+                "After committing the repair, run check-change with the reported baseline tree as --base and the repaired commit as --head.",
+            );
+        } else if alternate_index {
+            self.guidance.push(
+                "After repairing, repeat the Git operation or index setup that supplied the active index. For a path-limited commit, repeat the same path selection.",
+            );
+        } else {
+            self.guidance.push(
+                "Stage the repaired files and run check-change --staged before advancing HEAD.",
+            );
+            if let Some(recheck) = self.action("recheck", cwd, root, "--staged") {
+                self.actions.push(recheck);
+            }
+        }
+    }
+
+    fn action(
+        &self,
+        id: &'static str,
+        cwd: &Path,
+        root: &Path,
+        comparison: &str,
+    ) -> Option<Action> {
+        #[cfg(unix)]
+        fn quote(path: &Path) -> Option<String> {
+            let path_text = path.to_str()?;
+            if path_text.chars().any(char::is_control) {
+                return None;
+            }
+            Some(format!("'{}'", path_text.replace('\'', "'\\''")))
+        }
+        #[cfg(not(unix))]
+        fn quote(_path: &Path) -> Option<String> {
+            None
+        }
+
+        let mut command = format!("(cd {} && assura check-change {comparison}", quote(cwd)?);
+        for policy in &self.policies {
+            match policy.layer {
+                "user_baseline" => {
+                    command.push_str(&format!(" --owner-baseline {}", quote(&policy.path)?))
+                }
+                "project" => {
+                    command.push_str(&format!(" --config {}", quote(&root.join(&policy.path))?))
+                }
+                _ => {}
+            }
+            command.push_str(&format!(
+                " --require-policy-digest {}={}",
+                policy.layer, policy.sha256
+            ));
+        }
+        command.push(')');
+        Some(Action {
+            id,
+            cwd: cwd.to_path_buf(),
+            command,
+        })
     }
 }
 
@@ -195,11 +300,11 @@ fn run(
     let cwd = std::env::current_dir().map_err(|error| runtime_error(error.to_string()))?;
     let sources = select_snapshot_sources(&cwd, owner_baseline, project_config)
         .map_err(|error| config_error(error.to_string()))?;
-    let root = &sources
+    let checkout = sources
         .checkout
         .as_ref()
-        .ok_or_else(|| runtime_error(format!("check-change requires a Git checkout at {cwd:?}")))?
-        .root;
+        .ok_or_else(|| runtime_error(format!("check-change requires a Git checkout at {cwd:?}")))?;
+    let root = &checkout.root;
     let snapshot = Snapshot::resolve(&cwd, scope, root.clone()).map_err(runtime_error)?;
     let mut policies = Vec::new();
     for (layer, source) in [
@@ -229,7 +334,8 @@ fn run(
         return Err((
             ExitCode::NoConfigFound,
             format!(
-                "{POLICY} is absent from selected tree {} and no owner policy was selected",
+                "{POLICY} is absent from selected tree {} and no owner policy was selected. \
+                 Select policy with --config, --owner-baseline, or Git config assura.ownerPolicy.",
                 snapshot.selected.oid,
             ),
         ));
@@ -306,12 +412,13 @@ fn run(
                     baseline_lines,
                     allowed_lines,
                     repair_message: budget.repair_message,
+                    overage: actual - allowed_lines,
                 });
             }
         }
     }
     findings.sort_by(|left, right| left.path.cmp(&right.path));
-    Ok(Report {
+    let mut report = Report {
         success: !findings.iter().any(|finding| finding.blocking),
         scope: match scope {
             Scope::Staged => "staged",
@@ -325,7 +432,15 @@ fn run(
         exemptions,
         files_checked,
         findings,
-    })
+        actions: Vec::new(),
+        guidance: Vec::new(),
+    };
+    if !report.findings.is_empty() {
+        let alternate_index = std::env::var_os("GIT_INDEX_FILE")
+            .is_some_and(|index| cwd.join(index) != checkout.git_dir.join("index"));
+        report.add_guidance(&cwd, root, alternate_index);
+    }
+    Ok(report)
 }
 
 fn verify_policy_digests(
