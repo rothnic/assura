@@ -25,6 +25,15 @@ use status::is_runnable;
 const PRE_COMMIT: &str = include_str!("../../.assura/hooks/pre-commit");
 const ADVISORY_PRE_COMMIT: &str = "# Find the project root";
 
+fn staged_dispatch(template: &str) -> String {
+    let template = template.replace("\r\n", "\n");
+    let (setup, _) = template
+        .strip_prefix("#!/bin/sh\n")
+        .and_then(|script| script.split_once(ADVISORY_PRE_COMMIT))
+        .expect("managed pre-commit script has a staged dispatch section");
+    setup.to_owned()
+}
+
 #[derive(Error, Debug)]
 pub enum HookError {
     #[error("IO error: {0}")]
@@ -198,21 +207,21 @@ impl GitHooksManager {
         self.render_git_hook_content(hook_type == HookType::PreCommit, assura_hook_path)
     }
 
-    fn render_git_hook_content(&self, staged_dispatch: bool, assura_hook_path: &Path) -> Vec<u8> {
+    fn render_git_hook_content(
+        &self,
+        include_staged_dispatch: bool,
+        assura_hook_path: &Path,
+    ) -> Vec<u8> {
         let mut content = br#"#!/bin/sh
 # Git hook managed by Assura
 # This file was auto-generated. Do not modify manually.
 
 "#
         .to_vec();
-        if staged_dispatch {
+        if include_staged_dispatch {
             // A shared Git hook must check Git's active index before delegating
             // to the checkout-local sidecar. Reuse the sidecar's dispatch logic.
-            let (setup, _) = PRE_COMMIT
-                .strip_prefix("#!/bin/sh\n")
-                .and_then(|script| script.split_once(ADVISORY_PRE_COMMIT))
-                .expect("managed pre-commit script has a staged dispatch section");
-            content.extend_from_slice(setup.as_bytes());
+            content.extend_from_slice(staged_dispatch(PRE_COMMIT).as_bytes());
             // Git starts a client-side pre-commit hook in the checkout root.
             content.extend_from_slice(b"ASSURA_HOOK='.assura/hooks/pre-commit'");
         } else {
