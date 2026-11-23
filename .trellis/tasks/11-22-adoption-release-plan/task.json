@@ -23,7 +23,7 @@
   "relatedFiles": [],
   "notes": "",
   "meta": {
-    "execution_branches": ["goal/adoption-snapshot-check", "goal/adoption-owner-snapshot"],
+    "execution_branches": ["goal/adoption-snapshot-check", "goal/adoption-owner-snapshot", "goal/adoption-check-change-feature"],
     "delivery": {
       "schema_version": 1,
       "kind": "integration",

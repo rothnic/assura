@@ -73,6 +73,7 @@ remaining contract gap.
 | `compact-review` / `assura review` | supported advisory radar | v0.4.1 | `tests/project_review_cli.rs` | `docs/support-policy.md` | R06 |
 | `path-explanation` / `assura explain apps/web/src` | supported policy explanation | v0.4.1 | `tests/explain_pattern_scope_cli.rs` | `docs/support-policy.md` | R06 |
 | `configured-policy-gate` / `assura check` | retained supported core | v0.1.0 | `tests/real_project_agentic_feedback_tests.rs` | `docs/support-policy.md` | P01 |
+| `git-snapshot-check` / `assura check-change` | supported staged and committed line budgets | Unreleased, planned for v0.5.0 | `tests/git_snapshot.rs`, `tests/git_hook_lifecycle.rs` | `docs/compatibility-and-surface.md` | ae-whr.8 |
 | `codex-agent-report` / `assura check --format agent --agent codex .` | supported shared adapter | v0.4.1 | `tests/agent_surface_cli.rs` | `docs/support-policy.md` | R06 |
 | `explicit-review-base` / `assura review --base main` | supported advisory radar | v0.4.1 | `tests/project_review_cli.rs` | `docs/support-policy.md` | R06 |
 | `finding-history` / `assura review --format agent` | supported advisory radar | v0.4.1 | `tests/project_review_cli.rs` | `docs/support-policy.md` | R06 |
