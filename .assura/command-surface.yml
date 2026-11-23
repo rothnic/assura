@@ -60,6 +60,8 @@ commands:
         aliases: ["-v"]
       --quiet: {}
       --staged: {}
+      --worktree:
+        takes_value: true
       --base:
         takes_value: true
       --merge-base:

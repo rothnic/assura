@@ -179,9 +179,11 @@ fn working_tree_pins_explicit_base_edits_and_nonignored_paths() {
     let index = repo.0.join(".git/index");
     let before = fs::read(&index).unwrap();
     let modified = fs::metadata(&index).unwrap().modified().unwrap();
-    let snapshot =
-        Snapshot::resolve_working_tree(&repo.0.join(".assura"), "baseline", repo.0.clone())
-            .unwrap();
+    let snapshot = resolve_snapshot(
+        &repo.0.join(".assura"),
+        Scope::Worktree { base: "baseline" },
+    )
+    .unwrap();
     assert_eq!(fs::read(&index).unwrap(), before);
     assert_eq!(fs::metadata(&index).unwrap().modified().unwrap(), modified);
     assert_eq!(fs::read(repo.0.join("edited")).unwrap(), b"working edit");
@@ -228,8 +230,13 @@ fn working_tree_pins_explicit_base_edits_and_nonignored_paths() {
     );
     assert_eq!(read(&snapshot, Side::Selected, "ignored scratch"), None);
     assert_eq!(read(&snapshot, Side::Selected, "deleted"), None);
-    let error =
-        Snapshot::resolve_working_tree(&repo.0, "missing-base", repo.0.clone()).unwrap_err();
+    let error = resolve_snapshot(
+        &repo.0,
+        Scope::Worktree {
+            base: "missing-base",
+        },
+    )
+    .unwrap_err();
     assert!(
         error.contains("resolve Git commit \"missing-base\""),
         "{error}"
@@ -275,7 +282,7 @@ fn rejects_unmerged_index() {
     let before = fs::read(repo.0.join(".git/index")).unwrap();
     for result in [
         resolve_snapshot(&repo.0, Scope::Staged),
-        Snapshot::resolve_working_tree(&repo.0, "HEAD", repo.0.clone()),
+        resolve_snapshot(&repo.0, Scope::Worktree { base: "HEAD" }),
     ] {
         let error = result.unwrap_err();
         assert!(
@@ -503,7 +510,7 @@ fn linked_worktrees_keep_independent_trees() {
 
     repo.write("linked/file", "linked edit");
     let checkout = repo.0.join("linked");
-    let working = Snapshot::resolve_working_tree(&checkout, "HEAD", checkout.clone()).unwrap();
+    let working = resolve_snapshot(&checkout, Scope::Worktree { base: "HEAD" }).unwrap();
     assert_eq!(working.changes, [Change::Modified("file".into())]);
     assert_eq!(
         read(&working, Side::Selected, "file").unwrap(),
@@ -621,6 +628,39 @@ mod cli {
             String::from_utf8_lossy(&output.stderr),
         );
         serde_json::from_slice(&output.stdout).unwrap()
+    }
+
+    #[test]
+    fn working_check_reports_changes_that_are_not_staged() {
+        let repo = Repo::init("sha1");
+        repo.write(".assura/config.yml", policy(2));
+        repo.write(".gitignore", "ignored.txt\n");
+        repo.write("README.md", "baseline\n");
+        repo.commit("baseline");
+        repo.write("README.md", "one\ntwo\nthree\n");
+        repo.write("ignored.txt", "one\ntwo\nthree\n");
+
+        let staged = report(check(&repo, &["--staged"], None), 0);
+        assert_eq!(staged["files_checked"], 0);
+        assert!(staged["guidance"][0]
+            .as_str()
+            .unwrap()
+            .contains("--worktree HEAD"));
+        let working = report(check(&repo, &["--worktree", "HEAD"], None), 1);
+        assert_eq!(working["scope"], "worktree");
+        assert_eq!(working["files_checked"], 1);
+        assert_eq!(working["findings"][0]["path"], "README.md");
+        #[cfg(unix)]
+        assert!(working["actions"].as_array().unwrap().iter().any(|action| {
+            action["id"] == "recheck" && action["command"].as_str().unwrap().contains("--worktree ")
+        }));
+        assert_eq!(repo.git(&["diff", "--cached", "--name-only"]), "");
+
+        repo.write("README.md", "repaired\n");
+        assert_eq!(
+            report(check(&repo, &["--worktree", "HEAD"], None), 0)["success"],
+            true
+        );
     }
 
     #[test]

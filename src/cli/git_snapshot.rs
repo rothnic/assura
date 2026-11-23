@@ -9,6 +9,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 #[derive(Clone, Copy)]
 pub(crate) enum Scope<'a> {
     Staged,
+    Worktree { base: &'a str },
     Direct { base: &'a str, head: &'a str },
     MergeBase { target: &'a str, head: &'a str },
 }
@@ -49,6 +50,10 @@ impl Snapshot {
         let git_cwd = std::path::absolute(cwd)
             .map_err(|error| format!("resolve Git directory {cwd:?}: {error}"))?;
         let (baseline, selected) = match scope {
+            Scope::Worktree { base } => (
+                commit_tree(&git_cwd, revision(&git_cwd, base, "commit")?)?,
+                working_tree(&git_cwd)?,
+            ),
             Scope::Staged => (
                 head_or_empty(&git_cwd)?,
                 Tree {
@@ -80,19 +85,6 @@ impl Snapshot {
                 )
             }
         };
-        Self::from_trees(git_cwd, root, baseline, selected)
-    }
-
-    /// Pin a working-tree comparison against an explicit commit.
-    pub(crate) fn resolve_working_tree(
-        cwd: &Path,
-        base: &str,
-        root: PathBuf,
-    ) -> Result<Self, String> {
-        let git_cwd = std::path::absolute(cwd)
-            .map_err(|error| format!("resolve Git directory {cwd:?}: {error}"))?;
-        let baseline = commit_tree(&git_cwd, revision(&git_cwd, base, "commit")?)?;
-        let selected = working_tree(&git_cwd)?;
         Self::from_trees(git_cwd, root, baseline, selected)
     }
 

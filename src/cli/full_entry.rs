@@ -92,6 +92,7 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
         }
         Commands::CheckChange {
             staged,
+            worktree,
             base,
             merge_base,
             head,
@@ -102,16 +103,18 @@ async fn run_full_cli(cli: Cli) -> ExitCode {
             use super::git_snapshot::Scope;
             let scope = match (
                 staged,
+                worktree.as_deref(),
                 base.as_deref(),
                 merge_base.as_deref(),
                 head.as_deref(),
             ) {
-                (true, None, None, None) => Scope::Staged,
-                (false, Some(base), None, Some(head)) => Scope::Direct { base, head },
-                (false, None, Some(target), Some(head)) => Scope::MergeBase { target, head },
+                (true, None, None, None, None) => Scope::Staged,
+                (false, Some(base), None, None, None) => Scope::Worktree { base },
+                (false, None, Some(base), None, Some(head)) => Scope::Direct { base, head },
+                (false, None, None, Some(target), Some(head)) => Scope::MergeBase { target, head },
                 _ => {
                     eprintln!(
-                        "Error: choose --staged, --base with --head, or --merge-base with --head"
+                        "Error: choose --staged, --worktree BASE, --base with --head, or --merge-base with --head"
                     );
                     return ExitCode::ConfigurationError;
                 }
