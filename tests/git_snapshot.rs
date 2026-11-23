@@ -156,6 +156,87 @@ fn staged_paths_policy_and_content_share_a_pinned_tree() {
 }
 
 #[test]
+fn working_tree_pins_explicit_base_edits_and_nonignored_paths() {
+    let repo = Repo::init("sha1");
+    repo.write(".gitignore", "ignored*\n");
+    repo.write(".assura/config.yml", "base policy");
+    repo.write("committed", "base");
+    repo.write("deleted", "base");
+    repo.write("edited", "base");
+    repo.write("inherited", "unchanged");
+    repo.commit("base");
+    repo.git(&["tag", "baseline"]);
+    repo.write("committed", "newer commit");
+    repo.commit("head");
+    repo.write("edited", "staged");
+    repo.git(&["add", "edited"]);
+    repo.write("edited", "working edit");
+    repo.write(".assura/config.yml", "working policy");
+    repo.write("untracked [file]", "working addition");
+    repo.write("ignored scratch", "private");
+    fs::remove_file(repo.0.join("deleted")).unwrap();
+
+    let index = repo.0.join(".git/index");
+    let before = fs::read(&index).unwrap();
+    let modified = fs::metadata(&index).unwrap().modified().unwrap();
+    let snapshot =
+        Snapshot::resolve_working_tree(&repo.0.join(".assura"), "baseline", repo.0.clone())
+            .unwrap();
+    assert_eq!(fs::read(&index).unwrap(), before);
+    assert_eq!(fs::metadata(&index).unwrap().modified().unwrap(), modified);
+    assert_eq!(fs::read(repo.0.join("edited")).unwrap(), b"working edit");
+    assert_eq!(repo.git(&["show", ":edited"]), "staged");
+    assert_eq!(
+        snapshot.baseline.commit,
+        Some(repo.git(&["rev-parse", "baseline"]))
+    );
+    assert_eq!(snapshot.selected.commit, None);
+    assert_eq!(
+        snapshot.changes,
+        [
+            Change::Modified(".assura/config.yml".into()),
+            Change::Modified("committed".into()),
+            Change::Deleted("deleted".into()),
+            Change::Modified("edited".into()),
+            Change::Added("untracked [file]".into()),
+        ]
+    );
+
+    repo.write("edited", "later edit");
+    repo.write(".assura/config.yml", "later policy");
+    fs::remove_file(repo.0.join("untracked [file]")).unwrap();
+    repo.git(&["tag", "-f", "baseline", "HEAD"]);
+    assert_eq!(
+        read(&snapshot, Side::Baseline, "committed").unwrap(),
+        b"base"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "edited").unwrap(),
+        b"working edit"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, ".assura/config.yml").unwrap(),
+        b"working policy"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "untracked [file]").unwrap(),
+        b"working addition"
+    );
+    assert_eq!(
+        read(&snapshot, Side::Selected, "inherited").unwrap(),
+        b"unchanged"
+    );
+    assert_eq!(read(&snapshot, Side::Selected, "ignored scratch"), None);
+    assert_eq!(read(&snapshot, Side::Selected, "deleted"), None);
+    let error =
+        Snapshot::resolve_working_tree(&repo.0, "missing-base", repo.0.clone()).unwrap_err();
+    assert!(
+        error.contains("resolve Git commit \"missing-base\""),
+        "{error}"
+    );
+}
+
+#[test]
 fn initial_commit_uses_repository_format_empty_tree() {
     for format in ["sha1", "sha256"] {
         let repo = Repo::init(format);
@@ -191,11 +272,18 @@ fn rejects_unmerged_index() {
     let output = repo.command().args(["merge", "other"]).output().unwrap();
     assert_eq!(output.status.code(), Some(1));
 
-    let error = resolve_snapshot(&repo.0, Scope::Staged).unwrap_err();
-    assert!(
-        error.contains("unmerged") && error.contains("conflict"),
-        "{error}"
-    );
+    let before = fs::read(repo.0.join(".git/index")).unwrap();
+    for result in [
+        resolve_snapshot(&repo.0, Scope::Staged),
+        Snapshot::resolve_working_tree(&repo.0, "HEAD", repo.0.clone()),
+    ] {
+        let error = result.unwrap_err();
+        assert!(
+            error.contains("unmerged") && error.contains("conflict"),
+            "{error}"
+        );
+    }
+    assert_eq!(fs::read(repo.0.join(".git/index")).unwrap(), before);
 }
 
 #[cfg(unix)]
@@ -390,7 +478,7 @@ fn committed_comparison_can_select_merge_base_or_direct_trees() {
 }
 
 #[test]
-fn linked_worktrees_keep_independent_staged_trees() {
+fn linked_worktrees_keep_independent_trees() {
     let repo = Repo::init("sha1");
     repo.write("file", "base");
     repo.commit("base");
@@ -412,6 +500,17 @@ fn linked_worktrees_keep_independent_staged_trees() {
         read(&linked, Side::Selected, "file"),
         Some(b"linked index".to_vec())
     );
+
+    repo.write("linked/file", "linked edit");
+    let checkout = repo.0.join("linked");
+    let working = Snapshot::resolve_working_tree(&checkout, "HEAD", checkout.clone()).unwrap();
+    assert_eq!(working.changes, [Change::Modified("file".into())]);
+    assert_eq!(
+        read(&working, Side::Selected, "file").unwrap(),
+        b"linked edit"
+    );
+    assert_eq!(repo.git(&["-C", "linked", "show", ":file"]), "linked index");
+    assert_eq!(repo.git(&["show", ":file"]), "main index");
 }
 
 #[test]
