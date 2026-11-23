@@ -74,7 +74,7 @@ pub(crate) fn select_snapshot_sources(
     explicit_baseline: Option<&Path>,
     explicit_project: Option<&Path>,
 ) -> Result<PolicySources, SelectionError> {
-    // Rust 1.85 fixed the Windows lookup. Rust 1.87 removed the deprecation.
+    // allow-reason: Rust 1.85 fixed the Windows lookup. Rust 1.87 removed the deprecation.
     #[allow(deprecated)]
     let home = env::home_dir();
     select(

@@ -4590,8 +4590,8 @@ const SUPPORT_MATRIX_ROWS: &[SupportMatrixRow] = &[
     SupportMatrixRow {
         surface: "assura check-change",
         command_surface_names: &["assura check-change"],
-        support_policy_markers: &["`assura check-change` | Experimental Git snapshot check"],
-        compatibility_markers: &["| `assura check-change` | Experimental Git snapshot check |"],
+        support_policy_markers: &["`assura check-change` | Supported Git snapshot check"],
+        compatibility_markers: &["| `assura check-change` | Supported Git snapshot check |"],
         source_markers: &["Commands::CheckChange"],
         test_markers: &[
             "tests/git_snapshot.rs",
