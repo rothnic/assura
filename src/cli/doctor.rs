@@ -2,7 +2,7 @@
 
 use super::args::CheckOutputFormat;
 use super::check::{
-    explain_structure_path_with_markdown, run_structure_check_with_target_mode, CheckError,
+    explain_structure_path_for_cli, run_structure_check_with_target_mode, CheckError,
     CheckTargetMode, PathExplainReport, SelectedMarkdownPolicy,
 };
 pub(super) use super::doctor_report::{
@@ -43,11 +43,16 @@ pub async fn explain_command(
     config: Option<PathBuf>,
     format: CheckOutputFormat,
 ) -> ExitCode {
-    match explain_structure_path_with_markdown(path, config) {
-        Ok((report, selected_markdown)) => {
+    match explain_structure_path_for_cli(path, config) {
+        Ok((report, selected_markdown, git_origin)) => {
             println!(
                 "{}",
-                render_explain(&report, selected_markdown.as_ref(), format)
+                render_explain(
+                    &report,
+                    selected_markdown.as_ref(),
+                    git_origin.as_deref(),
+                    format
+                )
             );
             ExitCode::Success
         }
@@ -124,29 +129,42 @@ struct CliExplainReport<'a> {
     report: &'a PathExplainReport,
     #[serde(skip_serializing_if = "Option::is_none")]
     selected_markdown: Option<&'a SelectedMarkdownPolicy>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    project_config_git_origin: Option<&'a str>,
 }
 
 fn render_explain(
     report: &PathExplainReport,
     selected_markdown: Option<&SelectedMarkdownPolicy>,
+    project_config_git_origin: Option<&str>,
     format: CheckOutputFormat,
 ) -> String {
     match format {
         CheckOutputFormat::Json => serde_json::to_string_pretty(&CliExplainReport {
             report,
             selected_markdown,
+            project_config_git_origin,
         })
         .unwrap_or_default(),
         CheckOutputFormat::Yaml => serde_yaml::to_string(&CliExplainReport {
             report,
             selected_markdown,
+            project_config_git_origin,
         })
         .unwrap_or_default(),
-        CheckOutputFormat::Agent => {
-            super::doctor_agent::render_agent_explain(report, selected_markdown)
-        }
+        CheckOutputFormat::Agent => super::doctor_agent::render_agent_explain(
+            report,
+            selected_markdown,
+            project_config_git_origin,
+        ),
         CheckOutputFormat::Text | CheckOutputFormat::Advice | CheckOutputFormat::Status => {
             let mut text = report.render_text();
+            if let Some(origin) = project_config_git_origin {
+                text.push_str(&format!(
+                    "\nproject_config={:?} git_origin={origin:?}",
+                    report.config_path
+                ));
+            }
             if let Some(selected_markdown) = selected_markdown {
                 text.push_str(&format!(
                     "\nselected_markdown={}",
