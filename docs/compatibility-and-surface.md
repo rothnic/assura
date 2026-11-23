@@ -115,8 +115,13 @@ git config --global --add "includeIf.gitdir:$HOME/workspace/team/.path" "$HOME/.
 
 A repository can select a private layout file with
 `git config --local assura.projectConfig /absolute/path/to/layout.yml`.
-`assura check-change --staged` reports the selected policy paths and origins.
-Run it after staging an edit to see the applicable file budgets.
+The selected project file replaces discovery of `.assura/config.yml` for
+`assura check .`, `assura explain README.md`, and snapshot checks. An explicit
+`--config` takes precedence for the invocation. Explain reports the Git origin
+of the selected layout policy. Prepared checks refresh implicit selection when
+they reload policy, and a watch session refreshes selection on its next
+validation batch. For file budgets, stage your edits and run
+`assura check-change --staged` to see the policy layers and verdict.
 
 ## Managed pre-commit staged budgets
 
