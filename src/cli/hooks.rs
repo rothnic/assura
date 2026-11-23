@@ -12,6 +12,7 @@ mod status;
 #[path = "hooks_transaction.rs"]
 mod transaction;
 
+pub(super) use status::staged_pre_commit_mode;
 pub use status::HookStatus;
 
 use ownership::{
@@ -20,6 +21,18 @@ use ownership::{
 };
 use paths::resolve_git_hooks_dir;
 use status::is_runnable;
+
+const PRE_COMMIT: &str = include_str!("../../.assura/hooks/pre-commit");
+const ADVISORY_PRE_COMMIT: &str = "# Find the project root";
+
+fn staged_dispatch(template: &str) -> String {
+    let template = template.replace("\r\n", "\n");
+    let (setup, _) = template
+        .strip_prefix("#!/bin/sh\n")
+        .and_then(|script| script.split_once(ADVISORY_PRE_COMMIT))
+        .expect("managed pre-commit script has a staged dispatch section");
+    setup.to_owned()
+}
 
 #[derive(Error, Debug)]
 pub enum HookError {
@@ -114,8 +127,8 @@ pub struct GitHooksManager {
 
 impl GitHooksManager {
     pub fn new(project_root: impl AsRef<Path>) -> HookResult<Self> {
-        let project_root = project_root.as_ref();
-        let git_hooks_dir = resolve_git_hooks_dir(project_root)?;
+        let project_root = std::path::absolute(project_root)?;
+        let git_hooks_dir = resolve_git_hooks_dir(&project_root)?;
         let assura_hooks_dir = project_root.join(".assura").join("hooks");
 
         Ok(Self {
@@ -181,7 +194,7 @@ impl GitHooksManager {
         }
 
         let hook_content = self.generate_hook_content(hook_type)?;
-        let git_hook_content = self.managed_git_hook_content(&assura_hook_path);
+        let git_hook_content = self.managed_git_hook_content(hook_type, &assura_hook_path);
         transaction::replace_pair(
             &assura_hook_path,
             hook_content.as_bytes(),
@@ -190,14 +203,31 @@ impl GitHooksManager {
         )
     }
 
-    fn managed_git_hook_content(&self, assura_hook_path: &Path) -> Vec<u8> {
+    fn managed_git_hook_content(&self, hook_type: HookType, assura_hook_path: &Path) -> Vec<u8> {
+        self.render_git_hook_content(hook_type == HookType::PreCommit, assura_hook_path)
+    }
+
+    fn render_git_hook_content(
+        &self,
+        include_staged_dispatch: bool,
+        assura_hook_path: &Path,
+    ) -> Vec<u8> {
         let mut content = br#"#!/bin/sh
 # Git hook managed by Assura
 # This file was auto-generated. Do not modify manually.
 
-ASSURA_HOOK="#
-            .to_vec();
-        content.extend_from_slice(&shell_single_quote(assura_hook_path));
+"#
+        .to_vec();
+        if include_staged_dispatch {
+            // A shared Git hook must check Git's active index before delegating
+            // to the checkout-local sidecar. Reuse the sidecar's dispatch logic.
+            content.extend_from_slice(staged_dispatch(PRE_COMMIT).as_bytes());
+            // Git starts a client-side pre-commit hook in the checkout root.
+            content.extend_from_slice(b"ASSURA_HOOK='.assura/hooks/pre-commit'");
+        } else {
+            content.extend_from_slice(b"ASSURA_HOOK=");
+            content.extend_from_slice(&shell_single_quote(assura_hook_path));
+        }
         content.extend_from_slice(
             br#"
 
@@ -246,12 +276,13 @@ fi
         }
 
         if ownership.wrapper.is_managed() {
-            let expected = self.managed_wrapper_contents(&assura_hook_path);
+            let expected = self.managed_wrapper_contents(hook_type, &assura_hook_path);
             remove_file_if_still_managed(&git_hook_path, &expected)?;
         }
         if ownership.sidecar.is_managed() {
-            let expected = self.generate_hook_content(hook_type)?.into_bytes();
-            remove_file_if_still_managed(&assura_hook_path, &[expected])?;
+            let expected =
+                self.managed_sidecar_contents(hook_type, ownership.wrapper.is_managed())?;
+            remove_file_if_still_managed(&assura_hook_path, &expected)?;
         }
 
         Ok(())
@@ -304,7 +335,7 @@ fi
 
     fn generate_hook_content(&self, hook_type: HookType) -> HookResult<String> {
         let content = match hook_type {
-            HookType::PreCommit => include_str!("../../.assura/hooks/pre-commit"),
+            HookType::PreCommit => PRE_COMMIT,
             HookType::PrePush => include_str!("../../.assura/hooks/pre-push"),
             HookType::PostCheckout => include_str!("../../.assura/hooks/post-checkout"),
         };
@@ -316,25 +347,52 @@ fi
         let hook_name = hook_type.as_str();
         let git_hook_path = self.git_hooks_dir.join(hook_name);
         let assura_hook_path = self.assura_hooks_dir.join(hook_name);
-        let wrapper_expected = self.managed_wrapper_contents(&assura_hook_path);
-        let sidecar_expected = self.generate_hook_content(hook_type)?.into_bytes();
-
+        let wrapper_expected = self.managed_wrapper_contents(hook_type, &assura_hook_path);
+        let wrapper = classify_artifact(
+            &git_hook_path,
+            &wrapper_expected,
+            plain_directory_or_absent(&self.git_hooks_dir),
+        )?;
+        let sidecar_expected = self.managed_sidecar_contents(hook_type, wrapper.is_managed())?;
         Ok(HookOwnership {
-            wrapper: classify_artifact(
-                &git_hook_path,
-                &wrapper_expected,
-                plain_directory_or_absent(&self.git_hooks_dir),
-            )?,
+            wrapper,
             sidecar: classify_artifact(
                 &assura_hook_path,
-                &[sidecar_expected],
+                &sidecar_expected,
                 self.assura_hook_directories_are_safe(),
             )?,
         })
     }
 
-    fn managed_wrapper_contents(&self, assura_hook_path: &Path) -> Vec<Vec<u8>> {
-        let mut contents = vec![self.managed_git_hook_content(assura_hook_path)];
+    fn managed_sidecar_contents(
+        &self,
+        hook_type: HookType,
+        wrapper_is_managed: bool,
+    ) -> HookResult<Vec<Vec<u8>>> {
+        let mut sidecar_expected = vec![self.generate_hook_content(hook_type)?.into_bytes()];
+        if hook_type == HookType::PreCommit && wrapper_is_managed {
+            // v0.4.1 used the same advisory script without the staged dispatch.
+            let (setup, advisory) = PRE_COMMIT
+                .split_once(ADVISORY_PRE_COMMIT)
+                .expect("managed pre-commit script has an advisory section");
+            let (header, _) = setup
+                .split_once("if STAGED=")
+                .expect("managed pre-commit script has a staged dispatch section");
+            sidecar_expected.push(format!("{header}{ADVISORY_PRE_COMMIT}{advisory}").into_bytes());
+        }
+
+        Ok(sidecar_expected)
+    }
+
+    fn managed_wrapper_contents(
+        &self,
+        hook_type: HookType,
+        assura_hook_path: &Path,
+    ) -> Vec<Vec<u8>> {
+        let mut contents = vec![self.managed_git_hook_content(hook_type, assura_hook_path)];
+        if hook_type == HookType::PreCommit {
+            contents.push(self.render_git_hook_content(false, assura_hook_path));
+        }
         if let Some(legacy) = self.legacy_managed_git_hook_content(assura_hook_path) {
             contents.push(legacy);
         }

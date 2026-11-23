@@ -402,6 +402,10 @@ async fn handle_hooks_status(path: Option<std::path::PathBuf>) -> ExitCode {
             let pre_commit =
                 super::pre_commit_adapter::status(&project_root, &pre_push_hook.git_path);
             println!("Pre-commit adapter: {}", pre_commit.as_str());
+            println!(
+                "Staged pre-commit budget setting: {}",
+                super::hooks::staged_pre_commit_mode(&project_root)
+            );
             for status in statuses {
                 println!("{}", status.display());
             }
@@ -441,6 +445,10 @@ async fn handle_hooks_verify(path: Option<std::path::PathBuf>) -> ExitCode {
                 super::pre_commit_adapter::status(&project_root, &pre_push_hook.git_path);
             println!("Git hooks verification:");
             println!("Pre-commit adapter: {}", pre_commit.as_str());
+            println!(
+                "Staged pre-commit budget setting: {}",
+                super::hooks::staged_pre_commit_mode(&project_root)
+            );
             for status in &statuses {
                 println!("{}", status.display());
             }

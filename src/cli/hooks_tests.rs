@@ -2,6 +2,17 @@
 use super::*;
 use std::process::Command;
 
+#[test]
+fn staged_dispatch_accepts_windows_checkout_line_endings() {
+    let lf = PRE_COMMIT.replace("\r\n", "\n");
+    let crlf = lf.replace('\n', "\r\n");
+    let setup = staged_dispatch(&crlf);
+    assert_eq!(setup, staged_dispatch(&lf));
+    assert!(setup.contains("exec assura check-change --staged"));
+    assert!(!setup.contains('\r'));
+    assert!(!setup.contains(ADVISORY_PRE_COMMIT));
+}
+
 fn git(project: &Path, args: &[&str]) {
     let output = Command::new("git")
         .arg("-C")
