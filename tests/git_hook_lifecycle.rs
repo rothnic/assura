@@ -84,6 +84,103 @@ fn assura_bin() -> std::path::PathBuf {
 
 #[cfg(unix)]
 #[test]
+fn staged_pre_commit_remains_active_after_linked_worktree_moves() {
+    let fixture = tempfile::tempdir().unwrap();
+    let root = fixture.path().join("primary");
+    let linked = fixture.path().join("linked");
+    let moved = fixture.path().join("moved checkout");
+    let owner = fixture.path().join("owner.yml");
+    std::fs::create_dir(&root).unwrap();
+    std::fs::write(&owner, "max_lines: 2\n").unwrap();
+    assert_git(&root, &["init", "--quiet"]);
+    assert_git(&root, &["config", "user.name", "Assura Test"]);
+    assert_git(&root, &["config", "user.email", "assura@example.invalid"]);
+    assert_git(&root, &["config", "commit.gpgsign", "false"]);
+    assert_git(&root, &["commit", "--allow-empty", "-qm", "initial"]);
+    assert_git(
+        &root,
+        &["worktree", "add", "-qb", "linked", linked.to_str().unwrap()],
+    );
+    assert_git(
+        &root,
+        &[
+            "config",
+            "--local",
+            "assura.ownerPolicy",
+            owner.to_str().unwrap(),
+        ],
+    );
+    assert_git(
+        &root,
+        &["config", "--local", "assura.stagedPreCommit", "true"],
+    );
+
+    let install = Command::new(assura_bin())
+        .current_dir(&linked)
+        .args(["hooks", "install"])
+        .output()
+        .unwrap();
+    assert!(
+        install.status.success(),
+        "{}",
+        command_output_text(&install)
+    );
+    let verify = Command::new(assura_bin())
+        .current_dir(&linked)
+        .args(["hooks", "verify"])
+        .output()
+        .unwrap();
+    assert!(verify.status.success(), "{}", command_output_text(&verify));
+    assert!(command_output_text(&verify).contains("Staged pre-commit budget setting: enabled"));
+
+    assert_git(
+        &root,
+        &[
+            "worktree",
+            "move",
+            linked.to_str().unwrap(),
+            moved.to_str().unwrap(),
+        ],
+    );
+    let launcher = assura_bin();
+    let path = std::env::join_paths(
+        std::iter::once(launcher.parent().unwrap().to_path_buf())
+            .chain(std::env::split_paths(&std::env::var_os("PATH").unwrap())),
+    )
+    .unwrap();
+    for checkout in [&root, &moved] {
+        let file = checkout.join("changed.txt");
+        std::fs::write(&file, "one\ntwo\nthree\n").unwrap();
+        assert_git(checkout, &["add", "changed.txt"]);
+        let commit = || {
+            Command::new("git")
+                .current_dir(checkout)
+                .args(["commit", "-qm", "bounded change"])
+                .env("PATH", &path)
+                .env("HOME", fixture.path())
+                .env("XDG_CONFIG_HOME", fixture.path())
+                .env("GIT_CONFIG_GLOBAL", "/dev/null")
+                .env("GIT_CONFIG_NOSYSTEM", "1")
+                .output()
+                .unwrap()
+        };
+        let blocked = commit();
+        assert_eq!(
+            blocked.status.code(),
+            Some(1),
+            "{}",
+            command_output_text(&blocked)
+        );
+        assert!(command_output_text(&blocked).contains("\"changed.txt\": 3 lines"));
+        std::fs::write(file, "repaired\n").unwrap();
+        assert_git(checkout, &["add", "changed.txt"]);
+        let passed = commit();
+        assert!(passed.status.success(), "{}", command_output_text(&passed));
+    }
+}
+
+#[cfg(unix)]
+#[test]
 fn installed_codex_agent_wrapper_returns_before_async_refresh_finishes() {
     use std::time::{Duration, Instant};
 

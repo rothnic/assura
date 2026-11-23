@@ -93,6 +93,31 @@ publishes and verifies a `.sha256` file next to every archive.
 | `assura info` | Experimental diagnostic | CLI exists, but text output is not an automation contract. |
 | `assura watch` | Supported next-release continuous validation | Watch lifecycle tests prove requested-path scope, initial full validation, safe warm changed-path checks, project-wide-policy fallback, bounded burst coalescing, project-local and external config reload, atomic replacement of file scopes, configured exclusions, runtime-output suppression, actionable text and JSON event metadata, clean interrupt shutdown during sustained edits, and visible termination on watcher failure. |
 
+## Shared and private policy for Git snapshot checks
+
+Set a line budget in a user-owned YAML file, for example
+`$HOME/.config/assura/team-budget.yml` with `max_lines: 400`. Assign that file
+to a repository once.
+
+```sh
+git config --local assura.ownerPolicy "$HOME/.config/assura/team-budget.yml"
+assura check-change --staged
+```
+
+To assign policy to a group of repos, add a Git conditional include for the
+directory containing their Git metadata. The rule also reaches linked
+worktrees outside that directory.
+
+```sh
+git config --file "$HOME/.config/assura/team.gitconfig" assura.ownerPolicy "$HOME/.config/assura/team-budget.yml"
+git config --global --add "includeIf.gitdir:$HOME/workspace/team/.path" "$HOME/.config/assura/team.gitconfig"
+```
+
+A repository can select a private layout file with
+`git config --local assura.projectConfig /absolute/path/to/layout.yml`.
+`assura check-change --staged` reports the selected policy paths and origins.
+Run it after staging an edit to see the applicable file budgets.
+
 ## Managed pre-commit staged budgets
 
 With the current Assura-managed pre-commit hook installed by
@@ -118,10 +143,16 @@ project policy from the proposed commit and resolves external owner policy
 through the snapshot command's existing policy discovery. An owner policy can
 supply the budget by itself.
 
-Check `assura hooks status` for adoption in an existing installation. The
-installer preserves differing sidecars, including older pre-commit scripts.
-If the old sidecar is yours to replace, back it up and move it aside before
-installing the current hook.
+Run `assura hooks install` from the checkout where Assura originally installed
+the hooks, then run `assura hooks verify`. Verification prints the staged budget
+setting and whether the hooks are runnable. An exact v0.4.1 pre-commit script
+paired with a recognized Assura entrypoint upgrades automatically. Custom
+hook files are preserved. If the installer reports preserved artifacts, work
+with the hook owner to add `assura check-change --staged` to their hook.
+
+The managed pre-commit entrypoint runs opted-in staged checks from the active
+checkout, even when a linked worktree is moved. Advisory mode uses the
+checkout-local hook script.
 
 In CI, check the committed tree directly with
 `assura check-change --base "$before_commit" --head "$candidate_commit"`.

@@ -2,6 +2,26 @@
 
 use super::HookType;
 use std::path::{Path, PathBuf};
+use std::process::Command;
+
+pub(in crate::cli) fn staged_pre_commit_mode(root: &Path) -> &'static str {
+    let result = Command::new("git")
+        .current_dir(root)
+        .args([
+            "config",
+            "--local",
+            "--no-includes",
+            "--type=bool",
+            "--get",
+            "assura.stagedPreCommit",
+        ])
+        .output();
+    match result {
+        Ok(output) if output.status.success() && output.stdout.starts_with(b"true") => "enabled",
+        Ok(output) if output.status.success() || output.status.code() == Some(1) => "disabled",
+        _ => "unreadable",
+    }
+}
 
 #[derive(Debug)]
 pub struct HookStatus {
