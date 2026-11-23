@@ -65,7 +65,7 @@
     "unrepaired_exit_code": 1
   },
   "schema": "assura.website-policy-demo.v1",
-  "source_revision": "3fdf1284b5e7ac11d0382b935d9ea4192b959be3",
+  "source_revision": "a4ff201b1a3f7197d8069616122ee542c4f86565",
   "summary": {
     "dirs_checked": 4,
     "files_checked": 8,
