@@ -126,7 +126,7 @@ fn git_local_project_policy_replaces_checkout_policy_and_explains_its_origin() {
 }
 
 #[test]
-fn git_selected_config_is_reloaded_from_disk_and_cache_reselects_it() {
+fn git_selector_switch_refreshes_prepared_check_and_disk_cache() {
     let fixture = Fixture::new();
     fs::remove_file(fixture.repo.join("docs/guide.md")).unwrap();
     let permissive = fixture.root.join("first.yml");
@@ -168,7 +168,68 @@ fn git_selected_config_is_reloaded_from_disk_and_cache_reselects_it() {
     ]);
     assert_exit(cached_check(), 1);
     assert_eq!(prepared.config_path(), permissive);
-    fs::copy(&strict, &permissive).unwrap();
     assert!(prepared.reload_if_config_changed().unwrap());
+    assert_eq!(prepared.config_path(), strict);
     assert!(!prepared.check_path(fixture.repo.clone()).unwrap().success);
+    assert!(!prepared.reload_if_config_changed().unwrap());
+
+    // Identical bytes at another selected path still replace the source.
+    fs::copy(&strict, &permissive).unwrap();
+    fixture.git(&[
+        "config",
+        "assura.projectConfig",
+        permissive.to_str().unwrap(),
+    ]);
+    assert!(prepared.reload_if_config_changed().unwrap());
+    assert_eq!(prepared.config_path(), permissive);
+
+    // Move the winner from the local config to an included file.
+    let include = fixture.root.join("selection.gitconfig");
+    fs::write(
+        &include,
+        format!("[assura]\n\tprojectConfig = {}\n", permissive.display()),
+    )
+    .unwrap();
+    fixture.git(&["config", "--unset", "assura.projectConfig"]);
+    fixture.git(&["config", "include.path", include.to_str().unwrap()]);
+    assert!(prepared.config_content_changed().unwrap());
+    assert!(prepared.reload_if_config_changed().unwrap());
+    assert!(!prepared.reload_if_config_changed().unwrap());
+
+    let mut explicit = PreparedStructureCheck::load_for_path(
+        Some(fixture.repo.clone()),
+        Some(strict.clone()),
+        false,
+    )
+    .unwrap();
+    assert!(!explicit.reload_if_config_changed().unwrap());
+    fs::remove_file(&permissive).unwrap();
+    assert!(prepared.reload_if_config_changed().is_err());
+    assert!(!explicit.reload_if_config_changed().unwrap());
+    fs::write(&permissive, "structure:\n  README.md: exists:1\n").unwrap();
+    assert!(prepared.reload_if_config_changed().unwrap());
+    assert!(prepared.check_path(fixture.repo.clone()).unwrap().success);
+}
+
+#[test]
+fn daemon_marks_a_changed_git_selection_stale_and_refreshes_its_policy() {
+    use assura::daemon::{DaemonCoreError, LocalDaemonCore};
+
+    let fixture = Fixture::new();
+    let first = fixture.root.join("first.yml");
+    let second = fixture.root.join("second.yml");
+    fs::write(&first, "structure:\n  README.md: exists:1\n").unwrap();
+    fs::write(&second, "structure:\n  MISSING.md: exists:1\n").unwrap();
+    fixture.git(&["config", "assura.projectConfig", first.to_str().unwrap()]);
+    let mut daemon = LocalDaemonCore::load(fixture.repo.clone(), None).unwrap();
+    assert_eq!(daemon.health().config_path, first);
+
+    fixture.git(&["config", "assura.projectConfig", second.to_str().unwrap()]);
+    let path = fixture.repo.join("README.md");
+    assert!(matches!(
+        daemon.check_changed_path(path.clone()),
+        Err(DaemonCoreError::Stale(_))
+    ));
+    assert_eq!(daemon.refresh().unwrap().config_path, second);
+    assert!(!daemon.check_changed_path(path).unwrap().success);
 }

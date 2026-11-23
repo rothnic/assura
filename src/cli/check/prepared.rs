@@ -2,8 +2,8 @@
 
 use super::rules::is_excluded_rel_with;
 use super::{
-    compiled_fingerprint::SourceConfigFingerprint, discover_project, CheckError, CheckTargetMode,
-    CompiledStructureConfig, StructureCheckReport, StructureCheckTimings, StructureChecker,
+    project::discover_project_with_origin, CheckError, CheckTargetMode, CompiledStructureConfig,
+    StructureCheckReport, StructureCheckTimings, StructureChecker,
 };
 use crate::config::config::{Config, DirectoryNode, FileBundle};
 use crate::config::loader::ConfigLoader;
@@ -15,13 +15,14 @@ use std::path::{Path, PathBuf};
 ///
 /// This is intended for long-lived editor or daemon sessions where the
 /// configuration usually stays unchanged while checked files change. It keeps
-/// rule planning separate from per-run traversal and reloads only when the
-/// configuration bytes change.
+/// rule planning separate from per-run traversal and reloads when its
+/// configuration selection or bytes change.
 pub struct PreparedStructureCheck {
     project_root: PathBuf,
     config_path: PathBuf,
     config_hash: u64,
-    config_fingerprint: Option<SourceConfigFingerprint>,
+    discovery_anchor: Option<PathBuf>,
+    git_source: Option<(String, PathBuf)>,
     incremental_path_safe: bool,
     fail_fast: bool,
     check_compiled: CompiledStructureConfig,
@@ -60,7 +61,9 @@ impl PreparedStructureCheck {
         }
 
         let checked_path = requested_path.canonicalize()?;
-        let (project_root, discovered_config_path) = discover_project(&checked_path, config_path)?;
+        let discovery_anchor = config_path.is_none().then(|| checked_path.clone());
+        let (project_root, config_path, origin) =
+            discover_project_with_origin(&checked_path, config_path)?;
         if !checked_path.starts_with(&project_root) {
             return Err(CheckError::OutsideProject {
                 checked_path,
@@ -68,7 +71,14 @@ impl PreparedStructureCheck {
             });
         }
 
-        Self::load_project(project_root, discovered_config_path, fail_fast)
+        let git_source = git_source(&config_path, origin)?;
+        let content = fs::read_to_string(&config_path)?;
+        let config = ConfigLoader::parse_validated(&content)?;
+        let mut prepared = Self::from_config(project_root, config_path, config, fail_fast);
+        prepared.config_hash = stable_hash(content.as_bytes());
+        prepared.discovery_anchor = discovery_anchor;
+        prepared.git_source = git_source;
+        Ok(prepared)
     }
 
     /// Validate one path using the prepared configuration.
@@ -235,6 +245,11 @@ impl PreparedStructureCheck {
         &self.config_path
     }
 
+    #[cfg(feature = "full-cli")]
+    pub(crate) fn uses_git_config(&self) -> bool {
+        self.git_source.is_some()
+    }
+
     /// Return the parsed project configuration for lightweight consumers.
     pub(crate) fn config(&self) -> &Config {
         &self.config
@@ -249,9 +264,15 @@ impl PreparedStructureCheck {
         self.incremental_path_safe
     }
 
-    /// Return whether the configuration bytes differ from the prepared plan.
+    /// Return whether the selected configuration or its bytes differ from the prepared plan.
     pub fn config_content_changed(&self) -> Result<bool, CheckError> {
-        let content = fs::read(&self.config_path).map_err(CheckError::Io)?;
+        self.config_update().map(|update| update.is_some())
+    }
+
+    // Watch event normalization checks only the known file. Selection runs once per batch.
+    #[cfg(feature = "full-cli")]
+    pub(crate) fn watched_config_content_changed(&self) -> Result<bool, CheckError> {
+        let content = fs::read(&self.config_path)?;
         Ok(stable_hash(&content) != self.config_hash)
     }
 
@@ -281,7 +302,8 @@ impl PreparedStructureCheck {
             project_root,
             config_path,
             config_hash: 0,
-            config_fingerprint: None,
+            discovery_anchor: None,
+            git_source: None,
             incremental_path_safe,
             fail_fast,
             check_compiled,
@@ -290,51 +312,87 @@ impl PreparedStructureCheck {
         }
     }
 
-    /// Reload the compiled plan only when the configuration content changed.
+    /// Rediscover implicit configuration and reload the compiled plan if its source or bytes changed.
     pub fn reload_if_config_changed(&mut self) -> Result<bool, CheckError> {
-        let content = fs::read_to_string(&self.config_path).map_err(CheckError::Io)?;
-        let config_hash = stable_hash(content.as_bytes());
-        if config_hash == self.config_hash {
-            self.config_fingerprint = SourceConfigFingerprint::from_path(&self.config_path).ok();
+        let Some(update) = self.config_update()? else {
             return Ok(false);
-        }
-
-        let config = ConfigLoader::parse_validated(&content)?;
-        self.incremental_path_safe = config_supports_incremental_path_checks(&config);
-        self.check_compiled =
-            CompiledStructureConfig::new_for_check(config.clone(), self.fail_fast);
-        self.compiled = CompiledStructureConfig::new(config.clone(), self.fail_fast);
-        self.config = config;
-        self.config_hash = config_hash;
-        self.config_fingerprint = SourceConfigFingerprint::from_path(&self.config_path).ok();
+        };
+        let config = ConfigLoader::parse_validated(&config_text(update.content)?)?;
+        let mut next = Self::from_config(
+            update.project_root,
+            update.config_path,
+            config,
+            self.fail_fast,
+        );
+        next.config_hash = update.config_hash;
+        next.discovery_anchor = self.discovery_anchor.take();
+        next.git_source = update.git_source;
+        *self = next;
         Ok(true)
     }
 
-    fn load_project(
-        project_root: PathBuf,
-        config_path: PathBuf,
-        fail_fast: bool,
-    ) -> Result<Self, CheckError> {
-        let content = fs::read_to_string(&config_path).map_err(CheckError::Io)?;
-        let config_hash = stable_hash(content.as_bytes());
-        let config = ConfigLoader::parse_validated(&content)?;
-        let incremental_path_safe = config_supports_incremental_path_checks(&config);
-        let check_compiled = CompiledStructureConfig::new_for_check(config.clone(), fail_fast);
-        let compiled = CompiledStructureConfig::new(config.clone(), fail_fast);
-        let config_fingerprint = SourceConfigFingerprint::from_path(&config_path).ok();
-
-        Ok(Self {
+    fn config_update(&self) -> Result<Option<ConfigUpdate>, CheckError> {
+        let selection = self
+            .discovery_anchor
+            .as_deref()
+            .map(|anchor| {
+                let (root, config, origin) = discover_project_with_origin(anchor, None)?;
+                if !anchor.starts_with(&root) {
+                    return Err(CheckError::OutsideProject {
+                        checked_path: anchor.to_path_buf(),
+                        project_root: root,
+                    });
+                }
+                Ok((root, config, origin))
+            })
+            .transpose()?;
+        let config_path = selection
+            .as_ref()
+            .map_or(self.config_path.as_path(), |(_, path, _)| path.as_path());
+        let content = fs::read(config_path)?;
+        let config_hash = stable_hash(&content);
+        let (project_root, config_path, git_source) = match selection {
+            Some((root, path, origin)) => {
+                let git_source = git_source(&path, origin)?;
+                (root, path, git_source)
+            }
+            None if config_hash == self.config_hash => return Ok(None),
+            None => (self.project_root.clone(), self.config_path.clone(), None),
+        };
+        let changed = project_root != self.project_root
+            || config_path != self.config_path
+            || git_source != self.git_source
+            || config_hash != self.config_hash;
+        Ok(changed.then_some(ConfigUpdate {
             project_root,
             config_path,
+            git_source,
+            content,
             config_hash,
-            config_fingerprint,
-            incremental_path_safe,
-            fail_fast,
-            check_compiled,
-            compiled,
-            config,
-        })
+        }))
     }
+}
+
+struct ConfigUpdate {
+    project_root: PathBuf,
+    config_path: PathBuf,
+    git_source: Option<(String, PathBuf)>,
+    content: Vec<u8>,
+    config_hash: u64,
+}
+
+fn git_source(
+    path: &Path,
+    origin: Option<String>,
+) -> Result<Option<(String, PathBuf)>, CheckError> {
+    origin
+        .map(|origin| Ok((origin, path.canonicalize()?)))
+        .transpose()
+}
+
+fn config_text(bytes: Vec<u8>) -> Result<String, CheckError> {
+    String::from_utf8(bytes)
+        .map_err(|error| std::io::Error::new(std::io::ErrorKind::InvalidData, error).into())
 }
 
 fn config_supports_incremental_path_checks(config: &Config) -> bool {

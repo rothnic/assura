@@ -108,7 +108,7 @@ fn serve(options: Options) -> Result<(), String> {
     let mut cached_exit = None;
     if let Some(status_file) = &options.status_file {
         let initial_dirty = dirty.take();
-        let exit_code = run_check(&mut prepared_check, &root, false);
+        let exit_code = run_check(&prepared_check, &root);
         publish_status_after_generation(&dirty, status_file, exit_code, initial_dirty.generation);
         cached_exit = Some(exit_code);
     }
@@ -182,18 +182,25 @@ fn handle_client_request(
     cached_exit: &mut Option<i32>,
 ) -> (i32, bool) {
     let request_compact_response = request.compact_response();
-    let config_changed_by_fingerprint = match prepared_check.reload_if_config_changed() {
+    // Take the generation before probing policy so later events remain pending.
+    let dirty_state = match &request {
+        ClientRequest::Project { .. } | ClientRequest::DirtyProjectPath { .. } => {
+            Some(dirty.take())
+        }
+        _ => None,
+    };
+    let config_reloaded = match prepared_check.reload_if_config_changed() {
         Ok(changed) => changed,
         Err(error) => {
             let exit_code = exit_code_for_check_error(&error);
             if let Some(status_file) = status_file {
                 publish_dirty_status(dirty, status_file, exit_code);
             }
-            *cached_exit = Some(exit_code);
+            *cached_exit = None;
             return (exit_code, request_compact_response);
         }
     };
-    if config_changed_by_fingerprint {
+    if config_reloaded {
         *cached_exit = None;
         if let Some(status_file) = status_file {
             publish_dirty_status(dirty, status_file, 3);
@@ -202,14 +209,14 @@ fn handle_client_request(
 
     match request {
         ClientRequest::Project { compact_response } => {
-            let dirty_state = dirty.take();
+            let dirty_state = dirty_state.expect("project request took dirty state");
             let generation = dirty_state.generation;
-            let config_changed = dirty_state.config_changed || config_changed_by_fingerprint;
+            let config_changed = dirty_state.config_changed || config_reloaded;
             if config_changed
                 || matches!(dirty_state.project, DirtyProject::Full)
                 || cached_exit.is_none()
             {
-                let exit_code = run_check(prepared_check, root, dirty_state.config_changed);
+                let exit_code = run_check(prepared_check, root);
                 if let Some(status_file) = status_file {
                     publish_status_after_generation(dirty, status_file, exit_code, generation);
                 }
@@ -218,7 +225,7 @@ fn handle_client_request(
                 let exit_code = if *cached_exit == Some(0) {
                     run_incremental_project_check(prepared_check, root, paths)
                 } else {
-                    run_check(prepared_check, root, false)
+                    run_check(prepared_check, root)
                 };
                 if let Some(status_file) = status_file {
                     publish_status_after_generation(dirty, status_file, exit_code, generation);
@@ -228,22 +235,20 @@ fn handle_client_request(
             (cached_exit.unwrap_or(3), compact_response)
         }
         ClientRequest::Path(path) => {
-            let exit_code = run_path_check(prepared_check, root, path, dirty.config_changed());
+            let exit_code = run_path_check(prepared_check, root, path);
             (exit_code, false)
         }
         ClientRequest::DirtyProjectPath {
             path,
             compact_response,
         } => {
-            let dirty_state = dirty.take();
+            let dirty_state = dirty_state.expect("project request took dirty state");
             let generation = dirty_state.generation;
-            let config_changed = dirty_state.config_changed || config_changed_by_fingerprint;
+            let config_changed = dirty_state.config_changed || config_reloaded;
             let exit_code = match (config_changed, dirty_state.project) {
-                (true, _) | (_, DirtyProject::Full) => {
-                    run_check(prepared_check, root, dirty_state.config_changed)
-                }
-                (_, _) if *cached_exit != Some(0) => run_check(prepared_check, root, false),
-                (false, DirtyProject::Clean) => run_path_check(prepared_check, root, path, false),
+                (true, _) | (_, DirtyProject::Full) => run_check(prepared_check, root),
+                (_, _) if *cached_exit != Some(0) => run_check(prepared_check, root),
+                (false, DirtyProject::Clean) => run_path_check(prepared_check, root, path),
                 (false, project) => run_incremental_project_check(
                     prepared_check,
                     root,
@@ -290,13 +295,7 @@ fn watch_root(
     Ok(watcher)
 }
 
-fn run_check(prepared_check: &mut PreparedStructureCheck, root: &Path, reload_config: bool) -> i32 {
-    if reload_config {
-        if let Err(error) = prepared_check.reload_if_config_changed() {
-            return exit_code_for_check_error(&error);
-        }
-    }
-
+fn run_check(prepared_check: &PreparedStructureCheck, root: &Path) -> i32 {
     match prepared_check.check_path(root.to_path_buf()) {
         Ok(report) if report.success => 0,
         Ok(_) => 1,
@@ -304,18 +303,7 @@ fn run_check(prepared_check: &mut PreparedStructureCheck, root: &Path, reload_co
     }
 }
 
-fn run_path_check(
-    prepared_check: &mut PreparedStructureCheck,
-    root: &Path,
-    path: PathBuf,
-    reload_config: bool,
-) -> i32 {
-    if reload_config {
-        if let Err(error) = prepared_check.reload_if_config_changed() {
-            return exit_code_for_check_error(&error);
-        }
-    }
-
+fn run_path_check(prepared_check: &PreparedStructureCheck, root: &Path, path: PathBuf) -> i32 {
     let checked_path = if path.is_absolute() {
         path
     } else {
@@ -329,15 +317,15 @@ fn run_path_check(
 }
 
 fn run_incremental_project_check(
-    prepared_check: &mut PreparedStructureCheck,
+    prepared_check: &PreparedStructureCheck,
     root: &Path,
     paths: Vec<PathBuf>,
 ) -> i32 {
     if !prepared_check.supports_incremental_path_checks() {
-        return run_check(prepared_check, root, false);
+        return run_check(prepared_check, root);
     }
     for path in paths {
-        let exit_code = run_path_check(prepared_check, root, path, false);
+        let exit_code = run_path_check(prepared_check, root, path);
         if exit_code != 0 {
             return exit_code;
         }

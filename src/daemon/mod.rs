@@ -10,7 +10,6 @@ use crate::cli::check::{
 };
 use crate::cli::content_query::context::{ContentQueryError, QueryContext};
 use crate::intelligence::{resource_id, RepositoryReferenceEdge};
-use std::fs;
 use std::path::{Path, PathBuf};
 
 mod fingerprint;
@@ -77,7 +76,6 @@ pub struct LocalDaemonCore {
     context: Option<QueryContext>,
     references_enabled: bool,
     fingerprint: ProjectFingerprint,
-    config_hash: u64,
     generation: u64,
     state: DaemonHealthState,
     reason: String,
@@ -111,19 +109,10 @@ impl LocalDaemonCore {
     ) -> Result<Self, DaemonCoreError> {
         let prepared =
             PreparedStructureCheck::load_for_path(Some(path.clone()), config.clone(), false)?;
-        let context = if references_enabled {
-            Some(QueryContext::load_for_path(
-                path.clone(),
-                config.clone(),
-                false,
-                false,
-                true,
-            )?)
-        } else {
-            None
-        };
+        let context = references_enabled
+            .then(|| load_reference_context(&prepared, &path, config.as_deref()))
+            .transpose()?;
         let fingerprint = ProjectFingerprint::capture(prepared.project_root())?;
-        let config_hash = file_hash(prepared.config_path())?;
         Ok(Self {
             requested_path: path,
             requested_config: config,
@@ -131,7 +120,6 @@ impl LocalDaemonCore {
             context,
             references_enabled,
             fingerprint,
-            config_hash,
             generation: 1,
             state: DaemonHealthState::Running,
             reason: "project state loaded".to_string(),
@@ -181,24 +169,25 @@ impl LocalDaemonCore {
     pub fn refresh(&mut self) -> Result<DaemonHealth, DaemonCoreError> {
         self.state = DaemonHealthState::Warming;
         self.reason = "rebuilding project state".to_string();
-        self.prepared = PreparedStructureCheck::load_for_path(
+        let prepared = PreparedStructureCheck::load_for_path(
             Some(self.requested_path.clone()),
             self.requested_config.clone(),
             false,
         )?;
-        self.context = if self.references_enabled {
-            Some(QueryContext::load_for_path(
-                self.requested_path.clone(),
-                self.requested_config.clone(),
-                false,
-                false,
-                true,
-            )?)
-        } else {
-            None
-        };
-        self.fingerprint = ProjectFingerprint::capture(self.prepared.project_root())?;
-        self.config_hash = file_hash(self.prepared.config_path())?;
+        let context = self
+            .references_enabled
+            .then(|| {
+                load_reference_context(
+                    &prepared,
+                    &self.requested_path,
+                    self.requested_config.as_deref(),
+                )
+            })
+            .transpose()?;
+        let fingerprint = ProjectFingerprint::capture(prepared.project_root())?;
+        self.prepared = prepared;
+        self.context = context;
+        self.fingerprint = fingerprint;
         self.generation += 1;
         self.state = DaemonHealthState::Running;
         self.reason = "project state refreshed".to_string();
@@ -306,7 +295,10 @@ impl LocalDaemonCore {
 
     fn ensure_fresh(&mut self) -> Result<(), DaemonCoreError> {
         self.ensure_config_fresh()?;
+        self.ensure_project_fresh()
+    }
 
+    fn ensure_project_fresh(&mut self) -> Result<(), DaemonCoreError> {
         let latest = ProjectFingerprint::capture(self.prepared.project_root())?;
         if latest == self.fingerprint {
             self.state = DaemonHealthState::Running;
@@ -319,9 +311,9 @@ impl LocalDaemonCore {
     }
 
     fn ensure_config_fresh(&mut self) -> Result<(), DaemonCoreError> {
-        match file_hash(self.config_path()) {
-            Ok(hash) if hash == self.config_hash => Ok(()),
-            Ok(_) => self.stale_config(
+        match self.prepared.config_content_changed() {
+            Ok(false) => Ok(()),
+            Ok(true) => self.stale_config(
                 "configuration changed; refresh required before daemon results are trusted",
             ),
             Err(error) => self.stale_config(format!(
@@ -354,7 +346,7 @@ impl LocalDaemonCore {
         rel_path: &Path,
     ) -> Result<(), DaemonCoreError> {
         if self.project_root().join(rel_path).exists() {
-            self.ensure_fresh()?;
+            self.ensure_project_fresh()?;
         } else {
             self.state = DaemonHealthState::Degraded;
             self.reason =
@@ -414,8 +406,32 @@ impl LocalDaemonCore {
     }
 }
 
-fn file_hash(path: &Path) -> Result<u64, std::io::Error> {
-    fs::read(path).map(|content| crate::stable_hash::stable_hash(&content))
+fn load_reference_context(
+    prepared: &PreparedStructureCheck,
+    requested_path: &Path,
+    requested_config: Option<&Path>,
+) -> Result<QueryContext, ContentQueryError> {
+    if prepared.uses_git_config() {
+        let root = prepared.project_root().to_path_buf();
+        return QueryContext::from_config(
+            root.clone(),
+            prepared.config_path().to_path_buf(),
+            prepared.config(),
+            false,
+            false,
+            true,
+            || prepared.check_path(root),
+        );
+    }
+
+    // Legacy reference clients use the requested path spelling for discovered configs.
+    QueryContext::load_for_path(
+        requested_path.to_path_buf(),
+        requested_config.map(Path::to_path_buf),
+        false,
+        false,
+        true,
+    )
 }
 
 #[cfg(test)]

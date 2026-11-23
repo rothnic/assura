@@ -104,7 +104,7 @@ async fn run_watch(
     let root = prepared.project_root().to_path_buf();
     let config_path = prepared.config_path().to_path_buf();
     let config_watch_parent = separate_config_watch_parent(&watch_scope, &config_path);
-    let context = WatchContext {
+    let mut context = WatchContext {
         root,
         watch_scope_is_file: watch_scope.is_file(),
         watch_scope,
@@ -117,7 +117,7 @@ async fn run_watch(
     let dirty = Arc::new(DirtyState::new());
     let overflowed = Arc::new(AtomicBool::new(false));
     let (sender, mut receiver) = mpsc::channel(WATCH_CHANNEL_CAPACITY);
-    let _watcher = create_watcher(
+    let mut watcher = create_watcher(
         &context.watch_scope,
         context.config_watch_parent.as_deref(),
         sender,
@@ -214,6 +214,35 @@ async fn run_watch(
             batch,
             project_clean,
         );
+        if prepared.config_path() != context.config_path {
+            let next_parent =
+                separate_config_watch_parent(&context.watch_scope, prepared.config_path());
+            if next_parent != context.config_watch_parent {
+                if let Some(parent) = &next_parent {
+                    watcher
+                        .watch(parent, RecursiveMode::NonRecursive)
+                        .map_err(|error| {
+                            WatchError::Runtime(format!(
+                                "watch config directory {}: {error}",
+                                parent.display()
+                            ))
+                        })?;
+                }
+                if let Some(parent) = &context.config_watch_parent {
+                    watcher.unwatch(parent).map_err(|error| {
+                        WatchError::Runtime(format!(
+                            "unwatch config directory {}: {error}",
+                            parent.display()
+                        ))
+                    })?;
+                }
+                context.config_watch_parent = next_parent;
+            }
+            context.config_path = prepared.config_path().to_path_buf();
+        }
+        if prepared.project_root() != context.root {
+            context.root = prepared.project_root().to_path_buf();
+        }
         project_clean = event.report.as_ref().is_some_and(|report| report.success);
         emit_event(format, &event).map_err(WatchError::Runtime)?;
         if let Some(error) = terminal_watcher_error {
@@ -285,7 +314,7 @@ fn record_message(
     match message {
         WatchMessage::Event(mut event) => {
             if !normalize_config_event(&mut event, &context.config_path, || {
-                prepared.config_content_changed().unwrap_or(true)
+                prepared.watched_config_content_changed().unwrap_or(true)
             }) {
                 return;
             }
