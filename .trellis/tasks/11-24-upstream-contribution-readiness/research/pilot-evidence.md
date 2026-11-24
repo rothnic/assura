@@ -65,9 +65,10 @@ reported `--verbose` output shows the pip backend looking for the path as an
 executable, and the uv backend delegating to `uv tool run` and failing to find
 the executable. This is the reporter's environment and observation.
 
-**Disposition** — Search found an exact issue and an existing PR. Use the
-original report, which supplies full verbose traces, and review its linked PR
-instead of filing this draft. [Issue #2501](https://github.com/pypa/pipx/issues/2501),
+**Disposition** — Review found a missing Python executable path and a need to
+attach the reporter's verbose excerpts to a standalone draft. Duplicate search
+found the exact issue and an existing PR. Use the original report and review
+its linked PR. [Issue #2501](https://github.com/pypa/pipx/issues/2501),
 [PR #2502](https://github.com/pypa/pipx/pull/2502)
 
 ## PR draft check
@@ -78,8 +79,8 @@ instead of filing this draft. [Issue #2501](https://github.com/pypa/pipx/issues/
 explicit `--spec` and option-like operands retain their existing routes.
 Regression coverage exercises both backends using the existing local-project
 fixture. A one-line bugfix news fragment describes the restored behavior.
-There are no temporary interpreter overrides or new public commands. The
-patch keeps the documented command form and adds a news fragment for users.
+The patch keeps the documented command form and adds a news fragment for users.
+Temporary interpreter overrides are inapplicable. [Existing local-path behavior](https://github.com/pypa/pipx/blob/9bd278888b88af870e7c6d5da2e87fa49d1a5b59/docs/changelog.rst#L1241)
 
 **Pre-open result** — The patch fits the [pipx brief](pipx-brief.md) at
 +62/−8 across three files (70 changed lines versus a sample median of 134).
@@ -96,8 +97,6 @@ parents exactly match the target and head. `prek run --all-files` passed, and
 the focused tox run passed 8 tests each on Python 3.11.9 and 3.15.2.
 
 The green hosted run for the source head finished at 02:39 UTC, before the
-current target commit at 19:04 UTC on 2026-11-24. This does not establish hosted
-validation of the current integration tree. The pilot's decision is to hold
-readiness pending fresh hosted evidence. No upstream artifact was submitted
-or transitioned. [Hosted run](https://github.com/pypa/pipx/actions/runs/45312144337),
+current target commit at 19:04 UTC on 2026-11-24. The pilot held readiness pending
+hosted validation of the current integration tree. [Hosted run](https://github.com/pypa/pipx/actions/runs/45312144337),
 [current target commit](https://github.com/pypa/pipx/commit/9bd278888b88af870e7c6d5da2e87fa49d1a5b59)

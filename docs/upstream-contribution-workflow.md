@@ -65,6 +65,8 @@ capture_pr_snapshot() (
 
 # Replace upstream and main with the verified remote name and target branch.
 reviewed=$(capture_pr_snapshot upstream main) || exit 1
+head=$(printf '%s\n' "$reviewed" | sed -n '3p')
+base=$(printf '%s\n' "$reviewed" | sed -n '5p')
 ```
 
 Save the snapshot. Inspect `git diff --stat --find-renames "$base" "$head"`

@@ -473,6 +473,9 @@ commands:
         takes_value: true
       --cooldown-seconds:
         takes_value: true
+      --delivery:
+        takes_value: true
+        values: ["automatic", "inspect"]
       --format:
         aliases: ["-f"]
         takes_value: true
