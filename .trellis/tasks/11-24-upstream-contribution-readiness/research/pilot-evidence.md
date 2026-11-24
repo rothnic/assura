@@ -54,6 +54,16 @@ python3 .trellis/tasks/11-24-upstream-contribution-readiness/research/replay.py 
 Measured with local Git 2.47.1, Python 3.14.2 and rustc 1.94.1. Assura binary
 SHA-256 `4786c9af7003db2591ffed99c48ba263305d495d2d093e02622fe01a69a3dc18`.
 
+## Assura checkout migration
+
+Assura now checks in the portable bundle produced by `assura agent integration
+activate codex .`, alongside its separate Trellis prompt hook. The recorded
+activation command delivered a 156-byte `apply_patch` finding in a scratch
+checkout. The cached-command forwarder returned identical context, a pathless
+`git status` event was silent, and the shell wrapper found the project from
+another working directory. A fresh install matched the tracked bundle bytes.
+The pipx replay reproduced the comparison above with the migrated adapter.
+
 ## Issue draft check
 
 **Title** — `pipx run` misses the entry point for an ordinary local project path.

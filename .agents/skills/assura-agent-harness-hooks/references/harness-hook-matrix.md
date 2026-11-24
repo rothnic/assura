@@ -113,6 +113,18 @@ say so; do not promote it to supported until an adapter or proof test exists.
 - Proof: `codex_post_tool_event_injects_bounded_assura_context`
 - Gaps: project trust and exact hook approval remain host-owned; hosted tools can bypass local tool hooks
 
+### Assura checkout - 2026-11-24
+
+- The repository activates the same four Codex groups and portable bundle as a
+  project installation, alongside its Trellis prompt hook.
+- The generated adapter reads path fields or Codex `apply_patch` headers.
+  Shell payloads without paths provide no changed-path hints.
+- `codex_dogfood_uses_exact_generated_bundle_and_trellis_hook` compares a fresh
+  installation in a different root against the checked-in bytes.
+- An open Codex session retained the prior command after `.codex/hooks.json`
+  changed. The previous path forwards to the generated adapter so cached
+  sessions can continue. Fresh sessions use the generated registrations.
+
 ### Claude Code - 2026-08-14
 
 - Source: `https://code.claude.com/docs/en/hooks`

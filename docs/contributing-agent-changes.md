@@ -30,6 +30,15 @@ approval or an NLP-based policy decision.
 
 For changes to another project, use the [upstream contribution workflow](upstream-contribution-workflow.md).
 
+## Codex feedback while developing Assura
+
+This checkout uses the generated Codex integration. Build the candidate with
+`cargo build --locked --bin assura`, put the candidate on `PATH`, then run
+`assura agent integration update codex .` and
+`assura agent integration doctor codex .` from the checkout root. Review the
+generated diff and use Codex `/hooks` to approve new or changed commands.
+Start Codex with that same `PATH` so its hooks exercise the candidate binary.
+
 ## Admin boundary
 
 On 2026-09-06, `master` had no GitHub branch protection and `rothnic` had

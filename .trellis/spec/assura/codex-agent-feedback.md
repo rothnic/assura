@@ -14,8 +14,8 @@ depend on Codex hooks.
 - `assura check [path] --format status [--min-severity <severity>] [--max-issues <count>] [--warn]`
 - `assura check [path] --format agent [--agent generic|codex] [--min-severity <severity>] [--max-issues <count>] [--warn]`
 - `assura agent nudge [path] --agent codex --event after-tool --changed <path> --format json [--min-severity <severity>] [--max-issues <count>]`
-- Codex hook config may call `.codex/hooks/assura-agent-nudge.py` from
-  `UserPromptSubmit` and `PostToolUse`.
+- `assura agent integration activate codex .` generates the adapter and wires
+  `SessionStart`, `UserPromptSubmit`, `PreToolUse`, and `PostToolUse`.
 
 Primary check feedback options:
 
@@ -50,21 +50,20 @@ Primary check feedback options:
 - Codex `PostToolUse` delivery is an optional local adapter over
   `assura agent nudge --agent codex --event after-tool`; it must not create a
   second stable check format or a package-specific feedback binary.
-- Post-tool nudges compare the current Git worktree snapshot with the previous
-  prompt/tool snapshot in the same session, pass changed paths to
-  `assura agent nudge`, and append audit records under
-  `.assura/agent-sessions/*.jsonl`.
-- Post-tool injection is advisory and should be selective: inject when Assura
-  returns `summary.should_inject`, when high-risk Git intent such as commit,
-  merge, rebase, push, reset, clean, checkout, switch, pull, or stash is
-  detected against a dirty worktree, or when the changed-path delta is large
-  enough to warrant interruption.
-- Codex post-tool context is routine-silent unless the existing injection
-  predicate fires. When injected, it is one deterministic line inside an
-  `<assura-nudge>` block, <=256 UTF-8 bytes including the wrapper, and carries
-  the event, tool, intent, changed-path delta, dirty-path count, and at most one
-  selected finding. Audit log/state locations remain in explicit output and
-  are not repeated in routine context.
+- The generated adapter extracts paths from known tool fields and from Codex
+  `apply_patch` headers, then calls the shared nudge command. Pathless shell
+  commands provide no changed-path hints. Event intent alone does not warrant a
+  nudge. Nudge audit records live under `.assura/agent-sessions/`.
+- Routine context is a single selected finding or trajectory line inside an
+  `<assura-feedback>` block, <=256 UTF-8 bytes including the wrapper. The adapter
+  emits it only when Assura sets `summary.should_inject`.
+- The Assura checkout uses the exact installed Codex adapter and its activation
+  groups. Preserve its separate Trellis prompt hook. Bundle bytes are portable
+  between worktrees. Regenerate through the lifecycle CLI and verify drift with
+  `assura agent integration doctor codex .`.
+- Codex sessions that cached the previous checkout command still reach the
+  generated adapter through a forwarding launcher. New registrations point
+  directly at the generated adapter.
 - The Assura release installer installs the Rust CLI only. The npm package may
   provide library helpers for wrappers, but it must not publish separate
   feedback CLI binaries.
@@ -92,9 +91,8 @@ Primary check feedback options:
 | `assura check --format agent --agent codex --warn` has violations | Emit `UserPromptSubmit` hook JSON and exit `0`. |
 | `assura check --format agent --agent codex` has violations without `--warn` | Emit `UserPromptSubmit` hook JSON and exit `1`. |
 | `assura check --format agent --agent codex --min-severity medium --max-issues 1` | Emit hook JSON with filtered/bounded feedback context. |
-| Codex `PostToolUse` follows a mutating tool and changed paths violate Assura policy | Emit `PostToolUse` hook JSON with an `<assura-nudge>` block and append nudge/state JSONL records. |
-| Codex `PostToolUse` follows a non-mutating tool with no changed-path delta and no high-risk Git intent | Append an audit record if the wrapper runs, but emit no stdout context. |
-| Codex `PostToolUse` detects `git commit`, `git merge`, or similar high-risk Git intent while the worktree is dirty | Emit `PostToolUse` hook JSON even when the changed-path delta is zero, so the agent sees commit/merge pressure. |
+| Codex `PostToolUse` supplies paths with eligible violations | Emit `PostToolUse` hook JSON with an `<assura-feedback>` block and a nudge audit record. |
+| Codex `PostToolUse` supplies no eligible path or other signal | Emit no stdout context. |
 | `assura check --format codex-hook` | Reject as an unsupported format. |
 | `assura check --format status --agent codex` | Reject because delivery adapters require `--format agent`. |
 | Unsupported `assura check` arguments | Follow normal `assura check` parse errors and exit `2`. |
@@ -104,16 +102,15 @@ Primary check feedback options:
 - Good: A project appends `assura check --format agent --agent codex . --warn`
   to existing `UserPromptSubmit` hooks and receives advisory context on each
   prompt.
-- Good: A project appends `.codex/hooks/assura-agent-nudge.py` to Codex
-  `PostToolUse` with matcher `*`; after a mutating tool call it logs an
-  `after_tool` nudge and injects only when policy warrants interruption.
+- Good: A project activates the generated adapter alongside its own hooks.
+  The adapter forwards path-bearing edits and emits only selected nudges.
 - Base: A user runs `assura check --format agent . --warn` manually and sees
   stable Assura agent feedback JSON on stdout.
 - Bad: Documentation implies hooks run without Codex hook enablement/approval,
   the hook edits `.codex/hooks.json` automatically, a new per-agent feedback
   management binary is the stable API, each agent needs a distinct
   `--format <agent>-hook` value, or post-tool hooks inject on every tool call
-  without considering changed paths, severity, Git intent, or auditability.
+  without considering changed paths, severity, or auditability.
 - Blocking regression: A PR reintroduces `assura-codex-feedback`, documents
   `assura check --format codex-hook` as valid, or presents package executable
   entrypoints as the normal user-facing path instead of `assura check`.
@@ -125,11 +122,11 @@ Primary check feedback options:
   blocking thresholds.
 - Regression tests for `assura check --format agent --agent codex` advisory and
   blocking exit behavior.
-- Integration tests for `.codex/hooks.json` wiring of Codex `PostToolUse`.
-- Integration tests that simulate Codex `PostToolUse` JSON, verify changed-path
-  delta detection, verify high-risk Git intent injection, and assert
-  `.assura/agent-sessions/nudges.jsonl` plus
-  `.assura/agent-sessions/codex-hook-state.jsonl` audit records.
+- Integration tests check exact generated bundle and `.codex/hooks.json`
+  parity in a second checkout while preserving the Trellis prompt hook.
+- Verify that an `apply_patch` event forwards changed paths, logs to
+  `.assura/agent-sessions/nudges.jsonl`, and emits bounded context. Verify a
+  pathless Git command remains quiet without an eligible signal.
 - Delivery tests must assert the routine context byte ceiling, valid UTF-8,
   one selected finding, and omission of repeated log/state metadata.
 - Packaging smoke with `npm pack --dry-run` must not expose package executable
@@ -167,8 +164,8 @@ shape per agent.
 }
 ```
 
-Running the full project check after every tool call is too noisy and lacks
-changed-path, Git-intent, and audit-state context.
+Running the full project check after every tool call produces avoidable context.
+The generated adapter requests event-specific nudges.
 
 ### Correct
 
@@ -182,25 +179,9 @@ Pair hook snippets with Codex hook enablement/approval prerequisites and explain
 that `--warn` makes validation feedback advisory while omitting `--warn` uses
 normal `assura check` blocking behavior.
 
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/assura-agent-nudge.py\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ]
-  }
-}
+```sh
+assura agent integration activate codex .
+assura agent integration doctor codex .
 ```
 
-The adapter should call `assura agent nudge --agent codex --event after-tool`,
-log the nudge payload, track the previous Git snapshot, and inject compact
-context only when severity, changed paths, or high-risk Git intent justify it.
+Use the host's hook approval when activating or refreshing its commands.

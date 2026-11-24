@@ -98,12 +98,12 @@ Ship the small instruction corrections with this product fix.
 **Modify:** `src/cli/agent_nudge.rs`, `agent_nudge_helpers.rs`,
 `agent_nudge_cooldown.rs`; `src/cli/content_query/agent_query.rs`,
 `context.rs`; `src/cli/check/prepared.rs`; `src/daemon/mod.rs`;
-`.codex/hooks/assura-agent-nudge.py`; relevant generated carriers in
-`src/cli/agent_integration_templates.rs` and `agent_integration_bundle.rs`;
+the generated carriers in `src/cli/agent_integration_templates.rs` and
+`agent_integration_bundle.rs`;
 the read-only execution helpers
 `.agents/skills/assura-goal-execution/scripts/audit-ledger.sh` and
-`audit-context-routing.py`. Confirm the generated carrier; editing the
-repository hook alone is insufficient.
+`audit-context-routing.py`. Regenerate the repository's installed Codex bundle
+with the lifecycle command and verify it against a fresh installation.
 
 **Test:** `tests/content_query_cli.rs`, `tests/agent_surface_cli.rs`, and a
 focused `tests/agent_process_contract_tests.py` fixture for the execution
