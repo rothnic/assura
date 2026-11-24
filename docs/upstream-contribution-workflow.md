@@ -47,13 +47,15 @@ capture_pr_snapshot() (
     ref="refs/heads/$2"
     git remote get-url -- "$1" >/dev/null || exit 1
     git check-ref-format "$ref" || exit 1
+    shallow=$(git rev-parse --is-shallow-repository) || exit 1
+    [ "$shallow" = false ] || { echo 'Fetch complete history before reviewing the patch.' >&2; exit 1; }
     git fetch --quiet --no-tags --no-write-fetch-head --refmap= -- "$1" "$ref" || exit 1
     target_line=$(git ls-remote --exit-code --refs -- "$1" "$ref") || exit 1
     target=${target_line%%[[:space:]]*}
     tab=$(printf '\t')
     [ "$target_line" = "$target$tab$ref" ] || exit 1
-    status=$(git status --porcelain=v1 --untracked-files=normal) || exit 1
-    [ -z "$status" ] || { echo 'Snapshot requires a clean checkout.' >&2; exit 1; }
+    checkout_status=$(git status --porcelain=v1 --untracked-files=normal) || exit 1
+    [ -z "$checkout_status" ] || { echo 'Snapshot requires a clean checkout.' >&2; exit 1; }
     head=$(git rev-parse --verify HEAD) || exit 1
     base=$(git merge-base --all "$target" "$head") || exit 1
     case "$base" in

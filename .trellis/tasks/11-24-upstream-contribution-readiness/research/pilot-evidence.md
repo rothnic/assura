@@ -19,7 +19,7 @@ at the review boundaries and retains the current advisory settings.
 | Total context UTF-8 bytes, including wrappers | 947 | 947 | 1,345 |
 | Context on ordinary successful commit events | 0 | 0 | 0 |
 | Automatic patch-size responses | 0 | 0 | 4 |
-| Exercised boundary controls | — | 7 | — |
+| Exercised boundary controls | — | 8 | — |
 
 These are response bytes in actual `additionalContext` fields from the installed
 hook command under replayed Codex events. Token use and live model behavior were
@@ -35,7 +35,7 @@ Growth to 1,740 failed the explicit snapshot check against the inherited 1,629
 limit. The default hook still allowed that checkpoint, and the staged opt-in
 rejected the next line while preserving HEAD. Additional controls distinguished
 a fork tracking ref from the intended target, rejected missing and ambiguous
-bases, rejected stale saved snapshots on target and head changes independently,
+bases and shallow history, rejected stale snapshots on separate target and head changes,
 rejected an untracked worktree file, and reported unknown binary line counts.
 Existing Git and Assura inspection covered these cases. No added-line policy was
 needed from `ae-whr.10`.

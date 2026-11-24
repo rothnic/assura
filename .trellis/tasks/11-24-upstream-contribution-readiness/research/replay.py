@@ -206,6 +206,9 @@ def boundary_controls(project, upstream, base):
     assert original == ['upstream', 'main', head, base, base]
     verify(project, original)
     snapshot(project, 'missing', expected=1)
+    shallow = RUN / 'shallow'
+    git(project, 'clone', '--quiet', '--depth=1', '--origin=upstream', upstream.as_uri(), str(shallow))
+    snapshot(shallow, expected=1)
     tree = git(project, 'rev-parse', 'HEAD^{tree}')
     advanced = git(project, 'commit-tree', tree, '-p', base, '-m', 'advance target')
     git(upstream, 'fetch', '--quiet', '--no-write-fetch-head', str(project), advanced)
@@ -231,8 +234,9 @@ def boundary_controls(project, upstream, base):
     git(upstream, 'update-ref', 'refs/heads/main', merged_a)
     git(project, 'update-ref', 'HEAD', merged_b)
     snapshot(project, expected=1)
-    return ['push tracking differs from review target', 'missing target', 'stale target',
-            'stale head', 'untracked path', 'binary line count unknown', 'ambiguous merge base']
+    return ['push tracking differs from review target', 'missing target', 'shallow history',
+            'stale target', 'stale head', 'untracked path', 'binary line count unknown',
+            'ambiguous merge base']
 
 
 assert ASSURA.name == 'assura'
