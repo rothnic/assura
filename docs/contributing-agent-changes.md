@@ -28,6 +28,8 @@ gate implementation, performance-report surfaces, or
 CI-scope/workflow files change. This is a visible review prompt, not automated
 approval or an NLP-based policy decision.
 
+For changes to another project, use the [upstream contribution workflow](upstream-contribution-workflow.md).
+
 ## Admin boundary
 
 On 2026-09-06, `master` had no GitHub branch protection and `rothnic` had
