@@ -23,6 +23,7 @@
 !.trellis/**/
 !.trellis/.version
 !.trellis/.template-hashes.json
+!/.gitattributes
 !.gitignore
 
 # ============================================================================

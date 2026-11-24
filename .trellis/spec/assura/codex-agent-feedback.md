@@ -59,8 +59,9 @@ Primary check feedback options:
   emits it only when Assura sets `summary.should_inject`.
 - The Assura checkout uses the exact installed Codex adapter and its activation
   groups. Preserve its separate Trellis prompt hook. Bundle bytes are portable
-  between worktrees. Regenerate through the lifecycle CLI and verify drift with
-  `assura agent integration doctor codex .`.
+  between worktrees. Git checks out the generated Codex bundle with LF endings
+  so its hashes match the installer. Regenerate through the lifecycle CLI and
+  verify drift with `assura agent integration doctor codex .`.
 - Codex sessions that cached the previous checkout command still reach the
   generated adapter through a forwarding launcher. New registrations point
   directly at the generated adapter.
