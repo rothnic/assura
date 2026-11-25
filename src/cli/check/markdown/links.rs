@@ -149,7 +149,7 @@ impl StructureChecker {
     }
 }
 
-fn github_heading_slugs(content: &str) -> HashSet<String> {
+pub(in crate::cli::check) fn github_heading_slugs(content: &str) -> HashSet<String> {
     let mut counts = HashMap::<String, usize>::new();
     let mut slugs = HashSet::new();
     for heading in markdown_headings(content) {

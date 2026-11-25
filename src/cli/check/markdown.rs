@@ -11,6 +11,7 @@ use super::rules::{display_rel, parse_frontmatter};
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::MarkdownBundle;
 use common_lint::validate_markdown_common_lints;
+pub(super) use links::github_heading_slugs;
 use outline::validate_markdown_outline;
 #[cfg(feature = "json-output")]
 use rumdl_adapter::validate_rumdl_markdownlint_candidate;

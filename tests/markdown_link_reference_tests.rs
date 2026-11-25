@@ -174,3 +174,93 @@ fn markdown_link_check_uses_rendered_heading_text_for_anchor_slugs() {
     assert!(status.success(), "report: {json:#}");
     assert_eq!(json["violations"].as_array().unwrap().len(), 0);
 }
+
+#[test]
+fn markdown_and_repository_reference_checks_agree_on_heading_anchors() {
+    let project = write_project(
+        r#"# Note
+
+[Install](target.md#install-steps)
+[Repeated heading](target.md#install-steps-1)
+[Fenced heading](target.md#fenced-section)
+[Frontmatter comment](target.md#frontmatter-only)
+[Missing heading](target.md#missing-heading)
+<!-- assura-ignore markdown_link_heading_anchor: target is supplied by the docs overlay -->
+[Suppressed heading](target.md#suppressed-heading)
+"#,
+    );
+    fs::write(
+        project.path().join(".assura/config.yml"),
+        r#"
+structure:
+  ./:
+    extra: true
+    children:
+      docs/:
+        markdown:
+          check_links: true
+          rules:
+            markdown_link_heading_anchor:
+              severity: low
+extensions:
+  repository_references:
+    - id: source_refs
+      paths:
+        - "src/**"
+      severity: high
+"#,
+    )
+    .unwrap();
+    fs::write(project.path().join("docs/install.md"), "# Install\n").unwrap();
+    fs::write(
+        project.path().join("docs/target.md"),
+        r#"---
+# Frontmatter Only
+title: Target
+---
+# Target Doc
+
+## [Install Steps](install.md)
+## Install Steps
+
+```markdown
+## Fenced Section
+```
+"#,
+    )
+    .unwrap();
+    fs::write(
+        project.path().join("src/lib.rs"),
+        r#"// See docs/target.md#install-steps for installation.
+// See docs/target.md#install-steps-1 for the repeated heading.
+// See docs/target.md#fenced-section for a fenced heading.
+// See docs/target.md#frontmatter-only for a frontmatter comment.
+// See docs/target.md#missing-heading for a missing heading.
+"#,
+    )
+    .unwrap();
+
+    let (status, json) = check_json(&project);
+
+    assert_eq!(status.code(), Some(1), "report: {json:#}");
+    let violations = json["violations"].as_array().unwrap();
+    assert_eq!(violations.len(), 6, "report: {json:#}");
+    for (path, rule, severity) in [
+        ("docs/note.md", "markdown_link_heading_anchor", "low"),
+        ("src/lib.rs", "repository_reference_anchor", "high"),
+    ] {
+        for anchor in ["fenced-section", "frontmatter-only", "missing-heading"] {
+            assert!(
+                violations.iter().any(|violation| {
+                    violation["path"] == path
+                        && violation["rule"] == rule
+                        && violation["severity"] == severity
+                        && violation["message"]
+                            .as_str()
+                            .is_some_and(|message| message.contains(&format!("#{anchor}'")))
+                }),
+                "missing {rule} for {anchor}: {json:#}"
+            );
+        }
+    }
+}
