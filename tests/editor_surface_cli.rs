@@ -3,6 +3,7 @@ use std::fs;
 use std::io::{BufRead, BufReader, Write};
 use std::path::Path;
 use std::process::{Child, ChildStdin, Command, Output, Stdio};
+use std::time::{Duration, Instant};
 
 const MISSING_REFERENCE: &str = "tests/fixtures/content_runtime/missing_reference";
 const BEACON_INVALID: &str = "tests/fixtures/project_intelligence_real_repo/beacon_crm/invalid";
@@ -76,13 +77,31 @@ struct EditorSession {
 
 impl EditorSession {
     fn start(path: &str) -> Self {
-        let mut child = Command::new(assura_bin())
-            .args(["editor", "session", path])
+        Self::start_with_ready_file(path, None)
+    }
+
+    fn start_with_ready_file(path: &str, ready: Option<&Path>) -> Self {
+        let mut command = Command::new(assura_bin());
+        command.args(["editor", "session", path]);
+        if let Some(ready) = ready {
+            command.env("ASSURA_EDITOR_SESSION_READY_FILE", ready);
+        }
+        let mut child = command
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
             .expect("editor session process starts");
+        if let Some(ready) = ready {
+            let deadline = Instant::now() + Duration::from_secs(5);
+            while !ready.is_file() {
+                assert!(
+                    child.try_wait().expect("status").is_none() && Instant::now() < deadline,
+                    "editor session did not signal readiness"
+                );
+                std::thread::sleep(Duration::from_millis(10));
+            }
+        }
         let stdin = child.stdin.take().expect("editor session stdin");
         let stdout = BufReader::new(child.stdout.take().expect("editor session stdout"));
         Self {
@@ -346,5 +365,50 @@ fn editor_surface_reports_invalid_methods_and_conservative_reload() {
     assert_eq!(reloaded["ok"], true);
     assert_eq!(reloaded["reload"]["state"], "reloaded");
 
+    session.finish();
+}
+
+#[test]
+fn editor_surface_reloads_before_first_valid_request_and_recovers_after_failure() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    let project = temp.path().join("project");
+    copy_dir(Path::new(BEACON_INVALID), &project);
+    let config = project.join(".assura/config.yml");
+    let original = fs::read_to_string(&config).expect("read config");
+    let ready = temp.path().join("editor-ready.txt");
+    let mut session = EditorSession::start_with_ready_file(project.to_str().unwrap(), Some(&ready));
+
+    fs::write(&config, format!("{original}\n# first refresh\n")).expect("change config");
+    let malformed = session.request(serde_json::json!({"request_id": "malformed"}));
+    assert_eq!(malformed["sequence"], 1);
+    assert_eq!(malformed["error"]["code"], "invalid_request");
+    assert_eq!(malformed["reload"]["state"], "not_checked");
+
+    let request = serde_json::json!({
+        "request_id": "editor",
+        "method": "textDocument/diagnostics",
+        "params": {"uri": "docs/epics/epic_checkout.md"}
+    });
+    let first = session.request(request.clone());
+    assert_eq!(first["sequence"], 2);
+    assert_eq!(first["reload"]["state"], "reloaded");
+    assert_eq!(first["ok"], true);
+
+    fs::write(&config, "structure: [").expect("write invalid config");
+    let failed = session.request(request.clone());
+    assert_eq!(failed["sequence"], 3);
+    assert_eq!(failed["request_id"], "editor");
+    assert_eq!(failed["error"]["code"], "reload_failed");
+    assert_eq!(failed["reload"]["state"], "reload_failed");
+
+    fs::write(&config, format!("{original}\n# restored\n")).expect("restore config");
+    let recovered = session.request(request.clone());
+    assert_eq!(recovered["sequence"], 4);
+    assert_eq!(recovered["reload"]["state"], "reloaded");
+    assert_eq!(recovered["ok"], true);
+    let reused = session.request(request);
+    assert_eq!(reused["sequence"], 5);
+    assert_eq!(reused["reload"]["state"], "reused");
+    assert_eq!(reused["result"], recovered["result"]);
     session.finish();
 }

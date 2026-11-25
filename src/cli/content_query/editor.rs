@@ -1,14 +1,14 @@
 //! Local JSON-line editor protocol over project-intelligence facts.
 
 use super::agent_query::safe_fixes;
-use super::context::{ContentQueryError, QueryContext};
+use super::context::ContentQueryError;
 use super::context_pack::{context_pack, ContextPackRequest};
 use super::editor_protocol::{
     diagnostic_matches_path, document_target, lsp_diagnostic, paths_match, portable_path,
     DocumentTarget, EditorRequest, EditorRequestError, EditorResponse,
 };
 use super::facts::resources_by_id;
-use super::session::{ProjectFingerprint, SessionReloadOutput};
+use super::session_context::{SessionContext, SessionReloadOutput};
 use crate::cli::ExitCode;
 use crate::intelligence::ProjectFact;
 use serde::Serialize;
@@ -74,25 +74,15 @@ pub(crate) fn editor_session_command(path: Option<PathBuf>, config: Option<PathB
 }
 
 struct EditorSession {
-    path: PathBuf,
-    config: Option<PathBuf>,
-    context: QueryContext,
-    fingerprint: ProjectFingerprint,
+    project: SessionContext,
     sequence: usize,
-    first_response: bool,
 }
 
 impl EditorSession {
     fn load(path: PathBuf, config: Option<PathBuf>) -> Result<Self, ContentQueryError> {
-        let context = QueryContext::load_for_path(path.clone(), config.clone(), false, true, true)?;
-        let fingerprint = ProjectFingerprint::capture(&context.project_root)?;
         Ok(Self {
-            path,
-            config,
-            context,
-            fingerprint,
+            project: SessionContext::load(path, config)?,
             sequence: 0,
-            first_response: true,
         })
     }
 
@@ -111,7 +101,7 @@ impl EditorSession {
                 );
             }
         };
-        let reload = match self.ensure_fresh() {
+        let reload = match self.project.ensure_fresh() {
             Ok(reload) => reload,
             Err(error) => {
                 return EditorResponse::error(
@@ -144,33 +134,6 @@ impl EditorSession {
         }
     }
 
-    fn ensure_fresh(&mut self) -> Result<SessionReloadOutput, ContentQueryError> {
-        let latest = ProjectFingerprint::capture(&self.context.project_root)?;
-        if self.first_response {
-            self.first_response = false;
-            if latest == self.fingerprint {
-                return Ok(SessionReloadOutput::initial(&self.context));
-            }
-            self.context = QueryContext::load_for_path(
-                self.path.clone(),
-                self.config.clone(),
-                false,
-                true,
-                true,
-            )?;
-            self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
-            return Ok(SessionReloadOutput::reloaded(&self.context));
-        }
-        if latest == self.fingerprint {
-            return Ok(SessionReloadOutput::reused(&self.context));
-        }
-
-        self.context =
-            QueryContext::load_for_path(self.path.clone(), self.config.clone(), false, true, true)?;
-        self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
-        Ok(SessionReloadOutput::reloaded(&self.context))
-    }
-
     fn run_request(&self, request: &EditorRequest) -> Result<Value, EditorRequestError> {
         match request.method.as_str() {
             "textDocument/diagnostics" => self.diagnostics(&request.params),
@@ -186,7 +149,8 @@ impl EditorSession {
     fn diagnostics(&self, params: &Value) -> Result<Value, EditorRequestError> {
         let target = self.document_target(params)?;
         let diagnostics = self
-            .context
+            .project
+            .context()
             .store
             .facts()
             .facts
@@ -245,7 +209,7 @@ impl EditorSession {
         });
         let id = explicit_id.or_else(|| inferred.as_ref().map(|(_, id)| id.to_string()));
         let pack = context_pack(
-            &self.context,
+            self.project.context(),
             ContextPackRequest {
                 collection: collection.as_ref(),
                 id: id.as_ref(),
@@ -262,7 +226,7 @@ impl EditorSession {
 
     fn code_actions(&self, params: &Value) -> Result<Value, EditorRequestError> {
         let target = self.document_target(params)?;
-        let actions = safe_fixes(&self.context)
+        let actions = safe_fixes(self.project.context())
             .safe_fixes
             .into_iter()
             .filter(|fix| {
@@ -301,12 +265,13 @@ impl EditorSession {
     }
 
     fn document_target(&self, params: &Value) -> Result<DocumentTarget, EditorRequestError> {
-        document_target(&self.context, params)
+        document_target(self.project.context(), params)
     }
 
     fn instance_for_path(&self, path: &Path) -> Option<(String, String)> {
-        let resources = resources_by_id(self.context.store.facts());
-        self.context
+        let resources = resources_by_id(self.project.context().store.facts());
+        self.project
+            .context()
             .store
             .facts()
             .facts
