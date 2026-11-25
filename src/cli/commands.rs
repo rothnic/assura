@@ -10,6 +10,7 @@ use crate::cli::check_report::format_structure_report;
 use crate::cli::init_support::{
     materialize_recipe_starter_files, materialize_starter, recipe_config, StarterInitError,
 };
+use crate::cli::local_recipe::write_config_atomically;
 use crate::cli::MarkdownFixRuleArg;
 use crate::cli::{AgentOnboardingTarget, CheckCommandOptions, ConfigDiscovery, ExitCode};
 use crate::config::config::{Config, DirectoryNode};
@@ -303,17 +304,7 @@ fn add_recipe(
         });
     }
 
-    let temporary = config_path.with_extension("yml.assura-tmp");
-    std::fs::write(&temporary, &rendered).map_err(|error| {
-        StarterInitError::Runtime(format!("failed to write {}: {error}", temporary.display()))
-    })?;
-    std::fs::rename(&temporary, &config_path).map_err(|error| {
-        let _ = std::fs::remove_file(&temporary);
-        StarterInitError::Runtime(format!(
-            "failed to replace {}: {error}",
-            config_path.display()
-        ))
-    })?;
+    write_config_atomically(&config_path, &rendered)?;
     materialize_recipe_starter_files(&project_root, &[recipe])?;
     println!("Updated {}", config_path.display());
     Ok(RecipeMergeResult {
@@ -830,6 +821,33 @@ structure:
             .unwrap()
             .contains("agent-entrypoint"));
 
+        let original = std::fs::read(&config_path).unwrap();
+        let pid = std::process::id();
+        // Occupy the writer's bounded staging slots to force a filesystem failure.
+        let staging: Vec<_> = (0..128)
+            .map(|attempt| assura.join(format!(".config.yml.{pid}.{attempt}.assura-tmp")))
+            .collect();
+        for path in &staging {
+            std::fs::write(path, "reserved").unwrap();
+        }
+        let error = add_recipe(
+            Some(root.path().to_path_buf()),
+            None,
+            crate::cli::args::InitRecipe::AgenticCore,
+            false,
+            false,
+        )
+        .unwrap_err();
+        assert!(error
+            .message()
+            .contains("failed to allocate a temporary config"));
+        assert_eq!(std::fs::read(&config_path).unwrap(), original);
+        let starter_files = ["AGENTS.md", "README.md", "docs/agent-guidance.md"];
+        for file in starter_files {
+            assert!(!root.path().join(file).exists());
+        }
+        std::fs::remove_file(&staging[1]).unwrap();
+
         add_recipe(
             Some(root.path().to_path_buf()),
             None,
@@ -841,9 +859,11 @@ structure:
         let written = std::fs::read_to_string(&config_path).unwrap();
         assert!(written.contains("agent-entrypoint"));
         ConfigLoader::parse_validated(&written).unwrap();
-        assert!(root.path().join("AGENTS.md").exists());
-        assert!(root.path().join("README.md").exists());
-        assert!(root.path().join("docs/agent-guidance.md").exists());
+        assert_eq!(std::fs::read_to_string(&staging[0]).unwrap(), "reserved");
+        assert!(!staging[1].exists());
+        for file in starter_files {
+            assert!(root.path().join(file).exists());
+        }
     }
 
     #[test]
@@ -864,6 +884,20 @@ structure:
         )
         .unwrap_err();
         assert!(error.message().contains("rules.agent-entrypoint.max_lines"));
-        assert_eq!(std::fs::read_to_string(config_path).unwrap(), original);
+        assert_eq!(std::fs::read_to_string(&config_path).unwrap(), original);
+
+        let forced = add_recipe(
+            Some(root.path().to_path_buf()),
+            None,
+            crate::cli::args::InitRecipe::AgenticCore,
+            false,
+            true,
+        )
+        .unwrap();
+        assert_eq!(
+            std::fs::read_to_string(&config_path).unwrap(),
+            forced.rendered
+        );
+        assert!(!forced.rendered.contains("max_lines: 999"));
     }
 }
