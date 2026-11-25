@@ -582,6 +582,39 @@ fn codex_host_command_runs_outside_a_git_repository() {
 }
 
 #[test]
+fn json_hosts_refuse_drifted_assura_hook_entries_without_rewriting_config() {
+    for agent in ["codex", "claude"] {
+        let project = project_fixture();
+        activate(project.path(), agent);
+        let config_path = activation_path(project.path(), agent);
+        let mut drifted: Value =
+            serde_json::from_slice(&fs::read(&config_path).unwrap()).expect("host config");
+        drifted["hooks"]["SessionStart"][0]["hooks"][0]["timeout"] = Value::from(25);
+        let drifted_bytes = serde_json::to_vec_pretty(&drifted).unwrap();
+        fs::write(&config_path, &drifted_bytes).unwrap();
+
+        let status = agent_json(project.path(), &["integration", "status", agent]);
+        assert_eq!(status["activation"]["activated"], true, "{status}");
+        assert_eq!(status["activation"]["verified"], false, "{status}");
+        assert_eq!(status["activation"]["conflicted"], true, "{status}");
+
+        for (action, diagnostic) in [
+            ("activate", "conflicts with unmanaged edits"),
+            (
+                "deactivate",
+                "refusing to remove drifted Assura host activation",
+            ),
+        ] {
+            let output = run_agent(project.path(), &["integration", action, agent]);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            assert!(!output.status.success(), "{agent} {action}: {stderr}");
+            assert!(stderr.contains(diagnostic), "{agent} {action}: {stderr}");
+            assert_eq!(fs::read(&config_path).unwrap(), drifted_bytes);
+        }
+    }
+}
+
+#[test]
 fn activation_failure_rolls_back_bundle_changes() {
     let fresh = project_fixture();
     let plugin = activation_path(fresh.path(), "opencode");
