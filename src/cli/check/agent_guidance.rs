@@ -5,6 +5,7 @@ mod paths;
 mod routing;
 mod skill;
 
+use super::patterns::matches_any_depth_aware_glob;
 use super::rules::{display_rel, is_excluded_rel_with};
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
 use crate::config::config::AgentGuidanceConfig;
@@ -14,7 +15,7 @@ use markdown::{
 };
 use paths::{
     checked_path_relevant_to, checked_path_relevant_to_any, compile_agent_guidance_patterns,
-    pattern_matches_any, safe_agent_guidance_path,
+    safe_agent_guidance_path,
 };
 use routing::{
     compile_skill_name_patterns, skill_name_from_path, skill_reference_allowed, SkillRoutingTable,
@@ -101,7 +102,7 @@ impl StructureChecker {
             if self.is_excluded_rel(&rel) {
                 continue;
             }
-            if pattern_matches_any(&compiled, &rel) {
+            if matches_any_depth_aware_glob(&compiled, &rel) {
                 matches.push(rel);
             }
         }

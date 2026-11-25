@@ -132,6 +132,40 @@ fn check_docs_lifecycle_accepts_all_configured_statuses() {
 }
 
 #[test]
+fn check_docs_lifecycle_frontmatter_globs_require_recursive_matching_for_nested_docs() {
+    let project = TempDir::new().unwrap();
+    let config = docs_lifecycle_config(false);
+    fs::create_dir_all(project.path().join("docs/goals/nested")).unwrap();
+    for path in ["docs/goals/direct.md", "docs/goals/nested/child.md"] {
+        fs::write(project.path().join(path), "# Missing status\n").unwrap();
+    }
+
+    for (pattern, expected_paths) in [
+        ("docs/goals/*.md", vec!["docs/goals/direct.md"]),
+        (
+            "docs/goals/**/*.md",
+            vec!["docs/goals/direct.md", "docs/goals/nested/child.md"],
+        ),
+    ] {
+        write_config(&project, &config.replace("docs/goals/*.md", pattern));
+        let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+        let mut paths = report
+            .violations
+            .iter()
+            .map(|violation| {
+                assert!(
+                    violation.message.contains("requires frontmatter status"),
+                    "{violation:?}"
+                );
+                violation.path.to_string_lossy().replace('\\', "/")
+            })
+            .collect::<Vec<_>>();
+        paths.sort();
+        assert_eq!(paths, expected_paths, "{pattern}");
+    }
+}
+
+#[test]
 fn check_docs_lifecycle_reports_missing_status_historical_link_and_claim_drift() {
     let project = TempDir::new().unwrap();
     write_config(&project, &docs_lifecycle_config(false));
