@@ -68,6 +68,7 @@ mod rule_plan;
 mod rules;
 #[cfg(test)]
 mod rules_tests;
+mod rust_exports;
 mod scope_patterns;
 #[cfg(feature = "full-cli")]
 pub(super) mod snapshot;
