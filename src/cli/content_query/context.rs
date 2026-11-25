@@ -9,11 +9,13 @@ use crate::config::loader::ConfigLoader;
 use crate::content_repository::{ContentFinding, ContentRepository, RepositoryModel};
 use crate::intelligence::{FactIngestor, InMemoryFactStore};
 use crate::markdown_links::is_markdown_file;
+use crate::repository_references::{
+    is_source_reference_file, repository_reference_policy_matches, SOURCE_REFERENCE_FILE_SIZE_LIMIT,
+};
 use std::fs;
 use std::path::{Path, PathBuf};
 
 const SOURCE_REFERENCE_FILE_LIMIT: usize = 512;
-const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
 
 #[derive(Debug)]
 pub(crate) struct QueryContext {
@@ -313,50 +315,6 @@ pub(super) fn ignored_reference_scan_path(path: &Path) -> bool {
             ".git" | "target" | "node_modules" | "dist" | "coverage"
         )
     })
-}
-
-fn repository_reference_policy_matches(patterns: &[String], rel: &Path) -> bool {
-    if patterns.is_empty() {
-        return true;
-    }
-    let rel = rel.to_string_lossy().replace('\\', "/");
-    patterns
-        .iter()
-        .any(|pattern| glob::Pattern::new(pattern).is_ok_and(|pattern| pattern.matches(&rel)))
-}
-
-fn is_source_reference_file(path: &Path) -> bool {
-    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
-        return false;
-    };
-    matches!(
-        extension.to_ascii_lowercase().as_str(),
-        "rs" | "py"
-            | "js"
-            | "jsx"
-            | "ts"
-            | "tsx"
-            | "go"
-            | "java"
-            | "kt"
-            | "swift"
-            | "c"
-            | "h"
-            | "hpp"
-            | "cpp"
-            | "cs"
-            | "rb"
-            | "php"
-            | "sh"
-            | "bash"
-            | "zsh"
-            | "fish"
-            | "toml"
-            | "yaml"
-            | "yml"
-            | "json"
-            | "jsonl"
-    )
 }
 
 fn ingest_safe_fix_structure_report(ingestor: &mut FactIngestor, mut report: StructureCheckReport) {

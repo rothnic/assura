@@ -1,0 +1,38 @@
+{
+  "id": "ae-e6t-p3-deslop",
+  "name": "ae-e6t-p3-deslop",
+  "title": "Integrate two P3 deslopification fixes",
+  "description": "Current-base integration contract. Individual acceptance and live status remain in canonical Beads.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P3",
+  "creator": "codex-assura-ae-e6t-p3",
+  "assignee": "codex-assura-ae-e6t-p3",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "refactor/ae-e6t-p3-deslop",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-e6t-p3-deslop",
+      "owner": "codex-assura-ae-e6t-p3",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/refactor/ae-e6t-p3-deslop",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}

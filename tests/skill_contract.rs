@@ -142,6 +142,36 @@ fn skill_contract_accepts_required_frontmatter_sections_and_progressive_disclosu
 }
 
 #[test]
+fn skill_contract_only_recurses_for_recursive_skill_globs() {
+    let project = TempDir::new().unwrap();
+    write_config(&project, "high", 80);
+    write_agents_md(&project, "project-maintenance");
+    write_skill(&project, "project-maintenance", valid_skill_content());
+    write_skill(&project, "scope/project-nested", "# Incomplete skill\n");
+
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(report.violations.is_empty(), "{:#?}", report.violations);
+
+    let config_path = project.path().join(".assura/config.yml");
+    let config = fs::read_to_string(&config_path).unwrap();
+    fs::write(
+        config_path,
+        config.replace(".agents/skills/*/SKILL.md", ".agents/skills/**/SKILL.md"),
+    )
+    .unwrap();
+    let report = run_structure_check(Some(project.path().to_path_buf()), None, false).unwrap();
+    assert!(
+        report.violations.iter().any(|violation| {
+            violation.path == Path::new(".agents/skills/scope/project-nested/SKILL.md")
+                && violation.rule == "agent_guidance:agent_project_guidance"
+                && violation.message.contains("is missing YAML frontmatter")
+        }),
+        "{:#?}",
+        report.violations
+    );
+}
+
+#[test]
 fn skill_contract_reports_missing_frontmatter_and_required_sections() {
     let project = TempDir::new().unwrap();
     write_config(&project, "high", 80);
