@@ -1,9 +1,26 @@
 ---
-title: Assura v0.4.1 Release Notes
+title: Assura v0.5.0 Release Notes
 status: active
 ---
 
-# Assura v0.4.1 Release Notes
+# Assura v0.5.0 Release Notes
+
+The v0.5.0 CI preview exercises Workspace Flexibility across repositories
+and linked worktrees.
+
+## v0.5.0 Candidate
+
+- Reuse an owner policy across a Git repository group while keeping each
+  repository's tracked or privately selected project policy.
+- Check working-tree, staged, or committed changes against a selected Git
+  baseline. Opt in to staged size policy in the repository's pre-commit hook.
+- Reproduce a size finding from its recorded trees, repair the file, then pin
+  policy digests to replay the same check in CI.
+- Keep live and portable directory count checks consistent, share Markdown
+  anchor resolution, and use unique staging when writing starter recipe
+  configuration.
+
+## Latest Published Release
 
 These notes describe the pre-1.0 public command surface published in the
 `v0.4.1` beta increment. The release was published and live-verified on
@@ -18,7 +35,7 @@ release checklist in
 [`docs/release-candidate-checklist.md`](./release-candidate-checklist.md)
 passes.
 
-## Unreleased
+## Additional v0.5.0 Changes
 
 - Ordinary scoped `assura check <path>` now evaluates captured relationships
   for the selected file or directory producer itself, as well as descendants.
