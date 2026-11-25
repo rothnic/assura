@@ -12,6 +12,8 @@ OpenCode, Claude, Pi, OpenClaw, or another coding-agent harness.
 - Harness integrations are delivery adapters. They translate harness events
   into Assura events, call the Assura binary, and return or log the resulting
   compact context.
+- Python command hooks read event and Assura response JSON as UTF-8 bytes so
+  Unicode paths survive redirected I/O under any host code page.
 - Routine automatic context is default-silent or one deterministic selected
   line, <=256 UTF-8 bytes including its wrapper. Detailed payloads, log/state
   paths, omitted counts and provenance remain available through explicit

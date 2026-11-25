@@ -102,8 +102,8 @@ def compact_context(payload):
 
 def main():
     try:
-        payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
+        payload = json.load(sys.stdin.buffer)
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
         return 0
     hook_event = payload.get("hook_event_name") or payload.get("hookEventName")
     event = EVENTS.get(hook_event)
@@ -124,10 +124,10 @@ def main():
     env.setdefault("ASSURA_AGENT_SESSION_ID", str(payload.get("session_id") or f"{TARGET}-hook"))
     try:
         result = subprocess.run(
-            command, cwd=root, env=env, capture_output=True, text=True, timeout=8
+            command, cwd=root, env=env, capture_output=True, timeout=8
         )
         nudge = json.loads(result.stdout) if result.returncode == 0 else {}
-    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, UnicodeDecodeError):
         return 0
     context = compact_context(nudge)
     if context:

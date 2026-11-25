@@ -147,6 +147,7 @@ fn run_codex_hook(project: &Path, input: Value, session_id: &str) -> Output {
         .current_dir(project)
         .env("ASSURA_BIN", assura_bin())
         .env("ASSURA_AGENT_SESSION_ID", session_id)
+        .env("PYTHONIOENCODING", "cp1252")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -815,6 +816,7 @@ fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     assert!(context.len() <= 256);
     assert!(context.is_char_boundary(context.len()));
     assert!(!context.contains("Output truncated at 2 KiB"));
+    assert!(context.contains("src/Aé"));
     assert!(context.contains("file_naming"));
     assert_eq!(context.matches("file_naming").count(), 1);
     assert!(context.ends_with("</assura-feedback>"));

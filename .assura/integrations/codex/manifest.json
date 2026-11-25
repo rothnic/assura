@@ -92,7 +92,7 @@
     {
       "path": ".assura/integrations/codex/assura-hook.py",
       "kind": "host_adapter",
-      "sha256": "fa9fde865cd68b3f46eabf0738797445e3b2a048e49228a467b28f210a7f59d1",
+      "sha256": "53577e501100afea7e6ec1b20913e10ef7109314efed82d33942c83b28768864",
       "executable": false,
       "host_activation": false
     }
