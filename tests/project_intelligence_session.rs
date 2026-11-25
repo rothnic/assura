@@ -226,6 +226,42 @@ fn content_session_reloads_before_first_response_if_files_changed_after_startup(
 }
 
 #[test]
+fn content_session_preserves_request_order_across_failed_reload_and_recovery() {
+    let temp = tempfile::tempdir().expect("tempdir");
+    let project = temp.path().join("project");
+    copy_dir(Path::new(CONTENT_FIXTURE), &project);
+    let config = project.join(".assura/config.yml");
+    let original = fs::read_to_string(&config).expect("read config");
+    let ready = temp.path().join("session-ready.txt");
+    let mut session = SessionProcess::start_with_ready_file(&project, Some(&ready));
+    wait_for_ready_file(&mut session, &ready);
+
+    fs::write(&config, "structure: [").expect("write invalid config");
+    let malformed = session.request(serde_json::json!({"request_id": "malformed"}));
+    assert_eq!(malformed["sequence"], 1);
+    assert_eq!(malformed["error"]["code"], "invalid_request");
+    assert_eq!(malformed["reload"]["state"], "not_checked");
+
+    let request = serde_json::json!({"request_id": "query", "type": "collections"});
+    let failed = session.request(request.clone());
+    assert_eq!(failed["sequence"], 2);
+    assert_eq!(failed["request_id"], "query");
+    assert_eq!(failed["error"]["code"], "reload_failed");
+    assert_eq!(failed["reload"]["state"], "reload_failed");
+
+    fs::write(&config, format!("{original}\n# restored\n")).expect("restore config");
+    let recovered = session.request(request.clone());
+    assert_eq!(recovered["sequence"], 3);
+    assert_eq!(recovered["reload"]["state"], "reloaded");
+    assert_eq!(recovered["ok"], true);
+    let reused = session.request(request);
+    assert_eq!(reused["sequence"], 4);
+    assert_eq!(reused["reload"]["state"], "reused");
+    assert_eq!(reused["response"], recovered["response"]);
+    session.finish();
+}
+
+#[test]
 fn content_session_safe_fixes_include_cli_audit_id() {
     let temp = tempfile::tempdir().expect("tempdir");
     copy_dir(Path::new(BEACON_INVALID), temp.path());

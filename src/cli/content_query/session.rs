@@ -1,19 +1,17 @@
 //! Persistent JSON-line project-intelligence query sessions.
 
 use super::agent_query::{diagnostics, safe_fixes};
-use super::context::{ContentQueryError, QueryContext};
+use super::context::ContentQueryError;
 use super::context_pack::{context_pack, ContextPackRequest};
+use super::session_context::{SessionContext, SessionReloadOutput};
 use super::{collections, expand, missing_relations, search};
 use crate::cli::ExitCode;
 use crate::intelligence::project_intelligence_agent_context;
-use crate::stable_hash::stable_hash;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::collections::BTreeMap;
 use std::fs;
 use std::io::{self, BufRead, Write};
-use std::path::{Path, PathBuf};
-use walkdir::{DirEntry, WalkDir};
+use std::path::PathBuf;
 
 const SESSION_RESPONSE_SCHEMA: &str = "assura.project-intelligence.session.response.v1";
 
@@ -74,25 +72,15 @@ pub(super) fn content_session_command(path: Option<PathBuf>, config: Option<Path
 }
 
 struct ContentSession {
-    path: PathBuf,
-    config: Option<PathBuf>,
-    context: QueryContext,
-    fingerprint: ProjectFingerprint,
+    project: SessionContext,
     sequence: usize,
-    first_response: bool,
 }
 
 impl ContentSession {
     fn load(path: PathBuf, config: Option<PathBuf>) -> Result<Self, ContentQueryError> {
-        let context = QueryContext::load_for_path(path.clone(), config.clone(), false, true, true)?;
-        let fingerprint = ProjectFingerprint::capture(&context.project_root)?;
         Ok(Self {
-            path,
-            config,
-            context,
-            fingerprint,
+            project: SessionContext::load(path, config)?,
             sequence: 0,
-            first_response: true,
         })
     }
 
@@ -112,7 +100,7 @@ impl ContentSession {
                 );
             }
         };
-        let reload = match self.ensure_fresh() {
+        let reload = match self.project.ensure_fresh() {
             Ok(reload) => reload,
             Err(error) => {
                 return SessionResponse::error(
@@ -145,43 +133,15 @@ impl ContentSession {
         }
     }
 
-    fn ensure_fresh(&mut self) -> Result<SessionReloadOutput, ContentQueryError> {
-        let latest = ProjectFingerprint::capture(&self.context.project_root)?;
-        if self.first_response {
-            self.first_response = false;
-            if latest == self.fingerprint {
-                return Ok(SessionReloadOutput::initial(&self.context));
-            }
-            self.context = QueryContext::load_for_path(
-                self.path.clone(),
-                self.config.clone(),
-                false,
-                true,
-                true,
-            )?;
-            self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
-            return Ok(SessionReloadOutput::reloaded(&self.context));
-        }
-        if latest == self.fingerprint {
-            return Ok(SessionReloadOutput::reused(&self.context));
-        }
-
-        self.context =
-            QueryContext::load_for_path(self.path.clone(), self.config.clone(), false, true, true)?;
-        self.fingerprint = ProjectFingerprint::capture(&self.context.project_root)?;
-        Ok(SessionReloadOutput::reloaded(&self.context))
-    }
-
     fn run_request(&self, request: &SessionRequest) -> Result<Value, ContentQueryError> {
+        let context = self.project.context();
         match request.request_type.as_str() {
-            "agent-context" => to_value(project_intelligence_agent_context(
-                self.context.store.facts(),
-            )),
-            "collections" => to_value(collections(&self.context)),
+            "agent-context" => to_value(project_intelligence_agent_context(context.store.facts())),
+            "collections" => to_value(collections(context)),
             "context-pack" => {
                 let limit = request.limit.unwrap_or(20);
                 to_value(context_pack(
-                    &self.context,
+                    context,
                     ContextPackRequest {
                         collection: request.collection.as_ref(),
                         id: request.id.as_ref(),
@@ -190,22 +150,22 @@ impl ContentSession {
                     },
                 )?)
             }
-            "diagnostics" => to_value(diagnostics(&self.context)),
+            "diagnostics" => to_value(diagnostics(context)),
             "expand" => {
                 let collection = request.required("collection")?;
                 let id = request.required("id")?;
                 to_value(expand(
-                    &self.context,
+                    context,
                     collection,
                     id,
                     request.limit.unwrap_or(20),
                 )?)
             }
-            "missing-relations" => to_value(missing_relations(&self.context)),
-            "safe-fixes" => to_value(safe_fixes(&self.context)),
+            "missing-relations" => to_value(missing_relations(context)),
+            "safe-fixes" => to_value(safe_fixes(context)),
             "search" => {
                 let text = request.required("text")?;
-                to_value(search(&self.context, text, request.limit.unwrap_or(20)))
+                to_value(search(context, text, request.limit.unwrap_or(20)))
             }
             other => Err(ContentQueryError::configuration(format!(
                 "unsupported session request type: {other}"
@@ -301,129 +261,9 @@ impl SessionResponse {
 }
 
 #[derive(Debug, Serialize)]
-pub(super) struct SessionReloadOutput {
-    pub(super) state: &'static str,
-    pub(super) reason: &'static str,
-    pub(super) project_root: Option<PathBuf>,
-    pub(super) config_path: Option<PathBuf>,
-}
-
-impl SessionReloadOutput {
-    pub(super) fn initial(context: &QueryContext) -> Self {
-        Self::from_context("initial_load", "session context loaded", context)
-    }
-
-    pub(super) fn reused(context: &QueryContext) -> Self {
-        Self::from_context("reused", "project fingerprint unchanged", context)
-    }
-
-    pub(super) fn reloaded(context: &QueryContext) -> Self {
-        Self::from_context(
-            "reloaded",
-            "project fingerprint changed; context rebuilt",
-            context,
-        )
-    }
-
-    pub(super) fn failed() -> Self {
-        Self {
-            state: "reload_failed",
-            reason: "project fingerprint changed but context could not be rebuilt",
-            project_root: None,
-            config_path: None,
-        }
-    }
-
-    pub(super) fn not_checked() -> Self {
-        Self {
-            state: "not_checked",
-            reason: "request did not parse",
-            project_root: None,
-            config_path: None,
-        }
-    }
-
-    fn from_context(state: &'static str, reason: &'static str, context: &QueryContext) -> Self {
-        Self {
-            state,
-            reason,
-            project_root: Some(context.project_root.clone()),
-            config_path: Some(context.config_path.clone()),
-        }
-    }
-}
-
-#[derive(Debug, Serialize)]
 struct SessionErrorOutput {
     code: &'static str,
     message: String,
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub(super) struct ProjectFingerprint {
-    entries: BTreeMap<PathBuf, FileFingerprint>,
-}
-
-impl ProjectFingerprint {
-    pub(super) fn capture(root: &Path) -> Result<Self, ContentQueryError> {
-        let mut entries = BTreeMap::new();
-        for entry in WalkDir::new(root)
-            .follow_links(false)
-            .into_iter()
-            .filter_entry(|entry| !is_ignored_fingerprint_entry(entry))
-        {
-            let entry = entry.map_err(|error| {
-                ContentQueryError::runtime(format!("failed to scan project fingerprint: {error}"))
-            })?;
-            let path = entry.path();
-            let metadata = entry.metadata().map_err(|error| {
-                ContentQueryError::runtime(format!(
-                    "failed to read metadata for {}: {error}",
-                    path.display()
-                ))
-            })?;
-            let relative = path.strip_prefix(root).unwrap_or(path).to_path_buf();
-            let fingerprint = FileFingerprint::from_path(path, &metadata)?;
-            entries.insert(relative, fingerprint);
-        }
-        Ok(Self { entries })
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct FileFingerprint {
-    content_hash: Option<u64>,
-    len: u64,
-    is_dir: bool,
-}
-
-impl FileFingerprint {
-    fn from_path(path: &Path, metadata: &std::fs::Metadata) -> Result<Self, ContentQueryError> {
-        let content_hash = if metadata.is_file() {
-            let content = fs::read(path).map_err(|error| {
-                ContentQueryError::runtime(format!(
-                    "failed to read fingerprint content for {}: {error}",
-                    path.display()
-                ))
-            })?;
-            Some(stable_hash(&content))
-        } else {
-            None
-        };
-        Ok(Self {
-            content_hash,
-            len: metadata.len(),
-            is_dir: metadata.is_dir(),
-        })
-    }
-}
-
-fn is_ignored_fingerprint_entry(entry: &DirEntry) -> bool {
-    let name = entry.file_name().to_string_lossy();
-    matches!(
-        name.as_ref(),
-        ".git" | "target" | "node_modules" | "dist" | ".astro" | ".next"
-    )
 }
 
 fn to_value<T: Serialize>(value: T) -> Result<Value, ContentQueryError> {

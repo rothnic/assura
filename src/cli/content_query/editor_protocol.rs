@@ -1,7 +1,7 @@
 //! Editor protocol envelope and LSP-shaped serialization helpers.
 
 use super::context::{ContentQueryError, QueryContext};
-use super::session::SessionReloadOutput;
+use super::session_context::SessionReloadOutput;
 use crate::intelligence::{Diagnostic, SourceLocation};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};

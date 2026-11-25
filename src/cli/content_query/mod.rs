@@ -14,6 +14,7 @@ mod raw_search;
 mod references;
 mod semantic;
 mod session;
+mod session_context;
 
 use self::agent_query::{agent_query, AgentQueryRequest};
 pub(crate) use self::agent_query::{content_gap_summary, AgentQueryGapsOutput};
