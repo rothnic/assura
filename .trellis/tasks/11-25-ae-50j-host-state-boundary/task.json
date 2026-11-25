@@ -1,0 +1,38 @@
+{
+  "id": "ae-50j-host-state-boundary",
+  "name": "ae-50j-host-state-boundary",
+  "title": "JSON host activation ownership (ae-50j)",
+  "description": "Native delivery contract for Beads ae-50j. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-50j",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "fix/ae-50j-host-state-boundary",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-50j-host-state-boundary",
+      "owner": "codex-assura-ae-50j",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-50j-host-state-boundary",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
