@@ -1,0 +1,38 @@
+{
+  "id": "upstream-contribution-readiness",
+  "name": "upstream-contribution-readiness",
+  "title": "Upstream contribution readiness pilot (ae-whr.14)",
+  "description": "Contract and evidence for Assura Beads ae-whr.14; Beads owns live execution state.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "codex-assura-coordinator",
+  "createdAt": "2026-11-24",
+  "completedAt": null,
+  "branch": "t3/fix-file-growth-cap",
+  "base_branch": "master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-24-upstream-contribution-readiness",
+      "owner": "codex-assura-coordinator",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/master",
+      "branch_ref": "refs/heads/t3/fix-file-growth-cap",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}

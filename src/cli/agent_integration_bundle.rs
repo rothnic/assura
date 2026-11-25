@@ -47,49 +47,21 @@ impl IntegrationBundle {
             managed_by: "assura",
             target_agent: agent,
             lifecycle_commands: LifecycleCommands {
-                install: format!(
-                    "assura agent integration install {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                update: format!(
-                    "assura agent integration update {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                activate: format!(
-                    "assura agent integration activate {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                deactivate: format!(
-                    "assura agent integration deactivate {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                remove: format!(
-                    "assura agent integration remove {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                status: format!(
-                    "assura agent integration status {agent} {}",
-                    quote_path(&self.project_root)
-                ),
-                doctor: format!(
-                    "assura agent integration doctor {agent} {}",
-                    quote_path(&self.project_root)
-                ),
+                install: format!("assura agent integration install {agent} ."),
+                update: format!("assura agent integration update {agent} ."),
+                activate: format!("assura agent integration activate {agent} ."),
+                deactivate: format!("assura agent integration deactivate {agent} ."),
+                remove: format!("assura agent integration remove {agent} ."),
+                status: format!("assura agent integration status {agent} ."),
+                doctor: format!("assura agent integration doctor {agent} ."),
             },
             shared_commands: SharedCommands {
                 nudge: format!(
-                    "assura agent nudge --agent {agent} --event <event> --changed <path> --delivery automatic --format json {}",
-                    quote_path(&self.project_root)
+                    "assura agent nudge --agent {agent} --event <event> --changed <path> --delivery automatic --format json ."
                 ),
-                check: check_command_for(self.agent, &self.project_root),
-                daemon_status: format!(
-                    "assura daemon status --format json {}",
-                    quote_path(&self.project_root)
-                ),
-                daemon_doctor: format!(
-                    "assura daemon doctor --format json {}",
-                    quote_path(&self.project_root)
-                ),
+                check: check_command_for(self.agent).to_owned(),
+                daemon_status: "assura daemon status --format json .".to_owned(),
+                daemon_doctor: "assura daemon doctor --format json .".to_owned(),
             },
             event_placements: vec![
                 EventPlacement::new(AgentNudgeEvent::SessionStart, "session start or resumed session"),
@@ -126,12 +98,12 @@ impl IntegrationBundle {
             GeneratedFile {
                 path: self.integration_dir.join("assura-agent.sh"),
                 kind: "wrapper",
-                content: wrapper_script(self.agent, &self.project_root),
+                content: wrapper_script(self.agent),
             },
             GeneratedFile {
                 path: self.integration_dir.join("README.md"),
                 kind: "readme",
-                content: readme(self.agent, &self.project_root),
+                content: readme(self.agent),
             },
         ];
         if matches!(
@@ -169,14 +141,14 @@ impl IntegrationBundle {
             ManagedFileRecord::new(
                 format!(".assura/integrations/{agent}/assura-agent.sh"),
                 "wrapper",
-                &wrapper_script(self.agent, &self.project_root),
+                &wrapper_script(self.agent),
                 true,
                 false,
             ),
             ManagedFileRecord::new(
                 format!(".assura/integrations/{agent}/README.md"),
                 "readme",
-                &readme(self.agent, &self.project_root),
+                &readme(self.agent),
                 false,
                 false,
             ),
@@ -587,22 +559,16 @@ pub(super) fn host_guidance(agent: AgentIntegrationTarget) -> HostGuidance {
     }
 }
 
-fn check_command_for(agent: AgentIntegrationTarget, project_root: &Path) -> String {
+fn check_command_for(agent: AgentIntegrationTarget) -> &'static str {
     match agent {
-        AgentIntegrationTarget::Codex => format!(
-            "assura check --format agent --agent codex --warn {}",
-            quote_path(project_root)
-        ),
-        _ => format!(
-            "assura check --format agent --warn {}",
-            quote_path(project_root)
-        ),
+        AgentIntegrationTarget::Codex => "assura check --format agent --agent codex --warn .",
+        _ => "assura check --format agent --warn .",
     }
 }
 
-fn readme(agent: AgentIntegrationTarget, project_root: &Path) -> String {
+fn readme(agent: AgentIntegrationTarget) -> String {
     let agent_name = agent.as_str();
-    let check = check_command_for(agent, project_root);
+    let check = check_command_for(agent);
     format!(
         r#"# Assura {agent_name} Integration
 
@@ -625,14 +591,13 @@ Set `ASSURA_AGENT_MODE` to one of `nudge`, `check`, `daemon-status`, or
 Set `ASSURA_BIN=/absolute/path/to/assura` when the host hook should use a
 specific Assura binary instead of the first `assura` on `PATH`.
 
-## Codex Hooks
+## Host Configuration
 
-For Codex, wire the repo-local adapter from approved `UserPromptSubmit` and
-`PostToolUse` hooks. The prompt hook records a baseline and idle nudge. The
-post-tool hook records changed-path deltas since the previous prompt/tool
-snapshot, calls this wrapper with `ASSURA_AGENT_EVENT=after-tool`, and injects
-Codex context only when Assura findings, high-risk Git intent, or large change
-pressure make the nudge worth interrupting the model.
+From the project root, activate the generated integration with
+`assura agent integration activate {agent_name} .`, then approve it in the host.
+In Codex, use `/hooks` to approve the installed commands. The adapter checks
+on `SessionStart`, `UserPromptSubmit`, `PreToolUse`, and `PostToolUse`. It uses
+paths supplied by the tool and returns context only when Assura selects a nudge.
 
 ## Logging
 
@@ -649,34 +614,23 @@ to move the log directory.
 
 ## Shared Commands
 
+Run these commands from the project root.
+
 ```bash
-assura agent nudge --agent {agent_name} --event session-start --delivery automatic --format json {root}
-assura agent nudge --agent {agent_name} --event before-tool --changed <path> --delivery automatic --format json {root}
-assura agent nudge --agent {agent_name} --event after-tool --changed <path> --delivery automatic --format json {root}
-assura agent nudge --agent {agent_name} --event file-read --changed <path> --delivery automatic --format json {root}
-assura agent nudge --agent {agent_name} --event idle --delivery automatic --format json {root}
-assura agent nudge --agent {agent_name} --event recovery --delivery automatic --format json {root}
+assura agent nudge --agent {agent_name} --event session-start --delivery automatic --format json .
+assura agent nudge --agent {agent_name} --event before-tool --changed <path> --delivery automatic --format json .
+assura agent nudge --agent {agent_name} --event after-tool --changed <path> --delivery automatic --format json .
+assura agent nudge --agent {agent_name} --event file-read --changed <path> --delivery automatic --format json .
+assura agent nudge --agent {agent_name} --event idle --delivery automatic --format json .
+assura agent nudge --agent {agent_name} --event recovery --delivery automatic --format json .
 {check}
-assura daemon status --format json {root}
-assura daemon doctor --format json {root}
+assura daemon status --format json .
+assura daemon doctor --format json .
 ```
 "#,
-        root = quote_path(project_root),
     )
 }
 
 pub(super) fn path_string(path: &Path) -> String {
     path.to_string_lossy().replace('\\', "/")
-}
-
-pub(super) fn quote_path(path: &Path) -> String {
-    let value = path.display().to_string();
-    if value
-        .chars()
-        .all(|ch| ch.is_ascii_alphanumeric() || matches!(ch, '/' | '.' | '_' | '-'))
-    {
-        value
-    } else {
-        format!("'{}'", value.replace('\'', "'\\''"))
-    }
 }

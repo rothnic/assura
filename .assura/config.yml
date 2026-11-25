@@ -862,6 +862,7 @@ structure:
         - "LICENSE-MIT"
         - "LICENSE-APACHE"
         # Project/tooling manifests
+        - ".gitattributes"
         - ".gitignore"
         - "Cargo.lock"
         - "Cargo.toml"
@@ -952,6 +953,21 @@ structure:
               allow_extra: false
             children:
               claude/:
+                files: &assura_python_integration_files
+                  naming: "kebab-case"
+                  allowed_names:
+                    - "README.md"
+                    - "assura-agent.sh"
+                    - "assura-hook.py"
+                    - "manifest.json"
+                  allow_extra: false
+                directories:
+                  allow_extra: false
+              codex/:
+                files: *assura_python_integration_files
+                directories:
+                  allow_extra: false
+              opencode/:
                 files: &assura_agent_integration_files
                   naming: "kebab-case"
                   allowed_names:
@@ -959,14 +975,6 @@ structure:
                     - "assura-agent.sh"
                     - "manifest.json"
                   allow_extra: false
-                directories:
-                  allow_extra: false
-              codex/:
-                files: *assura_agent_integration_files
-                directories:
-                  allow_extra: false
-              opencode/:
-                files: *assura_agent_integration_files
                 directories:
                   allow_extra: false
               pi/:

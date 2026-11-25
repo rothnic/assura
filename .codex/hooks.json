@@ -1,34 +1,64 @@
 {
   "hooks": {
+    "PostToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "python3 \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.assura/integrations/codex/assura-hook.py\"",
+            "commandWindows": "powershell.exe -NoProfile -Command \"$root = git rev-parse --show-toplevel 2>$null; if ($LASTEXITCODE -ne 0) { $root = (Get-Location).Path }; py -3 (Join-Path $root '.assura/integrations/codex/assura-hook.py')\"",
+            "statusMessage": "Reviewing Assura feedback",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "command": "python3 \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.assura/integrations/codex/assura-hook.py\"",
+            "commandWindows": "powershell.exe -NoProfile -Command \"$root = git rev-parse --show-toplevel 2>$null; if ($LASTEXITCODE -ne 0) { $root = (Get-Location).Path }; py -3 (Join-Path $root '.assura/integrations/codex/assura-hook.py')\"",
+            "statusMessage": "Reviewing Assura feedback",
+            "timeout": 10,
+            "type": "command"
+          }
+        ],
+        "matcher": "*"
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "python3 \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.assura/integrations/codex/assura-hook.py\"",
+            "commandWindows": "powershell.exe -NoProfile -Command \"$root = git rev-parse --show-toplevel 2>$null; if ($LASTEXITCODE -ne 0) { $root = (Get-Location).Path }; py -3 (Join-Path $root '.assura/integrations/codex/assura-hook.py')\"",
+            "statusMessage": "Reviewing Assura feedback",
+            "timeout": 10,
+            "type": "command"
+          }
+        ]
+      }
+    ],
     "UserPromptSubmit": [
       {
         "hooks": [
           {
-            "type": "command",
             "command": "python3 .codex/hooks/inject-workflow-state.py",
-            "timeout": 5
+            "timeout": 5,
+            "type": "command"
           }
         ]
       },
       {
         "hooks": [
           {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/assura-agent-nudge.py\"",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 \"$(git rev-parse --show-toplevel)/.codex/hooks/assura-agent-nudge.py\"",
+            "command": "python3 \"$(git rev-parse --show-toplevel 2>/dev/null || pwd)/.assura/integrations/codex/assura-hook.py\"",
+            "commandWindows": "powershell.exe -NoProfile -Command \"$root = git rev-parse --show-toplevel 2>$null; if ($LASTEXITCODE -ne 0) { $root = (Get-Location).Path }; py -3 (Join-Path $root '.assura/integrations/codex/assura-hook.py')\"",
+            "statusMessage": "Reviewing Assura feedback",
             "timeout": 10,
-            "statusMessage": "Reviewing Assura nudges"
+            "type": "command"
           }
         ]
       }

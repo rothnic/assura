@@ -1,9 +1,7 @@
 //! Generated thin adapters for supported agent hosts.
 
+use super::bundle::MANAGED_MARKER;
 use crate::cli::AgentIntegrationTarget;
-use std::path::Path;
-
-use super::bundle::{quote_path, MANAGED_MARKER};
 
 pub(super) fn python_hook(agent: AgentIntegrationTarget) -> String {
     let agent = agent.as_str();
@@ -29,6 +27,7 @@ EVENTS = {{
     "Stop": "idle",
 }}
 PATH_KEYS = {{"file_path", "filePath", "path"}}
+PATCH_HEADERS = ("*** Add File: ", "*** Update File: ", "*** Delete File: ", "*** Move to: ")
 MAX_CONTEXT_BYTES = 256
 
 
@@ -52,6 +51,22 @@ def collect_paths(value, found):
     elif isinstance(value, list):
         for nested in value:
             collect_paths(nested, found)
+
+
+def collect_patch_paths(payload, found):
+    if TARGET != "codex" or payload.get("tool_name") != "apply_patch":
+        return
+    patch = payload.get("tool_input")
+    if isinstance(patch, dict):
+        patch = next((patch[key] for key in ("patch", "input", "command")
+                      if isinstance(patch.get(key), str)), None)
+    if not isinstance(patch, str):
+        return
+    for line in patch.splitlines():
+        for prefix in PATCH_HEADERS:
+            if line.startswith(prefix) and line[len(prefix):]:
+                found.add(line[len(prefix):])
+                break
 
 
 def assura_command(root):
@@ -95,8 +110,8 @@ def compact_context(payload):
 
 def main():
     try:
-        payload = json.load(sys.stdin)
-    except (json.JSONDecodeError, OSError):
+        payload = json.load(sys.stdin.buffer)
+    except (json.JSONDecodeError, UnicodeDecodeError, OSError):
         return 0
     hook_event = payload.get("hook_event_name") or payload.get("hookEventName")
     event = EVENTS.get(hook_event)
@@ -105,6 +120,7 @@ def main():
     root = project_root(payload)
     changed = set()
     collect_paths(payload.get("tool_input"), changed)
+    collect_patch_paths(payload, changed)
     command = assura_command(root) + [
         "agent", "nudge", str(root), "--agent", TARGET,
         "--event", event, "--delivery", "automatic", "--format", "json",
@@ -116,10 +132,10 @@ def main():
     env.setdefault("ASSURA_AGENT_SESSION_ID", str(payload.get("session_id") or f"{{TARGET}}-hook"))
     try:
         result = subprocess.run(
-            command, cwd=root, env=env, capture_output=True, text=True, timeout=8
+            command, cwd=root, env=env, capture_output=True, timeout=8
         )
         nudge = json.loads(result.stdout) if result.returncode == 0 else {{}}
-    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError):
+    except (OSError, subprocess.TimeoutExpired, json.JSONDecodeError, UnicodeDecodeError):
         return 0
     context = compact_context(nudge)
     if context:
@@ -266,9 +282,8 @@ export default function (pi) {{
     )
 }
 
-pub(super) fn wrapper_script(agent: AgentIntegrationTarget, project_root: &Path) -> String {
+pub(super) fn wrapper_script(agent: AgentIntegrationTarget) -> String {
     let agent = agent.as_str();
-    let project_root = quote_path(project_root);
     let check_extra = if agent == "codex" {
         " --agent codex"
     } else {
@@ -281,7 +296,7 @@ set -eu
 
 PROJECT_ROOT="${{ASSURA_PROJECT_ROOT:-}}"
 if [ -z "$PROJECT_ROOT" ]; then
-  PROJECT_ROOT={project_root}
+  PROJECT_ROOT=$(CDPATH= cd "$(dirname "$0")/../../.." && pwd) || exit 1
 fi
 MODE="${{ASSURA_AGENT_MODE:-nudge}}"
 EVENT="${{ASSURA_AGENT_EVENT:-session-start}}"

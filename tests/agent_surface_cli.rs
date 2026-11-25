@@ -137,19 +137,17 @@ exclude:
     project
 }
 
-fn codex_hook_script() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR"))
-        .join(".codex")
-        .join("hooks")
-        .join("assura-agent-nudge.py")
+fn codex_hook_script(project: &Path) -> PathBuf {
+    project.join(".assura/integrations/codex/assura-hook.py")
 }
 
 fn run_codex_hook(project: &Path, input: Value, session_id: &str) -> Output {
     let mut child = Command::new("python3")
-        .arg(codex_hook_script())
+        .arg(codex_hook_script(project))
         .current_dir(project)
         .env("ASSURA_BIN", assura_bin())
         .env("ASSURA_AGENT_SESSION_ID", session_id)
+        .env("PYTHONIOENCODING", "cp1252")
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
@@ -595,35 +593,37 @@ fn agent_integration_lifecycle_installs_reviewable_bundles_for_all_hosts() {
 }
 
 #[test]
-fn codex_hooks_config_wires_assura_post_tool_use() {
-    let config_text = fs::read_to_string(".codex/hooks.json").expect("codex hooks config");
-    let config: Value = serde_json::from_str(&config_text).expect("hooks config is JSON");
-
-    let prompt_hooks = config["hooks"]["UserPromptSubmit"]
-        .as_array()
-        .expect("prompt hooks");
-    assert!(prompt_hooks.iter().any(|group| {
-        group["hooks"].as_array().unwrap().iter().any(|hook| {
-            hook["command"]
-                .as_str()
-                .unwrap_or_default()
-                .contains("assura-agent-nudge.py")
-        })
+fn codex_dogfood_uses_exact_generated_bundle_and_trellis_hook() {
+    let fixture = nudge_fixture();
+    let root = fixture.path();
+    let root_arg = root.to_str().unwrap();
+    let checkout = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let hooks_path = ".codex/hooks.json";
+    fs::create_dir(root.join(".codex")).unwrap();
+    fs::copy(checkout.join(hooks_path), root.join(hooks_path)).unwrap();
+    let tracked_config = fs::read(root.join(hooks_path)).unwrap();
+    let report = agent_json(&["integration", "activate", "codex", root_arg]);
+    assert_eq!(report["activation"]["verified"], true);
+    assert_eq!(fs::read(root.join(hooks_path)).unwrap(), tracked_config);
+    let config: Value = serde_json::from_slice(&tracked_config).unwrap();
+    assert!(!String::from_utf8_lossy(&tracked_config).contains("assura-agent-nudge.py"));
+    let prompts = config["hooks"]["UserPromptSubmit"].as_array().unwrap();
+    assert!(prompts.iter().any(|group| {
+        group["hooks"][0]["command"] == "python3 .codex/hooks/inject-workflow-state.py"
     }));
-
-    let post_tool_hooks = config["hooks"]["PostToolUse"]
-        .as_array()
-        .expect("post tool hooks");
-    assert!(post_tool_hooks.iter().any(|group| {
-        group["matcher"] == "*"
-            && group["hooks"].as_array().unwrap().iter().any(|hook| {
-                hook["command"]
-                    .as_str()
-                    .unwrap_or_default()
-                    .contains("assura-agent-nudge.py")
-                    && hook["statusMessage"] == "Reviewing Assura nudges"
-            })
-    }));
+    for file in [
+        "manifest.json",
+        "assura-agent.sh",
+        "assura-hook.py",
+        "README.md",
+    ] {
+        let path = Path::new(".assura/integrations/codex").join(file);
+        assert!(
+            fs::read(root.join(&path)).unwrap() == fs::read(checkout.join(&path)).unwrap(),
+            "tracked bundle drift in {}",
+            path.display()
+        );
+    }
 }
 
 #[test]
@@ -735,7 +735,7 @@ fn agent_nudge_logs_compact_jsonl_when_enabled() {
 }
 
 #[test]
-fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
+fn codex_post_tool_hook_checks_apply_patch_paths_and_logs_nudge() {
     let project = git_nudge_fixture();
     fs::write(project.path().join("src/BadName.rs"), "fn bad() {}\n").expect("write bad file");
 
@@ -767,10 +767,8 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
     let context = hook_output["hookSpecificOutput"]["additionalContext"]
         .as_str()
         .expect("additional context");
-    assert!(context.contains("<assura-nudge>"));
+    assert!(context.contains("<assura-feedback>"));
     assert!(context.len() <= 256);
-    assert!(context.contains("intent=edit"));
-    assert!(context.contains("delta=1"));
     assert!(context.contains("src/BadName.rs"));
     assert!(context.contains("file_naming"));
     assert!(!context.contains("Log:"));
@@ -783,37 +781,26 @@ fn codex_post_tool_hook_injects_changed_path_nudge_and_logs_state() {
     assert_eq!(log_record["session_id"], "post-tool-test");
     assert_eq!(log_record["changed_path_count"], 1);
     assert_eq!(log_record["should_inject"], true);
-
-    let state_text = fs::read_to_string(
-        project
-            .path()
-            .join(".assura/agent-sessions/codex-hook-state.jsonl"),
-    )
-    .expect("hook state log");
-    let state_record: Value = serde_json::from_str(state_text.lines().last().unwrap()).unwrap();
-    assert_eq!(state_record["schema"], "assura.codex-hook-state.v1");
-    assert_eq!(state_record["hook_event_name"], "PostToolUse");
-    assert_eq!(state_record["tool_intent"], "edit");
-    assert_eq!(state_record["changed_since_previous_count"], 1);
 }
 
 #[test]
 fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     let project = git_nudge_fixture();
-    for index in 0..4 {
-        let filename = format!("src/A{}-{index}.rs", "é".repeat(80));
-        fs::write(project.path().join(filename), "fn bad() {}\n").expect("write long bad file");
-    }
-    fs::create_dir_all(project.path().join("xtask/src")).expect("create performance path");
-    fs::write(project.path().join("xtask/src/main.rs"), "fn main() {}\n")
-        .expect("write performance path");
+    let paths: Vec<_> = (0..4)
+        .map(|index| {
+            let file = format!("src/A{}-{index}.rs", "é".repeat(80));
+            fs::write(project.path().join(&file), "fn bad() {}\n").expect("write long bad file");
+            file
+        })
+        .collect();
+    let patch = paths.join("\n*** Update File: ");
     let session = "bounded-context-test";
     let input = serde_json::json!({
         "session_id": session,
         "cwd": project.path().to_str().expect("project path"),
         "hook_event_name": "PostToolUse",
         "tool_name": "apply_patch",
-        "tool_input": {"patch": "fixture"}
+        "tool_input": format!("*** Begin Patch\n*** Update File: {patch}\n*** End Patch")
     });
     let output = run_codex_hook(project.path(), input, session);
     assert!(
@@ -829,12 +816,15 @@ fn codex_hook_bounds_utf8_context_for_many_long_findings() {
     assert!(context.len() <= 256);
     assert!(context.is_char_boundary(context.len()));
     assert!(!context.contains("Output truncated at 2 KiB"));
-    assert!(context.contains("performance_no_slower"));
-    assert!(context.ends_with("</assura-nudge>"));
+    assert!(context.contains("src/Aé"));
+    assert!(context.contains("file_naming"));
+    assert_eq!(context.matches("file_naming").count(), 1);
+    assert!(context.ends_with("</assura-feedback>"));
 }
 
 #[test]
 fn codex_hook_context_prioritizes_a_later_critical_finding() {
+    let project = git_nudge_fixture();
     let program = r#"
 import importlib.util
 import json
@@ -871,12 +861,12 @@ nudges.append(
         "message": "critical finding must remain visible",
     }
 )
-context = module.compact_context({"event": "after_tool", "summary": {}, "nudges": nudges}, {})
+context = module.compact_context({"event": "after_tool", "summary": {"should_inject": True}, "nudges": nudges})
 print(json.dumps({"context": context}))
 "#;
     let output = Command::new("python3")
         .args(["-c", program])
-        .arg(codex_hook_script())
+        .arg(codex_hook_script(project.path()))
         .output()
         .expect("run hook context formatter");
     assert!(
@@ -890,11 +880,11 @@ print(json.dumps({"context": context}))
     assert!(context.len() <= 256);
     assert!(context.contains("critical_rule"));
     assert!(!context.contains("Output truncated at 2 KiB"));
-    assert!(context.ends_with("</assura-nudge>"));
+    assert!(context.ends_with("</assura-feedback>"));
 }
 
 #[test]
-fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
+fn codex_post_tool_hook_keeps_pathless_git_intent_quiet() {
     let project = git_nudge_fixture();
     fs::write(
         project.path().join("src/commit-ready.rs"),
@@ -940,15 +930,8 @@ fn codex_post_tool_hook_injects_git_commit_intent_without_new_delta() {
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr)
     );
-    let hook_output: Value = serde_json::from_slice(&output.stdout).expect("hook emits JSON");
-    let context = hook_output["hookSpecificOutput"]["additionalContext"]
-        .as_str()
-        .expect("additional context");
-    assert!(context.len() <= 256);
-    assert!(context.contains("intent=git_commit"));
-    assert!(context.contains("delta=0"));
-    assert!(!context.contains("Git intent:"));
-    assert!(!context.contains("Summary:"));
+    assert!(prompt.stdout.is_empty());
+    assert!(output.stdout.is_empty());
 }
 
 #[test]
