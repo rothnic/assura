@@ -1,0 +1,5 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/11-25-ae-tv6-shared-rust-exports/prd.md", "reason": "Rust export policy and compiled behavior."}
+{"file": ".trellis/tasks/11-25-ae-dx3-atomic-recipe-staging/prd.md", "reason": "Atomic starter config write and failure controls."}
+{"file": ".trellis/tasks/11-25-ae-wi8-shared-session-context/prd.md", "reason": "Content and editor session freshness."}
+{"file": ".trellis/tasks/11-25-ae-50j-host-state-boundary/prd.md", "reason": "Host activation and ownership."}
