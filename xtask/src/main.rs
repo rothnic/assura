@@ -4080,6 +4080,39 @@ fn check_document_graph_support_claims(checks: &mut Checks) {
     }
 }
 
+fn check_release_notes_identity(
+    checks: &mut Checks,
+    candidate_tag: &str,
+    release_notes: &str,
+    release_surfaces: &str,
+) {
+    for marker in [
+        format!("Assura {candidate_tag} Release Notes"),
+        "The release was published and live-verified on".to_string(),
+        "Assura remains pre-1.0 beta software".to_string(),
+    ] {
+        checks.require(
+            release_notes.contains(&marker),
+            format!("docs/release-notes.md: missing beta marker {marker:?}"),
+        );
+    }
+    let manifest = serde_json::from_str::<Value>(release_surfaces);
+    let published_tag = manifest
+        .as_ref()
+        .ok()
+        .and_then(|manifest| manifest["current_published_release"].as_str())
+        .filter(|tag| release_tag_version(tag).is_some());
+    let Some(published_tag) = published_tag else {
+        checks.add("docs/data/release-surfaces.json: missing or invalid current_published_release");
+        return;
+    };
+    let marker = format!("[published {published_tag} release]");
+    checks.require(
+        release_notes.contains(&marker),
+        format!("docs/release-notes.md: missing beta marker {marker:?}"),
+    );
+}
+
 fn check_post_beta_release_hardening(checks: &mut Checks) {
     let cargo_toml = read("Cargo.toml");
     let candidate_version = toml_string_value(&cargo_toml, "version").unwrap_or_default();
@@ -4092,17 +4125,7 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
     let release_checklist = read("docs/release-candidate-checklist.md");
     let release_readiness = read("website/src/content/docs/reference/release-readiness.md");
 
-    for marker in [
-        format!("Assura {candidate_tag} Release Notes"),
-        format!("[published {candidate_tag} release]"),
-        "The release was published and live-verified on".to_string(),
-        "Assura remains pre-1.0 beta software".to_string(),
-    ] {
-        checks.require(
-            release_notes.contains(&marker),
-            format!("docs/release-notes.md: missing beta marker {marker:?}"),
-        );
-    }
+    check_release_notes_identity(checks, &candidate_tag, &release_notes, &release_surfaces);
 
     for marker in [
         "\"daemon-mode\"",
@@ -4116,13 +4139,13 @@ fn check_post_beta_release_hardening(checks: &mut Checks) {
         );
     }
     for marker in [
-        format!("\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"{candidate_tag}\""),
-        "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"".to_string(),
-        "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"".to_string(),
-        format!("\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"{candidate_tag}\""),
+        "\"id\": \"daemon-mode\",\n      \"label\": \"Daemon mode\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.4.1\"",
+        "\"id\": \"vscode-extension\",\n      \"label\": \"VS Code beta local package\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"extension-api-boundaries\",\n      \"label\": \"Extension API boundaries\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.3.0\"",
+        "\"id\": \"agent-integration-lifecycle\",\n      \"label\": \"Agent integration lifecycle\",\n      \"status\": \"supported\",\n      \"first_release\": \"v0.4.1\"",
     ] {
         checks.require(
-            release_surfaces.contains(&marker),
+            release_surfaces.contains(marker),
             format!("docs/data/release-surfaces.json: missing release marker {marker:?}"),
         );
     }
@@ -7686,6 +7709,37 @@ mod tests {
                 "detail_path": ""
             }])
         );
+    }
+
+    #[test]
+    fn release_notes_require_distinct_candidate_and_published_receipts() {
+        let candidate = "v0.5.0";
+        let manifest = r#"{"current_published_release":"v0.4.1"}"#;
+        let notes = "# Assura v0.5.0 Release Notes\n\n\
+                     The release was published and live-verified on 2026-10-01.\n\
+                     See the [published v0.4.1 release].\n\
+                     Assura remains pre-1.0 beta software.";
+
+        let mut correct = Checks::default();
+        check_release_notes_identity(&mut correct, candidate, notes, manifest);
+        assert!(correct.errors.is_empty(), "{:?}", correct.errors);
+
+        let mut wrong_link = Checks::default();
+        let falsely_published =
+            notes.replace("[published v0.4.1 release]", "[published v0.5.0 release]");
+        check_release_notes_identity(&mut wrong_link, candidate, &falsely_published, manifest);
+        assert_eq!(wrong_link.errors.len(), 1);
+        assert!(wrong_link.errors[0].contains("[published v0.4.1 release]"));
+
+        let mut wrong_manifest = Checks::default();
+        check_release_notes_identity(
+            &mut wrong_manifest,
+            candidate,
+            notes,
+            r#"{"current_published_release":"unreleased"}"#,
+        );
+        assert_eq!(wrong_manifest.errors.len(), 1);
+        assert!(wrong_manifest.errors[0].contains("invalid current_published_release"));
     }
 
     #[test]

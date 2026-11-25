@@ -1,6 +1,6 @@
 {
   "schema_version": "assura.release-surfaces.v1",
-  "checked_source_version": "v0.4.1",
+  "checked_source_version": "v0.5.0",
   "current_published_release": "v0.4.1",
   "scope_ledger_path": "docs/analysis/assura-scope-decisions.md",
   "surfaces": [
@@ -349,7 +349,7 @@
       "id": "git-snapshot-check",
       "label": "Git snapshot policy checks",
       "status": "supported",
-      "first_release": "unreleased",
+      "first_release": "v0.5.0",
       "detail_path": "docs/compatibility-and-surface.md",
       "marketing_claim": false,
       "evidence_status": "verified",

@@ -1,0 +1,38 @@
+{
+  "id": "ae-oaa-v050-preview",
+  "name": "ae-oaa-v050-preview",
+  "title": "Validate the integrated Assura v0.5.0 preview",
+  "description": "Native contract for the Beads ae-oaa integration preview.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "codex-assura-ae-oaa",
+  "assignee": "codex-assura-ae-oaa",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "prep/ae-oaa-assura-v050-preview",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-oaa-v050-preview",
+      "owner": "codex-assura-ae-oaa",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/prep/ae-oaa-assura-v050-preview",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
