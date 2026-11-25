@@ -1,12 +1,13 @@
 //! Repository-reference diagnostics for locally recognizable source references.
 
+use super::markdown::github_heading_slugs;
 use super::rules::display_rel;
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::RepositoryReferenceConfig;
 use crate::markdown_links::is_markdown_file;
 use crate::repository_references::{frontmatter_references, source_references, SourceReference};
 use glob::Pattern;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;
 use std::path::Path;
 
 pub(super) const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
@@ -281,41 +282,4 @@ fn target_line_label(reference: &SourceReference) -> String {
         (Some(start), None) => format!("L{start}"),
         _ => "-".to_string(),
     }
-}
-
-fn github_heading_slugs(content: &str) -> HashSet<String> {
-    let mut counts = HashMap::<String, usize>::new();
-    let mut slugs = HashSet::new();
-    for line in content.lines() {
-        let trimmed = line.trim_start();
-        let depth = trimmed.chars().take_while(|ch| *ch == '#').count();
-        if depth == 0 || depth > 6 || !trimmed.chars().nth(depth).is_some_and(char::is_whitespace) {
-            continue;
-        }
-        let base = github_heading_slug(trimmed[depth..].trim());
-        let count = counts.entry(base.clone()).or_insert(0);
-        let slug = if *count == 0 {
-            base
-        } else {
-            format!("{base}-{count}")
-        };
-        *count += 1;
-        slugs.insert(slug);
-    }
-    slugs
-}
-
-fn github_heading_slug(text: &str) -> String {
-    let mut slug = String::new();
-    let mut previous_dash = false;
-    for ch in text.to_ascii_lowercase().chars() {
-        if ch.is_ascii_alphanumeric() || ch == '_' {
-            slug.push(ch);
-            previous_dash = false;
-        } else if (ch.is_whitespace() || ch == '-') && !previous_dash && !slug.is_empty() {
-            slug.push('-');
-            previous_dash = true;
-        }
-    }
-    slug.trim_matches('-').to_string()
 }

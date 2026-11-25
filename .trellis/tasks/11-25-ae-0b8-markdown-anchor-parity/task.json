@@ -12,8 +12,8 @@
   "assignee": "codex-assura-ae-0b8",
   "createdAt": "2026-11-25",
   "completedAt": null,
-  "branch": null,
-  "base_branch": "fix/ae-0b8-markdown-anchor-parity",
+  "branch": "fix/ae-0b8-markdown-anchor-parity",
+  "base_branch": "refs/remotes/origin/master",
   "worktree_path": null,
   "commit": null,
   "pr_url": null,
@@ -29,8 +29,8 @@
       "candidate_id": "11-25-ae-0b8-markdown-anchor-parity",
       "owner": "codex-assura-ae-0b8",
       "repository": "rothnic/assura",
-      "base_ref": "refs/heads/fix/ae-0b8-markdown-anchor-parity",
-      "branch_ref": null,
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-0b8-markdown-anchor-parity",
       "acceptance_ref": "prd.md#acceptance",
       "authority_ref": null
     }
