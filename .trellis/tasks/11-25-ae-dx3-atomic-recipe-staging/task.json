@@ -1,0 +1,38 @@
+{
+  "id": "ae-dx3-atomic-recipe-staging",
+  "name": "ae-dx3-atomic-recipe-staging",
+  "title": "Atomic built-in recipe staging (ae-dx3)",
+  "description": "Native delivery contract for Beads ae-dx3. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-dx3",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "fix/ae-dx3-atomic-recipe-staging",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-dx3-atomic-recipe-staging",
+      "owner": "codex-assura-ae-dx3",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-dx3-atomic-recipe-staging",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
