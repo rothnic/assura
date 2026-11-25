@@ -1,7 +1,7 @@
 //! Narrow LS-Lint-compatible validation path.
 
 use super::direct_contents::exists_patterns_allow_name;
-use super::ls_fast_counts::fast_rules_have_child_counts;
+use super::ls_fast_counts::{dedup_configured_count_findings, fast_rules_have_child_counts};
 use super::ls_fast_naming::{validate_fast_file_stem, validate_fast_name};
 use super::ls_fast_plan::{fast_rules_for_dir, fast_rules_for_dir_indexed, FastRules, FastScope};
 use super::patterns::{file_stem_for_pattern, matches_any_compiled_pattern};
@@ -30,7 +30,9 @@ impl StructureChecker {
         };
 
         let configured_started = Instant::now();
+        let configured_start = report.violations.len();
         self.validate_configured_structure(report);
+        let configured_end = report.violations.len();
         timings.configured_structure_ms = configured_started.elapsed().as_secs_f64() * 1000.0;
 
         if self.fail_fast && report.has_blocking_violations() {
@@ -42,6 +44,9 @@ impl StructureChecker {
         timings.walk_and_validate_ms = walk_started.elapsed().as_secs_f64() * 1000.0;
 
         let sort_started = Instant::now();
+        if configured_start < configured_end && configured_end < report.violations.len() {
+            dedup_configured_count_findings(report, configured_start..configured_end);
+        }
         report.sort_violations_staged();
         timings.report_sort_ms = sort_started.elapsed().as_secs_f64() * 1000.0;
         Ok(true)

@@ -3,6 +3,7 @@
 use super::compiled_config::CompiledStructureConfig;
 use super::compiled_fingerprint::SourceConfigFingerprint;
 use super::compiled_plan_artifact::PortableCompiledPlan;
+use crate::cli::config::ConfigError;
 use crate::config::config::{
     Config, ContentCodeSymbolConfig, ContentCollectionConfig, ContentModelConfig,
     ContentRelationConfig, DirectoryBundle, DirectoryNode, ExistsValidation, FileBundle,
@@ -50,11 +51,7 @@ impl CompiledStructureConfigArtifact {
     /// Create an artifact for the current Assura binary version.
     pub fn new(config: Config) -> Self {
         let plan = PortableCompiledPlan::from_config(&config);
-        let config = if plan.is_fast_only() {
-            None
-        } else {
-            Some(config.into())
-        };
+        let config = plan.needs_config().then(|| config.into());
         Self {
             schema_version: COMPILED_CONFIG_SCHEMA_VERSION,
             assura_version_hash: ASSURA_VERSION_HASH,
@@ -74,11 +71,7 @@ impl CompiledStructureConfigArtifact {
         source_bytes: &[u8],
     ) -> std::io::Result<Self> {
         let plan = PortableCompiledPlan::from_config(&config);
-        let config = if plan.is_fast_only() {
-            None
-        } else {
-            Some(config.into())
-        };
+        let config = plan.needs_config().then(|| config.into());
         let canonical_config_path = config_path.canonicalize()?;
         let canonical_project_root = infer_project_root(&canonical_config_path)?;
         Ok(Self {
@@ -99,57 +92,6 @@ impl CompiledStructureConfigArtifact {
             && self.assura_version_hash == ASSURA_VERSION_HASH
     }
 
-    /// Return true when the artifact was compiled from the current config bytes.
-    pub fn matches_source_config(&self, config_path: &Path) -> std::io::Result<bool> {
-        self.matches_source_config_with_path_requirement(config_path, true)
-    }
-
-    /// Return true when the artifact matches the current default source config.
-    ///
-    /// This is for convention-bound default artifacts after the caller has
-    /// already verified the project root. It still requires either a matching
-    /// strong source fingerprint or exact source-byte hash, but it does not
-    /// reject same-content configs solely because the artifact was produced
-    /// through another path to equivalent config bytes.
-    pub fn matches_default_source_config(&self, config_path: &Path) -> std::io::Result<bool> {
-        self.matches_source_config_with_path_requirement(config_path, false)
-    }
-
-    fn matches_source_config_with_path_requirement(
-        &self,
-        config_path: &Path,
-        require_path_match: bool,
-    ) -> std::io::Result<bool> {
-        let Some(expected_hash) = self.source_config_hash else {
-            return Ok(false);
-        };
-        if require_path_match {
-            let Some(expected_path) = &self.source_config_path else {
-                return Ok(false);
-            };
-            if !portable_path_matches(config_path, expected_path)? {
-                return Ok(false);
-            }
-        }
-        if self
-            .source_config_fingerprint
-            .as_ref()
-            .is_some_and(|expected| expected.differs_from_path(config_path))
-        {
-            return Ok(false);
-        }
-        let source_bytes = std::fs::read(config_path)?;
-        Ok(stable_hash(&source_bytes) == expected_hash)
-    }
-
-    /// Return true when the artifact was compiled for the current project root.
-    pub fn matches_project_root(&self, project_root: &Path) -> std::io::Result<bool> {
-        let Some(expected_root) = &self.source_project_root else {
-            return Ok(false);
-        };
-        portable_path_matches(project_root, expected_root)
-    }
-
     /// Convert the artifact back into the runtime structure config.
     pub fn into_config(self) -> Result<Config, crate::cli::config::ConfigError> {
         self.config.map(Into::into).ok_or_else(|| {
@@ -163,10 +105,11 @@ impl CompiledStructureConfigArtifact {
         self,
         fail_fast: bool,
     ) -> Result<CompiledStructureConfig, Box<Self>> {
-        if !self.plan.can_run_without_config(fail_fast) {
+        if !self.plan.can_run_fast(fail_fast) {
             return Err(Box::new(self));
         }
-        Ok(self.plan.into_compiled_config(Config::new(), fail_fast))
+        let config = self.config.map(Config::from).unwrap_or_default();
+        Ok(self.plan.into_compiled_config(config, fail_fast))
     }
 
     pub(in crate::cli::check) fn into_compiled_config(
@@ -256,7 +199,7 @@ pub(super) struct PortableDirectoryBundle {
     message: Option<String>,
     severity_patterns: Option<HashMap<String, String>>,
     message_patterns: Option<HashMap<String, String>>,
-    exists: Option<HashMap<String, String>>,
+    pub(super) exists: Option<HashMap<String, String>>,
 }
 
 impl From<Config> for PortableConfig {
