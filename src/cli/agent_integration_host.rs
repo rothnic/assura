@@ -5,15 +5,12 @@ use super::bundle::{
     IntegrationBundle,
 };
 use super::host_json;
+use super::host_state::{
+    json_config_path, projected_state, remove_empty_parents, supported_events, ActivationMutation,
+};
 use crate::cli::AgentIntegrationTarget;
 use std::fs;
-use std::path::{Path, PathBuf};
-
-pub(super) struct ActivationMutation {
-    pub(super) changed: bool,
-    pub(super) files: Vec<FileAction>,
-    pub(super) state: ActivationReport,
-}
+use std::path::PathBuf;
 
 pub(super) fn status(bundle: &IntegrationBundle) -> Result<ActivationReport, String> {
     match bundle.agent {
@@ -53,7 +50,7 @@ pub(super) fn deactivate(
 pub(super) fn managed_paths(bundle: &IntegrationBundle) -> Vec<PathBuf> {
     match bundle.agent {
         AgentIntegrationTarget::Codex | AgentIntegrationTarget::Claude => {
-            vec![host_json::config_path(bundle)]
+            vec![json_config_path(bundle)]
         }
         AgentIntegrationTarget::Opencode | AgentIntegrationTarget::Pi => bundle
             .activation_files()
@@ -181,64 +178,4 @@ fn deactivate_files(
         files: actions,
         state,
     })
-}
-
-pub(super) fn supported_events(agent: AgentIntegrationTarget) -> Vec<&'static str> {
-    match agent {
-        AgentIntegrationTarget::Codex => vec![
-            "SessionStart",
-            "UserPromptSubmit",
-            "PreToolUse",
-            "PostToolUse",
-        ],
-        AgentIntegrationTarget::Claude => vec![
-            "SessionStart",
-            "UserPromptSubmit",
-            "PreToolUse",
-            "PostToolUse",
-            "PostToolUseFailure",
-        ],
-        AgentIntegrationTarget::Opencode => vec![
-            "session.created",
-            "session.idle",
-            "session.error",
-            "tool.execute.after",
-        ],
-        AgentIntegrationTarget::Pi => {
-            vec!["session_start", "before_agent_start", "tool_result"]
-        }
-    }
-}
-
-pub(super) fn projected_state(bundle: &IntegrationBundle, activated: bool) -> ActivationReport {
-    let config_path = match bundle.agent {
-        AgentIntegrationTarget::Codex | AgentIntegrationTarget::Claude => {
-            path_string(&host_json::config_path(bundle))
-        }
-        AgentIntegrationTarget::Opencode | AgentIntegrationTarget::Pi => bundle
-            .activation_files()
-            .first()
-            .map(|file| path_string(&file.path))
-            .unwrap_or_default(),
-    };
-    ActivationReport {
-        generated: bundle.is_installed(),
-        activated,
-        verified: activated,
-        conflicted: false,
-        config_path,
-        events: supported_events(bundle.agent),
-        verification_scope: "managed files and project host configuration",
-        host_approval_required: host_approval_required(bundle.agent),
-    }
-}
-
-pub(super) fn remove_empty_parents(path: &Path, root: &Path) {
-    let mut parent = path.parent();
-    while let Some(directory) = parent {
-        if directory == root || !directory.starts_with(root) || fs::remove_dir(directory).is_err() {
-            break;
-        }
-        parent = directory.parent();
-    }
 }

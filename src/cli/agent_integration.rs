@@ -6,6 +6,8 @@ mod bundle;
 mod host;
 #[path = "agent_integration_host_json.rs"]
 mod host_json;
+#[path = "agent_integration_host_state.rs"]
+mod host_state;
 #[path = "agent_integration_templates.rs"]
 mod templates;
 #[path = "agent_integration_transaction.rs"]

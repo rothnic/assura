@@ -158,6 +158,10 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
         assert_eq!(install["activation"]["verified"], false);
         assert_eq!(install["activation"]["conflicted"], false);
         assert_eq!(
+            install["activation"]["host_approval_required"],
+            agent != "opencode"
+        );
+        assert_eq!(
             install["activation"]["verification_scope"],
             "managed files and project host configuration"
         );
@@ -171,6 +175,17 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
             .unwrap()
             .iter()
             .all(|file| file["sha256"].as_str().unwrap().len() == 64));
+        assert!(!activation_path(project.path(), agent).exists());
+
+        let preview = agent_json(
+            project.path(),
+            &["integration", "activate", agent, "--dry-run"],
+        );
+        assert_eq!(preview["activation"]["activated"], true, "{agent}");
+        assert_eq!(
+            preview["activation"]["events"],
+            install["activation"]["events"]
+        );
         assert!(!activation_path(project.path(), agent).exists());
 
         let activate = agent_json(project.path(), &["integration", "activate", agent]);
@@ -188,6 +203,15 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
         assert_eq!(status["installed"], true);
         assert_eq!(status["activation"]["activated"], true);
         assert_eq!(status["activation"]["verified"], true);
+
+        let activation = activation_path(project.path(), agent);
+        let before = std::fs::read(&activation).unwrap();
+        let preview = agent_json(
+            project.path(),
+            &["integration", "deactivate", agent, "--dry-run"],
+        );
+        assert_eq!(preview["activation"]["activated"], false, "{agent}");
+        assert_eq!(std::fs::read(&activation).unwrap(), before, "{agent}");
 
         let deactivate = agent_json(project.path(), &["integration", "deactivate", agent]);
         assert_eq!(deactivate["action"], "deactivate");
@@ -555,6 +579,39 @@ fn codex_host_command_runs_outside_a_git_repository() {
         .as_str()
         .unwrap()
         .contains("src/BadName.rs"));
+}
+
+#[test]
+fn json_hosts_refuse_drifted_assura_hook_entries_without_rewriting_config() {
+    for agent in ["codex", "claude"] {
+        let project = project_fixture();
+        activate(project.path(), agent);
+        let config_path = activation_path(project.path(), agent);
+        let mut drifted: Value =
+            serde_json::from_slice(&fs::read(&config_path).unwrap()).expect("host config");
+        drifted["hooks"]["SessionStart"][0]["hooks"][0]["timeout"] = Value::from(25);
+        let drifted_bytes = serde_json::to_vec_pretty(&drifted).unwrap();
+        fs::write(&config_path, &drifted_bytes).unwrap();
+
+        let status = agent_json(project.path(), &["integration", "status", agent]);
+        assert_eq!(status["activation"]["activated"], true, "{status}");
+        assert_eq!(status["activation"]["verified"], false, "{status}");
+        assert_eq!(status["activation"]["conflicted"], true, "{status}");
+
+        for (action, diagnostic) in [
+            ("activate", "conflicts with unmanaged edits"),
+            (
+                "deactivate",
+                "refusing to remove drifted Assura host activation",
+            ),
+        ] {
+            let output = run_agent(project.path(), &["integration", action, agent]);
+            let stderr = String::from_utf8_lossy(&output.stderr);
+            assert!(!output.status.success(), "{agent} {action}: {stderr}");
+            assert!(stderr.contains(diagnostic), "{agent} {action}: {stderr}");
+            assert_eq!(fs::read(&config_path).unwrap(), drifted_bytes);
+        }
+    }
 }
 
 #[test]

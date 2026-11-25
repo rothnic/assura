@@ -3,14 +3,16 @@
 use super::bundle::{
     host_approval_required, path_string, ActivationReport, FileAction, IntegrationBundle,
 };
-use super::host::{projected_state, remove_empty_parents, supported_events, ActivationMutation};
+use super::host_state::{
+    json_config_path, projected_state, remove_empty_parents, supported_events, ActivationMutation,
+};
 use crate::cli::AgentIntegrationTarget;
 use serde_json::{json, Map, Value};
 use std::fs;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 pub(super) fn status(bundle: &IntegrationBundle) -> Result<ActivationReport, String> {
-    let path = config_path(bundle);
+    let path = json_config_path(bundle);
     let Some(config) = read_json(&path)? else {
         return Ok(projected_state(bundle, false));
     };
@@ -47,7 +49,7 @@ pub(super) fn activate(
     bundle: &IntegrationBundle,
     dry_run: bool,
 ) -> Result<ActivationMutation, String> {
-    let path = config_path(bundle);
+    let path = json_config_path(bundle);
     let before = read_json(&path)?.unwrap_or_else(|| Value::Object(Map::new()));
     let state = status(bundle)?;
     if state.conflicted {
@@ -96,7 +98,7 @@ pub(super) fn deactivate(
     bundle: &IntegrationBundle,
     dry_run: bool,
 ) -> Result<ActivationMutation, String> {
-    let path = config_path(bundle);
+    let path = json_config_path(bundle);
     let Some(before) = read_json(&path)? else {
         return Ok(ActivationMutation {
             changed: false,
@@ -150,14 +152,6 @@ pub(super) fn deactivate(
             status(bundle)?
         },
     })
-}
-
-pub(super) fn config_path(bundle: &IntegrationBundle) -> PathBuf {
-    match bundle.agent {
-        AgentIntegrationTarget::Codex => bundle.project_root.join(".codex/hooks.json"),
-        AgentIntegrationTarget::Claude => bundle.project_root.join(".claude/settings.json"),
-        _ => unreachable!("JSON activation only applies to Codex and Claude"),
-    }
 }
 
 fn expected_groups(agent: AgentIntegrationTarget) -> Vec<(&'static str, Value)> {
