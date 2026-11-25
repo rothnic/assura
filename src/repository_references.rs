@@ -1,6 +1,53 @@
 //! Lightweight repository-reference tokenization shared by check and graph paths.
 
+use glob::Pattern;
 use std::path::{Component, Path, PathBuf};
+
+pub(crate) const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
+
+pub(crate) fn is_source_reference_file(path: &Path) -> bool {
+    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
+        return false;
+    };
+    matches!(
+        extension.to_ascii_lowercase().as_str(),
+        "rs" | "py"
+            | "js"
+            | "jsx"
+            | "ts"
+            | "tsx"
+            | "go"
+            | "java"
+            | "kt"
+            | "swift"
+            | "c"
+            | "h"
+            | "hpp"
+            | "cpp"
+            | "cs"
+            | "rb"
+            | "php"
+            | "sh"
+            | "bash"
+            | "zsh"
+            | "fish"
+            | "toml"
+            | "yaml"
+            | "yml"
+            | "json"
+            | "jsonl"
+    )
+}
+
+pub(crate) fn repository_reference_policy_matches(patterns: &[String], rel: &Path) -> bool {
+    if patterns.is_empty() {
+        return true;
+    }
+    let rel = rel.to_string_lossy().replace('\\', "/");
+    patterns
+        .iter()
+        .any(|pattern| Pattern::new(pattern).is_ok_and(|pattern| pattern.matches(&rel)))
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub(crate) struct SourceReference {
