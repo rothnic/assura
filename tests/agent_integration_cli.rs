@@ -158,6 +158,10 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
         assert_eq!(install["activation"]["verified"], false);
         assert_eq!(install["activation"]["conflicted"], false);
         assert_eq!(
+            install["activation"]["host_approval_required"],
+            agent != "opencode"
+        );
+        assert_eq!(
             install["activation"]["verification_scope"],
             "managed files and project host configuration"
         );
@@ -171,6 +175,17 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
             .unwrap()
             .iter()
             .all(|file| file["sha256"].as_str().unwrap().len() == 64));
+        assert!(!activation_path(project.path(), agent).exists());
+
+        let preview = agent_json(
+            project.path(),
+            &["integration", "activate", agent, "--dry-run"],
+        );
+        assert_eq!(preview["activation"]["activated"], true, "{agent}");
+        assert_eq!(
+            preview["activation"]["events"],
+            install["activation"]["events"]
+        );
         assert!(!activation_path(project.path(), agent).exists());
 
         let activate = agent_json(project.path(), &["integration", "activate", agent]);
@@ -188,6 +203,15 @@ fn managed_activation_lifecycle_is_explicit_and_idempotent_for_all_hosts() {
         assert_eq!(status["installed"], true);
         assert_eq!(status["activation"]["activated"], true);
         assert_eq!(status["activation"]["verified"], true);
+
+        let activation = activation_path(project.path(), agent);
+        let before = std::fs::read(&activation).unwrap();
+        let preview = agent_json(
+            project.path(),
+            &["integration", "deactivate", agent, "--dry-run"],
+        );
+        assert_eq!(preview["activation"]["activated"], false, "{agent}");
+        assert_eq!(std::fs::read(&activation).unwrap(), before, "{agent}");
 
         let deactivate = agent_json(project.path(), &["integration", "deactivate", agent]);
         assert_eq!(deactivate["action"], "deactivate");
