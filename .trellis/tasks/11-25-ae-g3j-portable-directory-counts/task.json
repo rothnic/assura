@@ -1,0 +1,38 @@
+{
+  "id": "ae-g3j-portable-directory-counts",
+  "name": "ae-g3j-portable-directory-counts",
+  "title": "Portable directory counts (ae-g3j)",
+  "description": "Native delivery contract for Beads ae-g3j. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-g3j",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "fix/ae-g3j-portable-directory-counts",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-g3j-portable-directory-counts",
+      "owner": "codex-assura-ae-g3j",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-g3j-portable-directory-counts",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
