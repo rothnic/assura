@@ -1,5 +1,6 @@
 //! Docs lifecycle and stale-claim policy validation.
 
+use super::patterns::{matches_any_depth_aware_glob, DepthAwareGlob};
 use super::rules::{display_rel, is_excluded_rel_with};
 use super::{CheckError, StructureCheckReport, StructureChecker, StructureViolation};
 use crate::config::config::DocsLifecycleConfig;
@@ -68,7 +69,7 @@ impl StructureChecker {
 
         for rel in active_docs {
             let content = fs::read_to_string(self.project_root.join(&rel))?;
-            let source_has_historical_exception = pattern_matches_any(&exceptions, &rel);
+            let source_has_historical_exception = matches_any_depth_aware_glob(&exceptions, &rel);
             self.validate_historical_links(
                 policy,
                 &historical,
@@ -87,8 +88,8 @@ impl StructureChecker {
     fn validate_historical_links(
         &self,
         policy: &DocsLifecycleConfig,
-        historical: &[CompiledPattern],
-        exceptions: &[CompiledPattern],
+        historical: &[DepthAwareGlob],
+        exceptions: &[DepthAwareGlob],
         source_rel: &Path,
         content: &str,
         report: &mut StructureCheckReport,
@@ -97,8 +98,8 @@ impl StructureChecker {
             return;
         }
         for target_rel in markdown_link_targets(source_rel, content) {
-            if pattern_matches_any(historical, &target_rel)
-                && !pattern_matches_any(exceptions, &target_rel)
+            if matches_any_depth_aware_glob(historical, &target_rel)
+                && !matches_any_depth_aware_glob(exceptions, &target_rel)
             {
                 self.push_docs_lifecycle_violation(
                     report,
@@ -202,7 +203,7 @@ impl StructureChecker {
             if self.is_excluded_rel(&rel) {
                 continue;
             }
-            if pattern_matches_any(&compiled, &rel) {
+            if matches_any_depth_aware_glob(&compiled, &rel) {
                 matches.push(rel);
             }
         }
@@ -227,38 +228,17 @@ impl StructureChecker {
     }
 }
 
-struct CompiledPattern {
-    raw: String,
-    pattern: Pattern,
-}
-
-fn compile_patterns(patterns: &[String]) -> Result<Vec<CompiledPattern>, CheckError> {
+fn compile_patterns(patterns: &[String]) -> Result<Vec<DepthAwareGlob>, CheckError> {
     patterns
         .iter()
         .map(|raw| {
-            Pattern::new(raw)
-                .map(|pattern| CompiledPattern {
-                    raw: raw.clone(),
-                    pattern,
-                })
-                .map_err(|error| {
-                    CheckError::Config(crate::cli::config::ConfigError::Invalid(format!(
-                        "docs lifecycle pattern `{raw}` is invalid: {error}"
-                    )))
-                })
+            DepthAwareGlob::new(raw).map_err(|error| {
+                CheckError::Config(crate::cli::config::ConfigError::Invalid(format!(
+                    "docs lifecycle pattern `{raw}` is invalid: {error}"
+                )))
+            })
         })
         .collect()
-}
-
-fn pattern_matches_any(patterns: &[CompiledPattern], rel: &Path) -> bool {
-    patterns.iter().any(|compiled| {
-        compiled.pattern.matches_path(rel) && pattern_depth_allows(&compiled.raw, rel)
-    })
-}
-
-fn pattern_depth_allows(pattern: &str, path: &Path) -> bool {
-    pattern.contains("**")
-        || pattern.split('/').filter(|part| !part.is_empty()).count() == path.components().count()
 }
 
 fn frontmatter_status(content: &str) -> Option<String> {

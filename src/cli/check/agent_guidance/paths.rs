@@ -1,43 +1,22 @@
 //! Path and glob helpers for agent guidance contract checks.
 
+use crate::cli::check::patterns::DepthAwareGlob;
 use crate::cli::check::CheckError;
-use glob::Pattern;
 use std::path::{Component, Path, PathBuf};
-
-pub(super) struct CompiledPattern {
-    raw: String,
-    pattern: Pattern,
-}
 
 pub(super) fn compile_agent_guidance_patterns(
     patterns: &[String],
-) -> Result<Vec<CompiledPattern>, CheckError> {
+) -> Result<Vec<DepthAwareGlob>, CheckError> {
     patterns
         .iter()
         .map(|raw| {
-            Pattern::new(raw)
-                .map(|pattern| CompiledPattern {
-                    raw: raw.clone(),
-                    pattern,
-                })
-                .map_err(|error| {
-                    CheckError::Config(crate::cli::config::ConfigError::Invalid(format!(
-                        "agent guidance pattern `{raw}` is invalid: {error}"
-                    )))
-                })
+            DepthAwareGlob::new(raw).map_err(|error| {
+                CheckError::Config(crate::cli::config::ConfigError::Invalid(format!(
+                    "agent guidance pattern `{raw}` is invalid: {error}"
+                )))
+            })
         })
         .collect()
-}
-
-pub(super) fn pattern_matches_any(patterns: &[CompiledPattern], rel: &Path) -> bool {
-    patterns.iter().any(|compiled| {
-        compiled.pattern.matches_path(rel) && pattern_depth_allows(&compiled.raw, rel)
-    })
-}
-
-fn pattern_depth_allows(pattern: &str, path: &Path) -> bool {
-    pattern.contains("**")
-        || pattern.split('/').filter(|part| !part.is_empty()).count() == path.components().count()
 }
 
 pub(super) fn safe_agent_guidance_path(path: &str) -> Result<PathBuf, CheckError> {

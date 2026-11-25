@@ -7,6 +7,34 @@ use glob::Pattern;
 use std::collections::HashMap;
 use std::path::Path;
 
+// Guidance and docs lifecycle globs keep single-star matches at the configured depth.
+pub(super) struct DepthAwareGlob {
+    raw: String,
+    pattern: Pattern,
+}
+
+impl DepthAwareGlob {
+    pub(super) fn new(raw: &str) -> Result<Self, glob::PatternError> {
+        Pattern::new(raw).map(|pattern| Self {
+            raw: raw.to_owned(),
+            pattern,
+        })
+    }
+}
+
+pub(super) fn matches_any_depth_aware_glob(patterns: &[DepthAwareGlob], rel: &Path) -> bool {
+    patterns.iter().any(|compiled| {
+        compiled.pattern.matches_path(rel)
+            && (compiled.raw.contains("**")
+                || compiled
+                    .raw
+                    .split('/')
+                    .filter(|part| !part.is_empty())
+                    .count()
+                    == rel.components().count())
+    })
+}
+
 pub(super) fn collect_glob_patterns(node: &DirectoryNode, patterns: &mut HashMap<String, Pattern>) {
     if let Some(files) = &node.files {
         collect_patterns(files.allowed_patterns.iter().flatten(), patterns);
