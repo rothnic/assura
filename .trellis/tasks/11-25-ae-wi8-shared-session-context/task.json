@@ -1,0 +1,38 @@
+{
+  "id": "ae-wi8-shared-session-context",
+  "name": "ae-wi8-shared-session-context",
+  "title": "Shared session freshness (ae-wi8)",
+  "description": "Native delivery contract for Beads ae-wi8. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-wi8",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "fix/ae-wi8-shared-session-context",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-wi8-shared-session-context",
+      "owner": "codex-assura-ae-wi8",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-wi8-shared-session-context",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
