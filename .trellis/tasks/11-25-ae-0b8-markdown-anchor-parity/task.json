@@ -1,0 +1,38 @@
+{
+  "id": "ae-0b8-markdown-anchor-parity",
+  "name": "ae-0b8-markdown-anchor-parity",
+  "title": "Markdown anchor parity (ae-0b8)",
+  "description": "Native candidate contract for the ae-0b8 Beads issue. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P1",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-0b8",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": null,
+  "base_branch": "fix/ae-0b8-markdown-anchor-parity",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-0b8-markdown-anchor-parity",
+      "owner": "codex-assura-ae-0b8",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/heads/fix/ae-0b8-markdown-anchor-parity",
+      "branch_ref": null,
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
