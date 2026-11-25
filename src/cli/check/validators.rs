@@ -5,7 +5,6 @@ use super::patterns::{
     best_file_pattern_match, file_pattern_uses_lslint_stem, file_stem_for_pattern,
     matches_any_compiled_pattern,
 };
-use super::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
 use super::rules::{
     count_satisfies, display_rel, file_matches_any_extension, select_markdown, severity_for_bundle,
     severity_for_directory_bundle,
@@ -13,6 +12,7 @@ use super::rules::{
 use super::{direct_contents::DirectFilePolicy, StructureCheckReport, StructureChecker};
 use crate::config::config::FileBundle;
 use crate::policy::naming::{validate_file_stem_with_path, validate_name_with_path};
+use crate::repository_references::{is_source_reference_file, SOURCE_REFERENCE_FILE_SIZE_LIMIT};
 use std::fs;
 use std::path::Path;
 

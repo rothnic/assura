@@ -5,12 +5,11 @@ use super::rules::display_rel;
 use super::{StructureCheckReport, StructureChecker};
 use crate::config::config::RepositoryReferenceConfig;
 use crate::markdown_links::is_markdown_file;
-use crate::repository_references::{frontmatter_references, source_references, SourceReference};
-use glob::Pattern;
+use crate::repository_references::{
+    frontmatter_references, repository_reference_policy_matches, source_references, SourceReference,
+};
 use std::collections::HashMap;
 use std::path::Path;
-
-pub(super) const SOURCE_REFERENCE_FILE_SIZE_LIMIT: u64 = 512 * 1024;
 
 impl StructureChecker {
     pub(super) fn has_repository_reference_diagnostics_config(&self) -> bool {
@@ -27,7 +26,7 @@ impl StructureChecker {
         let policies = &self.config.extensions.as_ref()?.repository_references;
         policies
             .iter()
-            .find(|policy| repository_reference_policy_matches(policy, rel))
+            .find(|policy| repository_reference_policy_matches(&policy.paths, rel))
             .cloned()
     }
 
@@ -36,7 +35,7 @@ impl StructureChecker {
             return false;
         };
         extensions.repository_references.iter().any(|policy| {
-            repository_reference_policy_matches(policy, rel)
+            repository_reference_policy_matches(&policy.paths, rel)
                 && !policy.frontmatter_fields.is_empty()
         })
     }
@@ -68,7 +67,7 @@ impl StructureChecker {
                     .repository_references
                     .iter()
                     .filter(|policy| {
-                        repository_reference_policy_matches(policy, rel)
+                        repository_reference_policy_matches(&policy.paths, rel)
                             && !policy.frontmatter_fields.is_empty()
                     })
                     .cloned()
@@ -218,51 +217,6 @@ impl StructureChecker {
         let _ = reference;
         self.push_violation(report, rel.to_path_buf(), rule, message, severity);
     }
-}
-
-pub(super) fn is_source_reference_file(path: &Path) -> bool {
-    let Some(extension) = path.extension().and_then(|extension| extension.to_str()) else {
-        return false;
-    };
-    matches!(
-        extension.to_ascii_lowercase().as_str(),
-        "rs" | "py"
-            | "js"
-            | "jsx"
-            | "ts"
-            | "tsx"
-            | "go"
-            | "java"
-            | "kt"
-            | "swift"
-            | "c"
-            | "h"
-            | "hpp"
-            | "cpp"
-            | "cs"
-            | "rb"
-            | "php"
-            | "sh"
-            | "bash"
-            | "zsh"
-            | "fish"
-            | "toml"
-            | "yaml"
-            | "yml"
-            | "json"
-            | "jsonl"
-    )
-}
-
-fn repository_reference_policy_matches(policy: &RepositoryReferenceConfig, rel: &Path) -> bool {
-    if policy.paths.is_empty() {
-        return true;
-    }
-    let rel = rel.to_string_lossy().replace('\\', "/");
-    policy
-        .paths
-        .iter()
-        .any(|pattern| Pattern::new(pattern).is_ok_and(|pattern| pattern.matches(&rel)))
 }
 
 fn cached_target_content<'a>(

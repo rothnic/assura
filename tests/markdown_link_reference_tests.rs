@@ -264,3 +264,78 @@ title: Target
         }
     }
 }
+
+#[test]
+fn check_and_reference_graph_keep_their_source_scan_boundaries() {
+    let project = write_project("# Note\n");
+    let root = project.path();
+    let config = root.join(".assura/config.yml");
+    let structure = "structure:\n  ./:\n    extra: true\n";
+    fs::write(
+        &config,
+        format!(
+            "{structure}extensions:
+  repository_references:
+    - id: first
+      paths: ['src/**']
+      severity: low
+    - id: overlapping
+      paths: ['**/*.RS']
+      severity: high
+"
+        ),
+    )
+    .unwrap();
+    fs::create_dir_all(root.join("scripts")).unwrap();
+    fs::create_dir_all(root.join("target")).unwrap();
+
+    let reference = "// See docs/target.md#missing-heading\n";
+    let limit = 512 * 1024;
+    let at_limit = format!("{reference}{}", "\n".repeat(limit - reference.len()));
+    fs::write(root.join("src/eligible.RS"), &at_limit).unwrap();
+    fs::write(root.join("src/oversized.RS"), format!("{at_limit}\n")).unwrap();
+    fs::write(root.join("src/unsupported.txt"), reference).unwrap();
+    fs::write(root.join("scripts/graph_only.rs"), reference).unwrap();
+    fs::write(root.join("target/excluded.rs"), reference).unwrap();
+
+    let (status, report) = check_json(&project);
+    assert!(status.success(), "{report:#}");
+    let violations = report["violations"].as_array().unwrap();
+    assert_eq!(violations.len(), 1, "{report:#}");
+    assert_eq!(violations[0]["path"], "src/eligible.RS");
+    assert_eq!(violations[0]["rule"], "repository_reference_anchor");
+    assert_eq!(violations[0]["severity"], "low");
+
+    fs::write(&config, structure).unwrap();
+    let (status, report) = check_json(&project);
+    assert!(status.success(), "{report:#}");
+    assert!(
+        report["violations"].as_array().unwrap().is_empty(),
+        "{report:#}"
+    );
+
+    let output = Command::new(assura_bin())
+        .args(["content", "references"])
+        .arg(root)
+        .args(["--all", "--format", "json"])
+        .output()
+        .unwrap();
+    assert!(
+        output.status.success(),
+        "{}",
+        String::from_utf8_lossy(&output.stderr)
+    );
+    let graph: serde_json::Value = serde_json::from_slice(&output.stdout).unwrap();
+    let edges = graph["references"].as_array().unwrap();
+    assert_eq!(edges.len(), 2, "{graph:#}");
+    for path in ["src/eligible.RS", "scripts/graph_only.rs"] {
+        assert!(
+            edges.iter().any(|edge| {
+                edge["source_path"] == path
+                    && edge["target_path"] == "docs/target.md"
+                    && edge["target_anchor"] == "missing-heading"
+            }),
+            "missing edge for {path}: {graph:#}"
+        );
+    }
+}
