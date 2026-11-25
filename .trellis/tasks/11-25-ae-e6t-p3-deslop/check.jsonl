@@ -1,0 +1,3 @@
+{"_example": "Fill with {\"file\": \"<path>\", \"reason\": \"<why>\"}. Put spec/research files only — no code paths. Run `python3 .trellis/scripts/get_context.py --mode packages` to list available specs. Delete this line once real entries are added."}
+{"file": ".trellis/tasks/11-25-ae-0o0-reference-eligibility/prd.md", "reason": "Shared reference scan acceptance."}
+{"file": ".trellis/tasks/11-25-ae-4js-depth-aware-policy-globs/prd.md", "reason": "Shared depth-aware matching acceptance."}
