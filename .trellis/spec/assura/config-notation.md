@@ -296,6 +296,15 @@ directory health defaults without guessing a language or framework.
 - Bump the compiled schema whenever its payload changes so stale artifacts fail
   as incompatible instead of silently dropping policy.
 
+Fast compiled checks retain the authored directory nodes when a self-directory
+count needs them. The existing optional config section carries those nodes
+through compilation and supports the same configured-scope validation in
+ordinary and fail-fast checks. An older fast artifact that omitted those
+nodes can use the original YAML after the source hash matches. For a detached
+artifact that omitted them, supply the original config or recompile so a
+missing directory cannot pass without a count check. Naming-only artifacts
+continue to run without loading YAML.
+
 Notation changes affecting normalization, selector matching, or compiled
 artifacts must run parser, direct-check, compiled-check, cold performance, and
 warm-session regression gates.

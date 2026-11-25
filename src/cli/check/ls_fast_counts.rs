@@ -9,8 +9,10 @@ use super::rules::{
     severity_for_directory_bundle,
 };
 use super::{CheckError, StructureCheckReport, StructureChecker};
+use std::collections::HashMap;
 use std::ffi::OsString;
 use std::fs::FileType;
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 
 pub(super) struct FastDirEntry {
@@ -21,6 +23,39 @@ pub(super) struct FastDirEntry {
 
 pub(super) struct FastDirChildren {
     pub(super) entries: Vec<FastDirEntry>,
+}
+
+pub(super) fn dedup_configured_count_findings(
+    report: &mut StructureCheckReport,
+    configured: Range<usize>,
+) {
+    let configured_end = configured.end;
+    let mut counts = HashMap::<PathBuf, Vec<(String, String)>>::new();
+    for finding in &report.violations[configured] {
+        if finding.rule == "exists_count" {
+            counts
+                .entry(finding.path.clone())
+                .or_default()
+                .push((finding.message.clone(), finding.severity.clone()));
+        }
+    }
+    if counts.is_empty() {
+        return;
+    }
+
+    // The configured check can report a literal directory before the walk sees it.
+    let mut index = 0;
+    report.violations.retain(|finding| {
+        let from_walk = index >= configured_end;
+        index += 1;
+        !(from_walk
+            && finding.rule == "exists_count"
+            && counts.get(&finding.path).is_some_and(|counts| {
+                counts.iter().any(|(message, severity)| {
+                    message == &finding.message && severity == &finding.severity
+                })
+            }))
+    });
 }
 
 impl StructureChecker {

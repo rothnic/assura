@@ -125,10 +125,10 @@ pub use check::{
     PreparedStructureCheck,
 };
 pub use check::{
-    run_structure_check_with_artifact, run_structure_check_with_config,
-    run_structure_check_with_fast_artifact, run_structure_check_with_prechecked_fast_artifact,
-    CheckError, CompiledStructureConfigArtifact, StructureCheckReport, StructureCheckTimings,
-    StructureViolation,
+    run_structure_check_with_artifact, run_structure_check_with_artifact_source,
+    run_structure_check_with_config, run_structure_check_with_fast_artifact,
+    run_structure_check_with_prechecked_fast_artifact, CheckError, CompiledStructureConfigArtifact,
+    StructureCheckReport, StructureCheckTimings, StructureViolation,
 };
 #[cfg(feature = "full-cli")]
 pub use command_options::CheckCommandOptions;

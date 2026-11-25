@@ -4,7 +4,7 @@ use super::ls_fast_plan::{collect_fast_regex_patterns, compile_lslint_fast_scope
 use super::patterns;
 use super::rule_plan::{compile_rule_scopes, RuleScope};
 use super::rules::{collect_configured_dirs, collect_naming_regexes, CompiledExclusion};
-use crate::config::config::Config;
+use crate::config::config::{Config, DirectoryNode};
 use glob::Pattern;
 use regex_lite::Regex;
 use std::collections::HashMap;
@@ -135,7 +135,7 @@ fn compile_exclusions<'a>(configured: impl Iterator<Item = &'a str>) -> Vec<Comp
         .collect()
 }
 
-fn node_has_direct_count_constraints(node: &crate::config::config::DirectoryNode) -> bool {
+pub(super) fn node_has_direct_count_constraints(node: &DirectoryNode) -> bool {
     node.limit_children.is_some()
         || node
             .files

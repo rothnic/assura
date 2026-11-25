@@ -81,8 +81,8 @@ use crate::config::config::Config;
 #[cfg(feature = "yaml-config")]
 use crate::config::loader::ConfigLoader;
 pub use artifact_check::{
-    run_structure_check_with_artifact, run_structure_check_with_fast_artifact,
-    run_structure_check_with_prechecked_fast_artifact,
+    run_structure_check_with_artifact, run_structure_check_with_artifact_source,
+    run_structure_check_with_fast_artifact, run_structure_check_with_prechecked_fast_artifact,
 };
 #[cfg(feature = "yaml-config")]
 pub use batch::run_structure_checks;

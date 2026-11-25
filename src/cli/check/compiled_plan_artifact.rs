@@ -3,7 +3,9 @@
 use super::compiled_artifact::{
     PortableDirectoryBundle, PortableFileBundle, PortableMarkdownBundle,
 };
-use super::compiled_config::{CompiledStructureConfig, PrecompiledStructurePlan};
+use super::compiled_config::{
+    node_has_direct_count_constraints, CompiledStructureConfig, PrecompiledStructurePlan,
+};
 use super::ls_fast_naming::{compile_fast_naming, FastFileNaming};
 use super::ls_fast_plan::{
     collect_fast_regex_patterns, compile_lslint_fast_scopes, FastRules, FastScope,
@@ -11,7 +13,7 @@ use super::ls_fast_plan::{
 use super::patterns;
 use super::rule_plan::{compile_rule_scopes, RuleScope};
 use super::rules::{collect_configured_dirs, collect_naming_regexes, EffectiveRules};
-use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle, MarkdownBundle};
+use crate::config::config::{Config, DirectoryBundle, FileBundle, MarkdownBundle};
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -25,7 +27,7 @@ pub(super) struct PortableCompiledPlan {
     glob_pattern_sources: Vec<String>,
     rule_scopes: Vec<PortableRuleScope>,
     lslint_fast_scopes: Option<Vec<PortableFastScope>>,
-    has_direct_count_constraints: bool,
+    pub(super) has_direct_count_constraints: bool,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -123,11 +125,20 @@ impl PortableCompiledPlan {
         }
     }
 
-    pub(super) fn is_fast_only(&self) -> bool {
-        self.lslint_fast_scopes.is_some() && self.rule_scopes.is_empty()
+    pub(super) fn needs_config(&self) -> bool {
+        self.lslint_fast_scopes.is_none()
+            || (self.has_direct_count_constraints && self.has_self_directory_counts())
     }
 
-    pub(super) fn can_run_without_config(&self, fail_fast: bool) -> bool {
+    pub(super) fn has_self_directory_counts(&self) -> bool {
+        self.lslint_fast_scopes.as_ref().is_some_and(|scopes| {
+            scopes
+                .iter()
+                .any(PortableFastScope::has_self_directory_counts)
+        })
+    }
+
+    pub(super) fn can_run_fast(&self, fail_fast: bool) -> bool {
         !fail_fast && self.lslint_fast_scopes.is_some()
     }
 
@@ -160,6 +171,16 @@ impl PortableCompiledPlan {
             has_direct_count_constraints: self.has_direct_count_constraints,
         };
         CompiledStructureConfig::from_precompiled_plan(config, plan, fail_fast)
+    }
+}
+
+impl PortableFastScope {
+    fn has_self_directory_counts(&self) -> bool {
+        self.exact
+            .effective
+            .self_directory
+            .as_ref()
+            .is_some_and(|directory| directory.exists.is_some())
     }
 }
 
@@ -320,24 +341,6 @@ impl From<PortableFastFileNaming> for FastFileNaming {
             file_naming.default.as_deref().map(compile_fast_naming),
         )
     }
-}
-
-fn node_has_direct_count_constraints(node: &DirectoryNode) -> bool {
-    node.limit_children.is_some()
-        || node
-            .files
-            .as_ref()
-            .and_then(|files| files.exists.as_ref())
-            .is_some()
-        || node
-            .directories
-            .as_ref()
-            .and_then(|directories| directories.exists.as_ref())
-            .is_some()
-        || node
-            .children
-            .as_ref()
-            .is_some_and(|children| children.values().any(node_has_direct_count_constraints))
 }
 
 fn path_to_portable(path: PathBuf) -> String {

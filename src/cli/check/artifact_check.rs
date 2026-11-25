@@ -5,7 +5,7 @@ use super::{
     StructureCheckTimings, StructureChecker,
 };
 use crate::cli::config::ConfigError;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 /// Run one structure check against a precompiled config artifact.
 pub fn run_structure_check_with_artifact(
@@ -14,6 +14,27 @@ pub fn run_structure_check_with_artifact(
     checked_path: PathBuf,
     artifact: CompiledStructureConfigArtifact,
     fail_fast: bool,
+) -> Result<StructureCheckReport, CheckError> {
+    run_structure_check_with_artifact_source(
+        project_root,
+        config_path,
+        checked_path,
+        artifact,
+        fail_fast,
+        None,
+    )
+}
+
+/// Run a compiled check, using the matching source to restore requirements
+/// missing from older fast artifacts.
+#[doc(hidden)]
+pub fn run_structure_check_with_artifact_source(
+    project_root: PathBuf,
+    config_path: PathBuf,
+    checked_path: PathBuf,
+    mut artifact: CompiledStructureConfigArtifact,
+    fail_fast: bool,
+    source_config: Option<&Path>,
 ) -> Result<StructureCheckReport, CheckError> {
     if !checked_path.exists() {
         return Err(CheckError::MissingPath(checked_path));
@@ -28,6 +49,7 @@ pub fn run_structure_check_with_artifact(
         });
     }
 
+    artifact.restore_legacy_directory_counts(source_config)?;
     let compiled = match artifact.into_fast_compiled_config(fail_fast) {
         Ok(compiled) => compiled,
         Err(artifact) => (*artifact).into_compiled_config(fail_fast)?,
@@ -71,7 +93,7 @@ pub fn run_structure_check_with_prechecked_fast_artifact(
     project_root: PathBuf,
     config_path: PathBuf,
     checked_path: PathBuf,
-    artifact: CompiledStructureConfigArtifact,
+    mut artifact: CompiledStructureConfigArtifact,
 ) -> Result<StructureCheckReport, CheckError> {
     if !checked_path.starts_with(&project_root) {
         return Err(CheckError::OutsideProject {
@@ -80,6 +102,7 @@ pub fn run_structure_check_with_prechecked_fast_artifact(
         });
     }
 
+    artifact.restore_legacy_directory_counts(None)?;
     let compiled = artifact
         .into_fast_compiled_config(false)
         .map_err(|_| ConfigError::Invalid("compiled config is not fast-path compatible".into()))?;

@@ -1,7 +1,11 @@
 //! Compiled artifact freshness tests.
 
-use super::{compiled_artifact::path_to_portable, CompiledStructureConfigArtifact};
-use crate::config::config::{Config, DirectoryNode, FileBundle};
+use super::{
+    compiled_artifact::path_to_portable, run_structure_check_with_artifact,
+    run_structure_check_with_fast_artifact, CompiledStructureConfigArtifact,
+};
+use crate::config::config::{Config, DirectoryBundle, DirectoryNode, FileBundle};
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
@@ -10,6 +14,48 @@ fn test_config() -> Config {
         "src/",
         DirectoryNode::new().with_files(FileBundle::new().with_naming("snake_case")),
     )
+}
+
+#[test]
+fn compiled_directory_counts_survive_fast_only_and_fail_fast_checks() {
+    let project = tempfile::tempdir().unwrap();
+    let root = project.path().to_path_buf();
+    let config = Config::new().with_node(
+        "required/",
+        DirectoryNode {
+            required: false,
+            self_directory: Some(DirectoryBundle {
+                exists: Some(HashMap::from([("*".to_owned(), "1".to_owned())])),
+                ..DirectoryBundle::default()
+            }),
+            ..DirectoryNode::default()
+        },
+    );
+    let config_path = root.join("check-config.bin");
+    let fast = run_structure_check_with_fast_artifact(
+        root.clone(),
+        config_path.clone(),
+        root.clone(),
+        CompiledStructureConfigArtifact::new(config.clone()),
+    )
+    .unwrap();
+    let fail_fast = run_structure_check_with_artifact(
+        root.clone(),
+        config_path,
+        root,
+        CompiledStructureConfigArtifact::new(config),
+        true,
+    )
+    .unwrap();
+
+    for report in [fast, fail_fast] {
+        assert!(!report.success, "{report:#?}");
+        assert_eq!(report.violations.len(), 1, "{report:#?}");
+        assert_eq!(report.violations[0].rule, "exists_count");
+        assert!(report.violations[0]
+            .message
+            .contains("exists 0 times, expected 1"));
+    }
 }
 
 #[test]
