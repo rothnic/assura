@@ -1,0 +1,38 @@
+{
+  "id": "ae-tv6-shared-rust-exports",
+  "name": "ae-tv6-shared-rust-exports",
+  "title": "Shared Rust export scanner (ae-tv6)",
+  "description": "Native delivery contract for Beads ae-tv6. Beads owns queue and closure.",
+  "status": "in_progress",
+  "dev_type": null,
+  "scope": null,
+  "package": null,
+  "priority": "P2",
+  "creator": "nroth",
+  "assignee": "codex-assura-ae-tv6",
+  "createdAt": "2026-11-25",
+  "completedAt": null,
+  "branch": "fix/ae-tv6-shared-rust-exports",
+  "base_branch": "refs/remotes/origin/master",
+  "worktree_path": null,
+  "commit": null,
+  "pr_url": null,
+  "subtasks": [],
+  "children": [],
+  "parent": null,
+  "relatedFiles": [],
+  "notes": "",
+  "meta": {
+    "delivery": {
+      "schema_version": 1,
+      "kind": "integration",
+      "candidate_id": "11-25-ae-tv6-shared-rust-exports",
+      "owner": "codex-assura-ae-tv6",
+      "repository": "rothnic/assura",
+      "base_ref": "refs/remotes/origin/master",
+      "branch_ref": "refs/heads/fix/ae-tv6-shared-rust-exports",
+      "acceptance_ref": "prd.md#acceptance",
+      "authority_ref": null
+    }
+  }
+}
